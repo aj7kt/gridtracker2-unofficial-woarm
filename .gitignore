@@ -8,6 +8,7 @@ AuthKey_XX93T2PALT.p8
 beau-gunderson.pfx
 mac-signing-certificate.p12
 .VSCodeCounter
+_build
 .vscode/settings.json
 resources/media/desktop.ini
 .vscode/settings.json
