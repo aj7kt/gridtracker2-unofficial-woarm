@@ -1,4 +1,4 @@
-# License Agreement and Copyright
+# GridTracker2 License Agreement and Copyright
 
 GridTracker2 is Licensed under the [**BSD 3-Clause "New" or "Revised" License**](https://gitlab.com/gridtracker.org/gridtracker2/-/blob/main/LICENSE)
 
@@ -9,6 +9,8 @@ Permission is granted to copy this site / information, at no charge for non-comm
 Copyright ® 2024 GridTracker.org
 
 All Rights Reserved Worldwide
+
+# Other Applications / Integrations License Statements
 
 WSJT-X is copyright ® Joseph Taylor, K1JT and the WSJT-X Development Group, et al.\
 [https://physics.princeton.edu/pulsar/K1JT/wsjtx.html](https://physics.princeton.edu/pulsar/K1JT/wsjtx.html)

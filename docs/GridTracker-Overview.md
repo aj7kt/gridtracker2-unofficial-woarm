@@ -1,4 +1,4 @@
-## GridTracker Overview
+# GridTracker Overview
 
 The GridTracker Map is a visual representation of all of your radio contacts (QSOs) by Maidenhead grids.  You can move the map by clicking anywhere on it and dragging.  You can enlarge the map to look at all of the grids where you do or don't have contacts in a single country.  You can reduce the map size to look at all of the grids where you've made contacts across the globe.  
 

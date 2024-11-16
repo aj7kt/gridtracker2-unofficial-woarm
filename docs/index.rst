@@ -67,7 +67,7 @@ Third-Party Integrations
 .. toctree::
    :maxdepth: 2
 
-   Third-Party-Integrations/HamClock-Integrations
+   Third-Party-Integrations/HamClock-Integration
    Third-Party-Integrations/N3FJP-AC-Log-Integration
    Third-Party-Integrations/PushNotifications-Integrations
 

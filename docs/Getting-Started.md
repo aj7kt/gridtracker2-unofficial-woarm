@@ -1,4 +1,4 @@
-## Getting Started
+# Getting Started
 
 Depending on your operating system, GridTracker can be started from the command line, the start menu or a shortcut.
 
@@ -6,11 +6,11 @@ GridTracker does not require WSJT-X or WST-X derivitive to be installed on your 
 
 If GridTracker can locate the configuration file of your WSJT-X or WSJT-X derivitive  in your system, it will automatically read your callsign, Maidenhead grid square, operating band, operating mode and your network configuration.  If GridTracker discovers that WSJT-X or WSJT-X derivitive  is a running process on your computer during your initial startup of GridTracker it will attempt to configure itself to the network configuration details of the running program.
 
-!["GridTracker Status Panel showing RECEIVE in a green box"](/img/GT_Status_Receive.png)
+!["GridTracker Status Panel showing RECEIVE in a green box"](img/GT_Status_Receive.png)
 
 When a connection between GridTracker and WSJT-X has been established the operating info section at the top of the control panel will indicate your frequency and time/date information the WSJT-X status bar is displaying "RECEIVE".
 
-!["GridTracker Status Panel showing waiting for message in a green box"](/img/GT_Status_Waiting.png)
+!["GridTracker Status Panel showing waiting for message in a green box"](img/GT_Status_Waiting.png)
 
 If GridTracker has not received status information from WSJT-X then the WSJT-X status bar will show waiting for message.  
 

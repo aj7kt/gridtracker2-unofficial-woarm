@@ -1,10 +1,11 @@
+# GridTracker Main Window
 GridTracker's main window is made up of the GridTracker Map, the Control Panel as well as detail in the application title bar.
 
-!["GridTracker Main Window with TitleBar, Map and Control Panel indivdually identified"](/img/GT_overview.png)
+!["GridTracker Main Window with TitleBar, Map and Control Panel indivdually identified"](../img/GT_overview.png)
 
-### **GridTracker Map** 
+## **GridTracker Map** 
 
-!["The GridTracker map area showing North America and several worked grids"](/img/GT_Map.png)
+!["The GridTracker map area showing North America and several worked grids"](../img/GT_Map.png)
 
 The GridTracker Map shows the "_grid status_" for as much or as little of the world as you choose.  You can enlarge it to focus on just one country or continent or reduce it to show the entire globe.  Once you've decided where to focus the map it's up to you to decide what types of _overlays_ to add to the base map and what details and data those overlays show.  
 
@@ -16,9 +17,9 @@ If you mouse-over --  that is, take your mouse pointer and hover over any "high
 
 If you **right-click** any grid you'll get a fixed pop-up window where you can examine the grid details with your mouse or keyboard.
 
-### **GridTracker Map Legend**
+## **GridTracker Map Legend**
 
-!["The GridTracker map legend"](/img/GT_legend2.png)
+!["The GridTracker map legend"](../img/GT_legend2.png)
 
 This is the legend for the GridTracker Map.  
 Remember:
@@ -37,13 +38,13 @@ The legend uses standard  "Q" codes as shorthand to identify the status of grid
 * QTH: Your home grid. 
 * WSPR: Grids heard while listening for the WSPR weak signal mode. The grid color will depend upon the band the grid was decoded on according to the PSK Reporter color scheme.
 
-### **GridTracker Title Bar**
+## **GridTracker Title Bar**
 
 The Title Bar will look slightly different depending on your operating system.
 
-!["The titlebar from GridTracker running on MacOS"](/img/GT_MacTitleBar.png)
+!["The titlebar from GridTracker running on MacOS"](../img/GT_MacTitleBar.png)
 
-!["The titlebar from GridTracker running on Windows"](/img/GT_WinTitleBar.png)
+!["The titlebar from GridTracker running on Windows"](../img/GT_WinTitleBar.png)
 
 It will show information about the map features you have chosen to use.  In these examples the user is using a map that shows:
 
