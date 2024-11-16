@@ -49,7 +49,7 @@ It means this is a new callsign for the user.
 
 It's just a programming choice intended to help make the fact the station is calling CQ more readily visible.  
 
-➤ **_Practice Tip:_**  If you're trying to compare live traffic in the "Band Activity" window of WSJT-X to the same traffic in **Call Roster** and things just don't seem to "match" it's very likely because of messaging conventions used for transmissions.  Consider an example from the screenshot above: 
+&#10148; **_Practice Tip:_**  If you're trying to compare live traffic in the "Band Activity" window of WSJT-X to the same traffic in **Call Roster** and things just don't seem to "match" it's very likely because of messaging conventions used for transmissions.  Consider an example from the screenshot above: 
 
 The transmitted message is:  **G3VMN NZ6L DM03.**  It's an easy mistake to look for **G3VMN** in the **Callsign** column but he's not sending the transmission.  He's being called by **NZ6L**.  **NZ6L** will be listed in the **Callsign** column while **G3VMN** will be listed in the **Calling** column.
 
@@ -71,7 +71,7 @@ The screenshot above shows you all the types of data that can be included in the
 
 Clicking on column headings in the will sort the table by that column.
 
-➤ **_Practice Tip:_**  you  may be useful to sort by the **Age** column - it makes it easier to correlate what you're seeing in Call Roster to what you're seeing in WSJT-X
+&#10148; **_Practice Tip:_**  you  may be useful to sort by the **Age** column - it makes it easier to correlate what you're seeing in Call Roster to what you're seeing in WSJT-X
 
 **Note:**  You can select which columns appear in the **Roster** view but **_you cannot yet rearrange the columns._**  _{Rearranging columns is in the works.}_
 
@@ -234,7 +234,7 @@ The **No**, **Only**, and **Regex** Limiters
 * **The ONLY Limiter:**  The Only limiter applies a filter to the Call Roster data to hide any rows unless the Callsign, Grid, and/or Calling data contains the text characters/numbers you specify.
 * **The Regex Limiter:**  Functions in a similar way that the No and ONLY limiter does depending on how the regex entered is built.
 
-➤ **_Practice Tip:_** Regex is a structured way to build filters on text, commonly used by programs to find or hide specific text combinations. Clicking on the "Regex" text in the call roster will take you to [Regex101.com](https://regex101.com/?flavor=javascript) where you can practice with regex and see how it'd filter various messages you can specify.
+&#10148; **_Practice Tip:_** Regex is a structured way to build filters on text, commonly used by programs to find or hide specific text combinations. Clicking on the "Regex" text in the call roster will take you to [Regex101.com](https://regex101.com/?flavor=javascript) where you can practice with regex and see how it'd filter various messages you can specify.
 
 _There are so many different combinations of settings available to filter and organize data in Call Roster that it's impossible to cover all of them in this manual.  Instead we'll focus on some examples that many users may want to try. The development team sometimes emails out in the Groups.IO group the regex strings for filtering the call roster for popular special event stations such as "13 Colonies" or "Route 66" on the air._
 
@@ -374,7 +374,7 @@ At this point the QSO exchange is ending.  N1API has send a 73 message to N6OPE
 
 It is possible to use the Call Roster alerts to execute arbitrary actions on your computer. If `\~/Documents/GridTracker/scripts/cr-alert.sh` or `Documents\\GridTracker\\scripts\\cr-alert.bat` exits, there will be a new button in the Call Roster called "Script Enabled":
 
-![cr-alerts](uploads/1264da0b3d9b74db3ab96d137c8e706a/cr-alerts.png)
+![cr-alerts](/img/cr-alerts.png)
 
 If the button is green, the script will be executed whenever there is a git in the CR. GridTracker will put a file called cr-alert.json in the same directory that contains the Call Roster contents in a parsable form. As long as the script is executable in linux (mode e.g. by doing `chmod 755 cr-alert.sh`) it doesn't matter if the script is really a bash script. Put a valid shebang into the first line and GT will execute it. That script can be used to execute any action you like. Here is an example to use the third party service "Pushover" that can send push notifications to your iPhone or Android device. Here is an example of how to use the script to send push notifications and do some filtering:
 

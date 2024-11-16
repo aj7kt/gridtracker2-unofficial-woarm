@@ -1,7 +1,7 @@
 The Control Panel has several sections and packs a wide range of information and functions into a small space.
 
 ### **Operating Information**
-![GT_ControlPanel](uploads/GT_ControlPanel.png)
+![GT_ControlPanel](/img/GT_ControlPanel.png)
 
 **"GridTracker"** 
 
@@ -11,7 +11,7 @@ Clicking on the button labeled "GridTracker" at the top of this section will tur
 
 The first two lines beneath the GridTracker button show your current operating frequency, band and mode followed by the current date and time UTC.
 
-➤ **_Practice Tip:_**  Click on the line with date/time info to toggle between UTC and your local time. 
+&#10148; **_Practice Tip:_**  Click on the line with date/time info to toggle between UTC and your local time. 
 
 **"Working Callsign / Location"**
 
@@ -58,9 +58,9 @@ If you want to see a display of spots where your Txs have been heard, use the [V
 * **RX Calls:**  Number of callsigns received in WSJT-X in your current start up of Gridtracker.
 * **QSO:**  Your total number of contacts to date.  By default this is the total number of contacts reflected in your current, working WSJT-X log.  If you elect to import QSO data from additional logs then that number will increase accordingly.
 
-➤ **_Practice Tip:_**  the total number shown here depends on the GridTracker options you've chosen and whether you've elected to include or not include QSO data from other sources besides WSJT-X.  
+&#10148; **_Practice Tip:_**  the total number shown here depends on the GridTracker options you've chosen and whether you've elected to include or not include QSO data from other sources besides WSJT-X.  
 
-➤ **_Practice Tip:_**  if you click on the QSO count (the number in the oval) it opens up the GridTracker Statistics page.  
+&#10148; **_Practice Tip:_**  if you click on the QSO count (the number in the oval) it opens up the GridTracker Statistics page.  
 
 * **Rx DXCC:**  Number of DXCC stations received in WSJT-X in your current start up of GT.
 *  **QSL:**  Number of "confirmed" contacts in your logbook.  
@@ -86,7 +86,7 @@ See the [GridTracker Data Files](../GridTracker-File-Storage.md) Storage section
 
 This section allows you to decide what type and how much information to be shown on the GridTracker Map in the master grid overlay.  (Other overlays such as time zones and grayline are handled separately in the GridTracker Features menu.)
 
-➤ **_Important Practice Tip:_** the options in this box affect how much and what type of data is shown in not only the "day-to-day" working grid map but **_also in the award overlays and Statistics table!_** The colored grid map view overlay for your logbook data reflects the band, mode, and propagation options you've picked. If you want to see a grid overlay with **all** of your contacts regardless of band, mode or data then choose "Mixed" on all three of those Map View Filters options.
+&#10148; **_Important Practice Tip:_** the options in this box affect how much and what type of data is shown in not only the "day-to-day" working grid map but **_also in the award overlays and Statistics table!_** The colored grid map view overlay for your logbook data reflects the band, mode, and propagation options you've picked. If you want to see a grid overlay with **all** of your contacts regardless of band, mode or data then choose "Mixed" on all three of those Map View Filters options.
 
 !["GridTracker Map View Filters highlighting band options"](/img/GT_MapBandFilter.png)
 
@@ -124,7 +124,7 @@ Clicking on this box cycles the main GT map through three options:  Logbook, Lo
 
 * **Logbook Data**:  Grids are highlighted if you have logged a contact \[have a QSO\] in the grid in the past. The highlighting color scheme is shown in the map legend. The default color assigned to QSOs is yellow but you can change the color scheme in the [**Settings > Grids**](Settings-Sub-Menus.md#grids-tab) submenu.
 
-➤ **_Practice Tip:_**   The information shown in the **Logbook** overlay depends on the options selected in the [\*\*Settings>Logging \*\*](Settings-Sub-Menus.md#logging-tab)submenu.   If you want to incorporate QSO data from anything other than your working log in WSJT-X then you must choose the options to load that data from LoTW, QRZ.com, etc. in the form of an ADIF file.  
+&#10148; **_Practice Tip:_**   The information shown in the **Logbook** overlay depends on the options selected in the [\*\*Settings>Logging \*\*](Settings-Sub-Menus.md#logging-tab)submenu.   If you want to incorporate QSO data from anything other than your working log in WSJT-X then you must choose the options to load that data from LoTW, QRZ.com, etc. in the form of an ADIF file.  
 
 If you want the grid overlay to show QSL data then you must load data from a local ADIF file, LoTW, QRZ.com, etc.  Again:  the data stream and log records from WSJT-X don't know whether or not another station has confirmed a QSO.
 
@@ -152,13 +152,13 @@ You can look up who owns a callsign any time -- whether you have WSJT-X running 
 * GridTracker uses Callook.info as the **default** website  for a callsign lookup.  However you can manually change to another website in the **SETTINGS>Lookups** sub-menu. 
 * Since GridTracker is linked with WSJT-X you can select an option to have GridTracker automatically open a window with callsign information every time you transmit on WSJT-X.  See [**Settings>Lookups**](Settings-Sub-Menus.md#lookups-tab) for those settings.   When you click on a CQ in WSJT-X to respond to it, this feature will automatically look up that station.
 
-**➤ Practice Tip:**  The amount and type information shown in the Callsign Lookup window is dependent on the website you choose for your lookups. 
+**&#10148; Practice Tip:**  The amount and type information shown in the Callsign Lookup window is dependent on the website you choose for your lookups. 
 
 #### **_Show Stats Hotkey I (the letter i)_** !["Stats/Logbook button"](/img/GT_Stats.png)
 
 This is your GT logbook and statistics window.  The data it contains can be filtered and sorted in nearly innumerable ways.  While the Awards button lets you see a visual representation of the extent of your contacts; the Statistics feature lets you see them in list form.  
 
-➤ **_Practice Tip:_**   The information shown on the Statistics page(s) depends on the options selected in both the [**Map View Filter**](#map-view-filters) and the [**Settings>Logbook**](Settings-Sub-Menus.md#user-logbook-tab) submenu.
+&#10148; **_Practice Tip:_**   The information shown on the Statistics page(s) depends on the options selected in both the [**Map View Filter**](#map-view-filters) and the [**Settings>Logbook**](Settings-Sub-Menus.md#user-logbook-tab) submenu.
 
 #### **_Online/Offline Mode_** !["GridTracker Online button"](/img/GT_OnLine.png)!["GridTracker Offline button"](/img/GT_OffLine.png)
 
@@ -180,7 +180,7 @@ Do or don't share your on-air status with other GridTracker users.  However you
 
 See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the HotKey options.
 
-**➤ Practice Tip:**  GridTracker must be your active computer window for this or any other HotKeys to work. 
+**&#10148; Practice Tip:**  GridTracker must be your active computer window for this or any other HotKeys to work. 
 
 #### **_Cycle Award Overlays Hotkey = (equal sign)_** !["Grid Award Overlay"](/img/GT_AwardGrid.png)  !["CQ Zone Award Overlay"](/img/GT_AwardCQZ.png)  !["ITU Zone Award Overlay"](/img/GT_AwardITUZ.png)  !["Continents Award Overlay"](/img/GT_AwardWAC.png)  !["US States Award Overlay"](/img/GT_AwardWAS.png)  !["DXCC Award Overlay"](/img/GT_AwardDXCC.png)  !["US Counties Award Overlay"](/img/GT_AwardUSC.png)  !["US Lower 48 Grids Award Overlay"](/img/GT_AwardUS48.png)
 
@@ -195,7 +195,7 @@ See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the
 * USC : the U.S. counties you’ve contacted (Hotkey **** 7)
 * US48 :  the Maidenhead grids you’ve contacted in the continental U.S.A. (Hotkey **** 8)
 
-**➤ Practice Tip:** The Alphanumeric Maidenhead grid codes cannot be superimposed on top of any of the award grids.
+**&#10148; Practice Tip:** The Alphanumeric Maidenhead grid codes cannot be superimposed on top of any of the award grids.
 
 **Award Overlays + Active GridTracker Map Hotkey  U**  
 
@@ -245,7 +245,7 @@ Clicking on this button will give you a map of PSK Reporter data for your transm
 
 When you turn on PSK Spot Reporting a new tool opens at the bottom of the Control Panel that allows you to select the length of time for which data is reported by moving the orange slider button. !["Spot information area/time slider"](/img/GT_SpotSpot.png)
 
-**➤ Practice Tip:** Given the size of the slider it can be difficult to "fine tune" the time reporting period by clicking and moving the slider.  However if you simply click on the button you can then use your left arrow (**⇦**) and right arrow (**⇨**) keyboard keys to set the time period to your preference.
+**&#10148; Practice Tip:** Given the size of the slider it can be difficult to "fine tune" the time reporting period by clicking and moving the slider.  However if you simply click on the button you can then use your left arrow (**⇦**) and right arrow (**⇨**) keyboard keys to set the time period to your preference.
 
 There are several options available for PSK data:
 
@@ -312,7 +312,7 @@ This button cycles through three options that will show an overlay with  flags 
 
 If you allow your mouse to hover over a GT flag you'll get a pop-up window with callsign, grid, and other location info for the user. 
 
-➤ **Practice Tip**:  This function isn't available unless you have turned on the [**Share On Air Status**](#share-on-air-status) function. 
+&#10148; **Practice Tip**:  This function isn't available unless you have turned on the [**Share On Air Status**](#share-on-air-status) function. 
 
 #### **_Messaging Window_** !["Toggle OAMS Chat button"](/img/GT_Chat.png)
 

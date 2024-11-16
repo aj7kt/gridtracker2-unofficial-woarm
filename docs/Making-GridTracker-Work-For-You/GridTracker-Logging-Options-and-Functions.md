@@ -90,7 +90,7 @@ You might choose to do this if you want to change which log files are loaded and
 2. The GridTracker_QSO.adif file -- which has been accumulating log data _if you tell it to_ -- remains untouched.  
 3. If you have told GridTracker to import log data from an outside source - say LoTW - it will **_delete_** those files from the GridTracker storage folder in the cloud.  _Nothing will happen to your data stored on LoTW however -- those records aren't touched._  
 
-➤ **_Practice Tip:_**  Generally speaking you don't have the option to _not_ show WSJT-X QSO data.  GridTracker will always retrieve and display the information contained in the wsjtx_log.adi file stored on your computer.  
+&#10148; **_Practice Tip:_**  Generally speaking you don't have the option to _not_ show WSJT-X QSO data.  GridTracker will always retrieve and display the information contained in the wsjtx_log.adi file stored on your computer.  
 
 However there's a work around if you want to clear WSJT-X data but show QSO/QSL data from a logging program.  **NOTE:** If you have been using GridTracker or have been manually uploading contact information from WSJT-X into that separate logging program then the WSJT-X data will be included.  
 

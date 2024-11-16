@@ -116,7 +116,7 @@ This tab has options to set automatic audio alerts for **_current traffic that y
 
 You can set an alert for a variety of situations.  It can be anything from a “wanted” grid or country to your buddy's callsign or even your own callsign.  By default alerts are done with Text-to-Speech but you have the choice of using a sound effect instead.
 
-➤ **_Practice Tip:_**  If you tend to multitask while on the radio it's helpful to set up an \[audible\] alert for your own callsign so you get "pinged" when someone responds to your Tx.
+&#10148; **_Practice Tip:_**  If you tend to multitask while on the radio it's helpful to set up an \[audible\] alert for your own callsign so you get "pinged" when someone responds to your Tx.
 
 !["GridTracker Alerts Settings"](/img/GT_Settings_Alerts.png)
 

@@ -34,7 +34,7 @@ Continue to [_Configuring GridTracker_](Appendices/appendix-b-Configuring-WSJT-X
 
 GridTracker's IP address and Port settings _must_ match WSJT-X's.  If they don't the two applications won't be able to communicate with each other.  If you have opened WSTJ-X but don't see "RECEIVE" in the control panel check your GridTracker settings.
 
-![](/img/GT_ConfGT_Settigns.png)
+![](/img/GT_ConfGT_Settings.png)
 
 To do that click on the "**Gears**" button in the Button Panel to open the **Settings** menu.  Once the **Settings** menu is open click on the "**General**" tab (first tab on the left) to verify your IP and Port settings.   
 

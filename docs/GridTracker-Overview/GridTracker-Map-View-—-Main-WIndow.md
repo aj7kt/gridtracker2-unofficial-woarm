@@ -10,7 +10,7 @@ The GridTracker Map shows the "_grid status_" for as much or as little of the wo
 
 This example above shows _logbook data_ for a user.  All of the Maidenhead grids where they have made a QSO are highlighted in yellow.  If you choose to display _live_ data or _logbook and live_ data you'll also see grids highlighted in different colors. The legend in the lower, left corner of the map window shows the color coding scheme used for highlighting grids.  
 
-➤ **_Practice Tip:_**  You can change the grid color coding to suit your preferences in the **Settings>Grids** menu.
+&#10148; **_Practice Tip:_**  You can change the grid color coding to suit your preferences in the **Settings>Grids** menu.
 
 If you mouse-over --  that is, take your mouse pointer and hover over any "highlighted" grid -- you'll get a temporary pop-up window that displays information about stations in grid.  It will show information for any QSO's you made in the grid and/or the live traffic occurring at that grid right now.
 
