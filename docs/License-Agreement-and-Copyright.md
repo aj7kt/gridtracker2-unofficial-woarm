@@ -1,3 +1,5 @@
+# License Agreement and Copyright
+
 GridTracker2 is Licensed under the [**BSD 3-Clause "New" or "Revised" License**](https://gitlab.com/gridtracker.org/gridtracker2/-/blob/main/LICENSE)
 
 **_The information contained within this site / document is subject to change without notice. The products identified within this document are not approval of or endorsements for any of the product names or trademarks appearing in this document._**
