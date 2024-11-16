@@ -4,7 +4,7 @@ The GridTracker Map is a visual representation of all of your radio contacts (QS
 
 **WSJT-X is loaded with grid squares and is the reason GridTracker exists!** 
 
-!["GridTracker main window showing most of the world in AEQD mode and the control panel with typical settings"](img/GT_overview.png)
+!["GridTracker main window showing most of the world in AEQD mode and the control panel with typical settings"](img/GT_Overview.png)
 
 GridTracker loads your active **wsjtx_log.adi** file at every startup _automatically._ This "seeds" GridTracker with your "worked" QSOs. (But it also has options that allow you to load other log files from other sources.)
 
