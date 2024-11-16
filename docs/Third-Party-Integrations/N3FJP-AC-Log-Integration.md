@@ -1,4 +1,4 @@
-## GridTracker2 and N3FJP ACLog Integration
+# GridTracker2 and N3FJP ACLog Integration
 
 [N3FJP Website](https://www.n3fjp.com/aclog.html)
 
@@ -6,7 +6,7 @@ GridTracker2 can interface with N3FJP’s ACLog software to pass QSO information
 
 GridTracker2 can also connect to ACLog to have the map and info menu follow band, mode and frequency changes when ACLog is controlling your radio through it’s Rig Control function.
 
-### Logging
+## Logging
 
 **WSJT-X:** 
 
@@ -40,7 +40,7 @@ Enabling the “Menu?” column box displays an N3FJP button on your main menu. 
 
 ![GridTracker2 Logging Settings](../img/GT2_Logging_N3FJP_settings.png)
 
-### GridTracker 2/ACLog Connected Mode
+## GridTracker 2/ACLog Connected Mode
 
 GridTracker 2 can display status information from ACLog for non-digital modes such as SSB when ACLog is controlling your radio using it’s Rig Control option.
 

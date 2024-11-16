@@ -1,15 +1,15 @@
 
-## Push Notification Forwarding to your phone
+# Push Notification Forwarding to your phone
 
 GridTracker can forward unseen chat messages and hits on the Call Roster to your phone through third-party services. We currently support [SimplePush.io](https://simplepush.io/) and [Pushover.net](https://pushover.net/). Both services can be tested, SimplePush allows 10 free messages per month while Pushover has a 30-day free trial. After that you will need to either purchase a subscription for SimplePush for $13 per year or do a one time in-app purchase in Pushover for $5 to get 10,000 messages free each month, no subscription required.
 
-### How-To SimplePush.io notifications ###
+## How-To SimplePush.io notifications ###
 
 Download the SimplePush.io app from the Apple Appstore or the Google Play store. Open the app and it will display a 6-letter code. This your API key:
 ![SimplePush Settings in GridTracker](../img/GT_SimplePush_Settings.png)
 If you click the test button you should get a test message to your phone and GT should push CR hits and chat messages. Unfortunately you'll get only 10 messages per month for free.
 
-### How-To Pushover.net notifications ###
+## How-To Pushover.net notifications ###
 
 Register on [pushover.net](https://pushover.net/) with a new user account. You'll get 30 days to test it out. Download the pushover.net app from the Apple Appstore or the Google Play store. Log in with your username/password. Go back to the [webpage](https://pushover.net) and create a new [Pushover application](https://pushover.net/apps/build). Call it GridTracker for example and check the terms of service box:
 

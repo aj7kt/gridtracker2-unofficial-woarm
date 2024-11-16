@@ -1,4 +1,4 @@
-## **HamClock**
+# **HamClock**
 
 [HamClock Website](https://www.clearskyinstitute.com/ham/HamClock/)
 
