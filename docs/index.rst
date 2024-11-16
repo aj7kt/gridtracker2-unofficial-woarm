@@ -42,7 +42,7 @@ GridTracker Overview
    GridTracker-Overview/GridTracker-Map-View-—-Main-WIndow
    GridTracker-Overview/Control-Panel
    GridTracker-Overview/Settings-Sub-Menus
-   
+
 Making GridTracker Work For You
 ===============================
 .. toctree::
@@ -67,7 +67,9 @@ Third-Party Integrations
 .. toctree::
    :maxdepth: 2
 
-   Third-Party-Integrations
+   Third-Party-Integrations/Ham-Clock-Integrations
+   Third-Party-Integrations/N3FJP-AC-Log-Integration
+   Third-Party-Integrations/PushNotifications-Integrations
 
 FAQ, Troubleshooting, Bugs and Common Problems
 ==============================================
