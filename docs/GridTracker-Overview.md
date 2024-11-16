@@ -21,7 +21,7 @@ GridTracker will take grid locations from the live message decodes done in WSJT-
 
 GridTracker also recognizes when two stations are in a QSO with each other.  It will draw a "Q-path" (geodesic line) between the grids of the two stations.  If you elect to enable animations the line will appear as "marching ants" in the direction of the traffic.  We call this "QSX" (traffic between two stations).
 
-!["Close up of Grids in split-grid view and legend"](img/GT_grids.png)
+!["Close up of Grids in split-grid view"](img/GT_grids.png)
 
 After you've accumulated some confirmed stations in WSJT-X you will eventually see some grids are divided in half by a diagonal line.  These grids are what we term "split grids" (not to be confused with "rig split".)
 
