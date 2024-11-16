@@ -1,3 +1,5 @@
+## Getting Started
+
 Depending on your operating system, GridTracker can be started from the command line, the start menu or a shortcut.
 
 GridTracker does not require WSJT-X or WST-X derivitive to be installed on your computer or even running to operate.  However it does however automatically detect if WSJT-X or some derivitives are installed and if it is running when it starts up.
