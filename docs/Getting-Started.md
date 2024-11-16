@@ -19,4 +19,4 @@ If all this has gone according to plan, GridTracker should be receiving informat
 ---
 
 [^udp]: UDP stands for User Datagram Protocol. It's a communications protocol that can be used as an alternative to TCP (transmission control protocol) to send messages (i.e., datagrams) between computing devices in a network.
-[^multicast]: Multicast is an IP network addressing class that allows computers, and applications to receive information to the group rather then only between individual assets. This also differs from Broadcast in that computers and applications can selectively join or leave the mulitcast group.
+[^multicast]: Multicast is an IP network addressing class that allows computers, and applications to receive information to a group rather then only between individual assets. This also differs from Broadcast in that computers and applications can selectively join or leave the mulitcast group.

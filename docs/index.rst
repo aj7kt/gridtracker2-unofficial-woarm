@@ -16,6 +16,7 @@ License Agreement and Copyright
 
    License-Agreement-and-Copyright
    Technical-Support-and-Assistance
+
 Introduction
 ============
 .. toctree::
@@ -23,6 +24,7 @@ Introduction
 
    Introduction/What-is-GridTracker
    Introduction/System-Requirements
+
 Getting Started
 ===============
 .. toctree::
@@ -30,6 +32,7 @@ Getting Started
 
    GridTracker-Installation
    Getting-Started
+
 GridTracker Overview
 ====================
 .. toctree::
@@ -39,6 +42,7 @@ GridTracker Overview
    GridTracker-Overview/GridTracker-Map-View-—-Main-WIndow
    GridTracker-Overview/Control-Panel
    GridTracker-Overview/Settings-Sub-Menus
+   
 Making GridTracker Work For You
 ===============================
 .. toctree::
