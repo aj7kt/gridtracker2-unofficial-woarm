@@ -2,17 +2,15 @@ The GridTracker Map is a visual representation of all of your radio contacts (QS
 
 **WSJT-X is loaded with grid squares and is the reason GridTracker exists!** 
 
-!["GridTracker main window showing North America and part of the control panel"](img/GT_overview.png)
+!["GridTracker main window showing most of the world in AEQD mode and the control panel with typical settings"](img/GT_overview.png)
 
 GridTracker loads your active **wsjtx_log.adi** file at every startup _automatically._ This "seeds" GridTracker with your "worked" QSOs. (But it also has options that allow you to load other log files from other sources.)
 
-!["GridTracker Logbook status area showing 1174 QSOs logged and no QSLs"](img/GT_Logbook_Counters.png)
+!["GridTracker Logbook status area showing 73213 QSOs logged and 54206 QSLs"](img/GT_Logbook_Counters.png)
 
 Towards the top right corner of GridTracker is a label "QSO" with a number to the right: This is the number of QSOs also known as "Log Records" GridTracker was able to find in your **wsjtx_log.adi** log file (plus other log files if you choose to import them.)
 
-!["The GridTracker map legend"](img/GT_legend.png)
-
-Those QSOs will be highlighted with yellow boxes on a map that correspond to the standard Maidenhead grid system used in ham radio to locate contacts.  The map legend in the lower, left corner of the map shows you the color coding for not only your contacts, but _confirmed_ contacts (red boxes) and live traffic. 
+Those QSOs will be highlighted with yellow boxes on a map that correspond to the standard Maidenhead grid system used in ham radio to locate contacts. Yyou can define the color coding for not only your contacts, but _confirmed_ contacts (red boxes) and live traffic in the settings menu.
 
 A standard WSJT-X message usually contains the sender's Maidenhead grid location. It's included in the standard \[default\] messages WSJT-X creates:
 
