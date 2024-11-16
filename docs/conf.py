@@ -43,6 +43,12 @@ latex_documents = [
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+html_title = 'GridTracker 2'
+html_logo = 'img/GridTracker_logo.png'
 html_theme = 'alabaster'
 html_static_path = ['_static']
+html_sidebars = 'localtoc.html'
 html_show_copyright = True
+html_last_updated_fmt = ""
+html_last_updated_use_utc = True
+
