@@ -4,6 +4,8 @@ This was back in February of 2018.  At its core GridTracker has remained true t
 
 GridTracker is a warehouse of amateur radio information presented in an easy to use interface, from live traffic decodes, logbooks, spot reports, weather, current solar conditions and more.
 
+!["GridTracker with all of it's windows open"](/img/GT_Desktop.png)
+
 ### Some of the features of GridTracker are:
 
 * Highly advanced mapping of real-time and historical contacts on a vivid, highly customizable, interactive map. Many overlays are supported, such as Grayline, real-time award tracking, lightning strikes, Moon position and PSK-Reporter Reception Reports (Spots). Detailed State, Grid and County information is instantly accessible from the map! 

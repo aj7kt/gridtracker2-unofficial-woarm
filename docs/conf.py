@@ -36,7 +36,7 @@ latex_documents = [
     ('index',
     'GridTracker2.tex',
     'GridTracker2',
-    'Stephen “Tag” Loomis N0TTL\\and Henry “atouk” Forte N2VFL\\and And the GridTracker.org team',
+    'Stephen Loomis N0TTL\\and Henry Forte N2VFL\\and Matthew Chambers NR0Q\\and Sebastian Delmont KI2D\\and Christian Bayer WA4YA\\and Paul Traina K6PST\\and Jon Agliss KF5QHQ\\and Beau Gunderson N7YHF\\and Jonathan Fick KE0YBL\\and Florian Wolters DF2ET\\and GridTracker.org',
     'manual')
 ]
 

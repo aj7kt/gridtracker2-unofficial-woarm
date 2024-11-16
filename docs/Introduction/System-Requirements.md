@@ -9,8 +9,9 @@
 ## **Operating Systems Minimum Requirements**
 |  |  |
 |--|--|
-| Windows | Versions: 7, 8, 8.1, 10 |
-| MacOS | Versions: OS X Mojave, Catalina or OS 11 Big Sur |
-| Linux AMD/Intel | Any Linux Distro with a recent Linux Kernel and a graphical user environment. 64 bit is highly recommended as 32 bit support will eventually go away.
-| Linux ARM 32 / Raspberry PI - Odroid | 32 Bit ARM Distro of Linux (64 bit is not yet currently supported) |
+| Windows | Versions: 10 and 11 |
+| MacOS | Versions: MacOS 13 Ventura, 14 Sonoma or 15 Sequoia |
+| Linux AMD/Intel | Any 64 bit Linux Distro with a recent Linux Kernel and a graphical user environment.
+| Linux ARM 32 / Raspberry PI - Odroid | 32 and 64 Bit ARM Distro of Linux |
 
+* We are only officially supporting non-EOL Operating Systems. If it works on EOL systems you are welcome to use it but don't ask us to fix anything that doesn't work on those systems.
