@@ -154,7 +154,7 @@ You can look up who owns a callsign any time -- whether you have WSJT-X running 
 * GridTracker uses Callook.info as the **default** website  for a callsign lookup.  However you can manually change to another website in the **SETTINGS>Lookups** sub-menu. 
 * Since GridTracker is linked with WSJT-X you can select an option to have GridTracker automatically open a window with callsign information every time you transmit on WSJT-X.  See [**Settings>Lookups**](Settings-Sub-Menus.md#lookups-tab) for those settings.   When you click on a CQ in WSJT-X to respond to it, this feature will automatically look up that station.
 
-**&#10148; Practice Tip:**  The amount and type information shown in the Callsign Lookup window is dependent on the website you choose for your lookups. 
+&#10148; **Practice Tip:**  The amount and type information shown in the Callsign Lookup window is dependent on the website you choose for your lookups. 
 
 ### Show Stats Hotkey I (the letter i) !["Stats/Logbook button"](../img/GT_Stats.png)
 
@@ -182,7 +182,7 @@ Do or don't share your on-air status with other GridTracker users.  However you
 
 See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the HotKey options.
 
-**&#10148; Practice Tip:**  GridTracker must be your active computer window for this or any other HotKeys to work. 
+&#10148; **Practice Tip:**  GridTracker must be your active computer window for this or any other HotKeys to work. 
 
 ### Cycle Award Overlays Hotkey = (equal sign) !["Grid Award Overlay"](../img/GT_AwardGrid.png)!["CQ Zone Award Overlay"](../img/GT_AwardCQZ.png)!["ITU Zone Award Overlay"](../img/GT_AwardITUZ.png)!["Continents Award Overlay"](../img/GT_AwardWAC.png)!["US States Award Overlay"](../img/GT_AwardWAS.png)!["DXCC Award Overlay"](../img/GT_AwardDXCC.png)!["US Counties Award Overlay"](../img/GT_AwardUSC.png)!["US Lower 48 Grids Award Overlay"](../img/GT_AwardUS48.png)
 
@@ -197,7 +197,7 @@ See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the
 * USC : the U.S. counties you’ve contacted (Hotkey **** 7)
 * US48 :  the Maidenhead grids you’ve contacted in the continental U.S.A. (Hotkey **** 8)
 
-**&#10148; Practice Tip:** The Alphanumeric Maidenhead grid codes cannot be superimposed on top of any of the award grids.
+&#10148; **Practice Tip:** The Alphanumeric Maidenhead grid codes cannot be superimposed on top of any of the award grids.
 
 #### Award Overlays + Active GridTracker Map Hotkey U  
 
@@ -245,9 +245,9 @@ You can choose to receive audible alerts from GridTracker when a variety of even
 
 Clicking on this button will give you a map of PSK Reporter data for your transmissions.  
 
-When you turn on PSK Spot Reporting a new tool opens at the bottom of the Control Panel that allows you to select the length of time for which data is reported by moving the orange slider button. !["Spot information area/time slider"](/img/GT_SpotSpot.png)
+When you turn on PSK Spot Reporting a new tool opens at the bottom of the Control Panel that allows you to select the length of time for which data is reported by moving the orange slider button. !["Spot information area/time slider"](../img/GT_SpotSpot.png)
 
-**&#10148; Practice Tip:** Given the size of the slider it can be difficult to "fine tune" the time reporting period by clicking and moving the slider.  However if you simply click on the button you can then use your left arrow (**⇦**) and right arrow (**⇨**) keyboard keys to set the time period to your preference.
+&#10148; **Practice Tip:** Given the size of the slider it can be difficult to "fine tune" the time reporting period by clicking and moving the slider.  However if you simply click on the button you can then use your left arrow (**⇦**) and right arrow (**⇨**) keyboard keys to set the time period to your preference.
 
 There are several options available for PSK data:
 
