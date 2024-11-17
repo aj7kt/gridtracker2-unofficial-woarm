@@ -124,7 +124,7 @@ You can set an alert for a variety of situations.  It can be anything from a �
 
 ##### **_Setting Classes of Audio Alerts_**
 
- _➣  See settings outlined in blue in the illustration above._
+ _&#10148;  See settings outlined in blue in the illustration above._
 
 * **_Reference_**
 
@@ -150,7 +150,7 @@ The alert _value_ depends on whether you choose a _text-to-speech_ or a _media f
 
 ### Setting Exceptions Classes of Alerts 
 
-_➣  See settings outlined in gold in the illustration above._  
+_&#10148;  See settings outlined in gold in the illustration above._  
 
 The exception list is used to modify or refine one of the criteria in the blue box.    
 
@@ -172,7 +172,7 @@ The exception list is used to modify or refine one of the criteria in the blue b
 
 ### Custom Alerts 
 
- _➣  See settings outlined in red_
+ _&#10148;  See settings outlined in red_
 
 !["The Custom Alerts section of the Alerts Settings"](../img/GT_CustomAlerts.png)
 

@@ -3,7 +3,7 @@ GridTracker's main window is made up of the GridTracker Map, the Control Panel a
 
 !["GridTracker Main Window with TitleBar, Map and Control Panel indivdually identified"](../img/GT_overview.png)
 
-## **GridTracker Map** 
+## GridTracker Map
 
 !["The GridTracker map area showing North America and several worked grids"](../img/GT_Map.png)
 
@@ -17,7 +17,7 @@ If you mouse-over --  that is, take your mouse pointer and hover over any "high
 
 If you **right-click** any grid you'll get a fixed pop-up window where you can examine the grid details with your mouse or keyboard.
 
-## **GridTracker Map Legend**
+## GridTracker Map Legend
 
 !["The GridTracker map legend"](../img/GT_legend2.png)
 
@@ -38,7 +38,7 @@ The legend uses standard  "Q" codes as shorthand to identify the status of grid
 * QTH: Your home grid. 
 * WSPR: Grids heard while listening for the WSPR weak signal mode. The grid color will depend upon the band the grid was decoded on according to the PSK Reporter color scheme.
 
-## **GridTracker Title Bar**
+## GridTracker Title Bar
 
 The Title Bar will look slightly different depending on your operating system.
 

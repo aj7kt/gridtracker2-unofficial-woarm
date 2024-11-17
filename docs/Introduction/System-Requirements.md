@@ -1,4 +1,4 @@
-# **Hardware Minimum Requirements**
+# Hardware Minimum Requirements
 |  |  |
 |--|--|
 | Radio(s) | An Amateur Radio transceiver |
@@ -6,7 +6,7 @@
 | Computer | Any recent x86 (32 or 64bit) PC, MacOS Intel or ARM (32 or 64 bit) |
 | Monitor | 1024 x 780 Resolution<br>A second or third monitor can be of great benefit to watch SDR, WSJT-X/JTDX and GridTracker all at once. |
 
-# **Operating Systems Minimum Requirements**
+# Operating Systems Minimum Requirements
 |  |  |
 |--|--|
 | Windows | Versions: 10 and 11 |

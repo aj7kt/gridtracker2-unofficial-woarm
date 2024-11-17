@@ -7,7 +7,7 @@ There are a number of great information sources and technical support mechanisms
 
 ![groupsIO128](img/groupsIO128.png)Groups.IO Email Forum [https://groups.io/g/GridTrackerApp](https://groups.io/g/GridTrackerApp)
 
-# **Third-party support**
+# Third-party support
 
 For technical support with applications other than GridTracker, please consult the respective applications support options. These are the support resources we are aware of, please consult their websites as there may be additional support avenues available.
 

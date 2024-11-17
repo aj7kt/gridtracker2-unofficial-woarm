@@ -2,7 +2,7 @@
 
 The Control Panel has several sections and packs a wide range of information and functions into a small space.
 
-## **Operating Information**
+## Operating Information
 ![GT_ControlPanel](../img/GT_ControlPanel.png)
 
 **"GridTracker"** 
@@ -23,7 +23,7 @@ The two lines after the date and time show the callsign and geographic location 
 
 If you are offline or aren't connected to WSJT-X these lines are blank.  
 
-## **Tx/Rx Status**
+## Tx/Rx Status
 
 This button shows the status of WSJT-X operation.  
 
@@ -35,7 +35,7 @@ Click on the Tx/Rx status button to ignore incoming messages from other GridTrac
 
 **NOTE: clicking on this button shuts off incoming data from WSJT-X except for log events.**
 
-## **Band Activity** 
+## Band Activity
 
 !["GridTracker Band Activity graph"](../img/GT_BandActivity.png)
 
@@ -53,7 +53,7 @@ This bar graph shows data retrieved from PSK Reporter based on the grid square y
 
 If you want to see a display of spots where your Txs have been heard, use the [View PSK Spots](#view-psk-spot-reports-hotkey-o) button in the Features menu.
 
-## **QSO Status**
+## QSO Status
 
 !["GridTracker Logbook Status"](../img/GT_Logbook_Counters2.png)
 
@@ -82,7 +82,7 @@ GridTracker won't "see" logging information from any source other than WSJT-X un
 
 See the [GridTracker Data Files](../GridTracker-File-Storage.md) Storage section at the end of this manual for more information about where your GridTracker QSO log data is stored.
 
-## **Map View Filters**
+## Map View Filters
 
 !["The Map View Filters section of the Control Panel](../img/GT_MapViewFilters.png)
 
@@ -92,7 +92,7 @@ This section allows you to decide what type and how much information to be shown
 
 !["GridTracker Map View Filters highlighting band options"](../img/GT_MapBandFilter.png)
 
-**Band**    
+### Band   
 
 Gridtracker automatically tracks WSJT-X.  That means that it will show the “grid status”, i.e., whether you have worked a grid or if a station within any particular grid is actively transmitting on the band you've selected.  There are some bands in the drop down list where United States hams can't operate.  But GridTracker is available for users worldwide and other countries have different band privileges.
 
@@ -104,7 +104,7 @@ Gridtracker automatically tracks WSJT-X.  That means that it will show the “g
 
 !["GridTracker Map View Filters highlighting mode options"](../img/GT_MapModeFilter.png)
 
-**Mode**   
+### Mode  
 
 The mode selector lets you refine the grid display as broadly or as narrowly as you please. The drop down list lets you choose a _type or mode_ of transmission such as phone, digital, or CW; a specific digital protocol, (FT-8, PSK, JT9, etc.) or "Auto" or "Mixed".
 
@@ -114,13 +114,13 @@ The mode selector lets you refine the grid display as broadly or as narrowly as 
 
 !["GridTracker Map View Filters highlighting prop options"](../img/GT_MapPropFilter.png)
 
-**Prop\[agation\]**
+### Prop\[agation\]
 
 Select Propagation Mode to display.  The \*\*_default _\*\*value is Mixed however you can also choose "unknown" along with 18 others.
 
 !["GridTracker Map View Filters highlighting data options"](../img/GT_MapData.png)
 
-**Data**
+### Data
 
 Clicking on this box cycles the main GT map through three options:  Logbook, Logbook & Live, or Live. (Alternatively you can just type the **Hotkey Q** as long as GridTracker is your active window.) 
 
@@ -133,21 +133,21 @@ If you want the grid overlay to show QSL data then you must load data from a loc
 * **Logbook & Live Data:**  Grids are highlighted if you have logged a contact in the grid in the past OR if a station in the grid is currently  active.  If both situations apply then the grid is divided by a diagonal line.  The top triangle of the grid is highlighted with the legend color for QSOs; the bottom with the legend color for stations calling CQ etc. 
 * **Live Data:  Grids are highlighted to reflect whether or not a station is currently active.**
 
-## **GridTracker Features Menu**
+## GridTracker Features Menu
 
 !["GridTracker Features Menu in the Control Panel"](../img/GT_Features_CP.png)
 
 The screen grab above shows you the default version of the GridTracker Features Menu.  If you choose certain options in the Settings submenus you'll see additional  buttons for additional features.  
 
-### **_Open Call Roster Hotkey R_** !["The Call Roster button"](../img/GT_OpenCallRoster.png)
+### Open Call Roster Hotkey R !["The Call Roster button"](../img/GT_OpenCallRoster.png)
 
 The [Call Roster](../Making-GridTracker-Work-For-You/Using-Call-Roster.md) function is so extensive it has its own section in this manual.  But, in short, it's a mult-function feature that you can use to track and pounce on stations calling CQ. 
 
-### **_Push-Pin Mode Hotkey P_** !["Push-Pin/Grid toggle button"](../img/GT_PushPinMode.png)
+### Push-Pin Mode Hotkey P !["Push-Pin/Grid toggle button"](../img/GT_PushPinMode.png)
 
 This feature turns the grid color legend off and places a "push pin" in the center of every grid where you've made a contact instead.  If you are in Live mode there will be a gold pin in every active grid (i.e. a grid with an active station.)  In Logbook mode there will be a red pin in the grids where you have made a QSO.  In Logbook & Live mode you'll see a mix of gold and red pins
 
-### **_Open Callsign Lookup Window Hotkey R_** !["Callsign lookup button"](../img/GT_Lookup.png)
+### Open Callsign Lookup Window Hotkey R !["Callsign lookup button"](../img/GT_Lookup.png)
 
 You can look up who owns a callsign any time -- whether you have WSJT-X running or not -- by clicking this button, typing the call into the Callsign box and either clicking on the “Lookup” button or typing the “Enter” key on your keyboard.
 
@@ -156,35 +156,35 @@ You can look up who owns a callsign any time -- whether you have WSJT-X running 
 
 **&#10148; Practice Tip:**  The amount and type information shown in the Callsign Lookup window is dependent on the website you choose for your lookups. 
 
-### **_Show Stats Hotkey I (the letter i)_** !["Stats/Logbook button"](../img/GT_Stats.png)
+### Show Stats Hotkey I (the letter i) !["Stats/Logbook button"](../img/GT_Stats.png)
 
 This is your GT logbook and statistics window.  The data it contains can be filtered and sorted in nearly innumerable ways.  While the Awards button lets you see a visual representation of the extent of your contacts; the Statistics feature lets you see them in list form.  
 
 &#10148; **_Practice Tip:_**   The information shown on the Statistics page(s) depends on the options selected in both the [**Map View Filter**](#map-view-filters) and the [**Settings>Logbook**](Settings-Sub-Menus.md#user-logbook-tab) submenu.
 
-### **_Online/Offline Mode_** !["GridTracker Online button"](../img/GT_OnLine.png)!["GridTracker Offline button"](../img/GT_OffLine.png)
+### Online/Offline Mode !["GridTracker Online button"](../img/GT_OnLine.png)!["GridTracker Offline button"](../img/GT_OffLine.png)
 
 Toggles the Online/Offline status of GridTracker. When offline, online maps are not available and the default offline map is used. Also GridTracker will not attempt to log QSOs to or sync from online logging services and OAMS and Spotting services are not available. This mode optimizes GridTracker for use when Internet connection is not available or highly unreliable (such as Field Day and POTA activities).
 
-### **_Grayline On/Off Hotkey N_** !["GridTracker Grayline On"](../img/GT_GraylineOn.png)!["GridTracker Grayline Off"](../img/GT_GraylineOff.png)
+### Grayline On/Off Hotkey N !["GridTracker Grayline On"](../img/GT_GraylineOn.png)!["GridTracker Grayline Off"](../img/GT_GraylineOff.png)
 
 Choose to show or not show the grayline between daylight and night.
 
-#### **_GridTracker Map Legend On/Off_** !["GridTracker Map Legend On"](/img/GT_LegendOn.png)!["GridTracker Map Legend Off"](../img/GT_LegendOff.png)
+#### GridTracker Map Legend On/Off !["GridTracker Map Legend On"](/img/GT_LegendOn.png)!["GridTracker Map Legend Off"](../img/GT_LegendOff.png)
 
 See [**Settings>Grids**](Settings-Sub-Menus.md#grids-tab) for details on the map legend.
 
-### **_Share On-Air Status_** !["On-Air Status Sharing On"](../img/GT_ShareOn.png)!["On-Air Status Sharing Off"](../img/GT_ShareOff.png)
+### Share On-Air Status !["On-Air Status Sharing On"](../img/GT_ShareOn.png)!["On-Air Status Sharing Off"](../img/GT_ShareOff.png)
 
 Do or don't share your on-air status with other GridTracker users.  However you won't be able to use the [**View GridTrackers Users**](#view-gridtracker-users-hotkey-g) function unless you are sharing your status. 
 
-### **_HotKey List Hotkey F1_** !["GridTracker Hotkeys-Help button](../img/GT_Hotkeys-Help.png)
+### HotKey List Hotkey F1 !["GridTracker Hotkeys-Help button](../img/GT_Hotkeys-Help.png)
 
 See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the HotKey options.
 
 **&#10148; Practice Tip:**  GridTracker must be your active computer window for this or any other HotKeys to work. 
 
-### **_Cycle Award Overlays Hotkey = (equal sign)_** !["Grid Award Overlay"](../img/GT_AwardGrid.png)  !["CQ Zone Award Overlay"](../img/GT_AwardCQZ.png)  !["ITU Zone Award Overlay"](../img/GT_AwardITUZ.png)  !["Continents Award Overlay"](../img/GT_AwardWAC.png)  !["US States Award Overlay"](../img/GT_AwardWAS.png)  !["DXCC Award Overlay"](../img/GT_AwardDXCC.png)  !["US Counties Award Overlay"](../img/GT_AwardUSC.png)  !["US Lower 48 Grids Award Overlay"](../img/GT_AwardUS48.png)
+### Cycle Award Overlays Hotkey = (equal sign) !["Grid Award Overlay"](../img/GT_AwardGrid.png)!["CQ Zone Award Overlay"](../img/GT_AwardCQZ.png)!["ITU Zone Award Overlay"](../img/GT_AwardITUZ.png)!["Continents Award Overlay"](../img/GT_AwardWAC.png)!["US States Award Overlay"](../img/GT_AwardWAS.png)!["DXCC Award Overlay"](../img/GT_AwardDXCC.png)!["US Counties Award Overlay"](../img/GT_AwardUSC.png)!["US Lower 48 Grids Award Overlay"](../img/GT_AwardUS48.png)
 
 * Press this button (or its HotKey equivalent) to cycle through a series of overlays to show your status towards various awards.  
 * Your award achievements can be filtered using the Map View Filters to show all your contacts or narrowed down to contacts by any combination of band or mode.
@@ -199,7 +199,7 @@ See [**Appendix C**](../Appendices/Appendix-C-Hotkeys.md) for a full list of the
 
 **&#10148; Practice Tip:** The Alphanumeric Maidenhead grid codes cannot be superimposed on top of any of the award grids.
 
-**Award Overlays + Active GridTracker Map Hotkey  U**  
+#### Award Overlays + Active GridTracker Map Hotkey U  
 
 If you would like to see any of the Award Layers **_in addition to (or on top of) _** the highlighted grids displayed on the GridTracker map there are two ways to make that happen.
 
@@ -211,37 +211,37 @@ b. While you have an Award Layer active, type the letter **"U" (Hotkey  U)**
 
 This will add the _active_ Grid Status map data underneath the Award Later.  **Note:**  Grid Status may be Live, Logbook, or Logbook & Live.  And you can independently cycle through those three states.
 
-### **_Moon Position Tracking Hotkey D_** !["Moon Display On"](../img/GT_MoonOn.png)!["Moon Display Off"](../img/GT_MoonOff.png)
+### Moon Position Tracking Hotkey D !["Moon Display On"](../img/GT_MoonOn.png)!["Moon Display Off"](../img/GT_MoonOff.png)
 
 Shows the position of that big ball of cheese on your GT map.
 
-### **_Maidenhead Grid Size Hotkey W_** !["4 Character Maidenhead Grid Size"](../img/GT_MH4.png)!["6 Charcter Maidenhead Grid Size"](../img/GT_MH6.png)
+### Maidenhead Grid Size Hotkey W !["4 Character Maidenhead Grid Size"](../img/GT_MH4.png)!["6 Charcter Maidenhead Grid Size"](../img/GT_MH6.png)
 
 Switch between Maidenhead 4 and Maidenhead 6 grids.[^2]
 
-### **_GridTracker Settings Hotkey S_** !["GridTracker Settings button](../img/GT_Settings.png)
+### GridTracker Settings Hotkey S !["GridTracker Settings button](../img/GT_Settings.png)
 
 There are extensive menu options under the Settings Sub-Menu that allow users to optimize GridTracker to suit their specific preferences.  Each of these submenus is discussed in it's own [section](Settings-Sub-Menus.md). This button toggles the settings pane on and off.
 
-### **_Load ADIF Log Hotkey L_** !["ADIF Load button"](../img/GT_LoadADIF.png)
+### Load ADIF Log Hotkey L !["ADIF Load button"](../img/GT_LoadADIF.png)
 
 Clicking this button opens a directory window for the folder where your local GridTracker_QSO.adif file is stored.  All you need to do is click on that file name (or actually any other .adi/adif file you've stored there) and it will be uploaded into GridTracker, (i.e., it doesn't _have_ to be the GridTracker file.)
 
 See the [_GridTracker Data Files_](../GridTracker-File-Storage.md#gridtracker-data-files) section for info on where your operating system stores the GridTracker_QSO.adif file.  
 
-### **_View Current Solar-Terrestrial Conditions Hotkey C_** ![](../img/GT_Solar.png)
+### View Current Solar-Terrestrial Conditions Hotkey C ![](../img/GT_Solar.png)
 
 Source:  <http://www.hamqsl.com/solar.html>  
 
-### **_Donations_** !["GridTracker Donations button"](../img/GT_Donate.png)
+### Donations !["GridTracker Donations button"](../img/GT_Donate.png)
 
 Clicking on this button takes you to GridTracker's website where you can give a little back to the folks who've made GT a free download.
 
-### **_Audio On/Off Hotkey M_** !["Audio On"](../img/GT_AudioOn.png)!["Audio Muted"](/img/GT_AudioOff.png)
+### Audio On/Off Hotkey M !["Audio On"](../img/GT_AudioOn.png)!["Audio Muted"](/img/GT_AudioOff.png)
 
 You can choose to receive audible alerts from GridTracker when a variety of events occur.  This button allows you to turn the audio on or mute.
 
-### **_View PSK Spot Reports Hotkey O_** !["Spots Enabled"](../img/GT_SpotOn.png)!["Spots Disabled"](../img/GT_SpotOff.png)
+### View PSK Spot Reports Hotkey O !["Spots Enabled"](../img/GT_SpotOn.png)!["Spots Disabled"](../img/GT_SpotOff.png)
 
 Clicking on this button will give you a map of PSK Reporter data for your transmissions.  
 
@@ -259,19 +259,19 @@ There are several options available for PSK data:
 
 **NOTE:**  You can narrow down the PSK data reported by using the Map View Filters to select a specific band or or mode.   
 
-### **_Your PSK 24 Hour Report_** !["Load PSK Spots button"](../img/GT_LoadPSK.png)
+### Your PSK 24 Hour Report !["Load PSK Spots button"](../img/GT_LoadPSK.png)
 
 Clicking this button will retrieve PSK data from the past 24 hours and plot it on your  Grid Map by marking the relevant grids in the same color used to mark current, real time QSX / Station-2-Station contacts.  The shading for this added "PSK info" will fade out over time and eventually disappear according to the time limit you set in **Settings > Grids** for live grid decay.
 
 This button has to be turned on before it will show up in your Control Panel.  _See the_ [**_Sections>Logging_**](Settings-Sub-Menus.md#logging-tab) _menu._ 
 
-### **_Load Local Log_** !["Load Local Logs button"](../img/GT_LoadLocal.png)
+### Load Local Log !["Load Local Logs button"](../img/GT_LoadLocal.png)
 
 This button has to be turned on before it will show up in your Control Panel.  _See the_ [**_Sections>Logging_**](Settings-Sub-Menus.md#logging-tab) _menu._ 
 
 Clicking on this button loads specified ADIF files that you have stored on your computer.  "Specified" means that you have told GridTracker where to find one or more .adif (or .adi) files stored on your computer or a network you can access.  You do that by going to the **Settings > Logging** menu, clicking on the "Add File" button, and entering the path and file name of each individual .adif file.
 
-### **_Download LoTW Log_** !["Load LoTW Logs button"](../img/GT_LoadLoTW.png)
+### Download LoTW Log !["Load LoTW Logs button"](../img/GT_LoadLoTW.png)
 
 This button has to be turned on before it will show up in your Control Panel.  _See the_ [**_Sections>Logging_**](Settings-Sub-Menus.md#logging-tab) _menu._ 
 
@@ -284,27 +284,27 @@ This button has to be turned on before it will show up in your Control Panel.  
 
 But that's not a problem because it's only a **temporary** file which is being deleted.  Your files at the LoTW website remain untouched.
 
-### **_Download QRZ Log_** !["Load QRZ Logs button"](../img/GT_LoadQRZ.png)
+### Download QRZ Log !["Load QRZ Logs button"](../img/GT_LoadQRZ.png)
 
 This button has to be turned on before it will show up in your Control Panel.  _See the_ [**_Sections>Logging_**](Settings-Sub-Menus.md#logging-tab) _menu._  Using this button to load a log works just the same way as the process described above for LoTW.
 
-### **_Download ClubLog_** !["Load ClubLog Logs button"](../img/GT_LoadClubLog.png)
+### Download ClubLog !["Load ClubLog Logs button"](../img/GT_LoadClubLog.png)
 
 This button has to be turned on before it will show up in your Control Panel.  _See the_ [**_Sections>Logging_**](Settings-Sub-Menus.md#logging-tab) _menu._ Using this button to load a log works just the same way as the process described above for LoTW.
 
-### **_Time Zones Hotkey 9_** !["Show Time Zones button"](../img/GT_TimeZones.png)
+### Time Zones Hotkey 9 !["Show Time Zones button"](../img/GT_TimeZones.png)
 
 Add an overlay to your GT map to show global time zone lines.  But more than that:  if you let your mouse hover in any zone you'll get a popup window that gives you the local offset to GMT and the local date and time of day. 
 
-### **_US Nexrad On/Off Hotkey Ø  (the number zero)_** !["Show US Nexrad Radar button"](../img/GT_Nexrad.png)
+### US Nexrad On/Off Hotkey Ø (the number zero) !["Show US Nexrad Radar button"](../img/GT_Nexrad.png)
 
 This overlay shows weather radar feeds over the United States (only).  [**NEXRAD**](https://www.ncei.noaa.gov/products/radar/next-generation-weather-radar) (Next Generation Weather Radar) is a network of 160 high-resolution [S-band](https://en.wikipedia.org/wiki/S-band) [Doppler](https://en.wikipedia.org/wiki/Pulse-Doppler_radar) [weather radars](https://en.wikipedia.org/wiki/Weather_radar) operated by the [National Weather Service](https://en.wikipedia.org/wiki/National_Weather_Service) (NWS), and other U.S. Government Agencies. 
 
-### **_Maidenhead Grid Overlay On/Off Hotkey B_** !["Show GridLines Overlay button"](../img/GT_GridLines.png)
+### Maidenhead Grid Overlay On/Off Hotkey B !["Show GridLines Overlay button"](../img/GT_GridLines.png)
 
 This overlay will show the actual grid lines for Maidenhead grid code for MH4, (e.g. DM78).  The grids will be labeled with the two initial  alphabet locators, ("**DM"**) or the first four characters ("**DM78**") depending on the map resolution you're using.  If you want to drop down to a higher resolution click on the MH6/MH4 button to switch to MH6 grids and increase the GridTracker map resolution to make them visible.  Note: these much smaller grids are not labeled, (e.g., DM78pf). 
 
-### **_View GridTracker Users Hotkey G_** !["GridTracker Users Flags Off"](../img/GT_Users_Off.png)!["GridTracker Users Flags Current Band/Mode Only"](../img/GT_Users_All.png)!["GridTracker Users Flags All"](../img/GT_Users_BandMode.png)
+### View GridTracker Users Hotkey G !["GridTracker Users Flags Off"](../img/GT_Users_Off.png)!["GridTracker Users Flags Current Band/Mode Only"](../img/GT_Users_All.png)!["GridTracker Users Flags All"](../img/GT_Users_BandMode.png)
 
 This button cycles through three options that will show an overlay with  flags in the locations of GridTracker users.  
 
@@ -316,7 +316,7 @@ If you allow your mouse to hover over a GT flag you'll get a pop-up window with 
 
 &#10148; **Practice Tip**:  This function isn't available unless you have turned on the [**Share On Air Status**](#share-on-air-status) function. 
 
-### **_Messaging Window_** !["Toggle OAMS Chat button"](../img/GT_Chat.png)
+### Messaging Window !["Toggle OAMS Chat button"](../img/GT_Chat.png)
 
 Clicking on this button opens a chat window.  You'll see a long list of callsigns in arranged in alphanumeric order in a column on the right side of the page.  These are GridTracker users who have elected to share their on-air status.  
 
