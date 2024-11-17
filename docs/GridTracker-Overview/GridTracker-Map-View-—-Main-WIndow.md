@@ -1,7 +1,7 @@
 # GridTracker Main Window
 GridTracker's main window is made up of the GridTracker Map, the Control Panel as well as detail in the application title bar.
 
-!["GridTracker Main Window with TitleBar, Map and Control Panel indivdually identified"](../img/GT_overview.png)
+!["GridTracker Main Window with TitleBar, Map and Control Panel indivdually identified"](../img/GT_Overview.png)
 
 ## GridTracker Map
 
