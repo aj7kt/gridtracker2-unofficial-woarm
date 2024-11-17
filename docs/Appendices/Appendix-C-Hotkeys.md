@@ -1,12 +1,12 @@
-## **What is a “Hotkey”?**
+# What is a “Hotkey”?
 
 A “Hotkey” is a key or a combination of keys on a computer keyboard that when pressed performs a function or task (such as starting an application) more quickly than by using a mouse or other input device. Hotkeys are sometimes called “shortcut keys” and are supported by many operating systems and applications.
 
-## **How are “Hotkeys” used in GridTracker?**
+## How are “Hotkeys” used in GridTracker?
 
 GridTracker Hotkeys allow you to bypass menus to perform functions.  _However, some GridTracker functions that are available **only** by using a Hotkey; they aren't available in the program menus._
 
-## **So is there a master “Hotkey” list specifically for GridTracker?**
+## So is there a master “Hotkey” list specifically for GridTracker?
 
 The GridTracker Hotkey list even has its own specific Hotkey to get to it while using the program. **Note:  at the bottom of the HotKey menu is a button you can click so you can print out the list.**
 
@@ -41,7 +41,7 @@ The GridTracker Hotkey list even has its own specific Hotkey to get to it while 
 | **O** | Toggle RX Spots | **F12** | Toggle Sidebar Menu |
 | **P** | Toggle Grid/PushPin Modep |  |  |
 
-## **Hotkey Details**
+## Hotkey Details
 
 **\[1\]  Show Base  Map Layer**
 

@@ -1,8 +1,8 @@
-## **Setting Up Audio and Visual Alerts**  
+## Setting Up Audio and Visual Alerts  
 
 GridTracker can send you an audio alert for a variety of events and a visual alert for some.
 
-### **Audio Alerts**
+### Audio Alerts
 
 Setting up an audible alert for messages that include **_YOUR CALLSIGN_**.  \[Helpful if you don't have your eagle eye on WSJT-X at all times.\]
 
@@ -21,12 +21,12 @@ Setting up an audible alert for messages that include a **_SPECIFIC GRID_**.  S
 
 Setting up an audible alert for messages from a **_SPECIFIC DXCC_**.  This is slightly more complicated in that you need to know the standard callsign prefix for the country you are hoping to reach. Consider Iceland as an example.  All Icelandic callsigns begin with TFA through TFZ.  So you would select "_Callsign (partial)_" for the type of alert and type "**TF**" in the "Value" box.  
 
-### **Visual Alerts**
+### Visual Alerts
 
 Visual Alerts are available for only custom alerts.  Clicking on the menu under **Notify** allows you to set:
 
 1. A Visual Popup which will look like this: 
 
-!["Example of a pop-up alert"](/img/GT_PopUpAlert.png)
+!["Example of a pop-up alert"](../img/GT_PopUpAlert.png)
 
 2. A Map Center Alert -- this will recenter the GridTracker Map on the grid where the station of interest to you is located. (Theory being that this will capture your attention.)

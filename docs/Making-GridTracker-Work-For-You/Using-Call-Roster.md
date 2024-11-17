@@ -342,7 +342,7 @@ As with the **Roster** mode, you can flip back and forth between more controls a
 
 ![](../img/GT_CompactRoster_HideControls.png)
 
-## **Using Call Roster to Respond to a CQ**
+## Using Call Roster to Respond to a CQ
 
 Here's an example of a typical QSO from the WSJT-X screen from the viewpoint of N6OPE who is watching for CQs: 
 

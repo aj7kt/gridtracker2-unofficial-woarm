@@ -1,10 +1,10 @@
-### **Is GridTracker a "Logging Program"?**
+# Is GridTracker a "Logging Program"?
 
 No it is not.  It does keep a log in the form of an .adif file _if you choose to send QSO information to it_ but GridTracker is primarily designed to **_display_** QSO/QSL information, **not to create a permanent database** of your radio contacts.  See the [GridTracker Data Files](../GridTracker-File-Storage.md#gridtracker-data-files) section of this manual for where the GridTracker .adif file is stored.
 
-### **QSO/Logging Records Stored by GridTracker**   
+## QSO/Logging Records Stored by GridTracker 
 
-!["The GridTracker row of the Logging Settings tab"](/img/GT_Logging_GTadif.png)
+!["The GridTracker row of the Logging Settings tab"](../img/GT_Logging_GTadif.png)
 
 The first row in the table presented in the **Settings > Logging** menu provides the limited control options for GridTracker's internal logging functions.  It allows you to do _two and only two_ things:
 
@@ -21,39 +21,39 @@ There are alternative ways of doing both those things that but it might be conve
 
 Before getting into GridTracker's options for importing QSO data we'll address how you can use GridTracker to send logging information out to other apps since it's a shorter discussion.
 
-### **Sending Logging Information OUT from GridTracker**
+## Sending Logging Information OUT from GridTracker
 
 GridTracker can and will import and export QSO logging data from external applications and websites if you choose.  The options to export data are slightly simpler than those to import data so we'll address those first.
 
-!["The Logging Setting Tab with no options selected"](/img/GT_LoggingSettings.png)
+!["The Logging Setting Tab with no options selected"](../img/GT_LoggingSettings.png)
 
 TheGridTracker will send the QSO information it detects from WSJT-X out to a number of different, dedicated logging programs if you choose to do so. Here's what the **Settings > Logging** menu looks like with NO options selected:
 
 You have the option to send QSO or logging information to a GridTracker log but also to QRZ.com, LotW, and 10 other outside programs or websites.  You have to enter password or IP address information to do that but once you set it up you can mostly forget it.  
 
-### **Importing Logging Information INTO GridTracker**
+## Importing Logging Information INTO GridTracker
 
 Managing QSO log imports into GridTracker is a slightly more complicated than exporting data because GridTracker gives you more options for when and how you to do it.
 
-#### **_Importing Log Data at Startup_**
+### Importing Log Data at Startup
 
-!["The Logging Setting Tab with ClubLog and LoTW user settings filled in"](/img/GT_LogImporting.png)
+!["The Logging Setting Tab with ClubLog and LoTW user settings filled in"](../img/GT_LogImporting.png)
 
 The options to import Local Files, PSK-Reporter info, QRZ, ClubLog and/or LoTW data to the main GridTracker control panel are in the **Settings > Logging** menu at the far left side of that table.
 
 Simply click on one or more of those buttons in the **Startup?** column to add that data.  
 
-##### **Local Files:**
+**Local Files:**
 A "Local" file is one that is stored on your computer or network as opposed to a data file that is retrieved from a **web** site.  In order to add a local file you simply click on the "Add" button and enter the path and file name.  Note:  in a Windows system when you click the "Add File" button a Windows File Explorer window automatically opens which allows you to easily search for an  existing file.  In the example below the user is instructing GridTracker to import a local file named "FieldDay2021.adi" at start up.
 
-!["Local log files row of log settings"](/img/GT_LocalLogFiles.png)
+!["Local log files row of log settings"](../img/GT_LocalLogFiles.png)
 
-##### **Web Site Data:**
+**Web Site Data:**
 If you choose to import data from the QRZ, ClubLog, or LoTW websites you will have to provide the necessary log in data for the site:  login name or callsign, passwords, etc.  
 
 GridTracker will retrieve QSO data from the site, create a **temporary** .adif file for it, and save that file in the same place where your GridTracker_QSO.adif file is saved. Once you close the GridTracker app that temporary file will be deleted from the cloud.  
 
-#### **_Importing Logs on the Fly / At Will_**
+### Importing Logs on the Fly / At Will
 
 You use essentially the same process as that for importing logs on the fly to, instead, import log data when you start up GridTracker.  The only change is clicking the check-boxes in the **Startup?** column to make your choices.  
 
@@ -67,11 +67,11 @@ You can then use some or all of those buttons to import "external" data into Gri
 
 **Note:**  The GridTracker Control Panel buttons to Load ADIF and Log Local do two different things.  
 
-!["ADIF load button"](/img/GT_LoadADIF.png) The Load ADIF button loads your local GridTracker_QSO.adif
+!["ADIF load button"](../img/GT_LoadADIF.png) The Load ADIF button loads your local GridTracker_QSO.adif
 
-!["Load Local Logs button"](/img/GT_LoadLocal.png) The Load Local Log button loads whatever local file(s) you've identified in **Settings** **> Logging**
+!["Load Local Logs button"](../img/GT_LoadLocal.png) The Load Local Log button loads whatever local file(s) you've identified in **Settings** **> Logging**
 
-### **Using the "Clear Log" and "Load Logs" Buttons**
+### Using the "Clear Log" and "Load Logs" Buttons
 
 Having discussed importing and exporting log data it's worth reviewing what happens when you use the **Clear Log** and **Load Logs** buttons in the **QSO Status** section of the main GridTracker Control Panel
 
@@ -79,9 +79,9 @@ If you clear log data by clicking on the **Clear Log** button in the QSO Data se
 
   Ta Da!:  the QSO Data record now looks like this: 
 
-!["QSO status before clearing logs"](/img/GT_ClearLogs_Before.png)!["QSO status after clearing logs"](/img/GT_ClearLogs_After.png)  
+!["QSO status before clearing logs"](../img/GT_ClearLogs_Before.png)!["QSO status after clearing logs"](../img/GT_ClearLogs_After.png)  
 
-#### **_Clicking the "Clear Log" Button_** 
+**_Clicking the "Clear Log" Button_** 
 
 1. It will clear the QSO and QSL count in the Control Panel as well as clearing all the grid overlays and Statistics Information but it does not permanently delete any files.  To be clear:  this means it will clear out any/all WSJT-X data as well as any log data you've imported (i.e., LoTW, QRZ, local .adi files, etc.) in the working GridTracker database.
 
@@ -97,6 +97,6 @@ However there's a work around if you want to clear WSJT-X data but show QSO/QSL 
 1. Click the "**Clear Log"** button in the **QSO Status** section of the main GridTracker Control panel.  That will clear out the WSJT-X data that GridTracker automatically loaded at start up.
 2. Use the Load Local or Download LoTW or Download Club Log or Download QRZ Log button to manually load or more of those logs into GridTracker's working database.  
 
-#### **_Clicking the Load Logs Button_**
+**_Clicking the Load Logs Button_**
 
 This command loads:  (1) the wsjtx_log.adi file and (2) any other .adi / .adif files that you have told GridTracker to load at startup. 

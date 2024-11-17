@@ -1,35 +1,43 @@
-## Is it a bug?
-The first thing we need to know is actually a bug or some other nuence of GridTracker that is being overlooked because your trying to make it work while chasing that ultra DX. We recomend checking first the [FAQ-Troubleshooting](FAQ-Troubleshooting) section here first. If your issue isn't there you can also search the Groups.IO or prior Discord chats to see if it's an issue that has previously been discussed. Links to those are on the [Technical Support and Assistance](Technical-Support-and-Assistance) page. You can also look on the GridTracker [GitLab issues](https://gitlab.com/gridtracker.org/gridtracker/-/issues) list to see if your issue has already been reported.
+# Is it a bug?
+The first thing we need to know is actually a bug or some other nuence of GridTracker that is being overlooked because your trying to make it work while chasing that ultra DX. We recomend checking first the [FAQ-Troubleshooting](FAQ-Troubleshooting) section here first. If your issue isn't there you can also search the Groups.IO or prior Discord chats to see if it's an issue that has previously been discussed. Links to those are on the [Technical Support and Assistance](Technical-Support-and-Assistance) page. You can also look on the GridTracker [GitLab issues](https://gitlab.com/gridtracker.org/gridtracker2/-/issues) list to see if your issue has already been reported.
 
-## It is a bug!
+# It is a bug!
 
 When filing a bug report after your sure it is in fact a bug and not previously reported, our issue reporting screen will have the following layout
 
 ```markdown
-# Summary
+## Summary
+
 (Summarize the bug encountered concisely)
 
-# Version
-(which version of code is running)
+## Version
+(If you are not on latest current version, before filing a bug report, verify bug occurs in latest)
 
-# Steps to reproduce
+## Operating System and Platform
+(What operating system and platform, be specific with build versions, 
+ie `Win 11 24H2`, `Debian Bookworm Kernel 6.11.6-100-generic-x86_64`, `Fedora 39 6.11.6-100.fc39.x86_64`, `MacOS 15 Sequoia`.
+Linux users, please run uname -r and copy that value here behind the distro version 
+
+## Steps to reproduce
+
 (How one can reproduce the issue - this is very important)
 
-
-# What is the current bug behavior?
+## What is the current bug behavior?
 
 (What actually happens)
 
-
-# What is the expected correct behavior?
+## What is the expected correct behavior?
 
 (What you should see instead)
 
+## Relevant logs and/or screenshots
 
-# Relevant logs and/or screenshots
+(Paste any relevant logs - use code blocks (```) to format console output, logs, and code, as it's very hard to read otherwise.)
 
-(Paste any relevant logs - please use code blocks (```) to format console output,
-logs, and code as it's very hard to read otherwise.)
+## Possible fixes
+
+(If you can, link to the line of code that might be responsible for the problem)
+
 ```
 
 Please fill it out as completely as possible and include screenshots as needed.

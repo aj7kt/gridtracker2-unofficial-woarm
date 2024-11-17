@@ -326,7 +326,7 @@ If you want to see if your buddy is on line you can search the list, **_or_**, t
 
 **Note**: your own call will not show up in the list unless you have multiple instances of GridTracker running and online.
 
-## **History**
+## History
 
       !["Screen grab of the GridTracker history area showing decode messages, log events and band changes"](../img/GT_History1.png)!["Screen grab of the GridTracker history area showing decode messages, log events and band changes](../img/GT_History2.png)
 

@@ -77,8 +77,6 @@ FAQ, Troubleshooting, Bugs and Common Problems
    
    FAQ-Troubleshooting
    Submitting-Bug-Reports
-   Firewalls
-   Anti-Virus
 
 Appendices And Tables
 #####################
