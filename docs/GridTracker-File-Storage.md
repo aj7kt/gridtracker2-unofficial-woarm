@@ -46,7 +46,7 @@ C:/Users/%user%/OneDrive/Documents/GridTracker/
 
 Files stored in OneDrive are continually backed up **_but only one version is saved_**.  If you choose to delete a file from One Drive you will get a warning message asking if you're sure you want to take that step because once a file is deleted it is gone forever.  
 
-If you would like to maintain a _local_ backup for either your GridTracker logbook file (GridTracker_QSO.adif) or your WSJT-X log (wsjtx_log.adi) files you will have to do it by hand..  There's no provision in either program to create a backup.  What you can do, though, is use GridTracker's logging function ([**Settings>Logging**](GridTracker-Overview/Settings-Sub-Menus#logging-tab)) to automatically send info on new QSOs to one of eleven different applications that are dedicated logging sites.
+If you would like to maintain a _local_ backup for either your GridTracker logbook file (GridTracker_QSO.adif) or your WSJT-X log (wsjtx_log.adi) files you will have to do it by hand..  There's no provision in either program to create a backup.  What you can do, though, is use GridTracker's logging function ([**Settings>Logging**](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab)) to automatically send info on new QSOs to one of eleven different applications that are dedicated logging sites.
 
 #### Being Fooled into Thinking You've Deleted a File
 

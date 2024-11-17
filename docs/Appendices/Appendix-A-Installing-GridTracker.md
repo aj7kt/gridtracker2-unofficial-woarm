@@ -26,7 +26,7 @@ You may uncheck “Launch GridTracker now” if you do not want to launch it aft
 
 ![](../img/GT_InstallWin_Wiz4.png)
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
 
 
 # MacOS
@@ -57,31 +57,39 @@ You will get two more pop-ups after the program has been running, one to allow i
 
 You will want to Allow network notifications, and it is up to you if you want to Allow the Notifications.
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
 
 # Linux Intel/AMD Archs
 
 ## Redhat based distros
 
-1. Download the latest version .RPM for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
-2. Install either by running `sudo dnf ./GridTracker2-2.xxxxxx.x-arch.rpm` where arch is your system architecture (x86_64, aarch64 or armv7l) or by double clicking to launch Discover Software Center.
+1. Download the latest version .rpm for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
+2. Install either by running from where you downloaded the .rpm
+   ```bash
+   sudo dnf install ./GridTracker2-2.xxxxxx.x-arch.rpm
+   ```
+   where arch is your system architecture (x86_64, aarch64 or armv7l) or by double clicking to launch Discover Software Center.
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
 
-### Debian based distros
+## Debian based distros
 
-1. Download the latest version .DEB for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
-2. Install using dpkg `sudo dpkg -i ./GridTracker2-2.xxxxxx.x-arch.deb` where arch is your system architecture (amd64, arm64, armv7l)
+1. Download the latest version .deb for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
+2. Install using dpkg from where you downloaded the .deb
+   ```bash
+   sudo dpkg -i ./GridTracker2-2.xxxxxx.x-arch.deb
+   ```
+   where arch is your system architecture (amd64, arm64, armv7l)
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
 
-### Arch linux
+## Arch linux
 
 > Need new instructions for .pacman file
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
 
-### All other Linuxes
+## All other Linuxes
 (or using the tar.gz packge)
 
 Download the tar.gz package for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/), decompress and execute the GridTracker exectuable from the decompressed directory.
@@ -94,4 +102,4 @@ Run the GridTracker executable from the now decompressed package directory.
 
 > Need new instructions for .APK and .AppImage
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker) section for next steps.
+Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.

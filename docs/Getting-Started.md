@@ -16,7 +16,7 @@ If GridTracker has not received status information from WSJT-X then the WSJT-X s
 
 WSJT-X may not be running or configured in a way that allowed GridTracker to detect network settings, or GridTracker  may not have heard a message from WSJT-X yet (it could take up to 15 seconds.)  You may also be running other companion programs that have "taken over" the UDP[^udp] network connection.  If you are using another companion program, you may want to shut it down for now as you become familiar with GridTracker and its extensive features. If you decide to run other companion programs in parallel, you will want to configure WSJT-X and all other programs to use Multicast[^multicast].
 
-If all this has gone according to plan, GridTracker should be receiving information from WSJT-X or WSJT-X derivitive  in real-time! If not see [Appendix B](Appendices/Appendix-B-Configuring-WSJT-X-andJTDX-for-GridTracker) for detailed instructions for how to configure WSJT-X or WSJT-X derivitive .
+If all this has gone according to plan, GridTracker should be receiving information from WSJT-X or WSJT-X derivitive  in real-time! If not see [Appendix B](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) for detailed instructions for how to configure WSJT-X or WSJT-X derivitive .
 
 ---
 

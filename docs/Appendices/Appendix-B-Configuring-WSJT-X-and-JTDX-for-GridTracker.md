@@ -12,7 +12,7 @@ We recommended enabling  "PSK Reporter Spotting" to help other WSJT-X users as 
 
 ![](../img/GT_ConfWSJTX_Reporting.png)
 
-Continue to [Configuring GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker#configuring-gridtracker-for-wsjt-x-jtdx), to verify GridTracker is receiving messages from WSJT-X.
+Continue to [Configuring GridTracker](#configuring-gridtracker-for-wsjt-x--jtdx), to verify GridTracker is receiving messages from WSJT-X.
 
 # Configuring JTDX for GridTracker
 
@@ -26,7 +26,7 @@ We recommend enabling "PSK Reporter Spotting" and "Enable DXSummit Spotting" to 
 
 ![](../img/GT_ConfJTDX_Reporting.png)
 
-Continue to [Configuring GridTracker](Appendices/appendix-b-Configuring-WSJT-X-and-JTDX-for-GridTracker#configuring-gridtracker-for-wsjt-x-jtdx), to verify GridTracker is receiving messages from JTDX.
+Continue to [Configuring GridTracker](#configuring-gridtracker-for-wsjt-x--jtdx), to verify GridTracker is receiving messages from JTDX.
 
 # Configuring GridTracker for WSJT-X & JTDX
 

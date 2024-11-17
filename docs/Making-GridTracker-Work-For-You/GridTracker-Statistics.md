@@ -4,11 +4,11 @@
 
 Clicking on the "Statistics" button in the control panel will open a new window - the **Statistics** window - with every metric the developers could think of that's related to your QSO data.  
 
-**Important Note:**  Just as with the [QSO data](GridTracker-Overview/Control-Panel#qso-status) displayed in grids and the [Award layer overlays](CGridTracker-Overview/Control-Panel#cycle-award-overlays-hotkey-equal-sign-) on the GridTracker Map the information shown on the various tabs of the **Statistics** menu depends on:
+**Important Note:**  Just as with the [QSO data](../GridTracker-Overview/Control-Panel.md#qso-status) displayed in grids and the [Award layer overlays](../GridTracker-Overview/Control-Panel.md#cycle-award-overlays-hotkey--equal-sign) on the GridTracker Map the information shown on the various tabs of the **Statistics** menu depends on:
 
-1. The logs you choose to [import](Making-GridTracker-Work-For-You/GridTracker-Logging-Options-and-Functions#importing-logging-information-into-gridtracker) into GridTracker; and
-2. The [Map View Filters](GridTracker-Overview/Control-Panel#map-view-filters) you've chosen for limiting or not limiting that log data; and
-3. The working Callsign(s) you have enabled on the [**Settings > Logbook**](GridTracker-Overview/Settings-Sub-Menus#user-logbook-tab) tab.
+1. The logs you choose to [import](GridTracker-Logging-Options-and-Functions.md#importing-logging-information-into-gridtracker) into GridTracker; and
+2. The [Map View Filters](../GridTracker-Overview/Control-Panel.md#map-view-filters) you've chosen for limiting or not limiting that log data; and
+3. The working Callsign(s) you have enabled on the [**Settings > Logbook**](../GridTracker-Overview/Settings-Sub-Menus.md#user-logbook-tab) tab.
 
 ## Logbook Data     
 

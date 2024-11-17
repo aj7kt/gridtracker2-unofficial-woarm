@@ -13,7 +13,7 @@ Setting up an audible alert for messages that include **_YOUR CALLSIGN_**.  \[H
 5. Move over to click the "Repeat" button where you choose how often to repeat the alert.
 6. Click on the ADD button.  **Note:**  you have the option to reset or delete any custom alerts you create.
 
-There's an alternative but equally effective way to get an audio alert for your callsign using features in [Call Roster.](Making-GridTracker-Work-For-You/Using-Call-Roster)
+There's an alternative but equally effective way to get an audio alert for your callsign using features in [Call Roster.](Using-Call-Roster.md)
 
 Setting up an audible alert for messages that include a **_SPECIFIC CALLSIGN_**.  This is pretty much the same procedure as above except you will select "Callsign exact" as the _type_ of alert.  
 
