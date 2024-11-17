@@ -3,22 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to GridTracker2's documentation!
-========================================
-
+GridTracker2 User Guide
+=======================
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
 License Agreement and Copyright
-===============================
+###############################
 .. toctree::
 
    License-Agreement-and-Copyright
    Technical-Support-and-Assistance
 
 Introduction
-============
+############
 .. toctree::
    :maxdepth: 2
 
@@ -26,7 +25,7 @@ Introduction
    Introduction/System-Requirements
 
 Getting Started
-===============
+###############
 .. toctree::
    :maxdepth: 2
 
@@ -34,7 +33,7 @@ Getting Started
    Getting-Started
 
 GridTracker Overview
-====================
+####################
 .. toctree::
    :maxdepth: 2
 
@@ -44,7 +43,7 @@ GridTracker Overview
    GridTracker-Overview/Settings-Sub-Menus
 
 Making GridTracker Work For You
-===============================
+###############################
 .. toctree::
    :maxdepth: 2
 
@@ -56,14 +55,14 @@ Making GridTracker Work For You
    Making-GridTracker-Work-For-You/Features-Accessible-by-HotKeys-Only
 
 GridTracker File Storage
-========================
+########################
 .. toctree::
    :maxdepth: 2
 
    GridTracker-File-Storage
 
 Third-Party Integrations
-========================
+########################
 .. toctree::
    :maxdepth: 2
 
@@ -72,7 +71,7 @@ Third-Party Integrations
    Third-Party-Integrations/PushNotifications-Integrations
 
 FAQ, Troubleshooting, Bugs and Common Problems
-==============================================
+##############################################
 .. toctree::
    :maxdepth: 2
    
@@ -82,7 +81,7 @@ FAQ, Troubleshooting, Bugs and Common Problems
    Anti-Virus
 
 Appendices And Tables
-=====================
+#####################
 .. toctree::
    :maxdepth: 2
 
