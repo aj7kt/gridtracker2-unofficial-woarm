@@ -4,7 +4,7 @@
 
 Clicking on the "Statistics" button in the control panel will open a new window - the **Statistics** window - with every metric the developers could think of that's related to your QSO data.  
 
-**Important Note:**  Just as with the [QSO data](../GridTracker-Overview/Control-Panel.md#qso-status) displayed in grids and the [Award layer overlays](../GridTracker-Overview/Control-Panel.md#cycle-award-overlays-hotkey--equal-sign) on the GridTracker Map the information shown on the various tabs of the **Statistics** menu depends on:
+**Important Note:**  Just as with the [QSO data](../GridTracker-Overview/Control-Panel.md#qso-status) displayed in grids and the [Award layer overlays](../GridTracker-Overview/Control-Panel.md#cycle-award-overlays-hotkey-equal-sign) on the GridTracker Map the information shown on the various tabs of the **Statistics** menu depends on:
 
 1. The logs you choose to [import](GridTracker-Logging-Options-and-Functions.md#importing-logging-information-into-gridtracker) into GridTracker; and
 2. The [Map View Filters](../GridTracker-Overview/Control-Panel.md#map-view-filters) you've chosen for limiting or not limiting that log data; and

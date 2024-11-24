@@ -67,8 +67,9 @@ Third-Party Integrations
    :maxdepth: 2
 
    Third-Party-Integrations/HamClock-Integration
-   Third-Party-Integrations/N3FJP-AC-Log-Integration
+   Third-Party-Integrations/GridTracker2-and-Parks-On-The-Air
    Third-Party-Integrations/PushNotifications-Integrations
+   Third-Party-Integrations/N3FJP-AC-Log-Integration
 
 FAQ, Troubleshooting, Bugs and Common Problems
 ##############################################

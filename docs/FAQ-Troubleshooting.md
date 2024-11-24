@@ -3,7 +3,7 @@
 [**Issue: GridTracker Map Doesn't Show all Your QSOs (or Live Data or even PSK data)**](#issue-gridtracker-map-doesnt-show-all-your-qsos)\
 [**Issue: GridTracker QSO Status (and Map) Shows an "Incorrect" Count of QSOs**](#issue-gridtracker-qso-status-and-map-shows-an-incorrect-count-of-qsos)\
 [**Issue: You're not hearing audio alerts from GridTracker**](#issue-youre-not-hearing-audio-alerts-from-gridtracker)\
-[**Issue: You can't seem to get the Call Roster feature to initiate transmissions (to answer a CQ.)**](#issue-you-cant-seem-to-get-the-call-roster-feature-to-initiate-transmissions-to-answer-a-cq)\
+[**Issue: You can't seem to get the Call Roster feature to initiate transmissions (to answer a CQ.)**](#issue-you-can-t-seem-to-get-the-call-roster-feature-to-initiate-transmissions-to-answer-a-cq)\
 [**Issue: PSK Reporter spots are gone and now I'm seeing areas of various colors.**](#issue-psk-reporter-spots-are-gone-and-now-im-seeing-areas-of-various-colors)
 
 ## Issue: GridTracker Map Doesn't Show all Your QSOs
