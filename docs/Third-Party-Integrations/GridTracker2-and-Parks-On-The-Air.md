@@ -6,6 +6,14 @@ GridTracker2 is a powerful tool for both Hunters looking to make contacts with p
 
 ## Setting GridTracker2 up for POTA
 
+Under Settings>Logging ensure that the “Log?” Box in the GridTracker2 line is checked.
+
+![GridTracker2 LOgging Settings tab with GridTracker2 logging area highlighted with a red box](../img/GT2_POTA_Logging_settings.png)
+
+GridTracker2 uses it’s local log to track POTA stations and determine if they have been
+worked today, at that park on that band and mode. This is necessary due to the variation of
+how POTA is handled by the various logging programs available.
+
 Under Settings> Features, enable POTA Hunting in the Online box:
 
 ![GridTracker2 Features Settings tab with red arrow pointed to POTA Hunting option](../img/GT2_POTA_Features_Online.png)
@@ -67,6 +75,22 @@ In Call Roster, go to the More Controls Screen, and enable POTA under Wanted:
 You can then right click on the column headings in the Call Roster and select POTA to display a column for POTA information. You can then lift click on the column and drag it to where you want in the column list:
 
 ![GridTracker2 Call Roster with POTA column circled](../img/GT2_CR_POTA_Column.png)
+
+With these settings there are three ways a park number can be displayed in the Call Roster:
+
+If you have never worked the park before, an All Time New One (ATNO), it will be brightly
+highlighted:
+
+![GridTracker2 Call Roster with a All Time New One park, KG4AFY in US-7402](../img/GT2_POTA_ATNO_Park.png)
+
+If you have previously worked that park on another day, band, mode etc., the highlighting of the number will be more subdued
+
+![GridTracker2 Call Roster with a previously worked park, W3VD in US-1915](../img/GT2_POTA_Previously_Worked.png)
+
+Here’s a screen shot where VE3IGX is calling from an ATNO park (CA-5535), and W3VD is calling from a park you have worked before (US-1915)
+
+![GridTracker2 Call Roster with an all time new park and a previously worked but new today park highlighted](../img/GT2_POTA_ATNO_and_Previously_Worked.png)
+
 
 Another way to highlight stations calling CQ POTA is to set up a watcher in the Call Roster Settings:
 
