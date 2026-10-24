@@ -348,6 +348,7 @@ function renderMap()
   createGlobalMapLayer("flight");
   createGlobalMapLayer("transmit");
   createGlobalMapLayer("gtflags");
+  createGlobalMapLayer("birdWatch");
   createGlobalMapLayer("santa");
   createGlobalMapLayer("temp");
 
@@ -403,6 +404,7 @@ function renderMap()
       GT.layerVectors.flight,
       GT.layerVectors.transmit,
       GT.layerVectors.gtflags,
+      GT.layerVectors.birdWatch,
       GT.layerVectors.santa,
       GT.layerVectors.temp
     ],

@@ -3,6 +3,7 @@ const validSettings = [
   "acLog",
   "adifLog",
   "app",
+  "birdWatch",
   "appLogs",
   "audio",
   "awardTracker",
@@ -33,6 +34,8 @@ const validSettings = [
   "legendColors",
   "bandColors",
   "pstrotator",
+  "rotor",
+  "rig",
   "HRDLogbookLog",
   "defaultsApplied"
 ];
@@ -83,6 +86,52 @@ const k_feedRosterColumnColors = {
 
 const def_settings = {
   defaultsApplied: true,
+  // BirdWatch (satellite tracking): all of its settings (its settings window, and the panel and button panel)
+  birdWatch: {
+    // BirdWatch (Settings -> Features -> Service): satellite tracking, shows its button in the main button panel
+    enable: false,
+    // The BirdWatch button's toggle (grey when off); enabling or disabling BirdWatch doesn't change it
+    active: true,
+    // Auto Select Next AOS Satellite (a button in the BirdWatch panel): the satellite that is up, or the next to rise, is selected for you
+    auto: false,
+    // Auto Select only picks a satellite whose pass climbs at least this many degrees (BirdWatch settings, General): 0 to 60
+    autoMinElevation: 0,
+    // The Satellites tab's search and scan only list the satellites with a transmitter that has an uplink (the SatNOGS transmitters, not beacons alone)
+    uplinkOnly: false,
+    // Scan By Rig (Add Satellite): "off", "hear" (a downlink the rig can receive), "work" (and an uplink it can transmit on)
+    rigFilter: "off",
+    // A QSO logged while the selected satellite is up is tagged PROP_MODE SAT and its SAT_NAME (BirdWatch settings, Satellites)
+    logTag: false,
+    // The sky plot of the selected satellite in the BirdWatch panel (BirdWatch settings, General)
+    skybox: true,
+    // The satellite info panel's list (BirdWatch panel, right click): the featured item (large, at the top), the order of the others,
+    // the ones hidden, and the colors picked for values, by name (birdWatchInfo.js)
+    info: { featured: "ttgo", order: [], hidden: [], known: [], colors: {} },
+    // The Doppler table leaves out the transmitters with no uplink, the beacons and other downlink-only ones (BirdWatch settings, General)
+    hideNoUplink: false,
+    // Pass alerts (BirdWatch settings, Alerts): a tracked satellite about to rise is announced this many minutes before its AOS (and at
+    // it), when its pass climbs at least minElevation degrees, by voice, in the traffic list, and with Pushover / Simplepush
+    alerts: { enable: false, minutes: 5, minElevation: 10, atAos: true, speech: true, traffic: true, push: false },
+    // BirdWatch's colors (its settings window, Colors tab): the footprint's outline and fill, and how transparent the fill is
+    colors: {
+      footprintOn: true, footprintRing: "#000000", footprintFill: "#8f8f8f", footprintTransparency: 0.86,
+      pathOn: true, pathLine: "#00008b", pathWidth: 1.5, pathTimeSize: 11, pathTimeOn: true, pathDashOn: true, pathOutlineOn: true, pathOutline: "#ffffff"
+    },
+    // The satellites tracked, by catalog number: ISS, SO-50, AO-91, RS-44, AO-7
+    tracked: [25544, 27607, 43017, 44909, 7530],
+    // The BirdWatch panel's buttons, in the order they were dragged to (the ids of its buttons; empty is the order they come in)
+    buttonOrder: [],
+    // BirdWatch's element sets (Telemetry tab): AMSAT's daily file, and the user's own, each { id, kind, enabled, ... }: kind
+    // "local" (path), "remote" (url, user, pass if the address needs a login, refresh every 24 hours: on by default) or
+    // "tle" (a typed one: name, norad, line1, line2, override); with loaded, count and error for the first two
+    tle: {
+      amsat: true,
+      // Which source wins when a satellite is in more than one: letters for AMSAT, Local, Remote and Manual (typed TLEs),
+      // first wins. Typed overrides always win and aren't in it
+      precedence: "alrm",
+      sources: []
+    }
+  },
   app: {
     mapRight: false,
     clearOnCQ: false,
@@ -423,11 +472,19 @@ const def_settings = {
     QRZ: "#FFFF00",
     QTH: "#FFA600"
   },
+  // CatRotator / PstRotator as the service it was: kept for the settings files that have it, carried over to rotor by rotorMigrate
   pstrotator: {
     enable: false,
     port: 12000,
     ip: "127.0.0.1"
   },
+  // Rotor Control (Settings -> Features -> Service, rotor.js): an antenna rotator on a serial port (gs232, easycomm, spid) or through
+  // Hamlib's rotctld (host, netPort) or CatRotator / PstRotator (host, udpPort). The serial port chosen is kept by its identity, so it
+  // is opened again at each start. follow: the rotator tracks BirdWatch's selected satellite
+  rotor: { enable: false, protocol: "gs232", baud: 9600, dataBits: 8, parity: "none", stopBits: 1, port: null, host: "127.0.0.1", netPort: 4533, udpPort: 12000, follow: true },
+  // Rig Control (Settings -> Features -> Service, rig.js): the rig through Hamlib's rigctld (host, netPort), flrig (host, flrigPort) or an
+  // Icom over CI-V on a serial port (port, baud...; civAddress in hex only to insist on one: the rig is asked for its own)
+  rig: { enable: false, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" },
   audio: {
     alertMute: 0,
     speechRate: 1,

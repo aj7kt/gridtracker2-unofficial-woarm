@@ -55,7 +55,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/rtsn.js" type="text/javascript"></script>
   <script src="./lib/services/pota.js" type="text/javascript"></script>
   <script src="./lib/services/sota.js" type="text/javascript"></script>
+  <script src="./lib/services/birdWatch/birdWatch.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchPanel.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchInfo.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchPredict.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchSats.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchAlerts.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchDoppler.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchExport.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchLog.js" type="text/javascript"></script>
+  <script src="./lib/services/birdWatch/birdWatchSync.js" type="text/javascript"></script>
+  <script src="./lib/services/birdWatch/birdWatchTle.js" type="text/javascript"></script>
+  <script src="./lib/services/birdWatch/birdWatchTleForm.js" type="text/javascript"></script>
   <script src="./lib/services/pstrotator.js" type="text/javascript"></script>
+  <script src="./lib/services/serialPorts.js" type="text/javascript"></script>
+  <script src="./lib/services/rotor.js" type="text/javascript"></script>
+  <script src="./lib/services/rig.js" type="text/javascript"></script>
+  <script src="./lib/services/rigRanges.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
   <script src="./lib/map/tropo.js" type="text/javascript"></script>
@@ -276,6 +292,74 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div class="santaUnit santaUnitGreen"><span id="santaCdSeconds">00</span><small data-i18n="santa.seconds.label">Seconds</small></div>
       </div>
     </div>
+    <!-- BirdWatch panel: same width as the control panel, on the opposite side (placed by applyBirdWatchLayout) -->
+    <div id="birdWatchDiv" class="birdWatchDivClass">
+      <!-- Like the control panel's GridTracker2 button: hides the panel, birdWatchChevronDiv brings it back -->
+      <div id="birdWatchTitleDiv" class="roundBorder" style="border: 1px solid white; margin: 1px; padding: 0px">
+        <table align="center">
+          <tr>
+            <td>
+              <div id="birdWatchTitle" class="button" data-i18n="birdWatch.hidePanel.hover" title="Click to hide BirdWatch" style="
+                    color: #fff;
+                    margin: 0;
+                    padding: 0;
+                    font-weight: bold;
+                    width: 160px;
+                    padding-top: 2px;
+                    border-width: 2px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                  " onclick="showBirdWatchPanel(false);" oncontextmenu="toggleControlPanelSide(event);">
+                BirdWatch
+              </div>
+            </td>
+          </tr>
+        </table>
+      <!-- The satellite selected on the map (birdWatchPanel.js): inside the title's box, like the control panel's status under its title -->
+      <div id="birdWatchInfoDiv" style="display: none; margin: 0; padding: 0 4px 3px 4px; font-size: 12px; white-space: nowrap; overflow: hidden;">
+        <div id="birdWatchInfoNames" style="cursor: pointer;" onclick="birdWatchCenterOnSelected();">
+          <div id="birdWatchInfoName" oncontextmenu="birdWatchOpenSatnogs(event);" style="font-size: 15px; font-weight: bold; color: cyan; overflow: hidden; text-overflow: ellipsis;"></div>
+          <div id="birdWatchInfoLong" style="color: #aaa; overflow: hidden; text-overflow: ellipsis; min-height: 15px;"></div>
+        </div>
+        <table id="birdWatchInfoPos" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 2px; text-align: left;">
+          <!-- The rows are drawn by birdWatchInfo.js: the featured item first, then the user's list -->
+          <tbody id="birdWatchInfoBody"></tbody>
+        </table>
+      </div>
+      </div>
+      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; between the BirdWatch box and the sky plot's, as wide as the sky plot's -->
+      <div id="birdWatchRigLine" class="roundBorder" style="display: none; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+      <!-- The sky plot of the selected satellite, in a box of its own like the control panel's Rx Calls box -->
+      <div id="birdWatchSkyBox" class="roundBorder" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
+      <!-- BirdWatch's button panel, like the control panel's: the gear opens its settings window -->
+      <div id="birdWatchButtonsDiv" style="margin-top: 1px; margin-left: 1px; display: grid; gap: 0px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; grid-template-rows: auto;">
+        <div id="birdWatchSettingsButton" class="iconButton" onclick="showBirdWatchSettings();" data-i18n="birdWatch.settings.hover" title="Satellite Settings">
+          <img src="img/sat-settings.png" class="buttonImg" />
+        </div>
+        <div id="birdWatchAutoButton" class="iconButton" onclick="birdWatchAutoToggle();" data-i18n="birdWatch.auto.hover" title="Auto Select Next AOS Satellite">
+          <img id="birdWatchAutoImg" src="img/sat-auto.png" class="buttonImg" />
+        </div>
+        <div id="birdWatchDopplerButton" class="iconButton" onclick="birdWatchDopplerPressed();" data-i18n="birdWatch.doppler.hover" title="Transmitters and Doppler-corrected frequencies of the selected satellite">
+          <img id="birdWatchDopplerImg" src="img/sat-doppler.png" class="buttonImg" />
+        </div>
+        <div id="birdWatchTimelineButton" class="iconButton" onclick="birdWatchTimelineToggle();" data-i18n="birdWatch.timeline.hover" title="Upcoming passes of the tracked satellites">
+          <img src="img/timezone-button.png" class="buttonImg" />
+        </div>
+      </div>
+    </div>
+    <!-- The passes of the tracked satellites over the next 24 hours (birdWatchPredict.js) -->
+    <div id="birdWatchTimelineDiv" class="roundBorder" style="display: none; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); z-index: 590; background-color: #000000; border: 1px solid white; padding: 4px 8px 8px 8px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <span data-i18n="birdWatch.timeline.label" style="font-weight: bold; color: cyan;">Pass Timeline</span>
+        <span style="display: flex; align-items: center; gap: 10px;">
+          <div class="button birdTleButton" style="padding: 1px 10px;" data-i18n="birdWatch.export.hover" title="Save the next three days of passes of the tracked satellites for your calendar" onclick="birdWatchExportPasses();"><span data-i18n="birdWatch.export.label">Export Passes</span> (.ics)</div>
+          <button class="Xbutton" onclick="birdWatchTimelineClose();">X</button>
+        </span>
+      </div>
+      <canvas id="birdWatchTimelineCanvas" onmousemove="birdWatchTimelineMove(event);" onclick="birdWatchTimelineClick(event);" style="display: block;"></canvas>
+    </div>
+    <div id="birdWatchChevronDiv" class="chevronDivClass" data-i18n="birdWatch.showPanel.hover" title="Click to show BirdWatch" onclick="showBirdWatchPanel(true);"></div>
     <div id="chevronDiv" class="chevronDivClass" data-i18n="map.showMenu.hover" title="Click me, place holder" onclick="updateLayout(false)">↔</div>
     <div id="menuDiv" class="menuDivClass">
       <div id="localInfoDiv"
@@ -295,7 +379,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     overflow: hidden;
                     white-space: nowrap;
                     text-overflow: ellipsis;
-                  " onclick="updateLayout(true);">
+                  " onclick="updateLayout(true);" oncontextmenu="toggleControlPanelSide(event);">
                 GridTracker2
               </div>
             </td>
@@ -375,6 +459,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           waiting for message
         </div>
       </div>
+      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; under the WSJT-X status bar -->
+      <div id="rigLineMain" class="roundBorder" style="display: none; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
 
       <div id="bandActivityDiv" class="roundBorder" style="
             position: relative;
@@ -678,6 +764,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="santaButton" onclick="toggleSanta();" class="iconButton" style="display:none;" data-i18n="gt.button.santa.hover" title="Toggle Santa Tracker">
           <img id="santaImg" src="img/santa_menu.png" class="buttonImg" style="filter: grayscale(1);" />
         </div>
+        <div id="birdWatchButton" onclick="toggleBirdWatch();" class="iconButton" style="display:none;" title="Toggle Satellite Tracking" data-i18n="gt.button.birdWatch.hover">
+          <img id="birdWatchImg" src="img/birdwatch.png" class="buttonImg" />
+        </div>
       </div>
       <div id="trafficDiv" class="roundBorder" style="
             position: relative;
@@ -805,6 +894,191 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </div>
       <div style="top: 6px; right: 6px; position: absolute">
         <button class="Xbutton" onclick="GT.helpShow=false;helpDiv.style.display='none';">X</button>
+      </div>
+    </div>
+
+    <!-- BirdWatch's settings window (birdWatch.js): the main Settings' look, X and Esc close it -->
+    <div id="birdWatchSettingsDiv" style="
+          margin: 0;
+          top: 1px;
+          display: none;
+          background-color: #00000000;
+          padding: 0px;
+          text-align: center;
+          vertical-align: middle;
+          position: relative;
+          z-index: 600;
+        " class="roundBorder">
+      <div class="settingstab">
+        <div style="float: right">
+          <button class="Xbutton" onclick="closeBirdWatchSettings();">X</button>
+        </div>
+        <button data-i18n="settings.General.label" id="birdWatchGeneralBut" class="settingsTablinks active" data-tab="birdWatchGeneralDiv"
+          onclick="openBirdWatchSettingsTab(event, 'birdWatchGeneralDiv')">General</button>
+        <button data-i18n="birdWatch.telemetry.label" id="birdWatchTelemetryBut" class="settingsTablinks" data-tab="birdWatchTelemetryDiv"
+          onclick="openBirdWatchSettingsTab(event, 'birdWatchTelemetryDiv')">Telemetry</button>
+        <button data-i18n="birdWatch.satellites.label" id="birdWatchSatellitesBut" class="settingsTablinks" data-tab="birdWatchSatellitesDiv"
+          onclick="openBirdWatchSettingsTab(event, 'birdWatchSatellitesDiv')">Satellites</button>
+        <button data-i18n="birdWatch.alerts.label" id="birdWatchAlertsBut" class="settingsTablinks" data-tab="birdWatchAlertsDiv"
+          onclick="openBirdWatchSettingsTab(event, 'birdWatchAlertsDiv')">Alerts</button>
+        <button data-i18n="settings.Map.label" id="birdWatchColorsBut" class="settingsTablinks" data-tab="birdWatchColorsDiv"
+          onclick="openBirdWatchSettingsTab(event, 'birdWatchColorsDiv')">Map</button>
+      </div>
+      <div id="birdWatchGeneralDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: block">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.panel.title.label">Control Panel</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.hover" title="Shows the sky plot of the selected satellite in the BirdWatch panel" onclick="birdWatchSkyboxChange()" /> <label for="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.label">Enable Skybox</label></td></tr>
+            </table>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.auto.group.label">Auto-Track</div>
+            <table class="mapChecks">
+              <tr><td><label data-i18n="birdWatch.auto.minEl.label" for="birdWatchAutoMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="60" value="0" step="1" class="slider" id="birdWatchAutoMinEl" data-i18n="birdWatch.auto.minEl.hover" title="Auto-Track only selects a satellite whose pass climbs at least this high; 0° selects every pass" oninput="birdWatchAutoMinElChange()" /><span id="birdWatchAutoMinElText" class="mapValue">0°</span></td></tr>
+            </table>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.log.title.label">Logging</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.hover" title="A QSO logged while the selected satellite is up is logged as a satellite contact: PROP_MODE SAT and its SAT_NAME. A logger's own values are kept" onclick="birdWatchLogTagChange()" /> <label for="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.label">Log Satellite Contacts</label></td></tr>
+            </table>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.doppler.group.label">Doppler Table</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.hover" title="Leaves the transmitters with no uplink, such as beacons, out of the Doppler table" onclick="birdWatchHideNoUplinkChange()" /> <label for="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.label">Hide Rows With No Uplink</label></td></tr>
+            </table>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.general.settings.label">Settings</div>
+            <div data-i18n="settings.general.ResetButtonPanel.label" class="button" onclick="birdWatchButtonsSet(GT.birdWatchDefaultButtons)">Reset-Button-Panel</div>
+          </div>
+        </div>
+      </div>
+      <div id="birdWatchTelemetryDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.tle.title.label">TLE Sources</div>
+            <!-- TLE Precedence at the left of Add TLE, and AMSAT.org, each in a box of its own like the lists below them -->
+            <div class="birdTleTop">
+            <div class="mapItem birdTleBox" id="birdWatchTlePrecedenceBox">
+              <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.precedence.label">TLE Precedence</div>
+              <select id="birdWatchTlePrecedence" data-i18n="birdWatch.tle.precedence.hover" title="When a satellite is in more than one source, the first of these that has it is used. Overrides always win" onchange="birdWatchTleSetPrecedence();"></select>
+              <div id="birdWatchTleListStatus" class="birdTleStatus"></div>
+            </div>
+            <div class="mapItem birdTleBox" id="birdWatchTleAddBox">
+              <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.add.label">Add TLE</div>
+              <!-- Local, Remote or TLE with the + at the right. Remote: the address, and under it (lined up with it) the login, which can be blank -->
+              <div class="birdTleAddGrid">
+                <select id="birdWatchTleMode" onchange="birdWatchTleModeChanged();" data-i18n="birdWatch.tle.mode.hover" title="Add a file from this computer, or load one from an address">
+                  <option value="local" data-i18n="birdWatch.tle.mode.local.label">Local</option>
+                  <option value="remote" data-i18n="birdWatch.tle.mode.remote.label">Remote</option>
+                  <option value="tle" data-i18n="birdWatch.tle.mode.tle.label">TLE</option>
+                  <option value="manual" data-i18n="birdWatch.tle.mode.manual.label">Manual</option>
+                </select>
+                <input data-i18n="birdWatch.tle.url.hover" title="Address of a TLE file" type="text" id="birdWatchTleUrl" class="inputTextValue birdTleUrl" maxlength="500" value="https://" style="display: none;" onkeydown="if (event.key == 'Enter') birdWatchTleAddRemote();" />
+                <!-- TLE: the two lines pasted or typed (a name line first is optional), checked as they are, before the + -->
+                <textarea id="birdWatchTleText" class="inputTextValue birdTleText" rows="3" spellcheck="false" wrap="off" style="display: none;" oninput="birdWatchTleTextChanged();"></textarea>
+                <!-- Manual: the values of a TLE in a form (birdWatchTleForm.js), which has its own save -->
+                <div id="birdWatchTleManual" style="display: none;"></div>
+                <div id="birdWatchTleAddButton" class="button birdTleButton birdTlePlus" data-i18n="birdWatch.tle.addLocal.hover" title="Add a TLE file from this computer" onclick="birdWatchTleAddClicked();">+</div>
+                <div id="birdWatchTleMessage" class="birdTleMessage" style="display: none;"></div>
+                <div id="birdWatchTleNotice" class="birdTleMessage birdTleBad" style="display: none;"></div>
+                <div id="birdWatchTleLoginLine" class="birdTleLoginLine" style="display: none;">
+                  <label><span data-i18n="birdWatch.tle.user.label">Username</span> <input type="text" id="birdWatchTleUser" class="inputTextValue birdTleLoginInput" maxlength="100" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" onkeydown="if (event.key == 'Enter') birdWatchTleAddRemote();" /></label>
+                  <label><span data-i18n="birdWatch.tle.pass.label">Password</span> <input type="password" id="birdWatchTlePass" class="inputTextValue birdTleLoginInput" maxlength="100" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" onkeydown="if (event.key == 'Enter') birdWatchTleAddRemote();" /></label>
+                </div>
+              </div>
+            </div>
+            </div>
+            <div class="mapItem birdTleBox" id="birdWatchTleAmsatBox">
+              <div class="birdTleBoxTitle">AMSAT.org</div>
+              <div class="birdTleRow">
+                <!-- The same as the Enable of the lists' rows: the box inside the label and the word after it (its text is set by birdWatchTleRender) -->
+                <label class="birdTleEnable" id="birdWatchTleAmsatEnable"><input data-i18n="birdWatch.tle.amsat.hover" title="AMSAT's daily element sets of the amateur satellites, kept up to date" type="checkbox" id="birdWatchTleAmsat" onclick="birdWatchTleSetAmsat();"> Enable</label>
+                <span class="birdTleName" data-i18n="birdWatch.tle.amsat.label" title="AMSAT's daily element sets of the amateur satellites, kept up to date">AMSAT TLE</span>
+                <span id="birdWatchTleAmsatStatus" class="birdTleStatus"></span>
+              </div>
+            </div>
+            <!-- The Local and Remote lists, each in a box of its own, shown only while it has something in it -->
+            <div class="mapItem birdTleBox" id="birdWatchTleLocalBox" style="display: none;">
+              <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.local.label">Local TLE Files</div>
+              <div id="birdWatchTleLocalList"></div>
+            </div>
+            <div class="mapItem birdTleBox" id="birdWatchTleTypedBox" style="display: none;">
+              <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.typed.label">Typed TLEs</div>
+              <div id="birdWatchTleTypedList"></div>
+            </div>
+            <div class="mapItem birdTleBox" id="birdWatchTleRemoteBox" style="display: none;">
+              <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.remote.label">Remote TLE</div>
+              <div id="birdWatchTleRemoteList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="birdWatchSatellitesDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups birdSatColumns">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.satellites.tracked.label">Tracked Satellites</div>
+            <div id="birdWatchSatTrackedList" class="birdSatList"></div>
+          </div>
+          <div class="mapGroup">
+            <!-- The scan at the title's right -->
+            <div class="mapGroupTitle" style="display: flex; align-items: center; gap: 12px;"><span data-i18n="birdWatch.satellites.add.label">Add Satellite</span><div class="button birdTleButton" id="birdWatchSatScanButton" style="padding: 1px 10px; margin-left: auto;" data-i18n="birdWatch.satellites.scan.hover" title="Check every satellite the filter lets through: the ones in AOS now that will stay for 5 more minutes, and the ones that will be within the next hour" onclick="birdWatchSatScan();"><span data-i18n="birdWatch.satellites.scan.label">Scan Near AOS</span></div></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;">
+              <input type="text" id="birdWatchSatSearch" class="inputTextValue" data-i18n="birdWatch.satellites.search.hover" title="Search the element sets by name or catalog number" oninput="birdWatchSatFilterChange();" style="width: 200px;" />
+              <label class="birdTleEnable" data-i18n="birdWatch.satellites.uplink.hover" title="Only satellites with a transmitter that has an uplink"><input type="checkbox" id="birdWatchSatUplink" onclick="birdWatchSatFilterChange();" /> <span data-i18n="birdWatch.satellites.uplink.label">Only With Uplinks</span></label>
+              <!-- Scan By Rig: only the satellites the connected rig can hear, or work; the rig's name beside it (birdWatchSats.js) -->
+              <label class="birdTleEnable" id="birdWatchSatRigLabel"><span data-i18n="birdWatch.satellites.rig.label">Scan By Rig</span> <select id="birdWatchSatRig" onchange="birdWatchSatRigChange();"><option value="off" data-i18n="birdWatch.satellites.rig.off.label">Off</option><option value="hear" data-i18n="birdWatch.satellites.rig.hear.label">Can Hear</option><option value="work" data-i18n="birdWatch.satellites.rig.work.label">Can Work</option></select> <span id="birdWatchSatRigName" style="color: #aaa;"></span></label>
+            </div>
+            <!-- What the filter or the scan found, on the row under the controls -->
+            <div id="birdWatchSatCount" class="birdTleStatus" style="max-width: none; min-height: 16px; margin-top: 2px;"></div>
+            <div id="birdWatchSatResults" class="birdSatList"></div>
+          </div>
+        </div>
+      </div>
+      <div id="birdWatchAlertsDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.alerts.title.label">Pass Alerts</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchAlertEnable" data-i18n="birdWatch.alerts.enable.hover" title="Announce a tracked satellite before it rises" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertEnable" data-i18n="birdWatch.alerts.enable.label">Announce Upcoming Passes</label></td></tr>
+              <tr><td class="mapIndent"><label data-i18n="birdWatch.alerts.minutes.label" for="birdWatchAlertMinutes">Minutes Before AOS</label> <input type="range" min="1" max="30" value="5" step="1" class="slider" id="birdWatchAlertMinutes" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinutesText" class="mapValue">5</span></td></tr>
+              <tr><td class="mapIndent"><label data-i18n="birdWatch.alerts.minEl.label" for="birdWatchAlertMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="80" value="10" step="1" class="slider" id="birdWatchAlertMinEl" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinElText" class="mapValue">10°</span></td></tr>
+              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertAtAos" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertAtAos" data-i18n="birdWatch.alerts.atAos.label">Also When It Rises</label></td></tr>
+              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.hover" title="Uses the voice, rate and volume of Audio Alerts, and its mute" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.label">Speak</label></td></tr>
+              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertTraffic" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertTraffic" data-i18n="birdWatch.alerts.traffic.label">Show In Traffic List</label></td></tr>
+              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.hover" title="Sent with Pushover and Simplepush, as set up under Settings, Features, Online" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.label">Send With Pushover / Simplepush</label></td></tr>
+              <tr><td class="mapIndent"><div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="birdWatch.alerts.test.label" onclick="birdWatchAlertTest();">Test Alert</div></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="birdWatchColorsDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchFootprintOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchFootprintOn" data-i18n="birdWatch.colors.footprint.label">Footprint</label></div>
+            <div id="birdWatchFootprintOptions" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px;">
+              <label class="mapColorItem"><input type="color" id="birdWatchFootprintRing" value="#000000" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.ring.label">Ring</span></label>
+              <label class="mapColorItem"><input type="color" id="birdWatchFootprintFill" value="#8f8f8f" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.fill.label">Fill</span></label>
+              <span><label data-i18n="birdWatch.colors.transparency.label" for="birdWatchFootprintTransparency">Transparency</label> <input type="range" min="0" max="1" value="0.86" step="0.01" class="slider" id="birdWatchFootprintTransparency" oninput="birdWatchColorsChange()" /><span id="birdWatchFootprintTransparencyText" class="mapValue">86%</span></span>
+            </div>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchPathOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathOn" data-i18n="birdWatch.colors.path.label">Predicted Path</label></div>
+            <div id="birdWatchPathOptions" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+              <!-- Line, Dash and Outline on one row, the checkboxes at the same height -->
+              <div style="display: flex; align-items: center; gap: 4px 14px;">
+                <label class="mapColorItem"><input type="color" id="birdWatchPathLine" value="#00008b" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.line.label">Line</span></label>
+                <span style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="birdWatchPathDashOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathDashOn" data-i18n="birdWatch.colors.dash.label">Dash</label></span>
+                <span style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="birdWatchPathOutlineOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathOutlineOn" data-i18n="birdWatch.colors.outline.label">Outline</label><label class="mapColorItem" id="birdWatchPathOutlineSwatch"><input type="color" id="birdWatchPathOutline" value="#ffffff" oninput="birdWatchColorsChange()" /></label></span>
+              </div>
+              <span><label style="display: inline-block; min-width: 66px;" data-i18n="birdWatch.colors.width.label" for="birdWatchPathWidth">Width</label> <input type="range" min="0.5" max="8" value="1.5" step="0.1" class="slider" id="birdWatchPathWidth" oninput="birdWatchColorsChange()" /><span id="birdWatchPathWidthText" class="mapValue">1.5</span></span>
+              <span><span style="display: inline-flex; align-items: center; gap: 6px; min-width: 66px; vertical-align: middle;"><input type="checkbox" id="birdWatchPathTimeOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathTimeOn" data-i18n="birdWatch.colors.time.label">Time</label></span> <input type="range" min="6" max="20" value="11" step="1" class="slider" id="birdWatchPathTimeSize" oninput="birdWatchColorsChange()" /><span id="birdWatchPathTimeSizeText" class="mapValue">11 pt</span></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -985,7 +1259,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               </td>
             </tr>
             <tr>
-              <td class="mapRowLabel"><label data-i18n="settings.general.MapOnRightSide.label" for="mapRightValue">Map On Right Side</label></td>
+              <td class="mapRowLabel"><label data-i18n="settings.general.MapOnRightSide.label" for="mapRightValue">Control Panel On Left Side</label></td>
               <td><input type="checkbox" id="mapRightValue" onchange="changeMapRight(this);" /></td>
             </tr>
           </table>
@@ -1035,17 +1309,83 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="settings.logging.otherheader.service">Service</div>
             <table>
+              <!-- A service's box in front of its name, as in the Online group; the rows under one are tabbed in -->
               <tr>
-                <td class="mapRowLabel"><label data-i18n="settings.logging.pstrotator.label" for="pstrotatorCheckBox">CatRotator / PstRotator</label></td>
-                <td><input type="checkbox" class="inputTextValue" id="pstrotatorCheckBox" onclick="ValidateIPaddress(pstrotatorIpInput, this); ValidatePort(pstrotatorPortInput, this, null ); pstrotatorServiceChanged(); " /></td>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.label" for="birdWatchEnable">BirdWatch</label></td>
               </tr>
               <tr>
-                <td class="mapRowLabel"><label data-i18n="settings.logging.pstrotator.details.IP" for="pstrotatorIpInput">IP</label></td>
-                <td><input id="pstrotatorIpInput" type="text" class="inputTextValue" maxlength="15" size="11" onkeypress='return validIpKeys(event.charCode);' oninput="ValidateIPaddress(this, pstrotatorCheckBox); pstrotatorServiceChanged(); " /></td>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rotor.hover" title="Points an antenna rotator from GridTracker: a controller on a serial port, or Hamlib's rotctld" type="checkbox" id="rotorEnable" onclick="rotorEnableChanged();" /> <label data-i18n="settings.rotor.label" for="rotorEnable">Rotor Control</label></td>
               </tr>
+              <!-- Rotor Control's rows, shown while it is on (rotor.js) -->
+              <tr id="rotorProtocolTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.protocol.label" for="rotorProtocol">Protocol</label></td>
+                <td><select id="rotorProtocol" onchange="rotorSettingsChanged();"></select></td>
+              </tr>
+              <tr id="rotorPortTr">
+                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
+                <!-- The port's name beside the button; an error opening it under the button (rotorStatusRender) -->
+                <td><div class="button mapInlineButton" data-i18n="settings.rotor.choose.hover" title="Pick the serial port the rotator controller is on" onclick="rotorChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rotorPortName" class="mapValue"></span><div id="rotorPortError" style="display: none; color: orange; white-space: normal; max-width: 260px; margin-top: 2px;"></div></td>
+              </tr>
+              <!-- Linux only: the user isn't in the group that owns the serial devices (serialLinuxCheck) -->
+              <tr id="rotorLinuxTr" style="display: none;">
+                <td></td>
+                <td><span id="rotorLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+              </tr>
+              <tr id="rotorBaudTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rotorBaud">Baud</label></td>
+                <!-- Baud, then data bits, parity and stop bits (8 N 1) -->
+                <td><select id="rotorBaud" onchange="rotorSettingsChanged();"></select>
+                  <select id="rotorDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rotorSettingsChanged();"><option value="8">8</option><option value="7">7</option></select>
+                  <select id="rotorParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rotorSettingsChanged();"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
+                  <select id="rotorStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rotorSettingsChanged();"><option value="1">1</option><option value="2">2</option></select></td>
+              </tr>
+              <tr id="rotorHostTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.host.label" for="rotorHost">Host</label></td>
+                <td><input id="rotorHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rotorSettingsChanged();" /> <label id="rotorNetPortLabel" data-i18n="settings.rotor.tcpPort.label" for="rotorNetPort">TCP Port</label> <input id="rotorNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rotorSettingsChanged();" /></td>
+              </tr>
+              <tr id="rotorStatusTr">
+                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+                <td><span id="rotorStatus" class="mapValue" style="margin-left: 0;"></span></td>
+              </tr>
+              <!-- The box lines up with the labels' right edge, its name with the values -->
+              <tr id="rotorFollowTr">
+                <td class="mapRowLabel mapIndent"><input data-i18n="settings.rotor.follow.hover" title="Keeps the rotator on BirdWatch's selected satellite while it is up, and points at where it will rise a few minutes before" type="checkbox" id="rotorFollow" onclick="rotorFollowChanged();" /></td>
+                <td><label class="mapRowLabelText" data-i18n="settings.rotor.follow.label" for="rotorFollow">Follow Satellite</label></td>
+              </tr>
+              <!-- Rig Control (rig.js), its rows shown while it is on -->
               <tr>
-                <td class="mapRowLabel"><label data-i18n="settings.logging.pstrotator.details.Port" for="pstrotatorPortInput">UDP Port</label></td>
-                <td><input id="pstrotatorPortInput" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' oninput="ValidatePort(this, pstrotatorCheckBox, null ); pstrotatorServiceChanged(); " /></td>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rig.hover" title="Talks to the rig: Hamlib's rigctld, flrig, or an Icom over CI-V on a serial port" type="checkbox" id="rigEnable" onclick="rigEnableChanged();" /> <label data-i18n="settings.rig.label" for="rigEnable">Rig Control</label></td>
+              </tr>
+              <tr id="rigProtocolTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.protocol.label" for="rigProtocol">Protocol</label></td>
+                <td><select id="rigProtocol" onchange="rigSettingsChanged();"></select></td>
+              </tr>
+              <tr id="rigPortTr">
+                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
+                <td><div class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rigPortName" class="mapValue"></span><div id="rigPortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
+              </tr>
+              <tr id="rigLinuxTr" style="display: none;">
+                <td></td>
+                <td><span id="rigLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+              </tr>
+              <tr id="rigBaudTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rigBaud">Baud</label></td>
+                <td><select id="rigBaud" onchange="rigSettingsChanged();"></select>
+                  <select id="rigDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged();"><option value="8">8</option><option value="7">7</option></select>
+                  <select id="rigParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged();"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
+                  <select id="rigStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged();"><option value="1">1</option><option value="2">2</option></select></td>
+              </tr>
+              <tr id="rigCivTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rig.civ.label" for="rigCivAddress">CI-V Address</label></td>
+                <td><input id="rigCivAddress" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged();" /> <span id="rigCivFound" class="mapValue"></span></td>
+              </tr>
+              <tr id="rigHostTr">
+                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.host.label" for="rigHost">Host</label></td>
+                <td><input id="rigHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged();" /> <label data-i18n="settings.rotor.tcpPort.label" for="rigNetPort">TCP Port</label> <input id="rigNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged();" /></td>
+              </tr>
+              <tr id="rigStatusTr">
+                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+                <td><span id="rigStatus" class="mapValue" style="margin-left: 0;"></span></td>
               </tr>
             </table>
           </div>
@@ -1075,7 +1415,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <table>
               <tr>
                 <td class="mapRowLabel"><label data-i18n="settings.OAMS.pushover.token.label" for="msgSimplepushApiKey">API Token</label></td>
-                <td><input data-i18n="settings.OAMS.simplepush.apitoken.hover" title="SimplePush API Key to forward messages to your phone" type="text" id="msgSimplepushApiKey" class="inputTextValue" maxlength="255" size="16" oninput="ValidateText(this); newMessageSetting(this);" /></td>
+                <td><input data-i18n="settings.OAMS.simplepush.apitoken.hover" title="SimplePush API Key to forward messages to your phone" type="password" id="msgSimplepushApiKey" class="inputTextValue" maxlength="255" size="16" oninput="ValidateText(this); newMessageSetting(this);" /></td>
               </tr>
               <tr>
                 <td class="mapRowLabel"><label for="msgSimplepushNotifyOnly" data-i18n="settings.OAMS.simplepush.notify.label">Notification Only</label></td>
@@ -1114,7 +1454,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               </tr>
               <tr>
                 <td class="mapRowLabel"><label data-i18n="settings.OAMS.pushover.token.label" for="msgPushoverToken">API Token</label></td>
-                <td><input data-i18n="settings.OAMS.pushover.token.input.hover" title="Pushover API Token to forward messages to your phone" type="text" id="msgPushoverToken" class="inputTextValue" maxlength="255" size="16" oninput="ValidateText(this); newMessageSetting(this);" /></td>
+                <td><input data-i18n="settings.OAMS.pushover.token.input.hover" title="Pushover API Token to forward messages to your phone" type="password" id="msgPushoverToken" class="inputTextValue" maxlength="255" size="16" oninput="ValidateText(this); newMessageSetting(this);" /></td>
               </tr>
               <tr>
                 <td class="mapRowLabel"><label for="msgPushoverDailySchedule" data-i18n="settings.usedailyschedule.label">Daily Schedule</label></td>

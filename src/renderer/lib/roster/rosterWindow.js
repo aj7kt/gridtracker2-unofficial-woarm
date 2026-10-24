@@ -3998,7 +3998,7 @@ function createRestOfMenus()
   CR.callMenuRotator = new MenuItem({
     type: "normal",
     label: I18N("roster.menu.AimRotator"),
-    visible: GT.settings.pstrotator.enable,
+    visible: GT.settings.rotor.enable,
     click: function ()
     {
       let target = CR.callRoster[CR.targetHash]
@@ -4050,7 +4050,7 @@ function createRestOfMenus()
   CR.callingMenuRotator = new MenuItem({
     type: "normal",
     label: I18N("roster.menu.AimRotator"),
-    visible: GT.settings.pstrotator.enable,
+    visible: GT.settings.rotor.enable,
     click: function ()
     {
       let target = CR.callRoster[CR.targetHash]

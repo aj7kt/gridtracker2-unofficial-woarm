@@ -238,6 +238,12 @@ GT.languages = {
 GT.i18n = {};
 GT.popupWindowHandle = null;
 GT.popupWindowInitialized = false;
+// BirdWatch's transmitters window (birdWatchDoppler.js)
+GT.birdWatchTxWindowHandle = null;
+GT.birdWatchTxWindowInitialized = false;
+GT.birdWatchTxShowPending = false; // shown once it has loaded: asked while it was loading
+GT.birdWatchTxEverShown = false;   // it has been shown (it is made hidden at startup, and not filled in until then)
+GT.birdWatchTxShown = null;
 GT.callRosterWindowHandle = null;
 GT.callRosterWindowInitialized = false;
 GT.conditionsWindowHandle = null;
@@ -859,8 +865,17 @@ function postInit()
     openConditionsWindow(false);
     section = "RosterWindow";
     openCallRosterWindow(false);
+    section = "DopplerWindow";
+    birdWatchTransmitterWindowOpen(false);
     section = "ButtonPanelInit";
     buttonPanelInit();
+    birdWatchButtonsInit();
+    section = "SerialPortsInit";
+    serialPortsInit();
+    section = "RotorInit";
+    rotorInit();
+    section = "RigInit";
+    rigInit();
     projectionImg.style.filter = GT.settings.map.projection == "AEQD" ? "" : "grayscale(1)";
     section = "MouseTrack";
     displayMouseTrack();
@@ -968,6 +983,7 @@ function changeOffline()
   displayPredLayer();
   updateSpottingViews();
   updateOffAirServicesViews();
+  updateBirdWatchViews();
   loadMapSettings();
   changeMapValues();
   setVisualHunting();

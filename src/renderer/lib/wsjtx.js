@@ -265,7 +265,8 @@ function handleInstanceStatus(newMessage)
       localDXGrid.innerHTML = GT.myDXGrid;
       let LL = squareToCenter(GT.myDXGrid);
       localDXDistance.innerHTML = parseInt(MyCircle.distance(GT.myLat, GT.myLon, LL.a, LL.o) * MyCircle.validateRadius(distanceUnit.value)) + distanceUnit.value.toLowerCase();
-      localDXAzimuth.innerHTML = parseInt(MyCircle.bearing(GT.myLat, GT.myLon, LL.a, LL.o)) + "&deg;";
+      const bearing = parseInt(MyCircle.bearing(GT.myLat, GT.myLon, LL.a, LL.o));
+      localDXAzimuth.innerHTML = bearing + "&deg;&nbsp;" + headingArrowHtml(bearing);
     }
 
     if (localDXcall.innerHTML != "-")

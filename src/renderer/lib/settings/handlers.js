@@ -78,6 +78,8 @@ function changeTrafficDecode()
 {
   GT.settings.map.trafficDecode = trafficDecode.checked;
   trafficDecodeView();
+  // The control panel is as tall as it needs to be, or the map's height again
+  updateLayout(GT.menuShowing == false);
 }
 
 function setWantedByBandModeRowView()
@@ -111,11 +113,8 @@ function changeWarnOnSoundcardsChanged()
 
 function trafficDecodeView()
 {
-  if (GT.settings.map.trafficDecode == false)
-  {
-    trafficDiv.innerHTML = "";
-    GT.lastTraffic = [];
-  }
+  // Hidden and shown again, what was decoded stays: it is not cleared
+  trafficDiv.style.display = GT.settings.map.trafficDecode == false ? "none" : "";
 }
 
 function changeFitQRZvalue()

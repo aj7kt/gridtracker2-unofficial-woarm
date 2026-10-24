@@ -1,6 +1,14 @@
 // GridTracker Copyright © 2026 GridTracker.org
 // All rights reserved.
 // See LICENSE for more information.
+// An arrow turned to a bearing (degrees clockwise from north), after the degrees where a direction is shown (the rosters' Azim, the
+// main panel's, BirdWatch's Heading). Drawn, so it looks the same on every system; as tall as the text around it and in its color
+function headingArrowHtml(degrees)
+{
+  return "<svg width='0.9em' height='0.9em' viewBox='0 0 11 11' style='vertical-align:-0.1em;transform:rotate(" + Math.round(Number(degrees) || 0) + "deg)'>" +
+    "<polygon points='5.5,0.5 10.5,10.5 5.5,7.5 0.5,10.5' fill='currentColor'/></svg>";
+}
+
 const BAND_MAP = (function() {
   const map = new Array(226).fill("OOB");
   const tempBands = [

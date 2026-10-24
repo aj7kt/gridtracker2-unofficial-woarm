@@ -81,6 +81,8 @@ function onButtonDrop(event)
   if (event.target.draggable)
   {
     let dragElement = document.getElementById( event.dataTransfer.getData("Button"));
+    // Not one of this panel's buttons (the BirdWatch panel's have their own drop)
+    if (!dragElement) return;
     let target = event.target;
     let parent = event.target.parentNode;
     while (parent != buttonsDiv)

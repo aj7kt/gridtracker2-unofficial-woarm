@@ -90,11 +90,8 @@ function loadViewSettings()
   ValidatePort(hrdLogbookPortInput, buttonHrdLogbookCheckBox, null);
   ValidateIPaddress(hrdLogbookIpInput, buttonHrdLogbookCheckBox, null);
 
-  pstrotatorIpInput.value = GT.settings.pstrotator.ip;
-  pstrotatorPortInput.value = GT.settings.pstrotator.port;
-  pstrotatorCheckBox.checked = GT.settings.pstrotator.enable;
-  ValidatePort(pstrotatorPortInput, pstrotatorCheckBox, null);
-  ValidateIPaddress(pstrotatorIpInput, pstrotatorCheckBox, null);
+  rotorSettingsRender();
+  rigSettingsRender();
 
   spotHistoryTimeValue.value = parseInt(
     GT.settings.reception.viewHistoryTimeSec / 60
@@ -347,6 +344,7 @@ function startupButtonsAndInputs()
     }
 
     updateOffAirServicesViews();
+    updateBirdWatchViews();
   }
   catch (e)
   {
@@ -478,9 +476,13 @@ function createFileSelectorHandlers()
 
 function stylePasswordInputs()
 {
-    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    document.querySelectorAll('input[type="password"]').forEach(stylePasswordInput);
+}
 
-    passwordInputs.forEach(input => {
+// One password box with its show / hide button (also for boxes made later, like BirdWatch's TLE logins)
+function stylePasswordInput(input)
+{
+    {
         // Create the wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'password-wrapper';
@@ -521,5 +523,5 @@ function stylePasswordInputs()
         });
 
         wrapper.appendChild(toggleBtn);
-    });
+    }
 }

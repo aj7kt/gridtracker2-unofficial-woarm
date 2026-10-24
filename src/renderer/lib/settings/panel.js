@@ -6,6 +6,7 @@
 
 function showSettingsBox()
 {
+  closeBirdWatchSettings();
   if (rootSettingsDiv.style.display == "inline-flex")
   {
     rootSettingsDiv.style.display = "none";
@@ -77,6 +78,7 @@ function openInfoTab(evt, tabName, callFunc, callObj)
 
 function openAboutBox()
 {
+  closeBirdWatchSettings();
   openSettingsTab(aboutbut, 'aboutDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;
@@ -85,6 +87,7 @@ function openAboutBox()
 
 function openLogbookSettings()
 {
+  closeBirdWatchSettings();
   openSettingsTab(logbut, 'logbookSettingsDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;
@@ -94,6 +97,7 @@ function openLogbookSettings()
 // rosterName: which roster's Audio Alerts to show ("call" / "feed"), from the roster window's 🔔
 function openAudioAlertSettings(rosterName = null)
 {
+  closeBirdWatchSettings();
   if (rosterName) showAudioAlertsRoster(rosterName);
   openSettingsTab(audioalertbut, 'audioAlertsDiv');
   helpDiv.style.display = "none";
@@ -105,6 +109,7 @@ function openAudioAlertSettings(rosterName = null)
 // From the roster window's Settings -> Colors: clicking the Band or Mode swatch
 function openColorSettings()
 {
+  closeBirdWatchSettings();
   openSettingsTab(colorsSettingsButton, 'bandColorsSettingsDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;

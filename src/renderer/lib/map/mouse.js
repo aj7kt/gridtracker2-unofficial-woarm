@@ -861,6 +861,7 @@ function initHoverFunctors()
   GT.hoverFunctors.gtFlag = { hover: mouseOverGtFlag, move: mouseGtFlagMove, out: mouseOutGtFlag };
   GT.hoverFunctors.spot = { hover: mouseOverSpotItem, move: mouseMoveDataItem, out: mouseOutOfDataItem };
   GT.hoverFunctors.feed = { hover: mouseOverSpotItem, move: mouseMoveDataItem, out: mouseOutOfDataItem };
+  GT.hoverFunctors.birdWatch = { hover: birdWatchHoverOver, move: birdWatchHoverMove, out: birdWatchHoverOut };
 }
 
 function mouseDownEvent(event)
@@ -873,6 +874,18 @@ function mouseDownEvent(event)
     info.callObj.distance = 1; // We just need the heading, but distance makes it valid
     info.callObj.heading = parseInt(MyCircle.bearing(GT.myLat, GT.myLon, LL[1], LL[0]));
     aimRotator(info);
+  }
+
+  // A tracked satellite or its label (BirdWatch): a click selects it in its panel (and predicts its path), or clears the selection
+  // when it already is. Whatever is under it (a grid square, a DXCC) is left alone, for the right button too
+  const satellites = GT.map.getFeaturesAtPixel(event.pixel, { hitTolerance: 3, layerFilter: (layer) => layer === GT.layerVectors.birdWatch });
+  const satellite = satellites ? satellites.find((feature) => feature.get("prop") == "birdWatch") : null;
+  if (satellite)
+  {
+    // The right button: its transmitters in a window of their own (and it is the selected satellite)
+    if (event.originalEvent && event.originalEvent.button == 2) birdWatchPopOut(satellite.get("norad"));
+    else birdWatchSelect(satellite.get("norad"));
+    return true;
   }
 
   let shouldReturn = false;

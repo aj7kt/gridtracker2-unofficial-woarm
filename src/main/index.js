@@ -139,6 +139,12 @@ const allowedWindows = {
     options: { x: 45, y: 45, width: 200, height: 200, show: false, zoom: 0 },
     static: { minWidth: 100, minHeight: 50 },
   },
+  gt_transmitters: {
+    window: null,
+    honorVisibility: false,
+    options: { x: 60, y: 60, width: 640, height: 200, show: false, zoom: 0 },
+    static: { minWidth: 200, minHeight: 60, icon: join(__dirname, '../renderer/img/sat-doppler.png') },
+  },
   gt_stats: {
     window: null,
     honorVisibility: true,
@@ -233,6 +239,29 @@ else {
   {
     console.log("Error checking dxcc-info files");
   }
+}
+
+// BirdWatch's satellite data (resources/data/sat, made by tools/sat_update.js) ships with the release, so a fresh
+// install has it offline. The copy in Ginternal\sat is kept up to date by BirdWatch while online; like dxcc-info.json,
+// the release's copy replaces it when that one is newer (version.json holds the date of each, as YYYYMMDD)
+try {
+  const asarSatPath = join(asarResourcesPath, 'data/sat');
+  const gtSatPath = join(gtInternalPath, 'sat');
+  const readVersion = (file) => {
+    try { return parseInt(JSON.parse(fs.readFileSync(file, 'utf8')).version) || 0; }
+    catch (e) { return 0; }
+  };
+  if (readVersion(join(asarSatPath, 'version.json')) > readVersion(join(gtSatPath, 'version.json'))) {
+    fs.mkdirSync(gtSatPath, { recursive: true });
+    // version.json last: until it's there, the copy is looked at again next time
+    for (const file of fs.readdirSync(asarSatPath).filter((f) => f != 'version.json')) {
+      fs.copyFileSync(join(asarSatPath, file), join(gtSatPath, file));
+    }
+    fs.copyFileSync(join(asarSatPath, 'version.json'), join(gtSatPath, 'version.json'));
+  }
+}
+catch (e) {
+  console.log("Error checking satellite data files");
 }
 
 const windowIdToAllowedWindows = {};
@@ -452,6 +481,38 @@ ipcMain.on('log', (event, value) => {
   log.error(value);
 });
 
+// Serial ports (Web Serial, renderer/lib/services/serialPorts.js): the renderer picks from the list the browser offers, and the port each
+// service (rotor, rig) keeps is granted again at each start (getPorts() finds it), matched by Chromium's identity for it: on Windows
+// { device_instance_id, name }, elsewhere { vendor_id, product_id, serial_number, name } for a USB port, { name } alone otherwise. As
+// the browser doesn't say which granted port is which, a service asks for its own alone (serialPortGrantOnly) while it looks
+const serialPortsWanted = {};
+let serialPortGrantOnly = null;
+
+ipcMain.on('serialPortWanted', (event, purpose, wanted) => {
+  serialPortsWanted[purpose] = wanted;
+});
+
+ipcMain.handle('serialPortGrantOnly', (event, purpose) => {
+  serialPortGrantOnly = purpose;
+});
+
+function serialPortMatches(device) {
+  if (!device) return false;
+  for (const purpose in serialPortsWanted) {
+    if (serialPortGrantOnly && purpose !== serialPortGrantOnly) continue;
+    const want = serialPortsWanted[purpose];
+    if (!want) continue;
+    if (device.device_instance_id !== undefined) {
+      if (want.deviceInstanceId && device.device_instance_id === want.deviceInstanceId) return true;
+    } else if (device.serial_number !== undefined) {
+      if (want.serialNumber && device.serial_number === want.serialNumber) return true;
+    } else if (device.name && (device.name === want.displayName || device.name === want.portName)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 let mainWindow = null;
 // frameName of the window being opened by setWindowOpenHandler, consumed in browser-window-created
 let pendingWindowFrameName = null;
@@ -477,6 +538,17 @@ function createMainWindow() {
       devTools: !app.isPackaged,
     },
   });
+
+  // Web Serial (Rotor Control, Rig Control): the port list goes to the renderer, which answers with the one picked (or nothing); the ports kept are
+  // granted without asking. Permission checks are passed as they are without a handler
+  const session = mainWindow.webContents.session;
+  session.on('select-serial-port', (event, portList, webContents, callback) => {
+    event.preventDefault();
+    ipcMain.once('serialPortChosen', (reply, portId) => callback(portId || ''));
+    webContents.send('serialPortList', portList.map((port) => ({ portId: port.portId, portName: port.portName, displayName: port.displayName || '', vendorId: port.vendorId || '', productId: port.productId || '', serialNumber: port.serialNumber || '', deviceInstanceId: port.deviceInstanceId || '' })));
+  });
+  session.setPermissionCheckHandler(() => true);
+  session.setDevicePermissionHandler((details) => details.deviceType === 'serial' && serialPortMatches(details.device));
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     if (details.frameName == 'printHotKeys') {
@@ -630,6 +702,8 @@ app.whenReady().then(() => {
           );
         }
 
+        allowedWindows[windowIdToAllowedWindows[window.id]].placed = true;
+
         if (
           allowedWindows[windowIdToAllowedWindows[window.id]].honorVisibility == true &&
           options.show == true
@@ -647,7 +721,9 @@ app.whenReady().then(() => {
 
       window.on('move', (event) => {
         let bounds = window.getContentBounds();
-        let saveBounds = !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
+        // Not before ready-to-show has put the window where it was saved: a page that sizes or shows itself as it loads would
+        // otherwise record the window's first, default place over the saved one
+        let saveBounds = allowedWindows[windowIdToAllowedWindows[window.id]].placed == true && !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
         if (saveBounds) {
           allowedWindows[windowIdToAllowedWindows[window.id]].options = {
             ...allowedWindows[windowIdToAllowedWindows[window.id]].options,
@@ -658,7 +734,9 @@ app.whenReady().then(() => {
 
       window.on('moved', (event) => {
         let bounds = window.getContentBounds();
-        let saveBounds = !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
+        // Not before ready-to-show has put the window where it was saved: a page that sizes or shows itself as it loads would
+        // otherwise record the window's first, default place over the saved one
+        let saveBounds = allowedWindows[windowIdToAllowedWindows[window.id]].placed == true && !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
         if (saveBounds) {
           allowedWindows[windowIdToAllowedWindows[window.id]].options = {
             ...allowedWindows[windowIdToAllowedWindows[window.id]].options,
@@ -669,7 +747,9 @@ app.whenReady().then(() => {
 
       window.on('resize', (event) => {
         let bounds = window.getContentBounds();
-        let saveBounds = !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
+        // Not before ready-to-show has put the window where it was saved: a page that sizes or shows itself as it loads would
+        // otherwise record the window's first, default place over the saved one
+        let saveBounds = allowedWindows[windowIdToAllowedWindows[window.id]].placed == true && !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
         if (saveBounds) {
           allowedWindows[windowIdToAllowedWindows[window.id]].options = {
             ...allowedWindows[windowIdToAllowedWindows[window.id]].options,
@@ -680,7 +760,9 @@ app.whenReady().then(() => {
 
       window.on('resized', (event) => {
         let bounds = window.getContentBounds();
-        let saveBounds = !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
+        // Not before ready-to-show has put the window where it was saved: a page that sizes or shows itself as it loads would
+        // otherwise record the window's first, default place over the saved one
+        let saveBounds = allowedWindows[windowIdToAllowedWindows[window.id]].placed == true && !(window.isMinimized() || window.isFullScreen() || (isMac && window.isMaximized()));
         if (saveBounds) {
           allowedWindows[windowIdToAllowedWindows[window.id]].options = {
             ...allowedWindows[windowIdToAllowedWindows[window.id]].options,

@@ -9,6 +9,8 @@ function onMyKeyDown(event)
   if (event.keyCode == 27)
   {
     rootSettingsDiv.style.display = "none";
+    birdWatchSettingsDiv.style.display = "none";
+    birdWatchTimelineClose();
     helpDiv.style.display = "none";
     GT.helpShow = false;
     event.preventDefault();
@@ -27,7 +29,7 @@ function onMyKeyDown(event)
     }
   }
 
-  if (rootSettingsDiv.style.display == "none")
+  if (rootSettingsDiv.style.display == "none" && birdWatchSettingsDiv.style.display == "none")
   {
     if (event.code in GT.hotKeys)
     {
@@ -128,6 +130,10 @@ function registerHotKeys()
   registerHotKey("Toggle Offline Mode", "KeyY", toggleOffline, null, null, "ctrlKey");
   registerHotKey("Center Map on QTH Grid", "KeyZ", setCenterQTH, null, null, "ctrlKey");
 
+  registerHotKey("Select Next Satellite", "]", birdWatchSelectStep, 1, null, "ctrlKey");
+  registerHotKey("Select Previous Satellite", "[", birdWatchSelectStep, -1, null, "ctrlKey");
+  registerHotKey("Toggle Auto Select Next AOS Satellite", "\\", birdWatchAutoToggle, null, null, "ctrlKey");
+  registerHotKey("Toggle BirdWatch Panel", "F12", toggleBirdWatch, null, null, "ctrlKey");
   registerHotKey("Toggle Call Roster Scripts", "Minus", toggleCRScript, null, null, "shiftKey");
   registerHotKey("Map Memory 1", "F5", mapMemory, 0, "shiftKey", null, "Save");
   registerHotKey("Map Memory 2", "F6", mapMemory, 1, "shiftKey", null, "Save");

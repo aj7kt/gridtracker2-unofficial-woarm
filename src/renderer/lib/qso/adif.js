@@ -1589,6 +1589,9 @@ function sendToLogger(ADIF)
     if (summitGrid) record.GRIDSQUARE = summitGrid;
   }
 
+  // BirdWatch: a contact made through the selected satellite (birdWatchLog.js)
+  birdWatchLogTag(record);
+
   if ("TX_PWR" in record)
   {
     record.TX_PWR = parseInt(record.TX_PWR);

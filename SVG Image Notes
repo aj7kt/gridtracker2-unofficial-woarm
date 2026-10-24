@@ -325,3 +325,697 @@
   <circle cx="197" cy="33" r="1.5" fill="#111111" />
   <circle cx="205" cy="33" r="1.5" fill="#111111" />
 </svg>
+
+<!-- birdwatch.png (512x512 PNG rendered from this SVG) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Black disc with a yellow rim -->
+  <circle cx="256" cy="256" r="244" fill="#000000" stroke="#FFFF00" stroke-width="16"/>
+  <g transform="rotate(-45 256 256)">
+    <!-- Solar panels, black grid lines -->
+    <rect x="58" y="212" width="142" height="88" rx="6" fill="#FFFF00"/>
+    <rect x="312" y="212" width="142" height="88" rx="6" fill="#FFFF00"/>
+    <g stroke="#000000" stroke-width="9">
+      <line x1="105" y1="212" x2="105" y2="300"/>
+      <line x1="153" y1="212" x2="153" y2="300"/>
+      <line x1="359" y1="212" x2="359" y2="300"/>
+      <line x1="407" y1="212" x2="407" y2="300"/>
+      <line x1="58" y1="256" x2="200" y2="256"/>
+      <line x1="312" y1="256" x2="454" y2="256"/>
+    </g>
+    <!-- Struts -->
+    <rect x="198" y="248" width="26" height="16" fill="#FFFF00"/>
+    <rect x="288" y="248" width="26" height="16" fill="#FFFF00"/>
+    <!-- Body with a black band -->
+    <rect x="218" y="200" width="76" height="112" rx="10" fill="#FFFF00"/>
+    <rect x="218" y="248" width="76" height="16" fill="#000000"/>
+    <!-- Mast and dish -->
+    <rect x="249" y="160" width="14" height="42" fill="#FFFF00"/>
+    <path d="M196 136 Q256 196 316 136 Z" fill="#FFFF00"/>
+    <circle cx="256" cy="128" r="9" fill="#FFFF00"/>
+  </g>
+</svg>
+
+<!-- sat-01-classic.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="160" y1="256" x2="200" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="312" y1="256" x2="352" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <rect x="24" y="156" width="140" height="200" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="348" y="156" width="140" height="200" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="190" x2="256" y2="118" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <circle cx="256" cy="108" r="18" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="196" y="186" width="120" height="144" rx="14" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="160" y1="256" x2="200" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="312" y1="256" x2="352" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <rect x="24" y="156" width="140" height="200" rx="6" fill="#2459b8" />
+  <line x1="70.66666666666666" y1="162" x2="70.66666666666666" y2="350" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="117.33333333333333" y1="162" x2="117.33333333333333" y2="350" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="206" x2="158" y2="206" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="256" x2="158" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="306" x2="158" y2="306" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="348" y="156" width="140" height="200" rx="6" fill="#2459b8" />
+  <line x1="394.6666666666667" y1="162" x2="394.6666666666667" y2="350" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="441.3333333333333" y1="162" x2="441.3333333333333" y2="350" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="354" y1="206" x2="482" y2="206" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="354" y1="256" x2="482" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="354" y1="306" x2="482" y2="306" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="256" y1="190" x2="256" y2="118" stroke="#7d8794" stroke-width="9" stroke-linecap="round" />
+  <circle cx="256" cy="108" r="18" fill="#e0392d" />
+  <rect x="196" y="186" width="120" height="144" rx="14" fill="#f2c230" />
+  <rect x="196" y="240" width="120" height="22" rx="0" fill="#c99512" />
+  <circle cx="256" cy="296" r="14" fill="#2b333d" />
+</svg>
+
+<!-- sat-02-dish.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="150" y1="300" x2="196" y2="300" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="316" y1="300" x2="362" y2="300" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <rect x="22" y="226" width="128" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="362" y="226" width="128" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="196" y="250" width="120" height="120" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="250" x2="256" y2="190" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <ellipse cx="256" cy="140" rx="118" ry="46" transform="rotate(-22 256 140)" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="140" x2="300" y2="62" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <circle cx="304" cy="56" r="14" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="150" y1="300" x2="196" y2="300" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="316" y1="300" x2="362" y2="300" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <rect x="22" y="226" width="128" height="150" rx="6" fill="#2459b8" />
+  <line x1="86" y1="232" x2="86" y2="370" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="28" y1="276" x2="144" y2="276" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="28" y1="326" x2="144" y2="326" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="362" y="226" width="128" height="150" rx="6" fill="#2459b8" />
+  <line x1="426" y1="232" x2="426" y2="370" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="368" y1="276" x2="484" y2="276" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="368" y1="326" x2="484" y2="326" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="196" y="250" width="120" height="120" rx="12" fill="#d9dee5" />
+  <rect x="196" y="300" width="120" height="18" rx="0" fill="#9aa3ae" />
+  <line x1="256" y1="250" x2="256" y2="190" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <ellipse cx="256" cy="140" rx="118" ry="46" transform="rotate(-22 256 140)" fill="#d9dee5" />
+  <ellipse cx="256" cy="140" rx="92" ry="30" transform="rotate(-22 256 140)" fill="#9aa3ae" />
+  <line x1="256" y1="140" x2="300" y2="62" stroke="#2b333d" stroke-width="7" stroke-linecap="round" />
+  <circle cx="304" cy="56" r="14" fill="#e0392d" />
+</svg>
+
+<!-- sat-03-cubesat.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="256" x2="70" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="442" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="70" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="442" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <rect x="146" y="146" width="220" height="220" rx="16" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="166" y="166" width="82" height="82" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="264" y="166" width="82" height="82" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="166" y="264" width="82" height="82" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="70" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="442" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="70" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="442" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <rect x="146" y="146" width="220" height="220" rx="16" fill="#d9dee5" />
+  <rect x="166" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+  <line x1="207" y1="172" x2="207" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="172" y1="207" x2="242" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="264" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+  <line x1="305" y1="172" x2="305" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="270" y1="207" x2="340" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="166" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+  <line x1="207" y1="270" x2="207" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="172" y1="305" x2="242" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="264" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+  <line x1="305" y1="270" x2="305" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="270" y1="305" x2="340" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="14" fill="#e0392d" />
+</svg>
+
+<!-- sat-04-sputnik.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="256" x2="40" y2="120" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="190" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="322" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="392" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <circle cx="300" cy="256" r="118" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="120" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="190" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="322" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="392" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <circle cx="300" cy="256" r="118" fill="#d9dee5" />
+  <ellipse cx="262" cy="214" rx="40" ry="26" transform="rotate(-35 262 214)" fill="#f5f7fa" />
+  <path d="M410.88 296.36 A118 118 0 0 1 189.12 296.36" fill="none" stroke="#9aa3ae" stroke-width="12" stroke-linecap="butt" />
+</svg>
+
+<!-- sat-05-station.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="60" y1="256" x2="452" y2="256" stroke="#0f141a" stroke-width="32" stroke-linecap="round" />
+  <rect x="70" y="40" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="70" y="322" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="150" y="40" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="150" y="322" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="300" y="40" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="300" y="322" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="380" y="40" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="380" y="322" width="62" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="101" y1="190" x2="101" y2="322" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="181" y1="190" x2="181" y2="322" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="331" y1="190" x2="331" y2="322" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="411" y1="190" x2="411" y2="322" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <rect x="218" y="226" width="76" height="60" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="232" y="196" width="48" height="120" rx="10" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="244" y="150" width="24" height="46" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="244" y="316" width="24" height="46" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="60" y1="256" x2="452" y2="256" stroke="#7d8794" stroke-width="14" stroke-linecap="round" />
+  <rect x="70" y="40" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="76" y1="77.5" x2="126" y2="77.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="76" y1="115" x2="126" y2="115" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="76" y1="152.5" x2="126" y2="152.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="70" y="322" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="76" y1="359.5" x2="126" y2="359.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="76" y1="397" x2="126" y2="397" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="76" y1="434.5" x2="126" y2="434.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="150" y="40" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="156" y1="77.5" x2="206" y2="77.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="156" y1="115" x2="206" y2="115" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="156" y1="152.5" x2="206" y2="152.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="150" y="322" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="156" y1="359.5" x2="206" y2="359.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="156" y1="397" x2="206" y2="397" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="156" y1="434.5" x2="206" y2="434.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="300" y="40" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="306" y1="77.5" x2="356" y2="77.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="306" y1="115" x2="356" y2="115" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="306" y1="152.5" x2="356" y2="152.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="300" y="322" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="306" y1="359.5" x2="356" y2="359.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="306" y1="397" x2="356" y2="397" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="306" y1="434.5" x2="356" y2="434.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="380" y="40" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="386" y1="77.5" x2="436" y2="77.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="386" y1="115" x2="436" y2="115" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="386" y1="152.5" x2="436" y2="152.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="380" y="322" width="62" height="150" rx="6" fill="#2459b8" />
+  <line x1="386" y1="359.5" x2="436" y2="359.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="386" y1="397" x2="436" y2="397" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="386" y1="434.5" x2="436" y2="434.5" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="101" y1="190" x2="101" y2="322" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="181" y1="190" x2="181" y2="322" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="331" y1="190" x2="331" y2="322" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="411" y1="190" x2="411" y2="322" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <rect x="218" y="226" width="76" height="60" rx="12" fill="#f5f7fa" />
+  <rect x="232" y="196" width="48" height="120" rx="10" fill="#d9dee5" />
+  <circle cx="256" cy="256" r="12" fill="#ff8a1f" />
+  <rect x="244" y="150" width="24" height="46" rx="6" fill="#f5f7fa" />
+  <rect x="244" y="316" width="24" height="46" rx="6" fill="#f5f7fa" />
+</svg>
+
+<!-- sat-06-telescope.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect x="112" y="196" width="250" height="120" rx="22" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="362" y="214" width="60" height="84" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="176" y="18" width="130" height="160" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="176" y="334" width="130" height="160" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="241" y1="178" x2="241" y2="196" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="241" y1="316" x2="241" y2="334" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="422" y1="256" x2="468" y2="256" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <circle cx="476" cy="256" r="14" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="112" y="196" width="250" height="120" rx="22" fill="#d9dee5" />
+  <rect x="112" y="196" width="40" height="120" rx="0" fill="#2b333d" />
+  <rect x="318" y="196" width="14" height="120" rx="0" fill="#9aa3ae" />
+  <rect x="362" y="214" width="60" height="84" rx="12" fill="#f2c230" />
+  <rect x="176" y="18" width="130" height="160" rx="6" fill="#2459b8" />
+  <line x1="241" y1="24" x2="241" y2="172" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="182" y1="71.33333333333334" x2="300" y2="71.33333333333334" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="182" y1="124.66666666666667" x2="300" y2="124.66666666666667" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="176" y="334" width="130" height="160" rx="6" fill="#2459b8" />
+  <line x1="241" y1="340" x2="241" y2="488" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="182" y1="387.3333333333333" x2="300" y2="387.3333333333333" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="182" y1="440.6666666666667" x2="300" y2="440.6666666666667" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="241" y1="178" x2="241" y2="196" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="241" y1="316" x2="241" y2="334" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="422" y1="256" x2="468" y2="256" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <circle cx="476" cy="256" r="14" fill="#e0392d" />
+</svg>
+
+<!-- sat-07-flatsat.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect x="36" y="190" width="330" height="132" rx="8" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="366" y1="256" x2="396" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <rect x="396" y="214" width="64" height="84" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="428" cy="168" rx="40" ry="14" transform="rotate(-20 428 168)" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="428" y1="178" x2="428" y2="214" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <rect x="36" y="190" width="330" height="132" rx="8" fill="#2b333d" />
+  <rect x="48" y="202" width="306" height="108" rx="4" fill="#2459b8" />
+  <line x1="99" y1="202" x2="99" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="150" y1="202" x2="150" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="201" y1="202" x2="201" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="252" y1="202" x2="252" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="303" y1="202" x2="303" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="48" y1="256" x2="354" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="366" y1="256" x2="396" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <rect x="396" y="214" width="64" height="84" rx="12" fill="#f5f7fa" />
+  <rect x="396" y="250" width="64" height="14" rx="0" fill="#9aa3ae" />
+  <ellipse cx="428" cy="168" rx="40" ry="14" transform="rotate(-20 428 168)" fill="#d9dee5" />
+  <line x1="428" y1="178" x2="428" y2="214" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+</svg>
+
+<!-- sat-08-oscar.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="256" x2="40" y2="256" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="472" y2="256" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="120" y2="70" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="392" y2="442" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <polygon points="196,120 316,120 392,196 392,316 316,392 196,392 120,316 120,196" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="40" y2="256" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="472" y2="256" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="120" y2="70" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="256" y1="256" x2="392" y2="442" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <polygon points="196,120 316,120 392,196 392,316 316,392 196,392 120,316 120,196" fill="#f2c230" />
+  <polygon points="196,190 316,190 362,226 362,286 316,322 196,322 150,286 150,226" fill="#2459b8" />
+  <line x1="190" y1="190" x2="190" y2="322" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="230" y1="190" x2="230" y2="322" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="270" y1="190" x2="270" y2="322" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="310" y1="190" x2="310" y2="322" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="150" y1="256" x2="362" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="16" fill="#e0392d" />
+</svg>
+
+<!-- sat-09-yagi.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="330" x2="256" y2="40" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="206" y1="80" x2="306" y2="80" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <line x1="216" y1="130" x2="296" y2="130" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <line x1="226" y1="180" x2="286" y2="180" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <line x1="236" y1="230" x2="276" y2="230" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <rect x="40" y="276" width="140" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="332" y="276" width="140" height="150" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="180" y1="350" x2="214" y2="350" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="298" y1="350" x2="332" y2="350" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <rect x="214" y="296" width="84" height="112" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="330" x2="256" y2="40" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="206" y1="80" x2="306" y2="80" stroke="#d9dee5" stroke-width="9" stroke-linecap="round" />
+  <line x1="216" y1="130" x2="296" y2="130" stroke="#d9dee5" stroke-width="9" stroke-linecap="round" />
+  <line x1="226" y1="180" x2="286" y2="180" stroke="#d9dee5" stroke-width="9" stroke-linecap="round" />
+  <line x1="236" y1="230" x2="276" y2="230" stroke="#d9dee5" stroke-width="9" stroke-linecap="round" />
+  <rect x="40" y="276" width="140" height="150" rx="6" fill="#2459b8" />
+  <line x1="110" y1="282" x2="110" y2="420" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="46" y1="326" x2="174" y2="326" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="46" y1="376" x2="174" y2="376" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="332" y="276" width="140" height="150" rx="6" fill="#2459b8" />
+  <line x1="402" y1="282" x2="402" y2="420" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="338" y1="326" x2="466" y2="326" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="338" y1="376" x2="466" y2="376" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="180" y1="350" x2="214" y2="350" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="298" y1="350" x2="332" y2="350" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <rect x="214" y="296" width="84" height="112" rx="12" fill="#d9dee5" />
+  <rect x="214" y="336" width="84" height="14" rx="0" fill="#9aa3ae" />
+  <circle cx="256" cy="372" r="10" fill="#e0392d" />
+</svg>
+
+<!-- sat-10-beacon.png (512x512, the map's satellite icons: a dark outline under every shape) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="110" y1="340" x2="150" y2="340" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="250" y1="340" x2="290" y2="340" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <rect x="16" y="280" width="94" height="120" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="290" y="280" width="94" height="120" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="150" y="276" width="100" height="128" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="200" y1="276" x2="240" y2="220" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <circle cx="248" cy="208" r="14" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M248 156 A52 52 0 0 1 300 208" fill="none" stroke="#0f141a" stroke-width="32" stroke-linecap="butt" />
+  <path d="M248 116 A92 92 0 0 1 340 208" fill="none" stroke="#0f141a" stroke-width="32" stroke-linecap="butt" />
+  <path d="M248 76 A132 132 0 0 1 380 208" fill="none" stroke="#0f141a" stroke-width="32" stroke-linecap="butt" />
+  <line x1="110" y1="340" x2="150" y2="340" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="250" y1="340" x2="290" y2="340" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <rect x="16" y="280" width="94" height="120" rx="6" fill="#2459b8" />
+  <line x1="63" y1="286" x2="63" y2="394" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="22" y1="320" x2="104" y2="320" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="22" y1="360" x2="104" y2="360" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="290" y="280" width="94" height="120" rx="6" fill="#2459b8" />
+  <line x1="337" y1="286" x2="337" y2="394" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="296" y1="320" x2="378" y2="320" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="296" y1="360" x2="378" y2="360" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="150" y="276" width="100" height="128" rx="12" fill="#f2c230" />
+  <rect x="150" y="330" width="100" height="16" rx="0" fill="#c99512" />
+  <circle cx="200" cy="372" r="10" fill="#2b333d" />
+  <line x1="200" y1="276" x2="240" y2="220" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <circle cx="248" cy="208" r="14" fill="#e0392d" />
+  <path d="M248 156 A52 52 0 0 1 300 208" fill="none" stroke="#ff8a1f" stroke-width="14" stroke-linecap="butt" />
+  <path d="M248 116 A92 92 0 0 1 340 208" fill="none" stroke="#ff8a1f" stroke-width="14" stroke-linecap="butt" />
+  <path d="M248 76 A132 132 0 0 1 380 208" fill="none" stroke="#ff8a1f" stroke-width="14" stroke-linecap="butt" />
+</svg>
+
+<!-- sat-11-sixu.png (512x512, the map's satellite icons: a dark outline under every shape; a tall 6U cubesat, two folding panels a side) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="104" y1="256" x2="112" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="192" y1="256" x2="206" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="306" y1="256" x2="320" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="400" y1="256" x2="408" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="256" y1="96" x2="256" y2="40" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <rect x="24" y="150" width="80" height="212" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="112" y="150" width="80" height="212" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="320" y="150" width="80" height="212" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="408" y="150" width="80" height="212" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="206" y="96" width="100" height="320" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="144" r="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="104" y1="256" x2="112" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="192" y1="256" x2="206" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="306" y1="256" x2="320" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="400" y1="256" x2="408" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="256" y1="96" x2="256" y2="40" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <rect x="24" y="150" width="80" height="212" rx="6" fill="#2459b8" />
+  <line x1="64" y1="156" x2="64" y2="356" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="220.67" x2="98" y2="220.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="291.33" x2="98" y2="291.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="112" y="150" width="80" height="212" rx="6" fill="#2459b8" />
+  <line x1="152" y1="156" x2="152" y2="356" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="118" y1="220.67" x2="186" y2="220.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="118" y1="291.33" x2="186" y2="291.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="320" y="150" width="80" height="212" rx="6" fill="#2459b8" />
+  <line x1="360" y1="156" x2="360" y2="356" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="326" y1="220.67" x2="394" y2="220.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="326" y1="291.33" x2="394" y2="291.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="408" y="150" width="80" height="212" rx="6" fill="#2459b8" />
+  <line x1="448" y1="156" x2="448" y2="356" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="414" y1="220.67" x2="482" y2="220.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="414" y1="291.33" x2="482" y2="291.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="206" y="96" width="100" height="320" rx="12" fill="#d9dee5" />
+  <rect x="206" y="196" width="100" height="14" rx="0" fill="#9aa3ae" />
+  <rect x="206" y="300" width="100" height="14" rx="0" fill="#9aa3ae" />
+  <circle cx="256" cy="144" r="13" fill="#e0392d" />
+</svg>
+
+<!-- sat-12-iridium.png (512x512, the map's satellite icons: a dark outline under every shape; a triangular body, its panels on a boom below) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="320" x2="256" y2="420" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="60" y1="420" x2="452" y2="420" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <rect x="40" y="372" width="160" height="96" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="312" y="372" width="160" height="96" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <polygon points="256,60 356,330 156,330" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="60" r="15" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="320" x2="256" y2="420" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="60" y1="420" x2="452" y2="420" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <rect x="40" y="372" width="160" height="96" rx="6" fill="#2459b8" />
+  <line x1="93.33" y1="378" x2="93.33" y2="462" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="146.67" y1="378" x2="146.67" y2="462" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="46" y1="420" x2="194" y2="420" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="312" y="372" width="160" height="96" rx="6" fill="#2459b8" />
+  <line x1="365.33" y1="378" x2="365.33" y2="462" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="418.67" y1="378" x2="418.67" y2="462" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="318" y1="420" x2="466" y2="420" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <polygon points="256,60 356,330 156,330" fill="#d9dee5" />
+  <polygon points="256,130 318,300 194,300" fill="#f2c230" />
+  <circle cx="256" cy="60" r="15" fill="#e0392d" />
+</svg>
+
+<!-- sat-13-wing.png (512x512, the map's satellite icons: a dark outline under every shape; one long wing, the body and a dish on the right) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="300" y1="256" x2="330" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="385" y1="170" x2="385" y2="200" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="420" y1="312" x2="466" y2="412" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <rect x="24" y="176" width="276" height="160" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="330" y="200" width="110" height="112" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="385" cy="150" rx="56" ry="20" transform="rotate(-15 385 150)" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="470" cy="420" r="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="300" y1="256" x2="330" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="385" y1="170" x2="385" y2="200" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="420" y1="312" x2="466" y2="412" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <rect x="24" y="176" width="276" height="160" rx="6" fill="#2459b8" />
+  <line x1="93" y1="182" x2="93" y2="330" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="162" y1="182" x2="162" y2="330" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="231" y1="182" x2="231" y2="330" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="256" x2="294" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="330" y="200" width="110" height="112" rx="12" fill="#f2c230" />
+  <rect x="330" y="248" width="110" height="16" rx="0" fill="#c99512" />
+  <ellipse cx="385" cy="150" rx="56" ry="20" transform="rotate(-15 385 150)" fill="#d9dee5" />
+  <ellipse cx="385" cy="150" rx="40" ry="12" transform="rotate(-15 385 150)" fill="#9aa3ae" />
+  <circle cx="470" cy="420" r="13" fill="#e0392d" />
+</svg>
+
+<!-- sat-14-cross.png (512x512, the map's satellite icons: a dark outline under every shape; four panels in an X round a white body) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g transform="rotate(45 256 256)">
+    <line x1="256" y1="174" x2="256" y2="206" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+    <line x1="256" y1="306" x2="256" y2="338" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+    <line x1="174" y1="256" x2="206" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+    <line x1="306" y1="256" x2="338" y2="256" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+    <rect x="196" y="30" width="120" height="144" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <rect x="196" y="338" width="120" height="144" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <rect x="30" y="196" width="144" height="120" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <rect x="338" y="196" width="144" height="120" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <rect x="206" y="206" width="100" height="100" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <circle cx="256" cy="256" r="16" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+    <line x1="256" y1="174" x2="256" y2="206" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+    <line x1="256" y1="306" x2="256" y2="338" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+    <line x1="174" y1="256" x2="206" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+    <line x1="306" y1="256" x2="338" y2="256" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+    <rect x="196" y="30" width="120" height="144" rx="6" fill="#2459b8" />
+    <line x1="256" y1="36" x2="256" y2="168" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="202" y1="78" x2="310" y2="78" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="202" y1="126" x2="310" y2="126" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="196" y="338" width="120" height="144" rx="6" fill="#2459b8" />
+    <line x1="256" y1="344" x2="256" y2="476" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="202" y1="386" x2="310" y2="386" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="202" y1="434" x2="310" y2="434" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="30" y="196" width="144" height="120" rx="6" fill="#2459b8" />
+    <line x1="78" y1="202" x2="78" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="126" y1="202" x2="126" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="36" y1="256" x2="168" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="338" y="196" width="144" height="120" rx="6" fill="#2459b8" />
+    <line x1="386" y1="202" x2="386" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="434" y1="202" x2="434" y2="310" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="344" y1="256" x2="476" y2="256" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="206" y="206" width="100" height="100" rx="12" fill="#f5f7fa" />
+    <circle cx="256" cy="256" r="16" fill="#e0392d" />
+  </g>
+</svg>
+
+<!-- sat-15-drum.png (512x512, the map's satellite icons: a dark outline under every shape; a spinning drum covered in cells, whips above and below) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="92" x2="256" y2="34" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="180" y1="128" x2="100" y2="60" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="332" y1="128" x2="412" y2="60" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="186" y1="388" x2="110" y2="474" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="326" y1="388" x2="402" y2="474" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <ellipse cx="256" cy="380" rx="90" ry="28" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="166" y="120" width="180" height="260" rx="0" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="256" cy="120" rx="90" ry="28" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="30" r="14" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="92" x2="256" y2="34" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="180" y1="128" x2="100" y2="60" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="332" y1="128" x2="412" y2="60" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="186" y1="388" x2="110" y2="474" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="326" y1="388" x2="402" y2="474" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <ellipse cx="256" cy="380" rx="90" ry="28" fill="#9aa3ae" />
+  <rect x="166" y="120" width="180" height="260" rx="0" fill="#2459b8" />
+  <line x1="196" y1="126" x2="196" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="226" y1="126" x2="226" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="256" y1="126" x2="256" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="286" y1="126" x2="286" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="316" y1="126" x2="316" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <ellipse cx="256" cy="120" rx="90" ry="28" fill="#d9dee5" />
+  <circle cx="256" cy="30" r="14" fill="#e0392d" />
+</svg>
+
+<!-- sat-16-weather.png (512x512, the map's satellite icons: a dark outline under every shape; a long body, one tilted panel off its end, a dish on the other) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="370" y1="256" x2="404" y2="214" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="250" y1="210" x2="250" y2="172" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <rect x="380" y="34" width="112" height="180" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" transform="rotate(18 436 124)" />
+  <ellipse cx="96" cy="256" rx="22" ry="58" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="150" y="302" width="60" height="44" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="240" y="302" width="52" height="36" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="116" y="210" width="254" height="92" rx="40" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="250" cy="164" r="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="370" y1="256" x2="404" y2="214" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="250" y1="210" x2="250" y2="172" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <rect x="380" y="34" width="112" height="180" rx="6" fill="#2459b8" transform="rotate(18 436 124)" />
+  <line x1="436" y1="40" x2="436" y2="208" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" transform="rotate(18 436 124)" />
+  <line x1="386" y1="79" x2="486" y2="79" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" transform="rotate(18 436 124)" />
+  <line x1="386" y1="124" x2="486" y2="124" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" transform="rotate(18 436 124)" />
+  <line x1="386" y1="169" x2="486" y2="169" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" transform="rotate(18 436 124)" />
+  <ellipse cx="96" cy="256" rx="22" ry="58" fill="#d9dee5" />
+  <ellipse cx="96" cy="256" rx="12" ry="42" fill="#9aa3ae" />
+  <rect x="150" y="302" width="60" height="44" rx="6" fill="#f2c230" />
+  <rect x="150" y="318" width="60" height="10" rx="0" fill="#c99512" />
+  <rect x="240" y="302" width="52" height="36" rx="6" fill="#f5f7fa" />
+  <rect x="116" y="210" width="254" height="92" rx="40" fill="#d9dee5" />
+  <rect x="196" y="210" width="14" height="92" rx="0" fill="#9aa3ae" />
+  <rect x="290" y="210" width="14" height="92" rx="0" fill="#9aa3ae" />
+  <circle cx="250" cy="164" r="13" fill="#e0392d" />
+</svg>
+
+<!-- sat-17-comsat.png (512x512, the map's satellite icons: a dark outline under every shape; a gold box, panels above and below, a dish each side) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="150" x2="256" y2="176" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="256" y1="336" x2="256" y2="362" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="170" y1="256" x2="196" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <line x1="316" y1="256" x2="342" y2="256" stroke="#0f141a" stroke-width="28" stroke-linecap="round" />
+  <rect x="200" y="20" width="112" height="130" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="200" y="362" width="112" height="130" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="140" cy="256" rx="40" ry="84" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="372" cy="256" rx="40" ry="84" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="196" y="176" width="120" height="160" rx="10" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="300" r="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="150" x2="256" y2="176" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="256" y1="336" x2="256" y2="362" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="170" y1="256" x2="196" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <line x1="316" y1="256" x2="342" y2="256" stroke="#7d8794" stroke-width="10" stroke-linecap="round" />
+  <rect x="200" y="20" width="112" height="130" rx="6" fill="#2459b8" />
+  <line x1="256" y1="26" x2="256" y2="144" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="206" y1="63.33" x2="306" y2="63.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="206" y1="106.67" x2="306" y2="106.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="200" y="362" width="112" height="130" rx="6" fill="#2459b8" />
+  <line x1="256" y1="368" x2="256" y2="486" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="206" y1="405.33" x2="306" y2="405.33" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="206" y1="448.67" x2="306" y2="448.67" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <ellipse cx="140" cy="256" rx="40" ry="84" fill="#d9dee5" />
+  <ellipse cx="140" cy="256" rx="26" ry="64" fill="#9aa3ae" />
+  <ellipse cx="372" cy="256" rx="40" ry="84" fill="#d9dee5" />
+  <ellipse cx="372" cy="256" rx="26" ry="64" fill="#9aa3ae" />
+  <rect x="196" y="176" width="120" height="160" rx="10" fill="#f2c230" />
+  <rect x="196" y="248" width="120" height="16" rx="0" fill="#c99512" />
+  <circle cx="256" cy="300" r="13" fill="#e0392d" />
+</svg>
+
+<!-- sat-18-tether.png (512x512, the map's satellite icons: a dark outline under every shape; two cubesats on a tether) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="200" y1="200" x2="312" y2="312" stroke="#0f141a" stroke-width="27" stroke-linecap="round" />
+  <line x1="60" y1="60" x2="26" y2="26" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <line x1="452" y1="452" x2="486" y2="486" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+  <rect x="60" y="60" width="140" height="140" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="312" y="312" width="140" height="140" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="16" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="200" y1="200" x2="312" y2="312" stroke="#ff8a1f" stroke-width="9" stroke-linecap="round" />
+  <line x1="60" y1="60" x2="26" y2="26" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <line x1="452" y1="452" x2="486" y2="486" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+  <rect x="60" y="60" width="140" height="140" rx="12" fill="#d9dee5" />
+  <rect x="76" y="76" width="108" height="108" rx="4" fill="#2459b8" />
+  <line x1="130" y1="82" x2="130" y2="178" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="82" y1="130" x2="178" y2="130" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="312" y="312" width="140" height="140" rx="12" fill="#d9dee5" />
+  <rect x="328" y="328" width="108" height="108" rx="4" fill="#2459b8" />
+  <line x1="382" y1="334" x2="382" y2="430" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="334" y1="382" x2="430" y2="382" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="16" fill="#e0392d" />
+</svg>
+
+<!-- sat-19-sail.png (512x512, the map's satellite icons: a dark outline under every shape; a solar sail, a gold cube in the middle) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="256,24 488,256 256,488 24,256" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="218" y="218" width="76" height="76" rx="8" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="256" cy="256" r="11" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <polygon points="256,24 488,256 256,488 24,256" fill="#d9dee5" />
+  <polygon points="256,24 488,256 256,256" fill="#f5f7fa" />
+  <polygon points="256,488 24,256 256,256" fill="#f5f7fa" />
+  <line x1="256" y1="30" x2="256" y2="482" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="30" y1="256" x2="482" y2="256" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <rect x="218" y="218" width="76" height="76" rx="8" fill="#f2c230" />
+  <rect x="218" y="248" width="76" height="16" rx="0" fill="#c99512" />
+  <circle cx="256" cy="256" r="11" fill="#e0392d" />
+</svg>
+
+<!-- sat-20-helix.png (512x512, the map's satellite icons: a dark outline under every shape; a helix antenna on top, panels each side) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <line x1="256" y1="236" x2="256" y2="62" stroke="#0f141a" stroke-width="26" stroke-linecap="round" />
+  <line x1="174" y1="325" x2="196" y2="325" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <line x1="316" y1="325" x2="338" y2="325" stroke="#0f141a" stroke-width="30" stroke-linecap="round" />
+  <rect x="24" y="270" width="150" height="110" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="338" y="270" width="150" height="110" rx="6" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <rect x="196" y="250" width="120" height="150" rx="12" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <ellipse cx="256" cy="236" rx="60" ry="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M256 214 L226 203 L286 181 L226 159 L286 137 L226 115 L286 93 L226 71 L256 66" fill="none" stroke="#0f141a" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="56" r="13" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" />
+  <line x1="256" y1="236" x2="256" y2="62" stroke="#7d8794" stroke-width="8" stroke-linecap="round" />
+  <line x1="174" y1="325" x2="196" y2="325" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <line x1="316" y1="325" x2="338" y2="325" stroke="#7d8794" stroke-width="12" stroke-linecap="round" />
+  <rect x="24" y="270" width="150" height="110" rx="6" fill="#2459b8" />
+  <line x1="74" y1="276" x2="74" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="124" y1="276" x2="124" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="30" y1="325" x2="168" y2="325" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="338" y="270" width="150" height="110" rx="6" fill="#2459b8" />
+  <line x1="388" y1="276" x2="388" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="438" y1="276" x2="438" y2="374" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <line x1="344" y1="325" x2="482" y2="325" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+  <rect x="196" y="250" width="120" height="150" rx="12" fill="#d9dee5" />
+  <rect x="196" y="316" width="120" height="16" rx="0" fill="#9aa3ae" />
+  <ellipse cx="256" cy="236" rx="60" ry="13" fill="#9aa3ae" />
+  <path d="M256 214 L226 203 L286 181 L226 159 L286 137 L226 115 L286 93 L226 71 L256 66" fill="none" stroke="#f2c230" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="56" r="13" fill="#e0392d" />
+</svg>
+
+<!-- sat-auto.png (512x512, the BirdWatch button panel's Auto button: auto select the next AOS satellite; a yellow target on the dark blue disc with the sat-03 cubesat in the middle) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="250" fill="#0a1a4a" stroke="#c9c9c9" stroke-width="10" />
+  <g fill="none" stroke="#ffe600" stroke-linecap="round">
+    <circle cx="256" cy="256" r="200" stroke-width="16" />
+    <circle cx="256" cy="256" r="128" stroke-width="16" />
+    <line x1="256" y1="18" x2="256" y2="100" stroke-width="18" />
+    <line x1="256" y1="412" x2="256" y2="494" stroke-width="18" />
+    <line x1="18" y1="256" x2="100" y2="256" stroke-width="18" />
+    <line x1="412" y1="256" x2="494" y2="256" stroke-width="18" />
+  </g>
+  <g transform="translate(146 146) scale(0.42969999999999997)">
+    <line x1="256" y1="256" x2="70" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="70" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <rect x="146" y="146" width="220" height="220" rx="16" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" />
+    <line x1="256" y1="256" x2="70" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="70" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <rect x="146" y="146" width="220" height="220" rx="16" fill="#d9dee5" />
+    <rect x="166" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="207" y1="172" x2="207" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="172" y1="207" x2="242" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="264" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="305" y1="172" x2="305" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="270" y1="207" x2="340" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="166" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="207" y1="270" x2="207" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="172" y1="305" x2="242" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="264" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="305" y1="270" x2="305" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="270" y1="305" x2="340" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <circle cx="256" cy="256" r="14" fill="#e0392d" />
+  </g>
+</svg>
+
+<!-- sat-doppler.png (512x512, the BirdWatch button panel's Doppler button: the cubesat over a yellow wave whose crests come closer together) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="250" fill="#0a1a4a" stroke="#c9c9c9" stroke-width="10" />
+  <g transform="translate(172.5 56.5) scale(0.3262)">
+    <line x1="256" y1="256" x2="70" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="70" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="70" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="442" stroke="#0f141a" stroke-width="25" stroke-linecap="round" />
+    <rect x="146" y="146" width="220" height="220" rx="16" fill="#0f141a" stroke="#0f141a" stroke-width="18" stroke-linejoin="round" />
+    <line x1="256" y1="256" x2="70" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="70" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="70" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <line x1="256" y1="256" x2="442" y2="442" stroke="#7d8794" stroke-width="7" stroke-linecap="round" />
+    <rect x="146" y="146" width="220" height="220" rx="16" fill="#d9dee5" />
+    <rect x="166" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="207" y1="172" x2="207" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="172" y1="207" x2="242" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="264" y="166" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="305" y1="172" x2="305" y2="242" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="270" y1="207" x2="340" y2="207" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="166" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="207" y1="270" x2="207" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="172" y1="305" x2="242" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <rect x="264" y="264" width="82" height="82" rx="6" fill="#2459b8" />
+    <line x1="305" y1="270" x2="305" y2="340" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <line x1="270" y1="305" x2="340" y2="305" stroke="#8db3ff" stroke-width="4" stroke-linecap="round" />
+    <circle cx="256" cy="256" r="14" fill="#e0392d" />
+  </g>
+  <path d="M50 352 C55 339.3 71.2 271.3 80 276 C88.8 280.7 93 380.3 103 380 C113 379.7 128.5 273 140 274 C151.5 275 160 386 172 386 C184 386 196.3 273.7 212 274 C227.7 274.3 247.7 388.3 266 388 C284.3 387.7 302.3 272 322 272 C341.7 272 361.3 387 384 388 C406.7 389 445.7 296.3 458 278" fill="none" stroke="#ffe600" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+
+<!-- sat-settings.png (512x512, the BirdWatch button panel's settings button: the settings gears, the big one primary orange and the small one secondary green) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- The big gear, orange -->
+  <polygon points="148.6,181.5 148.7,148.6 217.3,148.6 217.4,181.5 249.5,194.8 272.9,171.6 321.4,220.1 298.2,243.5 311.5,275.6 344.4,275.7 344.4,344.3 311.5,344.4 298.2,376.5 321.4,399.9 272.9,448.4 249.5,425.2 217.4,438.5 217.3,471.4 148.7,471.4 148.6,438.5 116.5,425.2 93.1,448.4 44.6,399.9 67.8,376.5 54.5,344.4 21.6,344.3 21.6,275.7 54.5,275.6 67.8,243.5 44.6,220.1 93.1,171.6 116.5,194.8" fill="#e68500" />
+  <circle cx="183" cy="310" r="84" fill="#ffffff" />
+  <circle cx="183" cy="310" r="68" fill="#b0b0b0" />
+  <circle cx="183" cy="310" r="44" fill="#000000" />
+  <!-- The small gear, green, turned half a tooth -->
+  <polygon points="373,45 377.7,28.1 413.9,37.8 409.5,54.8 424.6,66.4 439.9,57.8 458.6,90.2 443.5,99.1 446,118 462.9,122.7 453.2,158.9 436.2,154.5 424.6,169.6 433.2,184.9 400.8,203.6 391.9,188.5 373,191 368.3,207.9 332.1,198.2 336.5,181.2 321.4,169.6 306.1,178.2 287.4,145.8 302.5,136.9 300,118 283.1,113.3 292.8,77.1 309.8,81.5 321.4,66.4 312.8,51.1 345.2,32.4 354.1,47.5" fill="#00e63c" />
+  <circle cx="373" cy="118" r="46" fill="#ffffff" />
+  <circle cx="373" cy="118" r="36" fill="#000000" />
+</svg>

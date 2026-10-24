@@ -323,7 +323,7 @@ const ROSTER_COLUMNS = {
     compare: callObjSimpleComparer("heading"),
     tableData: (callObj) => ({
       style: `color: ${rosterColor("Azim")};`,
-      html: (callObj.distance > 0 ? Math.round(callObj.heading) : "&nbsp;")
+      html: (callObj.distance > 0 ? Math.round(callObj.heading) + "&deg;&nbsp;" + headingArrowHtml(callObj.heading) : "&nbsp;")
     })
   },
 

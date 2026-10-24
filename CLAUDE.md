@@ -53,9 +53,13 @@ Scripts in [tools/](tools/) (run from the repo root; each file's header has its 
 - [i18n_verify.js](tools/i18n_verify.js): every `data-i18n` / `I18N("…")` key in the given files exists in every locale.
 - [audit_english.js](tools/audit_english.js): lists English-only UI strings of two or more words that don't go through i18n (a heuristic, so review the hits).
 - [santa_route_export.js](tools/santa_route_export.js), [santa_route.js](tools/santa_route.js): the Santa Tracker's stops from the running dev copy, and the shortest route around them written to `resources/data/santa-route.json` (a table read as it is; rerun only when the stops change).
+- [sat_update.js](tools/sat_update.js): **run before each release** (`node tools/sat_update.js write`): the SatNOGS and AMSAT satellite data BirdWatch ships in `resources/data/sat/` (offline on a fresh install; `src/main/index.js` copies it to `Ginternal\sat` when newer, and BirdWatch keeps that copy current while online). Dry run without `write`.
 - [reload_i18n.js](tools/reload_i18n.js): reloads the locale file in the running main window (see Running dev).
 - [eol_check.js](tools/eol_check.js), [bom_check.js](tools/bom_check.js): line endings / BOM of given files; every `.js` with a BOM.
 - [changelog_html.js](tools/changelog_html.js): regenerates CHANGELOG.md's `### HTML List` section from its `### MD Markup Format` section (dry run unless `write`).
+- [build_satellite_libs.js](tools/build_satellite_libs.js): rebuilds `third-party/satellite.js` (satellite.js, global `satellite`) and `third-party/tle.js` (tle.js bundled with esbuild, global `tlejs`) from npm. Pick versions with `--tle=` / `--satellite=`. It's a dry run unless `write`, and it reports whether each file changed. It needs network access, `npm`/`npx` and `tar`, and works in an OS temp folder, so `package.json` and `node_modules` are untouched.
+
+The libraries in `third-party/` (moment, OpenLayers, satellite.js, tle.js, …) are plain global scripts (no bundler at runtime), each starting with `/* eslint-disable */`. Update them from their source rather than by hand; satellite.js and tle.js are rebuilt with the tool above. satellite.js must load before tle.js, since tle.js reads the global `satellite`.
 Text files in this repo are CRLF with no BOM. Do bulk or scripted edits with a Node script (keep the file's line endings, check anchors match exactly once, dry run first), then check with `eol_check.js`. One-off test scripts go in the session scratchpad, not `tools/`.
 
 ## Gotchas
@@ -69,6 +73,7 @@ Text files in this repo are CRLF with no BOM. Do bulk or scripted edits with a N
 
 ## Releases / changelog
 
+- Before a release, run `node tools/sat_update.js write` (BirdWatch's shipped satellite data).
 - Version format in `package.json` is `2.YYMMDD.N` (e.g. `2.261008.3`); bump it with user-visible changes.
 - New work goes in [CHANGELOG.md](CHANGELOG.md): add user-facing entries to the version section being worked on (the topmost `## [v2.YYMMDD.N]`, matching `package.json`), under its `#### Area` heading (`Call Roster`, `Map / UI`, `App`, …) as `- ` bullets, sub-points two-space indented. New UI text needs a `data-i18n` key translated in every `resources/i18n/*.json`.
 - The version section has a `### MD Markup Format` part (edit this one) and an `### HTML List` part generated from it: run `node tools/changelog_html.js write` after changing the Markdown. A release name goes first in the MD part as a `**Name**` line (it becomes `<p><strong>Name</strong></p>`); a note such as a welcome can follow it as a `> text` line (it becomes `<p>text</p>`).

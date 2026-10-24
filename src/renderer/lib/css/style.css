@@ -62,6 +62,39 @@ html, body {
 }
 
 
+/* BirdWatch panel: like the control panel, on the opposite side (left/right set by applyBirdWatchLayout) */
+.birdWatchDivClass {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: auto;
+  z-index: 1;
+  box-shadow: 0 0 0 1px #444;
+  background-color: black;
+  color: #fff;
+  display: none;
+}
+
+/* The map runs under a panel (the BirdWatch panel, or the control panel with Decode Traffic Waterfall off): its controls clear of
+   the panel (200px wide, 201px with its edge) */
+.gtPanelLeft .ol-zoom,
+.gtPanelLeft .rotate-north {
+  left: calc(.5em + 201px);
+}
+
+.gtPanelRight .ol-full-screen,
+.gtPanelRight .ol-rotate {
+  right: calc(.5em + 201px);
+}
+
+.gtPanelClearLeft {
+  margin-left: 201px;
+}
+
+.gtPanelClearRight {
+  margin-right: 201px;
+}
+
 .chevronDivClass {
   padding: 0px;
   margin: 0px;
@@ -644,10 +677,612 @@ a {
 
 /* Shown as inline-flex: a column capped at the window size, so the tab bar wraps
    and the tab content takes the remaining height and scrolls */
-#rootSettingsDiv {
+#rootSettingsDiv,
+#birdWatchSettingsDiv {
   flex-direction: column;
   max-width: calc(100vw - 12px);
   max-height: calc(100vh - 2px);
+}
+
+/* BirdWatch's settings window: as wide and as tall as the tab's content needs, never more than the app window (a small
+   window gets scroll bars and the window stays centered) */
+#birdWatchSettingsDiv .birdWatchSettingsTabcontent {
+  text-align: left;
+}
+
+/* The satellite info rows (birdWatchInfo.js): the one under the mouse is shaded like a table's, and a row being dragged shows where it will land */
+#birdWatchInfoPos tr:hover > td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+#birdWatchInfoPos tr.birdInfoDragging {
+  opacity: 0.4;
+}
+
+#birdWatchInfoPos tr.birdInfoDropBefore > td {
+  box-shadow: inset 0 2px 0 cyan;
+}
+
+#birdWatchInfoPos tr.birdInfoDropAfter > td {
+  box-shadow: inset 0 -2px 0 cyan;
+}
+
+#birdWatchInfoPos .birdInfoFeatured > td {
+  text-align: center;
+  white-space: nowrap;
+  cursor: help;
+}
+
+/* A row: the label takes what room the value leaves, and is cut short rather than push it */
+.birdInfoBox {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.birdInfoLabel {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.birdInfoValue {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Lat/Lon: the two pairs apart on one line, the second under the first when they don't fit */
+.birdInfoPair {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 4px;
+}
+
+.birdInfoGroup {
+  display: flex;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.birdInfoGroup > .birdInfoLabel {
+  flex: none;
+}
+
+/* A fixed width, right aligned: a number getting longer or shorter never moves the label beside it. Wide enough for -90.00 (the
+   latitude) and for -180.00 (the longitude) */
+.birdInfoGroup > .birdInfoValue {
+  width: 36px;
+  text-align: right;
+}
+
+.birdInfoGroup:last-child > .birdInfoValue {
+  width: 42px;
+}
+
+.birdInfoFeaturedValue {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.birdInfoFeaturedName {
+  color: white;
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+/* AOS, LOS and TCA: the time and the bearing each have a width, right aligned, so the times line up and a bearing of two or three digits moves nothing */
+#birdWatchInfoPos .birdInfoTime {
+  display: inline-block;
+  min-width: 76px;
+  text-align: right;
+}
+
+#birdWatchInfoPos .birdInfoAz {
+  display: inline-block;
+  width: 28px;
+  text-align: right;
+}
+
+/* The TLE form (birdWatchTleForm.js): a label and its value, two pairs to a line; the name and the epoch take the rest of theirs */
+.birdTleForm {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  gap: 3px 8px;
+  align-items: center;
+}
+
+.birdTleFormLabel {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.birdTleFormInput {
+  width: 96px;
+  box-sizing: border-box;
+}
+
+.birdTleFormWide,
+.birdTleForm input[type="datetime-local"] {
+  width: 100%;
+}
+
+.birdTleAddGrid > #birdWatchTleManual {
+  grid-area: 2 / 1 / 3 / 4;
+}
+
+/* The Doppler table's cells that tune the rig on a click (Rig Control connected), and those the rig follows */
+.birdDopplerTable .birdTxClick {
+  cursor: pointer;
+}
+
+.birdDopplerTable td.birdTxFollow {
+  background: #103a10;
+  outline: 1px solid lightgreen;
+  outline-offset: -1px;
+}
+
+/* The Doppler table (birdWatchDoppler.js): the header stays at the top as the rows scroll */
+/* Borders drawn by the cells themselves (separate, not collapsed): a collapsed border is painted by the table, under the sticky
+   header's background (the header's lower edge was lost) and not always again when a cell's text changes (the frequencies, each
+   second). Each cell has its right and lower edge, the table its top and left */
+table.darkTable.birdDopplerTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-top: 1px solid #888;
+  border-left: 1px solid #888;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+table.darkTable.birdDopplerTable th,
+table.darkTable.birdDopplerTable td {
+  border: none;
+  border-right: 1px solid #888;
+  border-bottom: 1px solid #888;
+}
+
+.birdDopplerTable th {
+  position: sticky;
+  top: 0;
+  /* Solid, so the rows don't show through it as they scroll under it */
+  background: black;
+  color: cyan;
+  /* Downlink, Uplink and Shift over the middle of their numbers; Transmitter and Mode from the left (below) */
+  text-align: center;
+  padding: 2px 8px;
+}
+
+.birdDopplerTable th:nth-child(1),
+.birdDopplerTable th:nth-child(2) {
+  text-align: left;
+}
+
+.birdDopplerTable td {
+  padding: 1px 8px;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The Satellites tab keeps its two columns, the tracked ones at the left and Add Satellite at the right, whatever the lists' widths:
+   a list that does not fit scrolls sideways */
+.birdSatColumns {
+  flex-wrap: nowrap;
+  max-width: none;
+}
+
+.birdSatColumns > .mapGroup {
+  min-width: 0;
+}
+
+/* The two titles one height (the scan button is in Add Satellite's), so the lists start level */
+.birdSatColumns .mapGroupTitle {
+  box-sizing: border-box;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.birdSatColumns .birdSatList {
+  max-width: 100%;
+}
+
+/* The Satellites tab: the tracked ones, and the search results to add from, each in a list that scrolls */
+/* As wide as the widest row (birdWatchSatMeasure sets the columns' widths): the name, the number, the description, the status
+   and the button, the gaps between them, the row's padding and the scroll bar */
+.birdSatList {
+  max-height: 210px;
+  overflow-y: auto;
+  margin-top: 4px;
+  width: calc(var(--satName, 110px) + 52px + var(--satLong, 160px) + var(--satAos, 0px) + var(--satAosGap, 0px) + var(--satStatus, 0px) + var(--satEdit, 0px) + 34px + 40px + 8px + 18px);
+  max-width: calc(100vw - 80px);
+}
+
+/* Every row one height: the spacers that stand in for the rows out of view (birdWatchSats.js) are that many rows high */
+.birdSatRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 22px;
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+/* Fixed columns, so the names, numbers and descriptions line up from row to row */
+/* The names are yellow and the descriptions light green; the header's cells keep its own color */
+.birdSatRow:not(.birdSatHead) .birdTleName {
+  color: yellow;
+}
+
+.birdSatHead .birdSatLong {
+  color: cyan;
+}
+
+/* Each list's header stays at the top as it scrolls */
+.birdSatHead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #0b0420;
+  border-bottom: 1px solid #6a3fd0;
+  color: cyan;
+  font-weight: bold;
+}
+
+.birdSatRow .birdTleName {
+  flex: none;
+  width: var(--satName, 110px);
+  min-width: 0;
+  max-width: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birdSatId {
+  flex: none;
+  width: 52px;
+  text-align: right;
+}
+
+.birdSatLong {
+  flex: none;
+  width: var(--satLong, 160px);
+  color: lightgreen;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A scan's time to AOS: in the blue of the Decode bar (white on blue with a cyan edge); the header's cell is plain */
+.birdSatAos {
+  flex: none;
+  width: var(--satAos, 0px);
+  box-sizing: border-box;
+  height: 18px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+  background: Blue;
+  border: 1px solid Cyan;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.birdSatHead .birdSatAos {
+  background: none;
+  border: none;
+  color: cyan;
+  cursor: default;
+}
+
+.birdSatStatus {
+  flex: none;
+  width: var(--satStatus, 0px);
+  color: #f90;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.birdSatButton {
+  flex: none;
+  width: 34px;
+  text-align: center;
+}
+
+/* The add, remove, add all and remove all buttons: the symbol large, white, and centered in the button both ways */
+.birdSatRow .birdSatButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 20px;
+  padding: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* The Telemetry tab's element sets: a row for each file or address */
+.birdTleTable {
+  width: 100%;
+}
+
+.birdTleTable td {
+  text-align: left;
+  vertical-align: middle;
+  padding: 2px 4px;
+}
+
+/* Local and Remote: each its own box inside the TLE Sources box */
+#birdWatchSettingsDiv .birdTleBox {
+  display: block;
+  margin: 8px 0 0;
+  padding: 4px 10px 6px;
+  min-height: 0;
+  text-align: left;
+  border: 1px solid #6a3fd0;
+  border-radius: 6px;
+  background: rgba(106, 63, 208, 0.1);
+}
+
+/* Enable: a source can be turned off without deleting it. A box and its words share one center line */
+.birdTleLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.birdTleEnable,
+.birdTleRefresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.birdTleEnable {
+  color: #fff;
+}
+
+.birdTleEnable input,
+.birdTleRefresh input,
+.birdTleLine input[type="checkbox"] {
+  margin: 0;
+  /* the box sits a pixel low against the middle of the letters next to it */
+  position: relative;
+  top: -1px;
+}
+
+.birdTleOverride {
+  color: #f90;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.birdTleAddGrid > #birdWatchTleNotice {
+  grid-area: 3 / 2;
+}
+
+/* A message under the address or the TLE wraps within it: it doesn't widen the column (and push the + away) */
+.birdTleAddGrid > .birdTleMessage {
+  contain: inline-size;
+}
+
+.birdTleMessage .birdTleButton {
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.birdTleOff .birdTleName,
+.birdTleOff .birdTleStatus,
+.birdTleOff .birdTleKind {
+  opacity: 0.45;
+}
+
+/* TLE Precedence at the left of Add TLE (as wide as what it holds for the kind chosen), the pair in the middle */
+.birdTleTop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0 10px;
+}
+
+#birdWatchSettingsDiv .birdTleTop > .birdTleBox {
+  width: fit-content;
+}
+
+.birdTleBoxTitle {
+  font-weight: bold;
+  color: #fff;
+  padding-bottom: 2px;
+}
+
+.birdTleHeading {
+  font-weight: bold;
+  padding-top: 8px;
+}
+
+.birdTleAdd {
+  white-space: nowrap;
+}
+
+/* Add TLE: label, Local / Remote, the address, and the + at the right, all centered on their line. The login goes
+   under the address (its column), with boxes small enough that the address doesn't grow to fit them */
+.birdTleAddGrid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 8px;
+  row-gap: 4px;
+  align-items: center;
+  justify-content: start;
+}
+
+.birdTleAddGrid > select {
+  grid-area: 1 / 1;
+}
+
+.birdTleAddGrid > .birdTleUrl {
+  grid-area: 1 / 2;
+  width: 340px;
+  box-sizing: border-box;
+}
+
+.birdTleAddGrid > .birdTlePlus {
+  grid-area: 1 / 3;
+  align-self: center;
+}
+
+.birdTleAddGrid > .birdTleText {
+  grid-area: 1 / 2;
+  width: 470px;
+  box-sizing: border-box;
+  font: 11px Consolas, "Courier New", monospace;
+  resize: none;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.birdTleAddGrid > .birdTleText.birdTleTextOk {
+  border-color: #3c3;
+}
+
+.birdTleAddGrid > .birdTleText.birdTleTextBad {
+  border-color: #f90;
+}
+
+.birdTleAddGrid > .birdTleMessage {
+  grid-area: 2 / 2;
+  font-size: 12px;
+  white-space: normal;
+}
+
+.birdTleMessage.birdTleOk {
+  color: #6f6;
+}
+
+.birdTleMessage.birdTleBad {
+  color: #f90;
+}
+
+/* A typed TLE being edited, in its row */
+.birdTleEditor .birdTleText {
+  width: 470px;
+  box-sizing: border-box;
+  font: 11px Consolas, "Courier New", monospace;
+  resize: none;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.birdTleEditor .birdTleText.birdTleTextOk {
+  border-color: #3c3;
+}
+
+.birdTleEditor .birdTleText.birdTleTextBad {
+  border-color: #f90;
+}
+
+.birdTleEditor .birdTleMessage {
+  font-size: 12px;
+  padding-bottom: 2px;
+}
+
+.birdTleDisabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.birdTleAddGrid > .birdTleLoginLine {
+  grid-area: 2 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.birdTleLoginInput {
+  width: 78px;
+  box-sizing: border-box;
+}
+
+.birdTleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.birdTleName {
+  flex: 1 1 auto;
+  min-width: 160px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.birdTleKind {
+  color: #fc6;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.birdTleStatus {
+  color: #9fd;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birdTleError {
+  color: #f90;
+}
+
+.birdTleRefresh {
+  white-space: nowrap;
+}
+
+.birdTleLogin {
+  display: flex;
+  gap: 12px;
+  padding: 2px 0 4px 16px;
+}
+
+.birdTleButton {
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 6px;
+}
+
+/* Its colors answer the main Settings' yellow on blue: cyan on violet, a night-sky look for the satellites */
+#birdWatchSettingsDiv .settingstab button.settingsTablinks {
+  border-color: #8a5cf0;
+  color: #cfe;
+}
+
+#birdWatchSettingsDiv .settingstab button.settingsTablinks:hover {
+  background: #1d0f45;
+}
+
+#birdWatchSettingsDiv .settingstab button.settingsTablinks.active {
+  background: linear-gradient(#6a3fd0, #3a1a80);
+  color: #5ff;
+  text-shadow: 0 1px 2px #000;
+}
+
+#birdWatchSettingsDiv .settingsTabcontent {
+  border-color: #8a5cf0;
+  background: linear-gradient(#150a38, #000 70%);
+  color: #cfe;
 }
 
 /* Style the tab */
@@ -1436,6 +2071,24 @@ button:focus {
   text-align: right;
 }
 
+/* Features -> Service: the services' names read from the left (like the Online group's checkboxes); the rows under one (Rotor
+   Control's) are tabbed in under its name, their labels lined up at the right and their values from the left */
+.mapGroup td.mapRowLabel.mapRowLabelLeft {
+  text-align: left;
+}
+
+.mapGroup td.mapRowLabel.mapIndent {
+  text-align: right;
+  padding-left: 18px;
+}
+
+/* A box's name in the values' column (Follow Satellite): as bold as the labels, centered on the box */
+.mapGroup label.mapRowLabelText {
+  font-size: 12px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
 /* The box under the mouse: its border inset and white, as .mapItem's */
 .mapGroup:hover {
   border-color: #fff;
@@ -1474,6 +2127,19 @@ button:focus {
 /* A tick before a row's name (Settings -> Map -> Paths: Animate), centered on the name's capitals, not its line */
 .mapGroup td.mapRowLabel input[type="checkbox"] {
   top: -1px;
+}
+
+/* Features -> Service: a box in front of its name (BirdWatch, Rotor Control, Follow Satellite) sits as the Online group's do
+   (.mapChecks): not nudged up, and the name centered on the box */
+.mapGroup td.mapRowLabelLeft input[type="checkbox"],
+.mapGroup td.mapRowLabel.mapIndent input[type="checkbox"] {
+  top: 0;
+}
+
+.mapGroup td.mapRowLabelLeft input[type="checkbox"] + label,
+.mapGroup td.mapRowLabel.mapIndent input[type="checkbox"] + label {
+  margin-left: 1px;
+  vertical-align: middle;
 }
 
 /* A short dividing rule in a box's table (Settings -> Map -> Paths, above Animate) */

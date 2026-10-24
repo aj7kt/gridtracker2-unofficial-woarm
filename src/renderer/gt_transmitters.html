@@ -1,0 +1,75 @@
+<!--
+    This file is part of GridTracker.
+
+    GridTracker is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3 of the License.
+
+    GridTracker is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with GridTracker.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Transmitters</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="./lib/css/style.css" />
+    <style type="text/css">
+      body {
+        -webkit-appearance: none;
+        -webkit-user-select: none;
+        height: 98%;
+        overflow: auto;
+      }
+      table,
+      th,
+      td,
+      body {
+        color: #fff;
+        white-space: nowrap;
+        font-family: Sans-Serif;
+        font-size: 12px;
+      }
+    </style>
+    <script src="./lib/first.js"></script>
+    <script>
+      // The selected satellite's transmitters, with the frequencies to tune to and to transmit on now. The table is drawn by BirdWatch in the
+      // main window (birdWatchDoppler.js) and put here again with each tracker tick, so it follows the satellite as it moves and as another is
+      // selected
+      function init()
+      {
+        // A click on a transmitter's name, downlink or uplink tunes the rig to it (birdWatchDopplerClick), while Rig Control is connected
+        document.getElementById("birdTx").addEventListener("click", (event) =>
+        {
+          const cell = event.target.closest("[data-part]");
+          const row = cell && cell.closest("tr[data-tx]");
+          if (row) window.opener.birdWatchDopplerClick(Number(row.dataset.tx), cell.dataset.part);
+        });
+        window.opener.birdWatchTransmitterWindowReady();
+      }
+
+      document.oncontextmenu = function (event)
+      {
+        event.preventDefault();
+      };
+    </script>
+  </head>
+  <body id="mainBody" onload="init();" style="background-color: black">
+    <div id="main" style="margin: 0; min-height: 40px; background-color: black; padding: 2px; text-align: center; position: relative; white-space: nowrap;">
+      <div id="birdTxWrap" style="display: inline-block;">
+        <!-- The satellite's name -->
+        <div id="birdTxHead" style="display: flex; align-items: center; justify-content: center; gap: 14px; padding: 2px 0;">
+          <span id="birdTxName" style="color: cyan; font-weight: bold;"></span>
+          <!-- Said while the rig follows a transmitter of the table -->
+          <span id="birdTxFollowing" style="color: lightgreen; font-weight: bold;"></span>
+        </div>
+        <div id="birdTx"></div>
+      </div>
+    </div>
+  </body>
+</html>

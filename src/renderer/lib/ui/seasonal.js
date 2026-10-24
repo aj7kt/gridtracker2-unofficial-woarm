@@ -225,8 +225,9 @@ function santaPoint(lon, lat)
   return new ol.geom.Point(santaProject(lon, lat));
 }
 
-// The label under the sleigh: a rounded box with the text centered in it, drawn to a canvas (map text can't round its corners)
-function santaLabelStyle(text)
+// The label under the sleigh: a rounded box with the text centered in it, drawn to a canvas (map text can't round its corners).
+// BirdWatch's satellite labels use it too, with their own colors and distance below the icon
+function santaLabelStyle(text, colors = {}, drop = 38)
 {
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const font = "bold 13px sans-serif";
@@ -240,8 +241,8 @@ function santaLabelStyle(text)
   canvas.height = Math.ceil(h * dpr);
   c.scale(dpr, dpr);
 
-  c.fillStyle = "rgba(176, 24, 24, 0.92)";
-  c.strokeStyle = "rgba(255, 255, 255, 0.85)";
+  c.fillStyle = colors.fill || "rgba(176, 24, 24, 0.92)";
+  c.strokeStyle = colors.stroke || "rgba(255, 255, 255, 0.85)";
   c.lineWidth = 1;
   c.beginPath();
   c.roundRect(0.5, 0.5, w - 1, h - 1, 11);
@@ -249,7 +250,7 @@ function santaLabelStyle(text)
   c.stroke();
 
   c.font = font;
-  c.fillStyle = "#fff";
+  c.fillStyle = colors.text || "#fff";
   c.textAlign = "center";
   c.textBaseline = "alphabetic";
   c.fillText(text, w / 2, h / 2 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2);
@@ -260,7 +261,7 @@ function santaLabelStyle(text)
       imgSize: [canvas.width, canvas.height],
       scale: 1 / dpr,
       anchor: [0.5, 0],
-      displacement: [0, -38]
+      displacement: [0, -drop]
     })
   });
 }

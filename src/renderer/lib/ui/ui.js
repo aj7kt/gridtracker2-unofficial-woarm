@@ -292,7 +292,43 @@ function updateLayout(shouldCollapseMenu)
 
   GT.menuShowing = !shouldCollapseMenu;
 
+  // With Decode Traffic Waterfall off the control panel is only as tall as it needs to be and the map runs under it
+  const menuOverlay = !shouldCollapseMenu && GT.settings.map.trafficDecode == false;
+  menuDiv.style.height = menuOverlay ? "auto" : "";
+  menuDiv.style.maxHeight = menuOverlay ? "100%" : "";
+  trafficDiv.style.display = GT.settings.map.trafficDecode == false ? "none" : "";
+  if (menuOverlay)
+  {
+    mapDiv.style[GT.settings.app.mapRight ? "left" : "right"] = "0";
+    if (!GT.settings.app.mapRight) legendDiv.style.right = "2px";
+  }
+
+  // BirdWatch panel: on the side opposite the control panel, over the map
+  applyBirdWatchLayout();
+  applyMapPanelOverlays(menuOverlay);
+  birdWatchClearControls();
+
   GT.map.updateSize();
+}
+
+// Right click on a panel's title (GridTracker2 or BirdWatch): the control panel goes to the other side (Settings, General, Control Panel On
+// Left Side), the two panels swapping. A hidden panel stays hidden
+function toggleControlPanelSide(event)
+{
+  event.preventDefault();
+  GT.settings.app.mapRight = !GT.settings.app.mapRight;
+  mapRightValue.checked = GT.settings.app.mapRight;
+  updateLayout(GT.menuShowing == false);
+}
+
+// The map's controls clear of the panels over it: the control panel (at the left with "Map on Right Side") while it is short
+// (menuOverlay), and the BirdWatch panel (at the other side) while it is shown
+function applyMapPanelOverlays(menuOverlay)
+{
+  const left = GT.settings.app.mapRight;
+  const bird = birdWatchDiv.style.display != "none";
+  mapDiv.classList.toggle("gtPanelLeft", (menuOverlay && left) || (bird && !left));
+  mapDiv.classList.toggle("gtPanelRight", (menuOverlay && !left) || (bird && left));
 }
 
 function drawTraffic()
