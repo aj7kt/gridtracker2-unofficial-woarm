@@ -494,16 +494,57 @@ html, body {
   border-color: #fff;
 }
 
-/* The button panel's buttons: the one under the mouse grows, over its neighbours, to show its icon's detail */
+/* The button panel's buttons: the one under the mouse grows, over its neighbours, to show its icon's detail. Grown by its layout (the
+   icon 48px, negative margins so its row and column keep their size), not scaled, so its border stays the others' 1px. By the window's
+   edge it grows away from it (buttonPanel.js sets zoomLeft / zoomRight / zoomTop / zoomBottom) */
 #buttonsDiv .iconButton {
   position: relative;
-  transition: transform 0.12s ease-out;
+  transition: margin 0.12s ease-out;
+}
+
+#buttonsDiv .iconButton .buttonImg {
+  transition: height 0.12s ease-out;
 }
 
 #buttonsDiv .iconButton:hover {
-  transform: scale(1.5);
+  margin: -7px;
+  border-width: 1px;
   z-index: 10;
   background-color: #000;
+}
+
+#buttonsDiv .iconButton:hover .buttonImg {
+  height: 48px;
+}
+
+/* The Kp button is text, not an icon, and sized 32px by ui.js (inline): it grows as much */
+#buttonsDiv #conditionsButton:hover {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+#buttonsDiv #conditionsButton:hover > div {
+  zoom: 1.5;
+}
+
+#buttonsDiv .iconButton.zoomRight:hover {
+  margin-left: -15px;
+  margin-right: 1px;
+}
+
+#buttonsDiv .iconButton.zoomLeft:hover {
+  margin-left: 1px;
+  margin-right: -15px;
+}
+
+#buttonsDiv .iconButton.zoomBottom:hover {
+  margin-top: -15px;
+  margin-bottom: 1px;
+}
+
+#buttonsDiv .iconButton.zoomTop:hover {
+  margin-top: 1px;
+  margin-bottom: -15px;
 }
 
 .mapItem {

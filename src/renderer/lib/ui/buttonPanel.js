@@ -16,20 +16,18 @@ function buttonPanelInit()
     iconButtons[i].draggable = true;
   }
 
-  // A button grows (1.5 times, style.css) from its middle; from the side by the window's edge when it would go past it
+  // A button grows (style.css) on all sides; by the window's edge, away from it (it would go past it otherwise). Measured before it
+  // grows: mouseover comes first
   buttonsDiv.addEventListener("mouseover", (event) =>
   {
     const button = event.target.closest(".iconButton");
     if (!button || button.parentElement !== buttonsDiv) return;
-    // Where it is unscaled: the panel's place plus its own in the panel (the panel isn't scaled, the button may be)
-    const panel = buttonsDiv.getBoundingClientRect();
-    const left = panel.left + button.offsetLeft - buttonsDiv.offsetLeft;
-    const top = panel.top + button.offsetTop - buttonsDiv.offsetTop;
-    const growX = button.offsetWidth * 0.25;
-    const growY = button.offsetHeight * 0.25;
-    const x = left + button.offsetWidth + growX > window.innerWidth ? "right" : left - growX < 0 ? "left" : "center";
-    const y = top + button.offsetHeight + growY > window.innerHeight ? "bottom" : top - growY < 0 ? "top" : "center";
-    button.style.transformOrigin = x + " " + y;
+    const r = button.getBoundingClientRect();
+    const grow = 8;
+    button.classList.toggle("zoomRight", r.right + grow > window.innerWidth);
+    button.classList.toggle("zoomLeft", r.left - grow < 0);
+    button.classList.toggle("zoomBottom", r.bottom + grow > window.innerHeight);
+    button.classList.toggle("zoomTop", r.top - grow < 0);
   });
 
   if (GT.settings.app.buttonPanelOrder.length > 0)
