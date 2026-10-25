@@ -63,6 +63,12 @@ function formatMhz(freq) {
   return (+freq).toFixed(3).replace(REGEX_DEC, "$&.");
 }
 
+// Hz to MHz to the hertz, a dot between the kilohertz and the hertz: 14.074.000. The main panel's frequency, Rig Control's and
+// BirdWatch's Doppler table
+function formatDialFreq(hz) {
+  return (Math.round(hz) / 1e6).toFixed(6).replace(/(\.\d{3})/, "$1.");
+}
+
 function formatSignalReport(val) {
   return parseFloat(val) >= 0 ? "+" + val : String(val);
 }

@@ -321,7 +321,6 @@ GT.flightPathTotal = (9 + 3 + 3) * 2;
 GT.lastTimeState = -1;
 
 GT.lastMessages = [];
-GT.lastTraffic = [];
 GT.Zday = false;
 
 GT.maps = [];
@@ -833,7 +832,7 @@ function postInit()
     section = "UDPListenerForward";
     startForwardListener();
     section = "LastTraffic";
-    addLastTraffic("GridTracker2<br>" + gtShortVersion);
+    addEvent("app", "GridTracker2<br>" + gtShortVersion);
     section = "displayRadar";
     displayRadar();
     section = "PredictionInit";
@@ -867,6 +866,8 @@ function postInit()
     openCallRosterWindow(false);
     section = "DopplerWindow";
     birdWatchTransmitterWindowOpen(false);
+    section = "EventsWindow";
+    eventsWindowOpen(false);
     section = "ButtonPanelInit";
     buttonPanelInit();
     birdWatchButtonsInit();
@@ -1112,7 +1113,7 @@ electron.ipcRenderer.on("versionInfo", (event, info) => {
       if (!info.autoDownload)
       {
         // settings.About.label
-        addLastTraffic("<font style='color:lightgreen'>" + I18N("gt.NewVersionAvailable") + "</font><br><font style='color:cyan'>" + info.version + "</font><br><div class='button' onclick='openAboutBox()'>" + I18N("settings.About.label") + "</div>");
+        addEvent("app", "<font style='color:lightgreen'>" + I18N("gt.NewVersionAvailable") + "</font><br><font style='color:cyan'>" + info.version + "</font><br><div class='button' onclick='openAboutBox()'>" + I18N("settings.About.label") + "</div>");
         updateVersionText.innerHTML = "<font style='color:lightgreen'>" + I18N("gt.NewVersionAvailable") + "</font><br><font style='color:cyan'>" + info.version + "</font><br><div class='button' onclick='downloadUpdate()'>" + I18N("gt.Download") + "</div>";
       }
     }
@@ -1128,7 +1129,7 @@ electron.ipcRenderer.on("updateDownloaded", (event, info) => {
     {
       const html = "<font style='color:yellow'>" + I18N("gt.NewVersionDownloaded") + "</font><br><font style='color:cyan'>" + info.version + "</font><br><div class='button' onclick='installAndRestart()'>" + I18N("gt.InstallAndRestart") + "</div>"
       updateVersionText.innerHTML = html;
-      addLastTraffic(html);
+      addEvent("app", html);
       
       GT.lastDownloadedVersion = info.version;
     }

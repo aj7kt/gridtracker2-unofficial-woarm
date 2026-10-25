@@ -27,7 +27,7 @@ function birdWatchPredictApply()
 {
   const T = GT.birdWatchTrack;
   const P = birdWatchPredictState();
-  birdWatchSkyBox.style.display = T.selected && GT.settings.birdWatch.skybox ? "block" : "none";
+  birdWatchSkyBox.style.display = T.selected && GT.settings.Birdwatch.skybox ? "block" : "none";
   for (const norad of [...P.features.keys()])
   {
     if (!birdWatchPredicted(norad)) birdWatchPathRemove(norad);
@@ -59,7 +59,7 @@ function birdWatchPredictUpdate()
   {
     let p = P.paths.get(norad);
     if (!p) P.paths.set(norad, p = { points: [], at: 0, pending: false });
-    if (GT.settings.birdWatch.colors.pathOn && !p.pending && now - p.at > BIRD_WATCH_PATH_REFRESH_MS)
+    if (GT.settings.Birdwatch.colors.pathOn && !p.pending && now - p.at > BIRD_WATCH_PATH_REFRESH_MS)
     {
       p.pending = true;
       p.at = now;
@@ -71,7 +71,7 @@ function birdWatchPredictUpdate()
   birdWatchSatScanTick();
   birdWatchAlertsUpdate();
   birdWatchDopplerUpdate();
-  if (T.selected && GT.settings.birdWatch.skybox) birdWatchSkyUpdate();
+  if (T.selected && GT.settings.Birdwatch.skybox) birdWatchSkyUpdate();
   if (birdWatchTimelineDiv.style.display != "none") birdWatchTimelineDraw();
 }
 
@@ -102,12 +102,12 @@ function birdWatchPredictMessage(m)
 
 function birdWatchPathStyles(label)
 {
-  const color = GT.settings.birdWatch.colors.pathLine;
-  const width = GT.settings.birdWatch.colors.pathWidth;
-  const size = GT.settings.birdWatch.colors.pathTimeSize;
-  const outline = GT.settings.birdWatch.colors.pathOutlineOn;
-  const dash = GT.settings.birdWatch.colors.pathDashOn;
-  const halo = new ol.style.Stroke({ color: birdWatchRgba(GT.settings.birdWatch.colors.pathOutline, 0.55), width: width + 2.5 });
+  const color = GT.settings.Birdwatch.colors.pathLine;
+  const width = GT.settings.Birdwatch.colors.pathWidth;
+  const size = GT.settings.Birdwatch.colors.pathTimeSize;
+  const outline = GT.settings.Birdwatch.colors.pathOutlineOn;
+  const dash = GT.settings.Birdwatch.colors.pathDashOn;
+  const halo = new ol.style.Stroke({ color: birdWatchRgba(GT.settings.Birdwatch.colors.pathOutline, 0.55), width: width + 2.5 });
   return {
     past: (outline ? [new ol.style.Style({ zIndex: -4, stroke: halo })] : []).concat(new ol.style.Style({ zIndex: -3, stroke: new ol.style.Stroke({ color: color, width: width, lineDash: dash ? [2, 5] : undefined }) })),
     future: (outline ? [new ol.style.Style({ zIndex: -4, stroke: halo })] : []).concat(new ol.style.Style({ zIndex: -3, stroke: new ol.style.Stroke({ color: color, width: width, lineDash: dash ? [8, 5] : undefined }) })),
@@ -143,7 +143,7 @@ function birdWatchPathDraw(norad)
   const p = P.paths.get(norad);
   const sat = T.last.get(norad);
   birdWatchPathRemove(norad);
-  if (!GT.settings.birdWatch.colors.pathOn || !p || p.points.length < 4 || !sat || sat.error || !birdWatchPredicted(norad) || !GT.layerSources.birdWatch) return;
+  if (!GT.settings.Birdwatch.colors.pathOn || !p || p.points.length < 4 || !sat || sat.error || !birdWatchPredicted(norad) || !GT.layerSources.birdWatch) return;
 
   const now = Date.now();
   const pts = [];
@@ -176,7 +176,7 @@ function birdWatchPathDraw(norad)
 
   const last = pts[pts.length - 1][0];
   // The ticks (a mark and its time every ten minutes) are the Time option's
-  for (let t = now + BIRD_WATCH_PATH_TICK_MS; GT.settings.birdWatch.colors.pathTimeOn && t <= last; t += BIRD_WATCH_PATH_TICK_MS)
+  for (let t = now + BIRD_WATCH_PATH_TICK_MS; GT.settings.Birdwatch.colors.pathTimeOn && t <= last; t += BIRD_WATCH_PATH_TICK_MS)
   {
     let near = at;
     for (let i = at; i < pts.length; i++) if (Math.abs(pts[i][0] - t) < Math.abs(pts[near][0] - t)) near = i;
@@ -197,8 +197,8 @@ function birdWatchPathDraw(norad)
 
 function birdWatchAutoToggle()
 {
-  GT.settings.birdWatch.auto = !GT.settings.birdWatch.auto;
-  birdWatchAutoImg.style.filter = GT.settings.birdWatch.auto ? "" : "grayscale(1)";
+  GT.settings.Birdwatch.auto = !GT.settings.Birdwatch.auto;
+  birdWatchAutoImg.style.filter = GT.settings.Birdwatch.auto ? "" : "grayscale(1)";
   if (GT.birdWatchTrack) GT.birdWatchTrack.autoPick = null;
   birdWatchAutoUpdate();
 }
@@ -206,12 +206,12 @@ function birdWatchAutoToggle()
 function birdWatchAutoUpdate()
 {
   const T = GT.birdWatchTrack;
-  if (!GT.settings.birdWatch.auto || !T.worker) return;
+  if (!GT.settings.Birdwatch.auto || !T.worker) return;
   const up = [];
   let next = null;
-  const minEl = GT.settings.birdWatch.autoMinElevation || 0;
+  const minEl = GT.settings.Birdwatch.autoMinElevation || 0;
   const now = Date.now();
-  for (const norad of GT.settings.birdWatch.tracked)
+  for (const norad of GT.settings.Birdwatch.tracked)
   {
     const sat = T.last.get(norad);
     if (!sat || sat.error) continue;
@@ -333,7 +333,7 @@ function birdWatchSkyDraw(sat, pass, points)
     c.fillText(el + "°", x, y + 0.5);
   }
 
-  const color = GT.settings.birdWatch.colors.pathLine;
+  const color = GT.settings.Birdwatch.colors.pathLine;
   if (pass && points.length > 1)
   {
     c.strokeStyle = "#ffffff";
@@ -409,7 +409,7 @@ function birdWatchTimelineDraw()
   const T = GT.birdWatchTrack;
   const P = birdWatchPredictState();
   if (!T.worker) return;
-  const tracked = GT.settings.birdWatch.tracked;
+  const tracked = GT.settings.Birdwatch.tracked;
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(420, Math.min(1000, window.innerWidth - 470));
   const height = BIRD_WATCH_AXIS + tracked.length * BIRD_WATCH_ROW + 4;

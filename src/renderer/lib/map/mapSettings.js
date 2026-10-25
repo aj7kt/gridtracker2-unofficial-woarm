@@ -117,7 +117,6 @@ function loadMapSettings()
   focusRigValue.checked = GT.settings.map.focusRig;
   haltAllOnTxValue.checked = GT.settings.map.haltAllOnTx;
 
-  trafficDecode.checked = GT.settings.map.trafficDecode;
   wantedByBandMode.checked = GT.settings.app.wantedByBandMode;
   includeExceptions.checked =  GT.settings.app.includeExceptions;
   includeCustomAlerts.checked = GT.settings.app.includeCustomAlerts;

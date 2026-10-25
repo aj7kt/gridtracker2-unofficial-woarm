@@ -3,39 +3,52 @@
 // See LICENSE for more information.
 
 // Rig Control (Settings -> Features -> Service): the rig's frequency and mode, read every second and set on request (rigTune), through
-// Hamlib's rigctld (TCP), flrig (XML-RPC over HTTP) or an Icom over CI-V on a serial port (Web Serial, serialPorts.js). WSJT-X usually
-// holds the rig's serial port: a port that can't be opened says so under Choose Port, with the way to share the rig (rigctld or flrig)
+// Hamlib's rigctld (TCP), flrig (XML-RPC over HTTP), or on a serial port (Web Serial, serialPorts.js) an Icom over CI-V, a Kenwood or a
+// newer Yaesu over their CAT (rigCatProtocol). WSJT-X usually
+// holds the rig's serial port: a port that can't be opened says so under Choose Port, with the way to share the rig (rigctld or flrig).
+// The rig set up is VFO-A's, the downlink (RX); VFO-B, the uplink (TX), is the same rig's second VFO (split on) or a second rig of its
+// own (settings.rig.second, its VFO A), each rig with its own link
 
-GT.rig = {
-  link: null,         // the open serial port, or the socket (flrig: nothing kept, each call is a request)
-  writer: null,
-  reader: null,
-  protocol: null,
-  status: "off",      // off, noPort, notFound, connecting, connected, error
-  error: "",
-  freq: null,         // Hz, the last read
-  mode: null,         // "USB", "FM", ... as the rig says it
-  freqB: null,        // Hz, the second VFO's (the TX one), when the rig has one
-  dual: null,         // whether the rig has a second VFO that can be read and set: known once it has answered (null until then)
-  split: false,       // split (TX on the second VFO) has been asked of the rig
-  civFound: null,     // CI-V: the address the rig answered from (asked with 19 00 at the broadcast address, 00, which every Icom answers)
-  model: null,        // the rig's name, as rigctld or flrig say it, or the Icom its CI-V address is the default of
-  toneFreq: null,     // rigctld: whether it can set the rig's CTCSS tone, and turn it on (its capabilities: Can set CTCSS Tone, Set functions TONE)
-  toneFunc: null,
-  toneOn: false,      // a CTCSS tone was turned on here (and is turned off again when a transmitter without one is set)
-  ranges: null,       // rigctld: the RX and TX ranges its capabilities list, in Hz ({ rx: [[low, high], ...], tx: [...] }; rigRanges.js)
-  rangeSection: null, // rigctld: the capabilities' ranges being read ("rx", "tx"), while their lines come
-  pollTimer: null,
-  retryTimer: null,
-  generation: 0,      // a connect under way is the newest one; an older one that finishes is ignored
-  pending: "",        // text received that isn't a whole line yet
-  bytes: [],          // CI-V bytes that aren't a whole frame yet
-  busy: false,        // flrig: a request is out
-  queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
-  waiting: null       // serial: the timer for the reply to the frame out, after which the next goes anyway
-};
+function rigNewState(key)
+{
+  return {
+    key: key,           // "a": VFO-A's rig (settings.rig), "b": VFO-B's second rig (settings.rig.second)
+    link: null,         // the open serial port, or the socket (flrig: nothing kept, each call is a request)
+    writer: null,
+    reader: null,
+    protocol: null,
+    status: "off",      // off, noPort, notFound, connecting, connected, error
+    error: "",
+    freq: null,         // Hz, the last read
+    mode: null,         // "USB", "FM", ... as the rig says it
+    freqB: null,        // Hz, the second VFO's (the TX one), when the rig has one
+    dual: null,         // whether the rig has a second VFO that can be read and set: known once it has answered (null until then)
+    split: false,       // split (TX on the second VFO) has been asked of the rig
+    civFound: null,     // CI-V: the address the rig answered from (asked with 19 00 at the broadcast address, 00, which every Icom answers)
+    model: null,        // the rig's name, as rigctld or flrig say it, or the Icom its CI-V address is the default of
+    toneFreq: null,     // rigctld: whether it can set the rig's CTCSS tone, and turn it on (its capabilities: Can set CTCSS Tone, Set functions TONE)
+    toneFunc: null,
+    toneOn: false,      // a CTCSS tone was turned on here (and is turned off again when a transmitter without one is set)
+    ranges: null,       // rigctld: the RX and TX ranges its capabilities list, in Hz ({ rx: [[low, high], ...], tx: [...] }; rigRanges.js)
+    rangeSection: null, // rigctld: the capabilities' ranges being read ("rx", "tx"), while their lines come
+    pollTimer: null,
+    retryTimer: null,
+    generation: 0,      // a connect under way is the newest one; an older one that finishes is ignored
+    pending: "",        // text received that isn't a whole line yet
+    bytes: [],          // CI-V bytes that aren't a whole frame yet
+    busy: false,        // flrig: a request is out
+    queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
+    lastSent: null,     // serial: the frame out last (a Kenwood or Yaesu "?;" refuses it)
+    catId: null,        // Kenwood, Yaesu: what the rig answered to ID; ("019", "0570")
+    waiting: null       // serial: the timer for the reply to the frame out, after which the next goes anyway
+  };
+}
+
+GT.rig = rigNewState("a");
+GT.rigB = rigNewState("b");
 
 const RIG_REPLY_MS = 250;
+const RIG_GAP_MS = 30;
 const RIG_QUEUE_MAX = 12;
 
 const RIG_POLL_MS = 1000;
@@ -44,6 +57,70 @@ const RIG_BAUDS = [4800, 9600, 19200, 38400, 57600, 115200];
 // The Icoms by the CI-V address each comes with (an address can be changed in the rig: the name from the port's device id wins, below)
 const RIG_CIV_MODELS = { 0x94: "IC-7300", 0xa2: "IC-9700", 0xa4: "IC-705", 0x88: "IC-7100", 0x98: "IC-7610", 0x7a: "IC-7600", 0x74: "IC-7700", 0x6a: "IC-7800", 0x8e: "IC-7851", 0x7c: "IC-9100", 0x70: "IC-7000", 0x76: "IC-7200", 0x80: "IC-7410", 0x5e: "IC-718", 0x58: "IC-706MKIIG", 0x60: "IC-910H", 0x66: "IC-746PRO", 0x6e: "IC-756PROIII", 0x64: "IC-756PROII", 0x5c: "IC-756PRO", 0x50: "IC-756", 0x96: "IC-R8600", 0xac: "IC-905" };
 const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: "RTTY", 0x05: "FM", 0x06: "WFM", 0x07: "CW-R", 0x08: "RTTY-R", 0x17: "DV" };
+
+// A rig's settings: VFO-A's are settings.rig, the second rig's settings.rig.second
+function rigSettingsOf(R)
+{
+  return R.key == "a" ? GT.settings.rig : GT.settings.rig.second;
+}
+
+// VFO-B, the uplink: "none" (not tuned), "same" (VFO-A's rig's second VFO, split on) or "second" (a rig of its own). Until one is chosen
+// (settings.rig.vfoB "auto"): the same rig, once it has answered as having a second VFO, else none. What is shown is what is used, and
+// nothing is saved until the user picks
+function rigVfoBChoice()
+{
+  const value = GT.settings.rig.vfoB;
+  if (value == "none" || value == "same" || value == "second") return value;
+  return GT.rig.dual === true ? "same" : "none";
+}
+
+// VFO-B is on a rig of its own
+function rigSecondUsed()
+{
+  return GT.settings.rig.enable && rigVfoBChoice() == "second";
+}
+
+// Whether a rig is to be connected: VFO-A's while Rig Control is on, the second one while VFO-B is on it
+function rigWanted(R)
+{
+  return R.key == "a" ? GT.settings.rig.enable : rigSecondUsed();
+}
+
+// The rig the uplink (TX) is tuned on: the second one, or VFO-A's (its second VFO); null with VFO-B None
+function rigUplink()
+{
+  const choice = rigVfoBChoice();
+  return choice == "second" ? GT.rigB : choice == "same" ? GT.rig : null;
+}
+
+// Each VFO's converter offset, in Hz (vfo "a" the downlink, "b" the uplink): the rig's dial is the satellite's frequency plus it. As
+// large as a converter's LO can be (an LNB's 9750 MHz is -9750000000), both ways
+const RIG_OFFSET_MAX = 1e12;
+
+function rigOffset(vfo)
+{
+  const value = Number(GT.settings.rig[vfo == "b" ? "offsetB" : "offsetA"]);
+  return Number.isFinite(value) && Math.abs(value) <= RIG_OFFSET_MAX ? Math.round(value) : 0;
+}
+
+// The LO badge after a frequency with an offset: its tooltip the offset and the rig's own dial; "" without one
+function rigLoBadge(offset, dial)
+{
+  if (!offset) return "";
+  const title = I18N("rig.offset.badge.hover").replace("{offset}", (offset > 0 ? "+" : "") + offset.toLocaleString()).replace("{dial}", formatDialFreq(dial));
+  return "<span class=\"rigLoBadge\" title=\"" + htmlEntities(title) + "\">LO</span>";
+}
+
+// The serial port each rig keeps (serialPorts.js), and its settings' elements: rigProtocol ... for VFO-A's, rigBProtocol ... for the second
+function rigPurpose(R)
+{
+  return R.key == "a" ? "rig" : "rigB";
+}
+
+function rigEl(R, name)
+{
+  return document.getElementById((R.key == "a" ? "rig" : "rigB") + name);
+}
 
 // ---- CI-V: FE FE <to> <from> <command> <data...> FD; the frequency as five BCD bytes, the lowest digits first
 
@@ -67,18 +144,18 @@ function rigCivHzToBcd(hz)
   return bytes;
 }
 
-// The address frames go to: the one set, else the one the rig answered from, else the broadcast address (00), which every Icom
+// The address a rig's frames go to: the one set, else the one the rig answered from, else the broadcast address (00), which every Icom
 // answers, from its own
-function rigCivAddress()
+function rigCivAddress(R)
 {
-  const value = parseInt(String(GT.settings.rig.civAddress).trim(), 16);
+  const value = parseInt(String(rigSettingsOf(R).civAddress).trim(), 16);
   if (Number.isFinite(value) && value > 0 && value < 0xff) return value;
-  return GT.rig.civFound || 0x00;
+  return R.civFound || 0x00;
 }
 
-// Each protocol: serial (CI-V) or network (rigctld, flrig); what to send to ask and to set, and how the answers read
-//   poll():          what asks the frequency and the mode
-//   setFreq(hz), setMode(mode): what sets them (mode as the rig names it: "USB", "FM", ...)
+// Each protocol: serial (CI-V) or network (rigctld, flrig); what to send to ask and to set, and how the answers read. R is the rig
+//   poll(R):          what asks the frequency and the mode
+//   setFreq(hz, R), setMode(mode, R): what sets them (mode as the rig names it: "USB", "FM", ...)
 //   parse(line | bytes, R): updates R.freq / R.mode from an answer; a string back is an error
 const RIG_PROTOCOLS = {
   rigctld: {
@@ -140,26 +217,26 @@ const RIG_PROTOCOLS = {
     serial: true,
     binary: true,
     // 19 00 asks the rig its CI-V address (answered with it), once connected
-    caps: () => rigCivFrame(rigCivAddress(), 0x19, [0x00]),
+    caps: (R) => rigCivFrame(rigCivAddress(R), 0x19, [0x00]),
     // 03 asks the frequency, 04 the mode; 05 and 06 set them. The other VFO (the TX one, with split on: 0F 01) is read and set
     // without switching to it, with 25 01 (the IC-7300, 7610, 9700 and 705 have it; a rig that answers NG hasn't, and isn't asked again)
-    poll: (R) => [rigCivFrame(rigCivAddress(), 0x03), rigCivFrame(rigCivAddress(), 0x04)].concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(), 0x25, [0x01])]),
-    setFreq: (hz) => rigCivFrame(rigCivAddress(), 0x05, rigCivHzToBcd(hz)),
-    setTx: (hz) => rigCivFrame(rigCivAddress(), 0x25, [0x01, ...rigCivHzToBcd(hz)]),
-    splitOn: () => rigCivFrame(rigCivAddress(), 0x0f, [0x01]),
+    poll: (R) => [rigCivFrame(rigCivAddress(R), 0x03), rigCivFrame(rigCivAddress(R), 0x04)].concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(R), 0x25, [0x01])]),
+    setFreq: (hz, R) => rigCivFrame(rigCivAddress(R), 0x05, rigCivHzToBcd(hz)),
+    setTx: (hz, R) => rigCivFrame(rigCivAddress(R), 0x25, [0x01, ...rigCivHzToBcd(hz)]),
+    splitOn: (R) => rigCivFrame(rigCivAddress(R), 0x0f, [0x01]),
     // 1B 00 sets the repeater tone (00, then the tenths of a hertz as four BCD digits: 67.0 is 00 06 70), 16 42 turns it on (01) or off (00)
-    setTone: (hz) =>
+    setTone: (hz, R) =>
     {
-      if (!(hz > 0)) return [rigCivFrame(rigCivAddress(), 0x16, [0x42, 0x00])];
+      if (!(hz > 0)) return [rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x00])];
       const digits = String(Math.round(hz * 10)).padStart(4, "0");
       const bcd = (i) => (Number(digits[i]) << 4) | Number(digits[i + 1]);
-      return [rigCivFrame(rigCivAddress(), 0x1b, [0x00, bcd(0), bcd(2)]), rigCivFrame(rigCivAddress(), 0x16, [0x42, 0x01])];
+      return [rigCivFrame(rigCivAddress(R), 0x1b, [0x00, bcd(0), bcd(2)]), rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x01])];
     },
     canTone: () => true,
-    setMode: (mode) =>
+    setMode: (mode, R) =>
     {
       const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
-      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(), 0x06, [code]) : null;
+      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x06, [code]) : null;
     },
     // A frame from the rig to us (E0), or to everyone (00: the rig telling of a change); our own frames come back (the echo) and are skipped
     parse: (frame, R) =>
@@ -187,182 +264,397 @@ const RIG_PROTOCOLS = {
       }
       return null;
     }
+  },
+  kenwood: rigCatProtocol({
+    name: "Kenwood CAT (TS-2000+)",
+    // FA / FB: VFO A / B in Hz, 11 digits; MD: the mode, one digit; FR0 FT1: receive on A, transmit on B (split)
+    digits: 11,
+    modeAsk: "MD;",
+    modeReply: /^MD(\d)$/,
+    modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 9: "RTTY-R" },
+    modeSet: (code) => "MD" + code + ";",
+    splitOn: () => "FR0;FT1;",
+    // ID; answers ID019; for a TS-2000 (an Elecraft, or an SDR program's "TS-2000" port, says what it emulates). As Hamlib has them
+    // (rigs/kenwood/kenwood.c, kenwood_id_string_list): 017 is a TS-570D and what the Elecraft K2, K3 and KX3 say, 020 a TS-480 and
+    // what some SDR programs say
+    models: { "017": "TS-570D", "018": "TS-570S", "019": "TS-2000", "020": "TS-480", "021": "TS-590S", "022": "TS-990S", "023": "TS-590SG", "024": "TS-890S" }
+  }),
+  yaesu: rigCatProtocol({
+    name: "Yaesu CAT (FT-991+)",
+    // The newer Yaesus (FT-991, FT-891, FT-710, FTDX10, FTDX101 ...): FA / FB in Hz, 9 digits; MD0: the main receiver's mode, a hex
+    // digit (Hamlib's newcat_mode_conv)
+    digits: 9,
+    modeAsk: "MD0;",
+    modeReply: /^MD0([0-9A-F])$/,
+    modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 8: "PKT-L", 9: "RTTY-R", A: "PKT-FM", B: "FM-N", C: "PKT-U", D: "AM-N", E: "C4FM", F: "PKT-FM-N" },
+    modeSet: (code) => "MD0" + code + ";",
+    // Split as Hamlib sets it (rigs/yaesu/newcat.c): ST1 on the rigs that have ST; FT3 (TX on VFO B: these count A and B as 2 and 3) on
+    // those that don't; the FT-891 has neither, so its second VFO can't take the uplink. A rig not known yet: ST1
+    splitOn: (id) => (["0310", "0570", "0670", "0251", "0252", "0583", "0362", "0462"].includes(id) ? "FT3;" : "ST1;"),
+    noSplit: ["0135"],
+    // ID; answers four digits (Hamlib's nc_rigid_t, its leading zero kept)
+    models: { "0241": "FT-450", "0244": "FT-450D", "0310": "FT-950", "0135": "FT-891", "0570": "FT-991", "0670": "FT-991A", "0251": "FT-2000", "0252": "FT-2000D", "0583": "FTDX1200", "0761": "FTDX10", "0362": "FTDX5000", "0462": "FTDX3000", "0681": "FTDX101D", "0682": "FTDX101MP", "0800": "FT-710", "0840": "FTX-1" }
+  }),
+  // The FT-817, FT-818, FT-857 and FT-897's own CAT, as Hamlib has it (rigs/yaesu/ft817.c): every command five bytes, four of data and
+  // the command's. 03 asks the frequency and the mode, answered with five bytes (the frequency as eight BCD digits in tens of hertz, the
+  // highest first, then the mode); a setting gets one byte back or none. VFO B is only reached by swapping the VFOs, so the rig is taken
+  // as having one VFO: two of them, VFO-A's rig and a second one, are the way to work a satellite. No ID: the protocol names the rig
+  yaesu817: {
+    name: "Yaesu CAT (FT-817/818/857/897)",
+    serial: true,
+    binary: true,
+    model: "FT-817/818/857/897",
+    poll: () => [new Uint8Array([0, 0, 0, 0, 0x03])],
+    replies: (data) => data instanceof Uint8Array && data[4] == 0x03,
+    // A setting's acknowledgement (or a stray byte) doesn't stay to shift the next answer
+    beforeSend: (data, R) => { R.bytes = []; },
+    gapMs: 60,
+    setFreq: (hz) =>
+    {
+      const digits = String(Math.max(0, Math.floor(Math.round(hz) / 10))).padStart(8, "0").slice(-8);
+      const bcd = (i) => (Number(digits[i]) << 4) | Number(digits[i + 1]);
+      return new Uint8Array([bcd(0), bcd(2), bcd(4), bcd(6), 0x01]);
+    },
+    setTx: () => null,
+    splitOn: () => null,
+    setMode: (mode) =>
+    {
+      const code = { LSB: 0x00, USB: 0x01, CW: 0x02, "CW-R": 0x03, AM: 0x04, FM: 0x08 }[String(mode).toUpperCase()];
+      return code === undefined ? null : new Uint8Array([code, 0, 0, 0, 0x07]);
+    },
+    // 0B sets the CTCSS tone (its tenths of a hertz as four BCD digits, written twice), 4A turns the encoder on, 8A turns it off
+    setTone: (hz) =>
+    {
+      if (!(hz > 0)) return [new Uint8Array([0x8a, 0, 0, 0, 0x0a])];
+      const digits = String(Math.round(hz * 10)).padStart(4, "0");
+      const a = (Number(digits[0]) << 4) | Number(digits[1]);
+      const b = (Number(digits[2]) << 4) | Number(digits[3]);
+      return [new Uint8Array([a, b, a, b, 0x0b]), new Uint8Array([0x4a, 0, 0, 0, 0x0a])];
+    },
+    canTone: () => true,
+    // The answer to 03 once its five bytes are in (anything else, a setting's acknowledgement, is let go)
+    receive: (data, R) =>
+    {
+      for (const b of data) R.bytes.push(b);
+      const asked = R.lastSent instanceof Uint8Array && R.lastSent[4] == 0x03;
+      if (!asked)
+      {
+        R.bytes = [];
+        rigReplied(R);
+        return;
+      }
+      if (R.bytes.length < 5) return;
+      const reply = R.bytes.slice(0, 5);
+      R.bytes = [];
+      const nibbles = reply.slice(0, 4).flatMap((x) => [x >> 4, x & 0x0f]);
+      if (nibbles.every((n) => n <= 9))
+      {
+        R.freq = Number(nibbles.join("")) * 10;
+        const modes = { 0x00: "LSB", 0x01: "USB", 0x02: "CW", 0x03: "CW-R", 0x04: "AM", 0x06: "WFM", 0x08: "FM", 0x0a: "DIG", 0x0c: "PKT" };
+        R.mode = (modes[reply[4] & 0x7f] || "mode " + (reply[4] & 0x7f)) + (reply[4] & 0x80 ? "-N" : "");
+        R.dual = false;
+      }
+      rigReplied(R);
+    }
   }
 };
 
-function rigProtocolChosen()
+// Kenwood's CAT and the newer Yaesus' (which grew from it): text commands that end with ";" over a serial port. A question (two letters
+// and the ";", "FA;") is answered ("FA00014074000;"); a setting ("FA00145800000;") isn't, unless it is refused ("?;"). The rig that
+// answers FB has a second VFO; one that refuses it hasn't
+function rigCatProtocol(cat)
 {
-  return RIG_PROTOCOLS[GT.settings.rig.protocol] || RIG_PROTOCOLS.rigctld;
+  const hz = (value) => String(Math.max(0, Math.round(value))).padStart(cat.digits, "0").slice(-cat.digits);
+  const freqReply = new RegExp("^F([AB])(\\d{" + cat.digits + "})$");
+  return {
+    name: cat.name,
+    serial: true,
+    split: /;/,
+    caps: () => "ID;",
+    poll: (R) => ["FA;", cat.modeAsk].concat(R.dual === false ? [] : ["FB;"]),
+    replies: (data) => typeof data == "string" && /^[A-Z]{2}\d?;$/.test(data),
+    setFreq: (value) => "FA" + hz(value) + ";",
+    setTx: (value) => "FB" + hz(value) + ";",
+    splitOn: (R) => cat.splitOn(R.catId),
+    setMode: (mode) =>
+    {
+      const code = Object.keys(cat.modes).find((key) => cat.modes[key] == String(mode).toUpperCase());
+      return code === undefined ? null : cat.modeSet(code);
+    },
+    parse: (line, R) =>
+    {
+      const text = line.trim();
+      let m;
+      if ((m = freqReply.exec(text)))
+      {
+        if (m[1] == "A") R.freq = Number(m[2]);
+        else
+        {
+          R.freqB = Number(m[2]);
+          // A rig that can't be split over CAT (the FT-891) reads its second VFO, but it can't take the uplink
+          R.dual = !(cat.noSplit || []).includes(R.catId);
+        }
+      }
+      else if ((m = cat.modeReply.exec(text))) R.mode = cat.modes[m[1]] || ("mode " + m[1]);
+      else if ((m = /^ID(\d+)$/.exec(text)))
+      {
+        R.catId = m[1];
+        R.model = cat.models[m[1]] || "ID " + m[1];
+        if ((cat.noSplit || []).includes(R.catId)) R.dual = false;
+      }
+      else if (text == "?")
+      {
+        // Refused: the second VFO's question, before it was ever answered, means the rig hasn't one
+        if (R.lastSent == "FB;" && R.dual === null) R.dual = false;
+        return "?";
+      }
+      return null;
+    }
+  };
 }
 
-// ---- Settings (Features -> Service)
+function rigProtocolChosen(R = GT.rig)
+{
+  return RIG_PROTOCOLS[rigSettingsOf(R).protocol] || RIG_PROTOCOLS.rigctld;
+}
+
+// ---- Settings (Features -> Service): VFO-A's rig, then VFO-B (Same Rig or Second Rig) and the second rig's rows under it
 
 function rigSettingsRender()
 {
   const S = GT.settings.rig;
   rigEnable.checked = S.enable;
-  if (!rigProtocol.options.length)
+  rigVfoB.value = rigVfoBChoice();
+  rigVfoBTr.style.display = S.enable ? "" : "none";
+  rigSecondTr.style.display = rigSecondUsed() ? "" : "none";
+  rigOffsetATr.style.display = S.enable ? "" : "none";
+  rigOffsetBTr.style.display = S.enable && rigVfoBChoice() != "none" ? "" : "none";
+  rigOffsetA.value = String(rigOffset("a"));
+  rigOffsetB.value = String(rigOffset("b"));
+  rigSettingsRenderOne(GT.rig, S.enable);
+  rigSettingsRenderOne(GT.rigB, rigSecondUsed());
+}
+
+// One rig's rows: shown (on) or not
+function rigSettingsRenderOne(R, on)
+{
+  const S = rigSettingsOf(R);
+  const protocolSelect = rigEl(R, "Protocol");
+  const baudSelect = rigEl(R, "Baud");
+  if (!protocolSelect.options.length)
   {
     for (const [key, protocol] of Object.entries(RIG_PROTOCOLS))
     {
       const option = document.createElement("option");
       option.value = key;
       option.textContent = protocol.name;
-      rigProtocol.appendChild(option);
+      protocolSelect.appendChild(option);
     }
     for (const baud of RIG_BAUDS)
     {
       const option = document.createElement("option");
       option.value = String(baud);
       option.textContent = String(baud);
-      rigBaud.appendChild(option);
+      baudSelect.appendChild(option);
     }
   }
-  rigProtocol.value = S.protocol in RIG_PROTOCOLS ? S.protocol : "rigctld";
-  rigBaud.value = RIG_BAUDS.includes(Number(S.baud)) ? String(S.baud) : "19200";
-  rigDataBits.value = Number(S.dataBits) == 7 ? "7" : "8";
-  rigParity.value = ["none", "even", "odd"].includes(S.parity) ? S.parity : "none";
-  rigStopBits.value = Number(S.stopBits) == 2 ? "2" : "1";
-  rigCivAddress.value = S.civAddress;
-  rigCivAddress.placeholder = I18N("rig.civ.auto");
-  rigHost.value = S.host;
-  const protocol = rigProtocolChosen();
-  rigNetPort.value = protocol.http ? S.flrigPort : S.netPort;
-  rigPortName.textContent = S.port ? serialPortShortName(S.port) + (serialPortModel(S.port) ? "  \u2014  " + serialPortModel(S.port) : "") : I18N("settings.rotor.none.label");
-  rigPortName.title = S.port ? S.port.displayName || "" : "";
+  protocolSelect.value = S.protocol in RIG_PROTOCOLS ? S.protocol : "rigctld";
+  baudSelect.value = RIG_BAUDS.includes(Number(S.baud)) ? String(S.baud) : "19200";
+  rigEl(R, "DataBits").value = Number(S.dataBits) == 7 ? "7" : "8";
+  rigEl(R, "Parity").value = ["none", "even", "odd"].includes(S.parity) ? S.parity : "none";
+  rigEl(R, "StopBits").value = Number(S.stopBits) == 2 ? "2" : "1";
+  rigEl(R, "CivValue").value = S.civAddress;
+  rigEl(R, "CivValue").placeholder = I18N("rig.civ.auto");
+  rigEl(R, "Host").value = S.host;
+  const protocol = rigProtocolChosen(R);
+  rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : S.netPort;
+  const portName = rigEl(R, "PortName");
+  portName.textContent = S.port ? serialPortShortName(S.port) + (serialPortModel(S.port) ? "  —  " + serialPortModel(S.port) : "") : I18N("settings.rotor.none.label");
+  portName.title = S.port ? S.port.displayName || "" : "";
   const serial = protocol.serial;
-  const rows = { rigProtocolTr: S.enable, rigPortTr: S.enable && serial, rigBaudTr: S.enable && serial, rigCivTr: S.enable && S.protocol == "civ", rigHostTr: S.enable && !serial, rigStatusTr: S.enable };
-  for (const [id, on] of Object.entries(rows)) document.getElementById(id).style.display = on ? "" : "none";
-  serialLinuxRender(rigLinuxTr, rigLinuxText, S.port, S.enable && serial);
-  rigStatusRender();
+  // Kenwood CAT and Yaesu CAT name one rig each; the others that speak them are said under the protocol
+  const note = { kenwood: "settings.rig.kenwood.note", yaesu: "settings.rig.yaesu.note", yaesu817: "settings.rig.yaesu817.note" }[S.protocol];
+  // A model's name (TS-990, FTX-1) isn't broken at its hyphen
+  rigEl(R, "ProtocolNote").innerHTML = note ? htmlEntities(I18N(note)).replace(/([A-Za-z#]+-[A-Za-z0-9]+)/g, "<span style='white-space:nowrap'>$1</span>") : "";
+  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", HostTr: on && !serial, StatusTr: on };
+  for (const [name, shown] of Object.entries(rows)) rigEl(R, name).style.display = shown ? "" : "none";
+  serialLinuxRender(rigEl(R, "LinuxTr"), rigEl(R, "LinuxText"), S.port, on && serial);
+  rigStatusRender(R);
 }
 
 function rigEnableChanged()
 {
   GT.settings.rig.enable = rigEnable.checked;
   rigSettingsRender();
-  rigConnect();
+  rigConnect(GT.rig);
+  rigConnect(GT.rigB);
 }
 
-// The protocol, port settings, address or host changed: connected again with them
-function rigSettingsChanged()
+// VFO-B on the same rig, a second one, or none: the second rig connected, or let go
+function rigVfoBChanged()
 {
-  const S = GT.settings.rig;
+  GT.settings.rig.vfoB = ["none", "same", "second"].includes(rigVfoB.value) ? rigVfoB.value : "none";
+  rigSettingsRender();
+  rigConnect(GT.rigB);
+}
+
+// Offset Hz takes digits and a minus sign
+function rigOffsetKey(event)
+{
+  return event.charCode == 0 || /[0-9-]/.test(String.fromCharCode(event.charCode));
+}
+
+// An offset changed: kept when it is a whole number of hertz within the limit (otherwise the one before stays), and the frequencies
+// followed sent again with it
+function rigOffsetChanged()
+{
+  for (const [input, key] of [[rigOffsetA, "offsetA"], [rigOffsetB, "offsetB"]])
+  {
+    const text = input.value.replace(/[\s,._]/g, "");
+    const value = /^-?\d+$/.test(text) ? Number(text) : NaN;
+    if (Number.isFinite(value) && Math.abs(value) <= RIG_OFFSET_MAX) GT.settings.rig[key] = value;
+  }
+  if (GT.rigDoppler) GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
+  rigSettingsRender();
+}
+
+// A rig's protocol, port settings, address or host changed: connected again with them (key: "a" VFO-A's rig, "b" the second)
+function rigSettingsChanged(key = "a")
+{
+  const R = key == "b" ? GT.rigB : GT.rig;
+  const S = rigSettingsOf(R);
+  const protocolSelect = rigEl(R, "Protocol");
   // Another protocol: the port field still shows the old one's port, so it isn't read; the render below fills it with the new one's
-  const sameProtocol = S.protocol == rigProtocol.value;
-  S.protocol = rigProtocol.value;
-  S.baud = Number(rigBaud.value);
-  S.dataBits = Number(rigDataBits.value);
-  S.parity = rigParity.value;
-  S.stopBits = Number(rigStopBits.value);
-  S.civAddress = rigCivAddress.value.trim().toUpperCase();
-  S.host = rigHost.value.trim();
+  const sameProtocol = S.protocol == protocolSelect.value;
+  S.protocol = protocolSelect.value;
+  S.baud = Number(rigEl(R, "Baud").value);
+  S.dataBits = Number(rigEl(R, "DataBits").value);
+  S.parity = rigEl(R, "Parity").value;
+  S.stopBits = Number(rigEl(R, "StopBits").value);
+  S.civAddress = rigEl(R, "CivValue").value.trim().toUpperCase();
+  S.host = rigEl(R, "Host").value.trim();
   if (sameProtocol)
   {
-    if (rigProtocolChosen().http) S.flrigPort = Number(rigNetPort.value) || 12345;
-    else S.netPort = Number(rigNetPort.value) || 4532;
+    if (rigProtocolChosen(R).http) S.flrigPort = Number(rigEl(R, "NetPort").value) || 12345;
+    else S.netPort = Number(rigEl(R, "NetPort").value) || 4532;
   }
   rigSettingsRender();
-  rigConnect();
+  rigConnect(R);
 }
 
-function rigChoosePort()
+function rigChoosePort(key = "a")
 {
-  serialPortChoose("rig", (port) =>
+  const R = key == "b" ? GT.rigB : GT.rig;
+  serialPortChoose(rigPurpose(R), (port) =>
   {
-    GT.settings.rig.port = port;
+    rigSettingsOf(R).port = port;
     rigSettingsRender();
-    rigConnect();
+    rigConnect(R);
   });
 }
 
-function rigMhz(hz)
-{
-  return (hz / 1e6).toFixed(6);
-}
-
-// The rig's name: as rigctld or flrig said it; a serial rig's from its port's device id (IC-7300_...), else the Icom its address
+// A rig's name: as rigctld or flrig said it; a serial rig's from its port's device id (IC-7300_...), else the Icom its address
 // is the default of; "" when none is known
-function rigModelName()
+function rigModelName(R = GT.rig)
 {
-  const R = GT.rig;
   if (R.model) return R.model;
-  if (rigProtocolChosen().serial) return serialPortModel(GT.settings.rig.port) || (R.civFound && RIG_CIV_MODELS[R.civFound]) || "";
+  if (rigProtocolChosen(R).serial) return serialPortModel(rigSettingsOf(R).port) || (R.civFound && RIG_CIV_MODELS[R.civFound]) || "";
   return "";
 }
 
-// "14.074000 (435.250000) MHz USB": VFO A, the second VFO in brackets when the rig has one, the mode
-function rigFrequencyText()
+// "14.074.000 (435.250.000) MHz USB": VFO A, the second VFO in brackets when the rig has one (and VFO-B is on it), the mode. The
+// satellite's frequencies: a VFO with an offset is the rig's dial less it, "LO" after it
+function rigFrequencyText(R)
 {
-  const R = GT.rig;
   if (R.freq === null) return "";
-  return rigMhz(R.freq) + (R.dual && R.freqB !== null ? " (" + rigMhz(R.freqB) + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "");
+  const one = (dial, vfo) => formatDialFreq(dial - rigOffset(vfo)) + (rigOffset(vfo) ? " LO" : "");
+  const showB = R.key == "a" && rigVfoBChoice() == "same" && R.dual && R.freqB !== null;
+  return one(R.freq, R.key == "a" ? "a" : "b") + (showB ? " (" + one(R.freqB, "b") + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "");
 }
 
-// The rig's box in the control panel and the BirdWatch panel (a box like the sky plot's, its border yellow): the frequencies on one line,
-// "Rig: 14.074000 (435.250000)", the mode on the next, "Mode: USB"; its status instead while it isn't connected. There while Rig Control is on
+// A rig's status, in short: "Error", "No Port Chosen", ...
+function rigStatusShort(R)
+{
+  return R.status == "error" ? I18N("rotor.status.errorShort") : I18N("rotor.status." + R.status).replace("{0}", R.error);
+}
+
+// The rig's box in the BirdWatch panel (a box like the sky plot's, its border yellow): the downlink on one line, the uplink in brackets
+// (the second VFO's, or the second rig's), "Rig: 145.800.000 (435.250.000)", the modes on the next, "Mode: FM (FM)" (the second rig's in
+// brackets); a rig's status instead of its frequency while it isn't connected. The satellite's frequencies: a VFO with an offset shows
+// the rig's dial less it, with the LO badge (its tooltip the offset and the dial). There while Rig Control is on
 function rigLineRender()
 {
-  if (typeof rigLineMain == "undefined") return;
-  const R = GT.rig;
+  if (typeof birdWatchRigLine == "undefined") return;
+  const A = GT.rig;
+  const B = GT.rigB;
   const on = GT.settings.rig.enable;
-  let html;
-  if (R.status == "connected" && R.freq !== null)
+  const second = rigSecondUsed();
+  const label = (key) => "<span style='color:white'>" + I18N(key) + ":</span> ";
+  const orange = (text) => "<span style='color:orange'>" + htmlEntities(text) + "</span>";
+  const freq = (dial, vfo, color) => "<span style='color:" + color + "'>" + formatDialFreq(dial - rigOffset(vfo)) + rigLoBadge(rigOffset(vfo), dial) + "</span>";
+  const aUp = A.status == "connected" && A.freq !== null;
+  const bUp = B.status == "connected" && B.freq !== null;
+  // The uplink goes onto a line of its own when both don't fit (GHz frequencies with LO badges); each part kept whole
+  const part = (inner) => "<span style='white-space:nowrap'>" + inner + "</span>";
+  let html = "<div style='white-space:normal'>" + part(label("rig.line.rig") + (aUp ? freq(A.freq, "a", "yellow") : orange(rigStatusShort(A))));
+  if (second) html += " " + part("(" + (bUp ? freq(B.freq, "b", "#ffd27f") : orange(rigStatusShort(B))) + ")");
+  else if (rigVfoBChoice() == "same" && aUp && A.dual && A.freqB !== null) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + ")");
+  html += "</div>";
+  if (aUp || bUp)
   {
-    html = "<div><span style='color:white'>" + I18N("rig.line.rig") + ":</span> <span style='color:yellow'>" + rigMhz(R.freq) + "</span>" +
-      (R.dual && R.freqB !== null ? " <span style='color:#ffd27f'>(" + rigMhz(R.freqB) + ")</span>" : "") + "</div>" +
-      "<div><span style='color:white'>" + I18N("rig.line.mode") + ":</span> <span style='color:lightgreen'>" + htmlEntities(R.mode || "-") + "</span></div>";
+    html += "<div>" + label("rig.line.mode") + "<span style='color:lightgreen'>" + htmlEntities((aUp && A.mode) || "-") + "</span>" +
+      (second ? " (<span style='color:lightgreen'>" + htmlEntities((bUp && B.mode) || "-") + "</span>)" : "") + "</div>";
   }
-  else html = "<div><span style='color:white'>" + I18N("rig.line.rig") + ":</span> <span style='color:orange'>" + htmlEntities(R.status == "error" ? I18N("rotor.status.errorShort") : I18N("rotor.status." + R.status).replace("{0}", R.error)) + "</span></div>";
-  for (const line of [rigLineMain, birdWatchRigLine])
-  {
-    line.style.display = on ? "" : "none";
-    if (on && line.innerHTML != html) line.innerHTML = html;
-  }
+  birdWatchRigLine.style.display = on ? "" : "none";
+  if (on && birdWatchRigLine.innerHTML != html) birdWatchRigLine.innerHTML = html;
 }
 
-function rigStatusRender()
+function rigStatusRender(R = GT.rig)
 {
-  const R = GT.rig;
-  if (typeof rigStatus == "undefined") return;
+  const statusEl = rigEl(R, "Status");
+  if (!statusEl) return;
   let text = I18N("rotor.status." + R.status).replace("{0}", R.error);
   // A rig with a second VFO that can be read and set is said so
   if (R.status == "connected" && R.dual) text += " (" + I18N("rig.twoVfos") + ")";
-  if (R.status == "connected" && rigModelName()) text += "  " + rigModelName();
-  if (R.status == "connected" && R.freq !== null) text += "  " + rigFrequencyText();
+  if (R.status == "connected" && rigModelName(R)) text += "  " + rigModelName(R);
+  if (R.status == "connected" && R.freq !== null) text += "  " + rigFrequencyText(R);
   // A serial port that couldn't be opened is said in full under Choose Port, with the way to share the rig; Status says it in short
-  const portError = rigProtocolChosen().serial && (R.status == "error" || R.status == "notFound");
-  rigPortError.style.display = portError ? "" : "none";
-  rigPortError.textContent = portError ? (R.status == "error" ? I18N("serial.inUse").replace("{0}", serialPortShortName(GT.settings.rig.port)) + "\n" + R.error : text) : "";
+  const portError = rigProtocolChosen(R).serial && (R.status == "error" || R.status == "notFound");
+  const portErrorEl = rigEl(R, "PortError");
+  portErrorEl.style.display = portError ? "" : "none";
+  portErrorEl.textContent = portError ? (R.status == "error" ? I18N("serial.inUse").replace("{0}", serialPortShortName(rigSettingsOf(R).port)) + "\n" + R.error : text) : "";
   if (portError) text = I18N("rotor.status.errorShort");
-  rigStatus.textContent = text;
-  rigStatus.style.color = { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
-  // The CI-V address the rig answered from, beside the field
+  statusEl.textContent = text;
+  statusEl.style.color = { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
   if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
-  rigCivFound.textContent = R.civFound && R.status == "connected" ? I18N("rig.civ.found").replace("{0}", R.civFound.toString(16).toUpperCase().padStart(2, "0")) + (RIG_CIV_MODELS[R.civFound] ? "  \u00b7  " + RIG_CIV_MODELS[R.civFound] : "") : "";
+  // VFO-B not chosen yet follows whether VFO-A's rig has a second VFO, which is known once it has answered
+  if (R.key == "a" && typeof rigVfoB != "undefined" && rigVfoB.value != rigVfoBChoice()) rigSettingsRender();
+  // The CI-V address the rig answered from, beside the field
+  rigEl(R, "CivFound").textContent = R.civFound && R.status == "connected" ? I18N("rig.civ.found").replace("{0}", R.civFound.toString(16).toUpperCase().padStart(2, "0")) + (RIG_CIV_MODELS[R.civFound] ? "  ·  " + RIG_CIV_MODELS[R.civFound] : "") : "";
   rigLineRender();
 }
 
-function rigSetStatus(status, error = "")
+function rigSetStatus(R, status, error = "")
 {
-  GT.rig.status = status;
-  GT.rig.error = error;
-  rigStatusRender();
+  R.status = status;
+  R.error = error;
+  rigStatusRender(R);
 }
 
 function rigInit()
 {
   serialPortTell("rig", GT.settings.rig.port);
+  serialPortTell("rigB", GT.settings.rig.second.port);
   rigSettingsRender();
-  rigConnect();
+  rigConnect(GT.rig);
+  rigConnect(GT.rigB);
 }
 
-// ---- The link
+// ---- The link (each rig its own)
 
 // The link let go; what it returns is settled once it is (a serial port takes a moment)
-function rigDisconnect()
+function rigDisconnect(R)
 {
-  const R = GT.rig;
   R.generation++;
   nodeTimers.clearInterval(R.pollTimer);
   nodeTimers.clearTimeout(R.retryTimer);
@@ -375,6 +667,7 @@ function rigDisconnect()
   R.bytes = [];
   R.busy = false;
   R.queue = [];
+  R.lastSent = null;
   nodeTimers.clearTimeout(R.waiting);
   R.waiting = null;
   if (writer)
@@ -398,60 +691,57 @@ function rigDisconnect()
   return Promise.resolve();
 }
 
-async function rigConnect()
+async function rigConnect(R)
 {
-  const closing = rigDisconnect();
-  const R = GT.rig;
-  const S = GT.settings.rig;
+  const closing = rigDisconnect(R);
   R.freq = R.mode = R.freqB = null;
   R.dual = null;
   R.split = false;
   R.civFound = null;
   R.model = null;
+  R.catId = null;
   R.toneFreq = R.toneFunc = null;
   R.toneOn = false;
   R.ranges = R.rangeSection = null;
-  if (!S.enable)
+  if (!rigWanted(R))
   {
-    rigSetStatus("off");
+    rigSetStatus(R, "off");
     return;
   }
-  R.protocol = rigProtocolChosen();
+  R.protocol = rigProtocolChosen(R);
   const generation = R.generation;
-  rigSetStatus("connecting");
+  rigSetStatus(R, "connecting");
   await closing;
   if (generation != R.generation) return;
-  const open = R.protocol.serial ? rigOpenSerial(generation) : R.protocol.http ? rigOpenHttp(generation) : rigOpenNet(generation);
+  const open = R.protocol.serial ? rigOpenSerial(R, generation) : R.protocol.http ? rigOpenHttp(R, generation) : rigOpenNet(R, generation);
   open.catch((e) =>
   {
-    if (generation == R.generation) rigFail(e && e.message ? e.message : String(e));
+    if (generation == R.generation) rigFail(R, e && e.message ? e.message : String(e));
   });
 }
 
-// Lost, or never got there: tried again in a while, as long as the service is on
-function rigFail(message)
+// Lost, or never got there: tried again in a while, as long as the rig is wanted
+function rigFail(R, message)
 {
-  const R = GT.rig;
-  rigDisconnect();
-  rigSetStatus("error", message);
-  R.retryTimer = nodeTimers.setTimeout(rigConnect, RIG_RETRY_MS);
+  rigDisconnect(R);
+  rigSetStatus(R, "error", message);
+  R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
 }
 
-async function rigOpenSerial(generation)
+async function rigOpenSerial(R, generation)
 {
-  const R = GT.rig;
-  const S = GT.settings.rig;
+  const S = rigSettingsOf(R);
   if (!S.port)
   {
-    rigSetStatus("noPort");
+    rigSetStatus(R, "noPort");
     return;
   }
-  const port = await serialPortFor("rig");
+  const port = await serialPortFor(rigPurpose(R));
   if (generation != R.generation) return;
   if (!port)
   {
-    rigSetStatus("notFound", serialPortShortName(S.port));
-    R.retryTimer = nodeTimers.setTimeout(rigConnect, RIG_RETRY_MS);
+    rigSetStatus(R, "notFound", serialPortShortName(S.port));
+    R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
     return;
   }
   await port.open({ baudRate: Number(S.baud) || 19200, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" });
@@ -464,15 +754,14 @@ async function rigOpenSerial(generation)
   R.writer = port.writable.getWriter();
   port.addEventListener("disconnect", () =>
   {
-    if (generation == R.generation) rigFail("disconnected");
+    if (generation == R.generation) rigFail(R, "disconnected");
   });
-  rigReadSerial(port, generation);
-  rigConnected();
+  rigReadSerial(R, port, generation);
+  rigConnected(R);
 }
 
-async function rigReadSerial(port, generation)
+async function rigReadSerial(R, port, generation)
 {
-  const R = GT.rig;
   while (port.readable && generation == R.generation)
   {
     const reader = port.readable.getReader();
@@ -483,12 +772,12 @@ async function rigReadSerial(port, generation)
       {
         const { value, done } = await reader.read();
         if (done || generation != R.generation) break;
-        rigReceive(value);
+        rigReceive(R, value);
       }
     }
     catch (e)
     {
-      if (generation == R.generation) rigFail(e.message);
+      if (generation == R.generation) rigFail(R, e.message);
       return;
     }
     finally
@@ -498,10 +787,9 @@ async function rigReadSerial(port, generation)
   }
 }
 
-function rigOpenNet(generation)
+function rigOpenNet(R, generation)
 {
-  const R = GT.rig;
-  const S = GT.settings.rig;
+  const S = rigSettingsOf(R);
   return new Promise((resolve, reject) =>
   {
     const net = window.require("net");
@@ -515,30 +803,29 @@ function rigOpenNet(generation)
         return;
       }
       R.link = socket;
-      rigConnected();
+      rigConnected(R);
       resolve();
     });
-    socket.on("data", (data) => { if (generation == R.generation) rigReceive(data); });
-    socket.on("error", (e) => { if (generation == R.generation) rigFail(e.message); reject(e); });
-    socket.on("close", () => { if (generation == R.generation && R.link === socket) rigFail("closed"); });
+    socket.on("data", (data) => { if (generation == R.generation) rigReceive(R, data); });
+    socket.on("error", (e) => { if (generation == R.generation) rigFail(R, e.message); reject(e); });
+    socket.on("close", () => { if (generation == R.generation && R.link === socket) rigFail(R, "closed"); });
     socket.connect(Number(S.netPort) || 4532, S.host || "127.0.0.1");
   });
 }
 
 // flrig: no link to keep; connected once it has answered, polled by requests
-function rigOpenHttp(generation)
+function rigOpenHttp(R, generation)
 {
-  const R = GT.rig;
   R.link = { http: true };
-  R.pollTimer = nodeTimers.setInterval(() => rigHttpPoll(generation), RIG_POLL_MS);
-  rigHttpPoll(generation);
+  R.pollTimer = nodeTimers.setInterval(() => rigHttpPoll(R, generation), RIG_POLL_MS);
+  rigHttpPoll(R, generation);
   return Promise.resolve();
 }
 
-// One XML-RPC call to flrig: the string (or number) in its answer
-function rigHttpCall(method, paramsXml = "")
+// One XML-RPC call to a rig's flrig: the string (or number) in its answer
+function rigHttpCall(R, method, paramsXml = "")
 {
-  const S = GT.settings.rig;
+  const S = rigSettingsOf(R);
   return new Promise((resolve, reject) =>
   {
     const http = window.require("http");
@@ -562,23 +849,22 @@ function rigHttpCall(method, paramsXml = "")
   });
 }
 
-async function rigHttpPoll(generation)
+async function rigHttpPoll(R, generation)
 {
-  const R = GT.rig;
   if (R.busy) return;
   R.busy = true;
   try
   {
     if (R.model === null)
     {
-      try { R.model = await rigHttpCall(R.protocol.calls.model); } catch (e) { R.model = ""; }
+      try { R.model = await rigHttpCall(R, R.protocol.calls.model); } catch (e) { R.model = ""; }
     }
-    const freq = await rigHttpCall(R.protocol.calls.freq);
-    const mode = await rigHttpCall(R.protocol.calls.mode);
+    const freq = await rigHttpCall(R, R.protocol.calls.freq);
+    const mode = await rigHttpCall(R, R.protocol.calls.mode);
     let freqB = null;
     if (R.dual !== false)
     {
-      try { freqB = Number(await rigHttpCall(R.protocol.calls.freqB)) || null; } catch (e) { freqB = null; }
+      try { freqB = Number(await rigHttpCall(R, R.protocol.calls.freqB)) || null; } catch (e) { freqB = null; }
     }
     if (generation != R.generation) return;
     R.freq = Number(freq) || null;
@@ -588,12 +874,12 @@ async function rigHttpPoll(generation)
       R.dual = freqB !== null;
       R.freqB = freqB;
     }
-    if (R.status != "connected") rigSetStatus("connected");
-    else rigStatusRender();
+    if (R.status != "connected") rigSetStatus(R, "connected");
+    else rigStatusRender(R);
   }
   catch (e)
   {
-    if (generation == R.generation) rigFail(e.message);
+    if (generation == R.generation) rigFail(R, e.message);
   }
   finally
   {
@@ -601,32 +887,31 @@ async function rigHttpPoll(generation)
   }
 }
 
-function rigConnected()
+function rigConnected(R)
 {
-  const R = GT.rig;
-  rigSetStatus("connected");
-  if (R.protocol.caps) rigWrite(R.protocol.caps());
-  rigPoll();
-  R.pollTimer = nodeTimers.setInterval(rigPoll, RIG_POLL_MS);
+  // A rig that can't say what it is: the protocol names it (the FT-817's)
+  if (R.protocol.model) R.model = R.protocol.model;
+  rigSetStatus(R, "connected");
+  if (R.protocol.caps) rigWrite(R, R.protocol.caps(R));
+  rigPoll(R);
+  R.pollTimer = nodeTimers.setInterval(() => rigPoll(R), RIG_POLL_MS);
 }
 
-function rigPoll()
+function rigPoll(R)
 {
-  const R = GT.rig;
   const asks = R.protocol.poll(R);
-  for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(ask);
+  for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask);
 }
 
-function rigWrite(data)
+function rigWrite(R, data)
 {
-  const R = GT.rig;
   if (!R.link || data === null) return;
   // A serial rig takes one command at a time: queued, sent as the one before is answered (a backlog, when it doesn't answer, is capped)
   if (R.writer)
   {
     if (R.queue.length >= RIG_QUEUE_MAX) R.queue.shift();
     R.queue.push(data);
-    rigDrain();
+    rigDrain(R);
     return;
   }
   try
@@ -635,37 +920,45 @@ function rigWrite(data)
   }
   catch (e)
   {
-    rigFail(e.message);
+    rigFail(R, e.message);
   }
 }
 
-// The next queued frame out, once nothing is awaited; the next after it on the rig's reply (rigReplied) or, failing that, in a moment
-function rigDrain()
+// The next queued frame out, once nothing is awaited; the next after it on the rig's reply (rigReplied) or, failing that, in a moment.
+// A command the rig doesn't answer (a Kenwood or Yaesu setting: the protocol's replies) only gets a short gap before the next
+function rigDrain(R)
 {
-  const R = GT.rig;
   if (R.waiting || !R.writer || R.queue.length == 0) return;
   const data = R.queue.shift();
+  R.lastSent = data;
+  if (R.protocol.beforeSend) R.protocol.beforeSend(data, R);
+  const answered = !R.protocol.replies || R.protocol.replies(data);
   R.waiting = nodeTimers.setTimeout(() =>
   {
     R.waiting = null;
-    rigDrain();
-  }, RIG_REPLY_MS);
-  R.writer.write(typeof data == "string" ? new TextEncoder().encode(data) : data).catch((e) => rigFail(e.message));
+    rigDrain(R);
+  }, answered ? RIG_REPLY_MS : R.protocol.gapMs || RIG_GAP_MS);
+  R.writer.write(typeof data == "string" ? new TextEncoder().encode(data) : data).catch((e) => rigFail(R, e.message));
 }
 
-function rigReplied()
+function rigReplied(R)
 {
-  const R = GT.rig;
   if (!R.waiting) return;
   nodeTimers.clearTimeout(R.waiting);
   R.waiting = null;
-  rigDrain();
+  rigDrain(R);
 }
 
 // Bytes or text in: lines (rigctld) or CI-V frames to the protocol; what was read is shown
-function rigReceive(data)
+function rigReceive(R, data)
 {
-  const R = GT.rig;
+  // A protocol that reads its own answers (the FT-817's: five bytes, unframed)
+  if (R.protocol.receive)
+  {
+    R.protocol.receive(data, R);
+    rigStatusRender(R);
+    return;
+  }
   if (R.protocol.binary)
   {
     for (const b of data) R.bytes.push(b);
@@ -688,74 +981,106 @@ function rigReceive(data)
       if (frame.length < 6 || frame[1] != 0xfe) continue;
       R.protocol.parse(frame, R);
       // From the rig (not our own frame echoed): the command out is answered, the next can go
-      if (frame[3] != 0xe0) rigReplied();
+      if (frame[3] != 0xe0) rigReplied(R);
     }
-    rigStatusRender();
+    rigStatusRender(R);
     return;
   }
+  // Lines (rigctld), or answers that end with ";" (Kenwood, Yaesu: each one lets the next command go)
   R.pending += typeof data == "string" ? data : new TextDecoder().decode(data);
-  const lines = R.pending.split(/\r\n|\r|\n/);
+  const lines = R.pending.split(R.protocol.split || /\r\n|\r|\n/);
   R.pending = lines.pop();
   for (const line of lines)
   {
     if (line.trim() == "") continue;
     const problem = R.protocol.parse(line, R);
     if (problem) R.error = problem;
+    if (R.protocol.split) rigReplied(R);
   }
-  rigStatusRender();
+  rigStatusRender(R);
 }
 
 // ---- Tuning: for BirdWatch's Doppler only. The rosters (the Feed Roster's spots too) tune through WSJT-X and the loggers as before, never
 // through Rig Control
 
-// The rig set to what is given of { rx, tx, mode, tone }: rx (Hz) on VFO A, tx (Hz) on the second VFO with split on (only a rig that has
-// one: rigTuneCanTx), mode ("USB", "FM", ...) on VFO A, tone (Hz) the CTCSS tone turned on (0: turned off, if it was turned on here; only
-// a rig that can: rigTuneCanTone). True when something was sent
+// The rigs set to what is given of { rx, mode, tx, txMode, tone }, rx and tx the satellite's frequencies (each VFO's offset is added
+// to what is sent: rigOffset): rx (Hz) and mode ("USB", "FM", ...) on VFO-A's rig; tx (Hz) on the
+// uplink: the second rig's VFO A, or VFO-A's rig's second VFO with split on (only a rig that has one: rigTuneCanTx); txMode the second
+// rig's mode (the same rig's TX VFO keeps its own); tone (Hz) the uplink rig's CTCSS tone turned on (0: turned off, if it was turned on
+// here; only a rig that can: rigTuneCanTone). True when something was sent
 function rigTune(spec)
 {
-  const R = GT.rig;
-  if (typeof spec != "object" || spec === null || R.status != "connected" || !R.protocol) return false;
-  const P = R.protocol;
-  const steps = [];
-  if (spec.rx > 0) steps.push(P.setFreq(spec.rx));
-  if (spec.mode) steps.push(P.setMode(spec.mode));
-  if (spec.tx > 0 && rigTuneCanTx())
+  if (typeof spec != "object" || spec === null) return false;
+  const A = GT.rig;
+  const B = GT.rigB;
+  const second = rigSecondUsed();
+  const aUp = A.status == "connected" && !!A.protocol;
+  const bUp = second && B.status == "connected" && !!B.protocol;
+  const stepsA = [];
+  const stepsB = [];
+  // The rig's dials: the satellite's frequencies plus each VFO's offset (none below 1 Hz is sent)
+  const rxDial = spec.rx > 0 ? spec.rx + rigOffset("a") : 0;
+  const txDial = spec.tx > 0 ? spec.tx + rigOffset("b") : 0;
+  if (aUp && rxDial > 0) stepsA.push(A.protocol.setFreq(rxDial, A));
+  if (aUp && spec.mode) stepsA.push(A.protocol.setMode(spec.mode, A));
+  if (txDial > 0 && rigTuneCanTx())
   {
-    if (!R.split)
+    if (second) stepsB.push(B.protocol.setFreq(txDial, B));
+    else
     {
-      steps.push(P.splitOn());
-      R.split = true;
+      if (!A.split)
+      {
+        stepsA.push(A.protocol.splitOn(A));
+        A.split = true;
+      }
+      stepsA.push(A.protocol.setTx(txDial, A));
     }
-    steps.push(P.setTx(spec.tx));
   }
-  if (spec.tone !== undefined && spec.tone !== null && rigTuneCanTone() && (spec.tone > 0 || R.toneOn))
+  if (bUp && spec.txMode) stepsB.push(B.protocol.setMode(spec.txMode, B));
+  if (spec.tone !== undefined && spec.tone !== null && rigTuneCanTone())
   {
-    const tone = P.setTone(spec.tone);
-    steps.push(...(Array.isArray(tone) ? tone : [tone]));
-    R.toneOn = spec.tone > 0;
+    const U = rigUplink();
+    if (spec.tone > 0 || U.toneOn)
+    {
+      const tone = U.protocol.setTone(spec.tone, U);
+      (U === A ? stepsA : stepsB).push(...(Array.isArray(tone) ? tone : [tone]));
+      U.toneOn = spec.tone > 0;
+    }
   }
+  const sentA = rigSend(A, stepsA);
+  const sentB = rigSend(B, stepsB);
+  return sentA || sentB;
+}
+
+// A rig's steps out: flrig's calls one after another, the others written (serial: queued); true when there were any
+function rigSend(R, steps)
+{
   const sent = steps.filter((step) => step !== null && step !== undefined);
   if (sent.length == 0) return false;
-  if (P.http)
+  if (R.protocol.http)
   {
     let chain = Promise.resolve();
-    for (const [method, params] of sent) chain = chain.then(() => rigHttpCall(method, params));
-    chain.catch((e) => rigFail(e.message));
+    for (const [method, params] of sent) chain = chain.then(() => rigHttpCall(R, method, params));
+    chain.catch((e) => rigFail(R, e.message));
     return true;
   }
-  for (const step of sent) rigWrite(step);
+  for (const step of sent) rigWrite(R, step);
   return true;
 }
 
-// Whether the TX side can be tuned: the rig has a second VFO that answers
+// Whether the uplink (TX) can be tuned: VFO-B on the second rig and it is connected, or on VFO-A's rig and it has a second VFO that
+// answers; never with VFO-B None
 function rigTuneCanTx()
 {
-  return GT.rig.status == "connected" && GT.rig.dual === true;
+  const choice = rigVfoBChoice();
+  if (choice == "second") return GT.rigB.status == "connected";
+  if (choice == "same") return GT.rig.status == "connected" && GT.rig.dual === true;
+  return false;
 }
 
-// Whether a CTCSS tone can be set: a CI-V rig, or one rigctld says can (flrig has no call for it)
+// Whether a CTCSS tone can be set on the uplink rig: a CI-V rig, or one rigctld says can (flrig has no call for it); none with VFO-B None
 function rigTuneCanTone()
 {
-  const R = GT.rig;
-  return R.status == "connected" && !!R.protocol && typeof R.protocol.setTone == "function" && R.protocol.canTone(R);
+  const U = rigUplink();
+  return !!U && U.status == "connected" && !!U.protocol && typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
 }

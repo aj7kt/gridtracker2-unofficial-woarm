@@ -53,6 +53,9 @@
         window.opener.birdWatchTransmitterWindowReady();
       }
 
+      // The main process has placed the window (and shown it, when it was open at exit): told so the table is filled in
+      electron.ipcRenderer.on("windowPlaced", (event, visible) => window.opener.birdWatchTransmitterWindowPlaced(visible));
+
       document.oncontextmenu = function (event)
       {
         event.preventDefault();

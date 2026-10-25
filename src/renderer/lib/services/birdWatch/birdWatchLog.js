@@ -8,7 +8,7 @@
 
 function birdWatchLogTag(record)
 {
-  if (!GT.settings.birdWatch.logTag || record.PROP_MODE || record.SAT_NAME) return;
+  if (!GT.settings.Birdwatch.logTag || record.PROP_MODE || record.SAT_NAME) return;
   const T = GT.birdWatchTrack;
   if (!T || !T.worker || !T.selected) return;
   const sat = T.last.get(T.selected);
@@ -20,24 +20,24 @@ function birdWatchLogTag(record)
 
 function birdWatchHideNoUplinkChange()
 {
-  GT.settings.birdWatch.hideNoUplink = birdWatchHideNoUplinkValue.checked;
+  GT.settings.Birdwatch.hideNoUplink = birdWatchHideNoUplinkValue.checked;
   birdWatchTransmitterWindowUpdate(true);
 }
 
 function birdWatchAutoMinElChange()
 {
-  GT.settings.birdWatch.autoMinElevation = Number(birdWatchAutoMinEl.value);
-  birdWatchAutoMinElText.textContent = GT.settings.birdWatch.autoMinElevation + "°";
+  GT.settings.Birdwatch.autoMinElevation = Number(birdWatchAutoMinEl.value);
+  birdWatchAutoMinElText.textContent = GT.settings.Birdwatch.autoMinElevation + "°";
   if (GT.birdWatchTrack) birdWatchAutoUpdate();
 }
 
 function birdWatchSkyboxChange()
 {
-  GT.settings.birdWatch.skybox = birdWatchSkyboxValue.checked;
+  GT.settings.Birdwatch.skybox = birdWatchSkyboxValue.checked;
   birdWatchPredictApply();
 }
 
 function birdWatchLogTagChange()
 {
-  GT.settings.birdWatch.logTag = birdWatchLogTagValue.checked;
+  GT.settings.Birdwatch.logTag = birdWatchLogTagValue.checked;
 }

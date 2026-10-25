@@ -3,7 +3,7 @@ const validSettings = [
   "acLog",
   "adifLog",
   "app",
-  "birdWatch",
+  "Birdwatch",
   "appLogs",
   "audio",
   "awardTracker",
@@ -87,13 +87,13 @@ const k_feedRosterColumnColors = {
 const def_settings = {
   defaultsApplied: true,
   // BirdWatch (satellite tracking): all of its settings (its settings window, and the panel and button panel)
-  birdWatch: {
+  Birdwatch: {
     // BirdWatch (Settings -> Features -> Service): satellite tracking, shows its button in the main button panel
     enable: false,
     // The BirdWatch button's toggle (grey when off); enabling or disabling BirdWatch doesn't change it
     active: true,
     // Auto Select Next AOS Satellite (a button in the BirdWatch panel): the satellite that is up, or the next to rise, is selected for you
-    auto: false,
+    auto: true,
     // Auto Select only picks a satellite whose pass climbs at least this many degrees (BirdWatch settings, General): 0 to 60
     autoMinElevation: 0,
     // The Satellites tab's search and scan only list the satellites with a transmitter that has an uplink (the SatNOGS transmitters, not beacons alone)
@@ -111,7 +111,8 @@ const def_settings = {
     hideNoUplink: false,
     // Pass alerts (BirdWatch settings, Alerts): a tracked satellite about to rise is announced this many minutes before its AOS (and at
     // it), when its pass climbs at least minElevation degrees, by voice, in the traffic list, and with Pushover / Simplepush
-    alerts: { enable: false, minutes: 5, minElevation: 10, atAos: true, speech: true, traffic: true, push: false },
+    // soonText / risingText: the user's own wording of the two announcements ({N} name, {T} minutes, {D} degrees); "" the built-in one
+    alerts: { enable: false, minutes: 5, minElevation: 10, atAos: true, speech: true, traffic: true, push: false, soonText: "", risingText: "" },
     // BirdWatch's colors (its settings window, Colors tab): the footprint's outline and fill, and how transparent the fill is
     colors: {
       footprintOn: true, footprintRing: "#000000", footprintFill: "#8f8f8f", footprintTransparency: 0.86,
@@ -239,7 +240,9 @@ const def_settings = {
     qslAuthority: "L",
     collapsedMapViewFilters: false,
     logEventMedia: "Ping-coin.mp3",
-    buttonPanelOrder: []
+    buttonPanelOrder: [],
+    // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own
+    eventViewer: "main"
   },
   appLogs: [],
   map: {
@@ -286,7 +289,6 @@ const def_settings = {
     dxcwFeed: false,
     // Button panel SOTA button (shown while SOTA Chasing runs): summits with activators on the map
     sotaMap: true,
-    trafficDecode: true,
     usRadar: false,
     timezonesEnable: 0,
     showAllGrids: false,
@@ -483,8 +485,17 @@ const def_settings = {
   // is opened again at each start. follow: the rotator tracks BirdWatch's selected satellite
   rotor: { enable: false, protocol: "gs232", baud: 9600, dataBits: 8, parity: "none", stopBits: 1, port: null, host: "127.0.0.1", netPort: 4533, udpPort: 12000, follow: true },
   // Rig Control (Settings -> Features -> Service, rig.js): the rig through Hamlib's rigctld (host, netPort), flrig (host, flrigPort) or an
-  // Icom over CI-V on a serial port (port, baud...; civAddress in hex only to insist on one: the rig is asked for its own)
-  rig: { enable: false, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" },
+  // Icom over CI-V on a serial port (port, baud...; civAddress in hex only to insist on one: the rig is asked for its own). That rig is
+  // VFO-A's, the downlink; VFO-B, the uplink, is none (vfoB "none"), its second VFO ("same") or a second rig ("second", set up in
+  // second); "auto" until the user picks: the same rig when it has a second VFO, else none (rig.js, rigVfoBChoice).
+  // offsetA / offsetB: each VFO's converter (an LNB, an upconverter, a transverter), in Hz: the rig's dial is the satellite's frequency plus it
+  rig: {
+    enable: false, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "",
+    vfoB: "auto",
+    offsetA: 0,
+    offsetB: 0,
+    second: { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" }
+  },
   audio: {
     alertMute: 0,
     speechRate: 1,

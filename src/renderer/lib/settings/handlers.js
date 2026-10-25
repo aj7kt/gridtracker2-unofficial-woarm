@@ -74,14 +74,6 @@ function reloadFromQslAuthorityChanged()
   clearQSOs(false, "startupAdifLoadCheck"); // do not clear what's on disk!
 }
 
-function changeTrafficDecode()
-{
-  GT.settings.map.trafficDecode = trafficDecode.checked;
-  trafficDecodeView();
-  // The control panel is as tall as it needs to be, or the map's height again
-  updateLayout(GT.menuShowing == false);
-}
-
 function setWantedByBandModeRowView()
 {
   includeExceptionsRow.style.display = includeCustomAlertsRow.style.display = GT.settings.app.wantedByBandMode ? "" : "none"
@@ -109,12 +101,6 @@ function changeIncludeCustomAlerts()
 function changeWarnOnSoundcardsChanged()
 {
   GT.settings.app.warnOnSoundcardsChange = warnOnSoundcardsChanged.checked;
-}
-
-function trafficDecodeView()
-{
-  // Hidden and shown again, what was decoded stays: it is not cleared
-  trafficDiv.style.display = GT.settings.map.trafficDecode == false ? "none" : "";
 }
 
 function changeFitQRZvalue()

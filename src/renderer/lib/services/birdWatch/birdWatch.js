@@ -7,7 +7,7 @@
 // Settings checkbox: shows or hides the button; its toggle (birdWatchActive) is left as it was
 function changeBirdWatchEnable()
 {
-  GT.settings.birdWatch.enable = birdWatchEnable.checked;
+  GT.settings.Birdwatch.enable = birdWatchEnable.checked;
   updateBirdWatchViews();
 }
 
@@ -15,17 +15,17 @@ function changeBirdWatchEnable()
 // matter here: the shipped satellite data and the tracking work offline (only the data sync stops, birdWatchSync.js)
 function updateBirdWatchViews()
 {
-  birdWatchEnable.checked = GT.settings.birdWatch.enable;
-  birdWatchButton.style.display = GT.settings.birdWatch.enable ? "" : "none";
-  birdWatchImg.style.filter = GT.settings.birdWatch.active ? "" : "grayscale(1)";
-  birdWatchAutoImg.style.filter = GT.settings.birdWatch.auto ? "" : "grayscale(1)";
+  birdWatchEnable.checked = GT.settings.Birdwatch.enable;
+  birdWatchButton.style.display = GT.settings.Birdwatch.enable ? "" : "none";
+  birdWatchImg.style.filter = GT.settings.Birdwatch.active ? "" : "grayscale(1)";
+  birdWatchAutoImg.style.filter = GT.settings.Birdwatch.auto ? "" : "grayscale(1)";
   birdWatchDopplerButtonUpdate();
 
   // The SatNOGS data on disk follows BirdWatch being on (birdWatchSync.js)
   birdWatchSyncUpdate();
   birdWatchTleWatchUpdate();
   birdWatchTrackUpdate();
-  if (!GT.settings.birdWatch.enable)
+  if (!GT.settings.Birdwatch.enable)
   {
     closeBirdWatchSettings();
     birdWatchTimelineClose();
@@ -52,7 +52,7 @@ function birdWatchGraylineOn()
 // it may still be collapsed to its breadcrumb
 function birdWatchPanelShown()
 {
-  return GT.settings.birdWatch.enable && GT.settings.birdWatch.active;
+  return GT.settings.Birdwatch.enable && GT.settings.Birdwatch.active;
 }
 
 // The panel's BirdWatch button (false) and its breadcrumb (true), like the control panel's GridTracker2 button.
@@ -112,6 +112,7 @@ function showBirdWatchSettings()
     return;
   }
   rootSettingsDiv.style.display = "none";
+  closeEventViewer();
   helpDiv.style.display = "none";
   GT.helpShow = false;
   // The tab that was last shown (the main Settings hides every tab's content at startup, so show it again)
@@ -184,7 +185,7 @@ function birdWatchTrackSendTles()
   const worker = GT.birdWatchTrack.worker;
   if (!worker) return;
   worker.postMessage({ type: "tles", list: birdWatchTleList() });
-  worker.postMessage({ type: "track", norad: GT.settings.birdWatch.tracked });
+  worker.postMessage({ type: "track", norad: GT.settings.Birdwatch.tracked });
   birdWatchPanelRefresh();
 }
 
@@ -244,8 +245,8 @@ function birdWatchWorkerMessage(event)
 // Main button panel: "Toggle Satellite Tracking"; toggling it on opens the panel even if it was collapsed
 function toggleBirdWatch()
 {
-  GT.settings.birdWatch.active = !GT.settings.birdWatch.active;
-  if (GT.settings.birdWatch.active)
+  GT.settings.Birdwatch.active = !GT.settings.Birdwatch.active;
+  if (GT.settings.Birdwatch.active)
   {
     GT.birdWatchPanelCollapsed = false;
   }
@@ -300,7 +301,7 @@ function birdWatchButtonsInit()
   window.addEventListener("resize", birdWatchClearControls);
 
   // The saved order, less any button that is no more and with any new one at the end
-  const order = GT.settings.birdWatch.buttonOrder.filter((id) => GT.birdWatchDefaultButtons.includes(id));
+  const order = GT.settings.Birdwatch.buttonOrder.filter((id) => GT.birdWatchDefaultButtons.includes(id));
   for (const id of GT.birdWatchDefaultButtons) if (!order.includes(id)) order.push(id);
   birdWatchButtonsSet(order);
 }
@@ -309,7 +310,7 @@ function birdWatchButtonsSet(order)
 {
   const byId = new Map([...birdWatchButtonsDiv.querySelectorAll(".iconButton")].map((button) => [button.id, button]));
   for (const id of order) birdWatchButtonsDiv.appendChild(byId.get(id));
-  GT.settings.birdWatch.buttonOrder = [...order];
+  GT.settings.Birdwatch.buttonOrder = [...order];
 }
 
 function birdWatchButtonDragStart(event)
@@ -330,5 +331,5 @@ function birdWatchButtonDrop(event)
   const buttons = [...birdWatchButtonsDiv.querySelectorAll(".iconButton")];
   // Dropped on a button further along it goes after it, dropped on one before it goes before it
   birdWatchButtonsDiv.insertBefore(moving, buttons.indexOf(moving) < buttons.indexOf(target) ? target.nextElementSibling : target);
-  GT.settings.birdWatch.buttonOrder = [...birdWatchButtonsDiv.querySelectorAll(".iconButton")].map((button) => button.id);
+  GT.settings.Birdwatch.buttonOrder = [...birdWatchButtonsDiv.querySelectorAll(".iconButton")].map((button) => button.id);
 }

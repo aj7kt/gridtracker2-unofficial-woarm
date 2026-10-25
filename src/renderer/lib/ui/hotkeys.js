@@ -10,6 +10,7 @@ function onMyKeyDown(event)
   {
     rootSettingsDiv.style.display = "none";
     birdWatchSettingsDiv.style.display = "none";
+    closeEventViewer();
     birdWatchTimelineClose();
     helpDiv.style.display = "none";
     GT.helpShow = false;

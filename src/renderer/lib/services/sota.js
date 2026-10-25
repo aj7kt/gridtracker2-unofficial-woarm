@@ -707,7 +707,7 @@ function logSotaChaseQso(fields)
     if (GT.lastReport === before) return { ok: false, message: I18N("sotaLog.duplicate") };
 
     const refs = [park, ref].filter((value) => value).join(" / ");
-    addLastTraffic(`<font style='color:lightgreen;'>${I18N("sotaLog.title")}</font><br><font style='color:yellow;'>${call}</font> ` +
+    addEvent("sota", `<font style='color:lightgreen;'>${I18N("sotaLog.title")}</font><br><font style='color:yellow;'>${call}</font> ` +
       `<font style='color:#40FFD8;'>${refs}</font>`);
     return { ok: true, message: I18N("sotaLog.logged").replace("{0}", call).replace("{1}", refs) };
   }

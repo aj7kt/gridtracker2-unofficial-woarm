@@ -7,6 +7,7 @@
 function showSettingsBox()
 {
   closeBirdWatchSettings();
+  closeEventViewer();
   if (rootSettingsDiv.style.display == "inline-flex")
   {
     rootSettingsDiv.style.display = "none";
@@ -79,6 +80,7 @@ function openInfoTab(evt, tabName, callFunc, callObj)
 function openAboutBox()
 {
   closeBirdWatchSettings();
+  closeEventViewer();
   openSettingsTab(aboutbut, 'aboutDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;
@@ -88,6 +90,7 @@ function openAboutBox()
 function openLogbookSettings()
 {
   closeBirdWatchSettings();
+  closeEventViewer();
   openSettingsTab(logbut, 'logbookSettingsDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;
@@ -98,6 +101,7 @@ function openLogbookSettings()
 function openAudioAlertSettings(rosterName = null)
 {
   closeBirdWatchSettings();
+  closeEventViewer();
   if (rosterName) showAudioAlertsRoster(rosterName);
   openSettingsTab(audioalertbut, 'audioAlertsDiv');
   helpDiv.style.display = "none";
@@ -110,6 +114,7 @@ function openAudioAlertSettings(rosterName = null)
 function openColorSettings()
 {
   closeBirdWatchSettings();
+  closeEventViewer();
   openSettingsTab(colorsSettingsButton, 'bandColorsSettingsDiv');
   helpDiv.style.display = "none";
   GT.helpShow = false;

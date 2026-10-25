@@ -141,9 +141,15 @@ const allowedWindows = {
   },
   gt_transmitters: {
     window: null,
-    honorVisibility: false,
+    honorVisibility: true,
     options: { x: 60, y: 60, width: 640, height: 200, show: false, zoom: 0 },
     static: { minWidth: 200, minHeight: 60, icon: join(__dirname, '../renderer/img/sat-doppler.png') },
+  },
+  gt_events: {
+    window: null,
+    honorVisibility: true,
+    options: { x: 70, y: 70, width: 620, height: 300, show: false, zoom: 0 },
+    static: { minWidth: 240, minHeight: 80, icon: join(__dirname, '../renderer/img/events.png') },
   },
   gt_stats: {
     window: null,
@@ -715,6 +721,13 @@ app.whenReady().then(() => {
         allowedWindows[windowIdToAllowedWindows[window.id]].window.webContents.send(
           'loadZoom',
           options.zoom,
+        );
+
+        // The window is where it was saved, and shown if it was open at exit: a page that fills itself in once shown
+        // (the Doppler and Event Viewer windows) is told
+        allowedWindows[windowIdToAllowedWindows[window.id]].window.webContents.send(
+          'windowPlaced',
+          window.isVisible(),
         );
 
       });

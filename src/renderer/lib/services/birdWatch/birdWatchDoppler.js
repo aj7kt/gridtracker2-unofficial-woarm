@@ -66,7 +66,7 @@ function birdWatchTransmitterTone(t)
 // can hear and uplink it can transmit on, and a second VFO to transmit on while it listens); need: "hear" or "work"
 function birdWatchRigCan(norad, need, ranges)
 {
-  if (need == "work" && GT.rig.dual === false) return false;
+  if (need == "work" && !ranges.canTx) return false;
   return birdWatchTransmitters(norad).some((t) => rigRangesCover(ranges.rx, t.downlink_low, t.downlink_high) && (need != "work" || rigRangesCover(ranges.tx, t.uplink_low, t.uplink_high)));
 }
 
@@ -76,11 +76,11 @@ function birdWatchHasUplink(norad)
   return birdWatchTransmitters(norad).some((t) => t.uplink_low > 0);
 }
 
-// A frequency in MHz to the hertz; a range as low - high
+// A frequency in MHz as a rig's dial shows it (formatDialFreq); a range as low - high
 function birdWatchFrequency(low, high, factor)
 {
   if (!(low > 0)) return "";
-  const one = (hz) => (hz * factor / 1e6).toFixed(6);
+  const one = (hz) => formatDialFreq(hz * factor);
   return high > low ? one(low) + " - " + one(high) : one(low);
 }
 
@@ -113,8 +113,8 @@ GT.birdWatchTxList = [];
 GT.rigDoppler = null;
 
 // The satellite's transmitters as a table of html: the hover tooltip's, and the transmitters window's (the selected satellite's). The downlink
-// is what to tune to now and the uplink what to transmit on now, shifted for where the satellite is at this moment; the satellite's own
-// frequencies are in their tooltips
+// is what to tune to now and the uplink what to transmit on now, shifted for where the satellite is at this moment (the frequency the rig
+// is set to, a range's half width after it); the satellite's own frequencies are in their tooltips
 function birdWatchTransmitterTableHtml(norad)
 {
   const sat = GT.birdWatchTrack.last.get(Number(norad));
@@ -133,10 +133,18 @@ function birdWatchTransmitterTableHtml(norad)
   };
   GT.birdWatchTxList = [];
   const original = (low, high) => (low > 0 ? I18N("birdWatch.doppler.original").replace("{f}", birdWatchFrequency(low, high, 1) + " MHz") : "");
+  // The one frequency the rig is tuned to (birdWatchTransmitterTuning: a range's middle, shifted), as the tracking programs show it; a
+  // range's half width after it, in grey: 145.910.125 ±15 kHz
+  const tuned = (hz, low, high) =>
+  {
+    if (!(hz > 0)) return "";
+    const half = high > low ? (high - low) / 2000 : 0;
+    return formatDialFreq(hz) + (half > 0 ? " <span style='color:#aaa'>±" + (Number.isInteger(half) ? half : half.toFixed(1)) + " kHz</span>" : "");
+  };
   let rows = "";
   for (const t of birdWatchTransmitters(norad))
   {
-    if (GT.settings.birdWatch.hideNoUplink && !(t.uplink_low > 0)) continue;
+    if (GT.settings.Birdwatch.hideNoUplink && !(t.uplink_low > 0)) continue;
     current = t;
     const index = GT.birdWatchTxList.push(t) - 1;
     let shift = "";
@@ -146,12 +154,13 @@ function birdWatchTransmitterTableHtml(norad)
       shift = (hz >= 0 ? "+" : "") + (hz / 1000).toFixed(2) + " kHz";
     }
     const about = [t.description, t.type, t.service, t.invert ? "inverting" : ""].filter(Boolean).join("  ·  ");
+    const tuning = birdWatchTransmitterTuning(t, factor === null ? 1 : factor);
     rows += "<tr data-tx='" + index + "'" + (birdWatchAmateurTransmitter(t) ? "" : " style='opacity:0.6'") + ">" +
       "<td style='color:yellow' title='" + htmlEntities(about) + "'" + partAttrs("name") + ">" + htmlEntities(t.description) + "</td>" +
       cell(htmlEntities(t.mode + (t.baud > 0 ? " " + t.baud : "")), "lightgreen", false, null, birdWatchRigMode(t) ? "mode" : null) +
-      cell(birdWatchFrequency(t.downlink_low, t.downlink_high, factor === null ? 1 : factor), "cyan", true, original(t.downlink_low, t.downlink_high), t.downlink_low > 0 ? "rx" : null) +
+      cell(tuned(tuning.rx, t.downlink_low, t.downlink_high), "cyan", true, original(t.downlink_low, t.downlink_high), t.downlink_low > 0 ? "rx" : null) +
       // The satellite hears the uplink shifted too, so it is sent that much the other way
-      cell(birdWatchFrequency(t.uplink_low, t.uplink_high, factor === null ? 1 : 1 / factor), "orange", true, original(t.uplink_low, t.uplink_high), t.uplink_low > 0 ? "tx" : null) +
+      cell(tuned(tuning.tx, t.uplink_low, t.uplink_high), "orange", true, original(t.uplink_low, t.uplink_high), t.uplink_low > 0 ? "tx" : null) +
       cell(shift, "white", true) + "</tr>";
   }
   if (rows == "") rows = "<tr><td colspan='5' style='color:#aaa'>" + I18N("birdWatch.doppler.empty") + "</td></tr>";
@@ -209,6 +218,14 @@ function birdWatchTransmitterWindowOpen(show = true)
     else electron.ipcRenderer.send("hideWin", "gt_transmitters");
   }
   else if (show) GT.birdWatchTxShowPending = true;
+}
+
+// From the window's page once the main process has placed it: shown by it (it was open at exit), the table is filled in
+function birdWatchTransmitterWindowPlaced(visible)
+{
+  if (!visible || GT.birdWatchTxEverShown) return;
+  GT.birdWatchTxEverShown = true;
+  birdWatchTransmitterWindowUpdate(false, true);
 }
 
 // From the transmitters window's page once it has loaded: shown if that was asked while it was loading
@@ -320,7 +337,8 @@ function birdWatchDopplerStopFollow()
   birdWatchTransmitterWindowUpdate();
 }
 
-// The rig set to the followed transmitter's sides, where the satellite is now: sent when a side moved 5 Hz or more (a mode only with it)
+// The rig set to the followed transmitter's sides, where the satellite is now: sent when a side moved 5 Hz or more (a mode only with it;
+// a second rig for VFO-B gets the uplink's mode, rigTune's txMode)
 function birdWatchDopplerFollow(mode = null)
 {
   const D = GT.rigDoppler;
@@ -330,7 +348,7 @@ function birdWatchDopplerFollow(mode = null)
   const t = birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid);
   if (!sat || sat.error || !t) return;
   const tuning = birdWatchTransmitterTuning(t, sat.doppler);
-  const spec = { mode: mode };
+  const spec = { mode: mode, txMode: mode && t.uplink_low > 0 ? birdWatchRigMode({ mode: t.uplink_mode || t.mode }) : null };
   if (D.rx && tuning.rx && (D.sentRx === null || D.sentRx === undefined || Math.abs(tuning.rx - D.sentRx) >= 5)) spec.rx = tuning.rx;
   if (D.tx && tuning.tx && rigTuneCanTx() && (D.sentTx === null || D.sentTx === undefined || Math.abs(tuning.tx - D.sentTx) >= 5)) spec.tx = tuning.tx;
   if (!spec.rx && !spec.tx && !spec.mode) return;

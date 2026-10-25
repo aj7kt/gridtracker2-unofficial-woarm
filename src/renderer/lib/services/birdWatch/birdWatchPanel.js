@@ -189,7 +189,7 @@ function birdWatchLineJson(parts)
 // and the circle's line (just under them)
 function birdWatchFootprintStyles()
 {
-  const colors = GT.settings.birdWatch.colors;
+  const colors = GT.settings.Birdwatch.colors;
   return {
     fill: new ol.style.Style({ zIndex: -2, fill: new ol.style.Fill({ color: birdWatchRgba(colors.footprintFill, 1 - colors.footprintTransparency) }) }),
     line: new ol.style.Style({ zIndex: -1, stroke: new ol.style.Stroke({ color: colors.footprintRing, width: 1 }) })
@@ -248,11 +248,11 @@ function birdWatchFootprintSync()
   const T = GT.birdWatchTrack;
   for (const [norad, sat] of T.last)
   {
-    if (!sat.error && GT.settings.birdWatch.colors.footprintOn && (norad == T.selected || norad == T.hover)) birdWatchFootprint(sat);
+    if (!sat.error && GT.settings.Birdwatch.colors.footprintOn && (norad == T.selected || norad == T.hover)) birdWatchFootprint(sat);
   }
   for (const [norad, ring] of T.rings)
   {
-    if (!GT.settings.birdWatch.colors.footprintOn || (norad != T.selected && norad != T.hover))
+    if (!GT.settings.Birdwatch.colors.footprintOn || (norad != T.selected && norad != T.hover))
     {
       GT.layerSources.birdWatch.removeFeature(ring.fill);
       GT.layerSources.birdWatch.removeFeature(ring.line);
@@ -285,7 +285,7 @@ function birdWatchFootprint(sat)
 // The Colors tab
 function birdWatchColorsRender()
 {
-  const colors = GT.settings.birdWatch.colors;
+  const colors = GT.settings.Birdwatch.colors;
   birdWatchFootprintOn.checked = colors.footprintOn;
   birdWatchFootprintRing.value = colors.footprintRing;
   birdWatchFootprintFill.value = colors.footprintFill;
@@ -307,7 +307,7 @@ function birdWatchColorsRender()
 // A group switched off greys its options out
 function birdWatchColorsEnable()
 {
-  const colors = GT.settings.birdWatch.colors;
+  const colors = GT.settings.Birdwatch.colors;
   for (const [id, on] of [["birdWatchFootprintOptions", colors.footprintOn], ["birdWatchPathOptions", colors.pathOn]])
   {
     const box = document.getElementById(id);
@@ -320,7 +320,7 @@ function birdWatchColorsEnable()
 
 function birdWatchColorsChange()
 {
-  const colors = GT.settings.birdWatch.colors;
+  const colors = GT.settings.Birdwatch.colors;
   colors.footprintOn = birdWatchFootprintOn.checked;
   colors.pathOn = birdWatchPathOn.checked;
   colors.pathDashOn = birdWatchPathDashOn.checked;

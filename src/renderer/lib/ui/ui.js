@@ -132,6 +132,8 @@ function toggleTime()
 {
   GT.settings.app.useLocalTime ^= 1;
   displayTime();
+  // The Event Viewer's times are in the new form
+  eventsTimeFormatChanged();
 }
 
 function dateToString(dateTime)
@@ -175,6 +177,7 @@ function toggleMenu()
 function toggleHelp()
 {
   GT.helpShow = !GT.helpShow;
+  if (GT.helpShow) closeEventViewer();
   helpDiv.style.display = (GT.helpShow) ? "block" : "none";
 }
 
@@ -292,11 +295,10 @@ function updateLayout(shouldCollapseMenu)
 
   GT.menuShowing = !shouldCollapseMenu;
 
-  // With Decode Traffic Waterfall off the control panel is only as tall as it needs to be and the map runs under it
-  const menuOverlay = !shouldCollapseMenu && GT.settings.map.trafficDecode == false;
+  // The control panel is only as tall as it needs to be and the map runs under it
+  const menuOverlay = !shouldCollapseMenu;
   menuDiv.style.height = menuOverlay ? "auto" : "";
   menuDiv.style.maxHeight = menuOverlay ? "100%" : "";
-  trafficDiv.style.display = GT.settings.map.trafficDecode == false ? "none" : "";
   if (menuOverlay)
   {
     mapDiv.style[GT.settings.app.mapRight ? "left" : "right"] = "0";
@@ -329,30 +331,6 @@ function applyMapPanelOverlays(menuOverlay)
   const bird = birdWatchDiv.style.display != "none";
   mapDiv.classList.toggle("gtPanelLeft", (menuOverlay && left) || (bird && !left));
   mapDiv.classList.toggle("gtPanelRight", (menuOverlay && !left) || (bird && left));
-}
-
-function drawTraffic()
-{
-  while (GT.lastTraffic.length > 60) GT.lastTraffic.pop();
-
-  let worker = GT.lastTraffic.join("<br>");
-  worker = worker.split("80%'><br>").join("80%'>");
-  if (GT.localDXcall.length > 1) {
-    worker = worker.replaceAll(GT.localDXcall, `<font style='color:cyan'>${GT.localDXcall}</font>`);
-  }
-  if (GT.settings.app.myRawCall.length > 1) {
-    worker = worker.replaceAll(GT.settings.app.myRawCall, `<font style='color:yellow'>${GT.settings.app.myRawCall}</font>`);
-  }
-  trafficDiv.innerHTML = worker;
-}
-
-function addLastTraffic(traffic)
-{
-  GT.lastTraffic.unshift(traffic);
-  GT.lastTraffic.unshift(
-    "<hr style='border-color:#333;margin-top:0px;margin-bottom:2px;width:80%'>"
-  );
-  drawTraffic();
 }
 
 function htmlEntities(str)
@@ -430,7 +408,7 @@ function handleKpIndexJSON(json)
 function captureScreenshot()
 {
   electron.ipcRenderer.send("capturePageToClipboard", "GridTracker2");
-  addLastTraffic("<font style='color:lightgreen;'>" + I18N("gt.ui.screenshotCaptured") + "</font>");
+  addEvent("app", "<font style='color:lightgreen;'>" + I18N("gt.ui.screenshotCaptured") + "</font>");
   playAlertMediaFile("Camera Click 1.mp3");
 }
 

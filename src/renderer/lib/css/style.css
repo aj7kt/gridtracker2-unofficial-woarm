@@ -75,7 +75,7 @@ html, body {
   display: none;
 }
 
-/* The map runs under a panel (the BirdWatch panel, or the control panel with Decode Traffic Waterfall off): its controls clear of
+/* The map runs under a panel (the BirdWatch panel, or the control panel, only as tall as it needs to be): its controls clear of
    the panel (200px wide, 201px with its edge) */
 .gtPanelLeft .ol-zoom,
 .gtPanelLeft .rotate-north {
@@ -678,7 +678,8 @@ a {
 /* Shown as inline-flex: a column capped at the window size, so the tab bar wraps
    and the tab content takes the remaining height and scrolls */
 #rootSettingsDiv,
-#birdWatchSettingsDiv {
+#birdWatchSettingsDiv,
+#eventViewerDiv {
   flex-direction: column;
   max-width: calc(100vw - 12px);
   max-height: calc(100vh - 2px);
@@ -2080,6 +2081,125 @@ button:focus {
 .mapGroup td.mapRowLabel.mapIndent {
   text-align: right;
   padding-left: 18px;
+}
+
+/* Rig Control's second rig (VFO-B on a rig of its own): its rows under the VFO-B choice, a line down their left */
+.mapGroup table.rigSecondTable {
+  border-left: 2px solid #555;
+  border-spacing: 0;
+  margin: 1px 0 2px 0;
+}
+
+.mapGroup table.rigSecondTable td.mapRowLabel {
+  padding-left: 8px;
+}
+
+/* The Event Viewer (ui/events.js): the panel in the main window (#eventViewerDiv, a panel like Settings) and the gt_events window's list.
+   A list draws only the rows in view, each one height (EVENTS_ROW); its columns are as wide as the widest row seen (eventsMeasure sets
+   --evTime, --evSource and --evText), and the list as wide as its columns, or the window where it is narrower */
+.eventViewerTitle {
+  display: inline-block;
+  padding: 4px 12px 2px 12px;
+  color: cyan;
+  font-weight: bold;
+  font-size: 13.3333px;
+}
+
+/* The header's Clear and To Window / To Main, at the right of its Event column (the header's cell lays its label and them out in a
+   row, the buttons pushed to its right) */
+.eventHeadButtons {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+}
+
+.eventHeadButtons .button {
+  font-weight: normal;
+  line-height: 14px;
+}
+
+.eventsList {
+  overflow: auto;
+  min-height: 0;
+  background-color: black;
+  color: #ddd;
+  text-align: left;
+  font-size: 12px;
+  width: calc(var(--evTime, 90px) + var(--evSource, 70px) + var(--evText, 240px) + 16px + 8px + 18px);
+  max-width: calc(100vw - 14px);
+}
+
+#eventsListMain {
+  min-width: 320px;
+  max-height: calc(100vh - 36px);
+}
+
+.eventRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* The row under the mouse is shaded as a table's (.darkTable tr:hover td) */
+.eventRow:not(.eventHead):hover {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+.eventHead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: black;
+  color: cyan;
+  font-weight: bold;
+  border-bottom: 1px solid #444;
+}
+
+.eventRow .eventTime {
+  flex: none;
+  width: var(--evTime, 90px);
+  color: #9bc;
+}
+
+.eventRow .eventSource {
+  flex: none;
+  width: var(--evSource, 70px);
+  color: #fa0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventRow .eventText {
+  flex: none;
+  width: var(--evText, 240px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventHead .eventText {
+  overflow: visible;
+  display: flex;
+  align-items: center;
+}
+
+/* Rig Control's LO badge (rig.js, rigLoBadge): after a frequency that has a converter offset, in its color */
+.rigLoBadge {
+  display: inline-block;
+  font-size: 8px;
+  line-height: 9px;
+  font-weight: bold;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0 2px;
+  margin-left: 3px;
+  vertical-align: 2px;
+  cursor: help;
 }
 
 /* A box's name in the values' column (Follow Satellite): as bold as the labels, centered on the box */

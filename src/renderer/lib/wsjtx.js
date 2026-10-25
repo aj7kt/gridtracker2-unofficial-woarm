@@ -158,7 +158,7 @@ function handleInstanceStatus(newMessage)
       redrawPins();
 
       let msg = "<font color='yellow'>" + GT.settings.app.myBand + "</font> / <font color='orange'>" + GT.settings.app.myMode + "</font>";
-      addLastTraffic(msg);
+      addEvent("wsjtx", msg);
       ackAlerts();
 
       GT.startingUp = false;
@@ -167,7 +167,7 @@ function handleInstanceStatus(newMessage)
     GT.settings.app.myRawFreq = newMessage.Frequency;
     // AC Log without a rig interface has no frequency: just the band
     const showFrequency = !isLoggerInstance(newMessage.Id) || newMessage.Frequency > 0;
-    frequency.innerHTML = (showFrequency ? "<font color='lightgreen'>" + formatMhz(Number(newMessage.Frequency / 1000)) + " Hz </font>" : "") +
+    frequency.innerHTML = (showFrequency ? "<font color='lightgreen'>" + formatDialFreq(Number(newMessage.Frequency)) + " </font>" : "") +
       "<font color='yellow'>(" + GT.settings.app.myBand + ")</font>";
     
 
@@ -984,17 +984,8 @@ function finalWsjtxDecode(newMessage, useReformedMessage = false, reformedMessag
 
       insertMessageInRoster(newMessage, msgDEcallsign, msgDXcallsign, callsign, hash);
 
-      if (GT.settings.map.trafficDecode && didCustomAlert == true)
-      {
-        let traffic = htmlEntities(theMessage);
-
-        traffic = traffic + " 🚩";
-
-        GT.lastTraffic.unshift(traffic);
-        GT.lastTraffic.unshift(userTimeString(null));
-        GT.lastTraffic.unshift("<hr style='border-color:#333;margin-top:0px;margin-bottom:2px;width:80%'>");
-        drawTraffic();
-      }
+      // A decode that matched a custom alert is an event (the Event Viewer)
+      if (didCustomAlert == true) addEvent("decode", htmlEntities(theMessage) + " 🚩");
     }
 
     if (callsign.dxcc != -1) { 
@@ -1503,7 +1494,7 @@ function setCallAndGrid(callsign, grid, instance = null, genMessages = true)
 
       responseArray = responseArray.slice(0, length);
       wsjtUdpMessage(responseArray, responseArray.length, port, address);
-      addLastTraffic("<font color='lightgreen'>" + I18N("gt.msg.generated") + "</font>");
+      addEvent("wsjtx", "<font color='lightgreen'>" + I18N("gt.msg.generated") + "</font>");
     }
     else
     {
@@ -1531,7 +1522,7 @@ function setCallAndGrid(callsign, grid, instance = null, genMessages = true)
   }
   if (thisInstance && thisInstance.TxEnabled == 1 && genMessages == true)
   {
-    addLastTraffic("<font color='yellow'>" + I18N("gt.msg.txEnabled") + "</font><br><font color='yellow'>" + I18N("gt.msg.generateAborted") + "</font>");
+    addEvent("wsjtx", "<font color='yellow'>" + I18N("gt.msg.txEnabled") + "</font><br><font color='yellow'>" + I18N("gt.msg.generateAborted") + "</font>");
   }
 }
 

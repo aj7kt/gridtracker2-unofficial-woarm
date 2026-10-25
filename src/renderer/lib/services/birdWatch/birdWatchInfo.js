@@ -4,7 +4,7 @@
 
 // BirdWatch's satellite info panel (under the BirdWatch title): the rows of numbers of the selected satellite. A row can be dragged
 // to another place, a right click on a value picks its color, and a right click on a label opens a menu: make it the featured item
-// (large, at the top), show or hide each row, reset the list. All of it is kept in settings.birdWatch.info
+// (large, at the top), show or hide each row, reset the list. All of it is kept in settings.Birdwatch.info
 
 // Every row of the list, in the order it comes in. A row added here later is added to the end of everyone's list (birdWatchInfoState)
 //   keys:   the values of the row, each a color's name in the settings (Lat/Lon is one row with two values)
@@ -16,21 +16,22 @@
 //   when:   the row is only there while this is true (the rotor's, while Rotor Control is on)
 //   click:  what a left click on the value does (the rotor's opens its settings)
 const BIRD_WATCH_INFO_ITEMS = [
-  { id: "azim", keys: ["azim"], name: () => I18N("birdWatch.tip.azim"), value: (n) => [{ text: n.az, color: "yellow" }] },
-  { id: "elev", keys: ["elev"], name: () => I18N("birdWatch.tip.elev"), value: (n) => [{ text: n.el, color: n.up ? "lightgreen" : "#ff8080" }] },
+  { id: "azim", keys: ["azim"], name: () => I18N("birdWatch.tip.azim"), value: (n) => [{ text: n.az, color: "yellow" }], tip: () => I18N("birdWatch.hint.azim") },
+  { id: "elev", keys: ["elev"], name: () => I18N("birdWatch.tip.elev"), value: (n) => [{ text: n.el, color: n.up ? "lightgreen" : "#ff8080" }], tip: () => I18N("birdWatch.hint.elev") },
   {
     id: "latlon", keys: ["lat", "lon"],
     name: () => I18N("birdWatch.info.latName") + "/" + I18N("birdWatch.info.lonName"),
     labels: () => [I18N("birdWatch.info.latName"), I18N("birdWatch.info.lonName")],
-    value: (n) => [{ text: n.lat, color: "lightgreen" }, { text: n.lon, color: "lightgreen" }]
+    value: (n) => [{ text: n.lat, color: "lightgreen" }, { text: n.lon, color: "lightgreen" }],
+    tip: () => I18N("birdWatch.hint.latlon")
   },
-  { id: "grid", keys: ["grid"], name: () => I18N("gt.callsignBox.Grid"), value: (n) => [{ text: n.grid, color: "yellow" }] },
+  { id: "grid", keys: ["grid"], name: () => I18N("gt.callsignBox.Grid"), value: (n) => [{ text: n.grid, color: "yellow" }], tip: () => I18N("birdWatch.hint.grid") },
   { id: "range", keys: ["range"], name: () => I18N("birdWatch.info.range"), value: (n) => [{ text: n.range, color: "cyan" }], tip: () => I18N("birdWatch.tip.range") },
-  { id: "rangerate", keys: ["rangerate"], name: () => I18N("birdWatch.info.rangeRate"), value: (n) => [{ text: n.rangeRate, color: "white" }] },
+  { id: "rangerate", keys: ["rangerate"], name: () => I18N("birdWatch.info.rangeRate"), value: (n) => [{ text: n.rangeRate, color: "white" }], tip: () => I18N("birdWatch.hint.rangeRate") },
   { id: "ground", keys: ["ground"], name: () => I18N("birdWatch.tip.ground"), value: (n) => [{ text: n.ground, color: "cyan" }], tip: () => I18N("birdWatch.tip.ground") },
-  { id: "altitude", keys: ["altitude"], name: () => I18N("birdWatch.info.altitude"), value: (n) => [{ text: n.altitude, color: "cyan" }] },
-  { id: "velocity", keys: ["velocity"], name: () => I18N("birdWatch.info.velocity"), value: (n) => [{ text: n.velocity, color: "cyan" }] },
-  { id: "heading", keys: ["heading"], name: () => I18N("birdWatch.info.heading"), value: (n) => [{ html: n.heading, color: "yellow" }] },
+  { id: "altitude", keys: ["altitude"], name: () => I18N("birdWatch.info.altitude"), value: (n) => [{ text: n.altitude, color: "cyan" }], tip: () => I18N("birdWatch.hint.altitude") },
+  { id: "velocity", keys: ["velocity"], name: () => I18N("birdWatch.info.velocity"), value: (n) => [{ text: n.velocity, color: "cyan" }], tip: () => I18N("birdWatch.hint.velocity") },
+  { id: "heading", keys: ["heading"], name: () => I18N("birdWatch.info.heading"), value: (n) => [{ html: n.heading, color: "yellow" }], tip: () => I18N("birdWatch.hint.heading") },
   { id: "footprint", keys: ["footprint"], name: () => I18N("birdWatch.info.footprint"), value: (n) => [{ text: n.footprint, color: "cyan" }], tip: () => I18N("birdWatch.tip.footprint") },
   {
     id: "doppler", keys: ["doppler"], name: () => I18N("birdWatch.info.doppler"), value: (n) => [{ text: n.doppler, color: "white" }],
@@ -41,18 +42,18 @@ const BIRD_WATCH_INFO_ITEMS = [
     tip: (n) => I18N("birdWatch.tip.sigloss") + (n.refText ? "\n" + n.refText : "")
   },
   { id: "sigdelay", keys: ["sigdelay"], name: () => I18N("birdWatch.info.sigdelayFull"), value: (n) => [{ text: n.sigdelay, color: "white" }], tip: () => I18N("birdWatch.tip.sigdelay") },
-  { id: "aos", keys: ["aos"], name: () => I18N("birdWatch.info.aos"), value: (n) => [{ html: n.aos, color: "white" }] },
-  { id: "los", keys: ["los"], name: () => I18N("birdWatch.info.los"), value: (n) => [{ html: n.los, color: "white" }] },
+  { id: "aos", keys: ["aos"], name: () => I18N("birdWatch.info.aos"), value: (n) => [{ html: n.aos, color: "white" }], tip: () => I18N("birdWatch.tip.aos") },
+  { id: "los", keys: ["los"], name: () => I18N("birdWatch.info.los"), value: (n) => [{ html: n.los, color: "white" }], tip: () => I18N("birdWatch.tip.los") },
   { id: "maxtime", keys: ["maxtime"], name: () => I18N("birdWatch.info.maxTime"), value: (n) => [{ html: n.maxTime, color: "white" }], tip: () => I18N("birdWatch.tip.tca") },
-  { id: "dos", keys: ["dos"], name: () => I18N("birdWatch.info.dos"), value: (n) => [{ text: n.dos, color: "white" }] },
-  { id: "progress", keys: ["progress"], off: true, name: () => I18N("birdWatch.info.progress"), value: (n) => [{ text: n.progress, color: "lightgreen" }] },
-  { id: "maxel", keys: ["maxel"], name: () => I18N("birdWatch.tip.maxElev"), value: (n) => [{ html: n.max, color: "lightgreen" }] },
-  { id: "period", keys: ["period"], off: true, name: () => I18N("birdWatch.info.period"), value: (n) => [{ text: n.period, color: "cyan" }] },
-  { id: "inclination", keys: ["inclination"], off: true, name: () => I18N("birdWatch.info.inclination"), value: (n) => [{ text: n.inclination, color: "cyan" }] },
-  { id: "apogee", keys: ["apogee"], off: true, name: () => I18N("birdWatch.info.apogee"), value: (n) => [{ text: n.apogee, color: "cyan" }] },
-  { id: "perigee", keys: ["perigee"], off: true, name: () => I18N("birdWatch.info.perigee"), value: (n) => [{ text: n.perigee, color: "cyan" }] },
-  { id: "revolution", keys: ["revolution"], off: true, name: () => I18N("birdWatch.info.revolution"), value: (n) => [{ text: n.revolution, color: "cyan" }] },
-  { id: "sunel", keys: ["sunel"], off: true, name: () => I18N("birdWatch.info.sunEl"), value: (n) => [{ text: n.sunEl, color: "yellow" }] },
+  { id: "dos", keys: ["dos"], name: () => I18N("birdWatch.info.dos"), value: (n) => [{ text: n.dos, color: "white" }], tip: () => I18N("birdWatch.tip.dos") },
+  { id: "progress", keys: ["progress"], off: true, name: () => I18N("birdWatch.info.progress"), value: (n) => [{ text: n.progress, color: "lightgreen" }], tip: () => I18N("birdWatch.hint.progress") },
+  { id: "maxel", keys: ["maxel"], name: () => I18N("birdWatch.tip.maxElev"), value: (n) => [{ html: n.max, color: "lightgreen" }], tip: () => I18N("birdWatch.hint.maxElev") },
+  { id: "period", keys: ["period"], off: true, name: () => I18N("birdWatch.info.period"), value: (n) => [{ text: n.period, color: "cyan" }], tip: () => I18N("birdWatch.hint.period") },
+  { id: "inclination", keys: ["inclination"], off: true, name: () => I18N("birdWatch.info.inclination"), value: (n) => [{ text: n.inclination, color: "cyan" }], tip: () => I18N("birdWatch.hint.inclination") },
+  { id: "apogee", keys: ["apogee"], off: true, name: () => I18N("birdWatch.info.apogee"), value: (n) => [{ text: n.apogee, color: "cyan" }], tip: () => I18N("birdWatch.hint.apogee") },
+  { id: "perigee", keys: ["perigee"], off: true, name: () => I18N("birdWatch.info.perigee"), value: (n) => [{ text: n.perigee, color: "cyan" }], tip: () => I18N("birdWatch.hint.perigee") },
+  { id: "revolution", keys: ["revolution"], off: true, name: () => I18N("birdWatch.info.revolution"), value: (n) => [{ text: n.revolution, color: "cyan" }], tip: () => I18N("birdWatch.hint.revolution") },
+  { id: "sunel", keys: ["sunel"], off: true, name: () => I18N("birdWatch.info.sunEl"), value: (n) => [{ text: n.sunEl, color: "yellow" }], tip: () => I18N("birdWatch.hint.sunEl") },
   // The rotator's position (rotor.js), while Rotor Control is on: orange until it is connected, with the status in short (the room is
   // small); a click opens its settings
   {
@@ -91,7 +92,7 @@ function birdWatchInfoItem(id)
 // the saved order (added since) at the end. A row seen for the first time that is "off" starts out hidden
 function birdWatchInfoState()
 {
-  const B = GT.settings.birdWatch;
+  const B = GT.settings.Birdwatch;
   const S = B.info && typeof B.info == "object" ? B.info : (B.info = {});
   const ids = BIRD_WATCH_INFO_ITEMS.map((i) => i.id);
   if (!ids.includes(S.featured)) S.featured = "ttgo";

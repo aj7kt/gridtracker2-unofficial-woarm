@@ -239,6 +239,7 @@ function rotorOpenSettings()
   const button = document.querySelector(".settingstab button[onclick*='featuresSettingsDiv']");
   if (!button) return;
   closeBirdWatchSettings();
+  closeEventViewer();
   openSettingsTab(button, "featuresSettingsDiv");
   helpDiv.style.display = "none";
   GT.helpShow = false;
@@ -601,11 +602,11 @@ function rotorAim(callObj)
   if (!(callObj.distance > 0)) return;
   if (!rotorPoint(callObj.heading, 0))
   {
-    addLastTraffic("<font style='color:red'>" + I18N("rotor.notConnected") + "</font>");
+    addEvent("rotor", "<font style='color:red'>" + I18N("rotor.notConnected") + "</font>");
     return;
   }
   const text = callObj.DEcall ? I18N("gt.rotator.aimAt").replace("{0}", callObj.DEcall) : I18N("gt.rotator.aimTo").replace("{0}", Math.round(callObj.heading));
-  addLastTraffic("<font style='color:white'>" + text + "</font>");
+  addEvent("rotor", "<font style='color:white'>" + text + "</font>");
 }
 
 // Each tracker tick (birdWatchPanelUpdate): the selected satellite while it is up; before its pass, where it will rise

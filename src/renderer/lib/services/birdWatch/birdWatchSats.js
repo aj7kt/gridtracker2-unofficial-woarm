@@ -2,7 +2,7 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// BirdWatch settings, Satellites: the satellites that are tracked (settings.birdWatch.tracked, by catalog number), and a search of
+// BirdWatch settings, Satellites: the satellites that are tracked (settings.Birdwatch.tracked, by catalog number), and a search of
 // the element sets (Telemetry) to add more. A satellite needs an element set to be tracked, so only those can be found
 
 // Both lists scroll the whole list but only put the rows in view into the page (spacers stand in for the rest), like the Logbook
@@ -19,21 +19,21 @@ GT.birdWatchScan = { active: false, order: [], found: new Map(), pending: null }
 
 function birdWatchSatsRender()
 {
-  birdWatchLogTagValue.checked = GT.settings.birdWatch.logTag;
-  birdWatchSkyboxValue.checked = GT.settings.birdWatch.skybox;
-  birdWatchAutoMinEl.value = GT.settings.birdWatch.autoMinElevation;
-  birdWatchAutoMinElText.textContent = GT.settings.birdWatch.autoMinElevation + "°";
-  birdWatchHideNoUplinkValue.checked = GT.settings.birdWatch.hideNoUplink;
-  birdWatchSatUplink.checked = GT.settings.birdWatch.uplinkOnly;
+  birdWatchLogTagValue.checked = GT.settings.Birdwatch.logTag;
+  birdWatchSkyboxValue.checked = GT.settings.Birdwatch.skybox;
+  birdWatchAutoMinEl.value = GT.settings.Birdwatch.autoMinElevation;
+  birdWatchAutoMinElText.textContent = GT.settings.Birdwatch.autoMinElevation + "°";
+  birdWatchHideNoUplinkValue.checked = GT.settings.Birdwatch.hideNoUplink;
+  birdWatchSatUplink.checked = GT.settings.Birdwatch.uplinkOnly;
   birdWatchSatRigRender();
-  birdWatchSatVirtual(birdWatchSatTrackedList, GT.settings.birdWatch.tracked, "remove", false);
+  birdWatchSatVirtual(birdWatchSatTrackedList, GT.settings.Birdwatch.tracked, "remove", false);
   birdWatchSatShowResults(false);
 }
 
 // What is typed or the Only With Uplinks box changed: the search again (a scan's results are left)
 function birdWatchSatFilterChange()
 {
-  GT.settings.birdWatch.uplinkOnly = birdWatchSatUplink.checked;
+  GT.settings.Birdwatch.uplinkOnly = birdWatchSatUplink.checked;
   GT.birdWatchScan.active = false;
   GT.birdWatchScan.pending = null;
   birdWatchSatShowResults(true);
@@ -45,7 +45,7 @@ let birdWatchSatRigKey = "";
 
 function birdWatchSatRigFilter()
 {
-  const need = GT.settings.birdWatch.rigFilter;
+  const need = GT.settings.Birdwatch.rigFilter;
   if (need != "hear" && need != "work") return null;
   const ranges = rigRanges();
   return ranges ? { need: need, ranges: ranges } : null;
@@ -54,18 +54,24 @@ function birdWatchSatRigFilter()
 function birdWatchSatRigRender()
 {
   const ranges = rigRanges();
-  const value = GT.settings.birdWatch.rigFilter;
+  const value = GT.settings.Birdwatch.rigFilter;
   birdWatchSatRig.value = value == "hear" || value == "work" ? value : "off";
   birdWatchSatRig.disabled = !ranges;
   birdWatchSatRigLabel.style.opacity = ranges ? "" : "0.5";
   birdWatchSatRigLabel.title = I18N(ranges ? "birdWatch.satellites.rig.hover" : "birdWatch.satellites.rig.unknown.hover");
   birdWatchSatRigName.textContent = ranges && ranges.model ? ranges.model : "";
-  birdWatchSatRigKey = ranges ? (ranges.model || "") + ":" + ranges.rx.length + ":" + ranges.tx.length + ":" + GT.rig.dual : "";
+  birdWatchSatRigKey = birdWatchSatRigKeyOf(ranges);
+}
+
+// What the filter lets through changes with it: the rig(s), their ranges (an offset moves them), whether an uplink can be tuned
+function birdWatchSatRigKeyOf(ranges)
+{
+  return ranges ? (ranges.model || "") + ":" + JSON.stringify(ranges.rx) + ":" + JSON.stringify(ranges.tx) + ":" + ranges.canTx : "";
 }
 
 function birdWatchSatRigChange()
 {
-  GT.settings.birdWatch.rigFilter = birdWatchSatRig.value;
+  GT.settings.Birdwatch.rigFilter = birdWatchSatRig.value;
   birdWatchSatFilterChange();
 }
 
@@ -74,10 +80,10 @@ function birdWatchSatRigAvailable()
 {
   if (typeof birdWatchSatRig == "undefined") return;
   const ranges = rigRanges();
-  const key = ranges ? (ranges.model || "") + ":" + ranges.rx.length + ":" + ranges.tx.length + ":" + GT.rig.dual : "";
+  const key = birdWatchSatRigKeyOf(ranges);
   if (key == birdWatchSatRigKey) return;
   birdWatchSatRigRender();
-  if (GT.settings.birdWatch.rigFilter != "off" && !GT.birdWatchScan.active && birdWatchSettingsDiv.style.display != "none") birdWatchSatSearchChange(false);
+  if (GT.settings.Birdwatch.rigFilter != "off" && !GT.birdWatchScan.active && birdWatchSettingsDiv.style.display != "none") birdWatchSatSearchChange(false);
 }
 
 // The results list: the search, or the scan's results
@@ -90,7 +96,7 @@ function birdWatchSatShowResults(toTop)
     return;
   }
   // The satellites already tracked are not offered again
-  birdWatchSatVirtual(birdWatchSatResults, scan.order.filter((norad) => !GT.settings.birdWatch.tracked.includes(norad)), "add", toTop, true);
+  birdWatchSatVirtual(birdWatchSatResults, scan.order.filter((norad) => !GT.settings.Birdwatch.tracked.includes(norad)), "add", toTop, true);
 }
 
 // A list's rows in view: the list's items, and what each row's button does. A new list (a new search) starts at the top
@@ -159,6 +165,8 @@ function birdWatchSatMeasure(list, items, scan)
 // wide as its widest row (a wrapped container would otherwise keep the width of the one row they would make if they fit)
 function birdWatchTabsFit()
 {
+  // A resize of the window can come while the page is still loading, before the settings window's elements are there
+  if (typeof birdWatchSettingsDiv == "undefined") return;
   for (const columns of birdWatchSettingsDiv.querySelectorAll(".mapGroups"))
   {
     columns.style.width = "";
@@ -297,7 +305,7 @@ function birdWatchSatRow(norad, action, scan = null)
   status.textContent = birdWatchSatStatus(info);
   row.appendChild(status);
 
-  const tracked = GT.settings.birdWatch.tracked.includes(norad);
+  const tracked = GT.settings.Birdwatch.tracked.includes(norad);
   const button = document.createElement("div");
   button.className = "button birdTleButton birdSatButton";
   // Edit its orbit values, tracked or not: the Telemetry tab opens with the form (what is saved there overrides the TLE it had)
@@ -337,11 +345,11 @@ function birdWatchSatSearchChange(toTop = true)
   const found = [];
   for (const set of birdWatchTleList())
   {
-    if (GT.settings.birdWatch.tracked.includes(set.norad)) continue;
+    if (GT.settings.Birdwatch.tracked.includes(set.norad)) continue;
     if (rig && !birdWatchRigCan(set.norad, rig.need, rig.ranges)) continue;
     const info = birdWatchSatInfo(set.norad);
     const hay = [set.name, String(set.norad), info ? info.name : "", info ? info.names : ""].join("|").toLowerCase();
-    if (GT.settings.birdWatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
+    if (GT.settings.Birdwatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
     if (query == "" || hay.includes(query)) found.push({ norad: set.norad, exact: String(set.norad) == query || set.name.toLowerCase() == query, name: set.name });
   }
   found.sort((a, b) => (b.exact - a.exact) || a.name.localeCompare(b.name));
@@ -360,8 +368,8 @@ function birdWatchSatScan()
   const norads = [];
   for (const set of birdWatchTleList())
   {
-    if (GT.settings.birdWatch.tracked.includes(set.norad)) continue;
-    if (GT.settings.birdWatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
+    if (GT.settings.Birdwatch.tracked.includes(set.norad)) continue;
+    if (GT.settings.Birdwatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
     if (rig && !birdWatchRigCan(set.norad, rig.need, rig.ranges)) continue;
     const info = birdWatchSatInfo(set.norad);
     const query = birdWatchSatSearch.value.trim().toLowerCase();
@@ -404,7 +412,7 @@ function birdWatchSatScanTick()
 function birdWatchSelectStep(step)
 {
   const T = GT.birdWatchTrack;
-  const list = GT.settings.birdWatch.tracked;
+  const list = GT.settings.Birdwatch.tracked;
   if (!T || !T.worker || !birdWatchPanelShown() || list.length == 0) return;
   const at = list.indexOf(T.selected);
   const next = list[at < 0 ? (step > 0 ? 0 : list.length - 1) : (at + step + list.length) % list.length];
@@ -413,7 +421,7 @@ function birdWatchSelectStep(step)
 
 function birdWatchSatAdd(norad)
 {
-  const tracked = GT.settings.birdWatch.tracked;
+  const tracked = GT.settings.Birdwatch.tracked;
   if (tracked.includes(norad)) return;
   tracked.push(norad);
   const T = GT.birdWatchTrack;
@@ -424,7 +432,7 @@ function birdWatchSatAdd(norad)
 // Every satellite in the results at once
 function birdWatchSatAddAll(items)
 {
-  const tracked = GT.settings.birdWatch.tracked;
+  const tracked = GT.settings.Birdwatch.tracked;
   const added = items.filter((norad) => !tracked.includes(norad));
   if (added.length == 0) return;
   tracked.push(...added);
@@ -436,13 +444,13 @@ function birdWatchSatAddAll(items)
 // Every satellite stops being tracked
 function birdWatchSatRemoveAll()
 {
-  for (const norad of [...GT.settings.birdWatch.tracked]) birdWatchSatRemove(norad);
+  for (const norad of [...GT.settings.Birdwatch.tracked]) birdWatchSatRemove(norad);
 }
 
 // Stopped being tracked: off the map, out of the tracker, and out of whatever it was selected for
 function birdWatchSatRemove(norad)
 {
-  const tracked = GT.settings.birdWatch.tracked;
+  const tracked = GT.settings.Birdwatch.tracked;
   const at = tracked.indexOf(norad);
   if (at < 0) return;
   tracked.splice(at, 1);

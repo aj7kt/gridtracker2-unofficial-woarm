@@ -12,7 +12,7 @@ function birdWatchExportPasses()
 {
   const T = GT.birdWatchTrack;
   if (!T || !T.worker) return;
-  T.exporting = { wanted: new Set(GT.settings.birdWatch.tracked), lists: new Map() };
+  T.exporting = { wanted: new Set(GT.settings.Birdwatch.tracked), lists: new Map() };
   for (const norad of T.exporting.wanted) T.worker.postMessage({ type: "passes", id: "export", norad: norad, hours: BIRD_WATCH_EXPORT_HOURS });
 }
 
@@ -41,7 +41,7 @@ function birdWatchIcsText(text)
 
 function birdWatchIcs(lists)
 {
-  const A = GT.settings.birdWatch.alerts;
+  const A = GT.settings.Birdwatch.alerts;
   const stamp = birdWatchIcsTime(Date.now());
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//GridTracker2//BirdWatch//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
   let count = 0;
@@ -86,7 +86,7 @@ function birdWatchExportSave(lists)
   const ics = birdWatchIcs(lists);
   if (ics.count == 0)
   {
-    addLastTraffic("<font style='color:yellow'>" + I18N("birdWatch.export.none") + "</font>");
+    addEvent("birdwatch", "<font style='color:yellow'>" + I18N("birdWatch.export.none") + "</font>");
     return;
   }
   const result = electron.ipcRenderer.sendSync("saveTextFile", {
@@ -97,8 +97,8 @@ function birdWatchExportSave(lists)
   });
   if (result && result.error)
   {
-    addLastTraffic("<font style='color:red'>" + htmlEntities(result.error) + "</font>");
+    addEvent("birdwatch", "<font style='color:red'>" + htmlEntities(result.error) + "</font>");
     return;
   }
-  if (result) addLastTraffic("<font style='color:white'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", ics.count).replace("{file}", result)) + "</font>");
+  if (result) addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", ics.count).replace("{file}", result)) + "</font>");
 }

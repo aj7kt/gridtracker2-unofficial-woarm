@@ -99,7 +99,6 @@ function clearLive()
   GT.Decodes = 0;
 
   GT.lastMessages = Array();
-  GT.lastTraffic = Array();
   GT.callRoster = {};
 
   removePaths();

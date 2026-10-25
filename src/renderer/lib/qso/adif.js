@@ -619,13 +619,13 @@ function addLogToStartupList(name, path)
   {
     if (path == GT.settings.startupLogs[i].file)
     {
-      addLastTraffic("<font color='white'>Dupe</font> <font color='orange'>" + name + "</font>");
+      addEvent("log", "<font color='white'>Dupe</font> <font color='orange'>" + name + "</font>");
       return;
     }
   }
   if (ValidatePotentialAdifLogFileAgainstInternal(path) == false)
   {
-    addLastTraffic("<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + name + "</font>");
+    addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + name + "</font>");
     return;
   }
 
@@ -639,7 +639,7 @@ function addLogToStartupList(name, path)
 
   setAdifStartup(loadAdifCheckBox);
 
-  addLastTraffic("<font color='white'>Added</font> <font color='cyan'>" + name + "</font>");
+  addEvent("log", "<font color='white'>Added</font> <font color='cyan'>" + name + "</font>");
 }
 
 function adifLoadDialog()
@@ -976,7 +976,7 @@ GT.appLogsFileSelector.onchange = function ()
     }
     else
     {
-      addLastTraffic("<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + this.files[0].name + "</font>");
+      addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + this.files[0].name + "</font>");
       return;
     }
 
@@ -1696,12 +1696,12 @@ function finishSendingReport(record)
   {
     GT.lastReport = report;
 
-    addLastTraffic("<font style='color:#FFA500'>▲ </font><font style='color:#0FF'> " + I18N("gt.log.newQSO") + " </font><font style='color:#FF0'>" + record.CALL + "</font><font style='color:#FFA500'> ▲</font>");
+    addEvent("log", "<font style='color:#FFA500'>▲ </font><font style='color:#0FF'> " + I18N("gt.log.newQSO") + " </font><font style='color:#FF0'>" + record.CALL + "</font><font style='color:#FFA500'> ▲</font>");
     
     if (GT.settings.app.potaFeatureEnabled && "POTA_REF" in record)
     {
       reportPotaQSO(record);
-      addLastTraffic("<font style='color:white'>" + I18N("gt.log.spottedPota") + "</font>");
+      addEvent("log", "<font style='color:white'>" + I18N("gt.log.spottedPota") + "</font>");
     }
 
     if (GT.settings.N1MM.enable == true && GT.settings.N1MM.port > 1024 && GT.settings.N1MM.ip.length > 4)
@@ -1712,7 +1712,7 @@ function finishSendingReport(record)
         parseInt(GT.settings.N1MM.port),
         GT.settings.N1MM.ip
       );
-      addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "N1MM") + "</font>");
+      addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "N1MM") + "</font>");
     }
 
     if (GT.settings.log4OM.enable == true && GT.settings.log4OM.port > 1024 && GT.settings.log4OM.ip.length > 4)
@@ -1723,7 +1723,7 @@ function finishSendingReport(record)
         parseInt(GT.settings.log4OM.port),
         GT.settings.log4OM.ip
       );
-      addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "Log4OM") + "</font>");
+      addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "Log4OM") + "</font>");
     }
 
     try
@@ -1732,7 +1732,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionInternal") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionInternal") + "</font>");
     }
     try
     {
@@ -1757,12 +1757,12 @@ function finishSendingReport(record)
         }
 
         fs.appendFileSync(fullPath, report + "\r\n", { flush: true });
-        addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedBackup") + "</font>");
+        addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedBackup") + "</font>");
       }
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionBackup") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionBackup") + "</font>");
       console.error(e);
     }
 
@@ -1772,7 +1772,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "QRZ") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "QRZ") + "</font>");
       console.error(e);
     }
 
@@ -1782,7 +1782,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "ClubLog") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "ClubLog") + "</font>");
       console.error(e);
     }
 
@@ -1792,7 +1792,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HrdLog.net") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HrdLog.net") + "</font>");
       console.error(e);
     }
 
@@ -1802,7 +1802,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "Cloudlog") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "Cloudlog") + "</font>");
       console.error(e);
     }
 
@@ -1811,11 +1811,11 @@ function finishSendingReport(record)
       try
       {
         sendACLogMessage(record, GT.settings.acLog.port, GT.settings.acLog.ip);
-        addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "N3FJP") + "</font>");
+        addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "N3FJP") + "</font>");
       }
       catch (e)
       {
-        addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "N3FJP") + "</font>");
+        addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "N3FJP") + "</font>");
         console.error(e);
       }
     }
@@ -1841,11 +1841,11 @@ function finishSendingReport(record)
         DXreport += "<EOR>";
 
         sendDXKeeperLogMessage(DXreport, GT.settings.dxkLog.port, GT.settings.dxkLog.ip);
-        addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "DXKeeper") + "</font>");
+        addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "DXKeeper") + "</font>");
       }
       catch (e)
       {
-        addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "DXKeeper") + "</font>");
+        addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "DXKeeper") + "</font>");
         console.error(e);
       }
     }
@@ -1855,11 +1855,11 @@ function finishSendingReport(record)
       try
       {
         sendHRDLogbookEntry(record, GT.settings.HRDLogbookLog.port, GT.settings.HRDLogbookLog.ip);
-        addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "HRD Logbook") + "</font>");
+        addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "HRD Logbook") + "</font>");
       }
       catch (e)
       {
-        addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HRD") + "</font>");
+        addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HRD") + "</font>");
         console.error(e);
       }
     }
@@ -1870,7 +1870,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "LoTW") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "LoTW") + "</font>");
       console.error(e);
     }
 
@@ -1880,7 +1880,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HamCQ") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "HamCQ") + "</font>");
       console.error(e);
     }
 
@@ -1903,7 +1903,7 @@ function finishSendingReport(record)
       }
       catch (e)
       {
-        addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "eQSL") + "</font>");
+        addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionService").replace("{0}", "eQSL") + "</font>");
         console.error(e);
       }
     }
@@ -1914,7 +1914,7 @@ function finishSendingReport(record)
     }
     catch (e)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionAlert") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionAlert") + "</font>");
       console.error(e);
     }
 
@@ -1926,7 +1926,7 @@ function finishSendingReport(record)
       }
       catch (e)
       {
-        addLastTraffic("<font style='color:red'>" + I18N("gt.log.exceptionHideLookup") + "</font>");
+        addEvent("log", "<font style='color:red'>" + I18N("gt.log.exceptionHideLookup") + "</font>");
         console.error(e);
       }
     }
@@ -1977,7 +1977,7 @@ function eqslCallback(buffer, flag)
   {
     if (result.indexOf("Error: No match on eQSL_User/eQSL_Pswd") != -1)
     {
-      addLastTraffic(
+      addEvent("log", 
         "<font style='color:red'>" + I18N("gt.log.eqslFailCredentials") + "</font>"
       );
     }
@@ -1985,21 +1985,21 @@ function eqslCallback(buffer, flag)
       result.indexOf("specify the desired User by using the QTHNickname") != -1
     )
     {
-      addLastTraffic(
+      addEvent("log", 
         "<font style='color:red'>" + I18N("gt.log.eqslFailNickname") + "</font>"
       );
     }
     else if (result.indexOf("Result: 0 out of 1 records") != -1)
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.eqslFailDupe") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.eqslFailDupe") + "</font>");
     }
     else if (result.indexOf("Result: 1 out of 1 records added") != -1)
     {
-      addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "eQSL.cc") + "</font>");
+      addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "eQSL.cc") + "</font>");
     }
     else
     {
-      addLastTraffic("<font style='color:red'>" + I18N("gt.log.eqslFailUnknown") + "</font>");
+      addEvent("log", "<font style='color:red'>" + I18N("gt.log.eqslFailUnknown") + "</font>");
     }
   }
 }
@@ -2161,12 +2161,12 @@ function sendLotwLogEntry(report, callsignFile, gridFile)
       {
         if (stderr.indexOf("Final Status: Success") < 0)
         {
-          addLastTraffic("<font style='color:orange'>" + I18N("gt.log.failTo").replace("{0}", "TQSL") + "<br/>" + I18N("gt.log.queuedRetry") + "</font>");
+          addEvent("log", "<font style='color:orange'>" + I18N("gt.log.failTo").replace("{0}", "TQSL") + "<br/>" + I18N("gt.log.queuedRetry") + "</font>");
           console.error("TQSL: " + stderr);
         }
         else
         {
-          addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "TQSL") + "</font>");
+          addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "TQSL") + "</font>");
           fs.unlinkSync(fullPath);
         }
       }
@@ -2246,11 +2246,11 @@ function CloudlogSendLogResult(input)
   let buffer = String(input);
   if (buffer && buffer.indexOf("created") > -1)
   {
-    addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "Cloudlog") + "</font>");
+    addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "Cloudlog") + "</font>");
   }
   else 
   {
-    addLastTraffic("<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "Cloudlog") + "</font><br><font style='color:orange'>" + I18N("gt.log.seeMainLog") + "</font>");
+    addEvent("log", "<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "Cloudlog") + "</font><br><font style='color:orange'>" + I18N("gt.log.seeMainLog") + "</font>");
     console.error("Cloudlog/Wavelog response:");
     console.error(buffer);
   }
@@ -2415,7 +2415,7 @@ function qrzSendLogResult(buffer, flag, postData)
       }
       else
       {
-        addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "QRZ.com") + "</font>");
+        addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "QRZ.com") + "</font>");
         return;
       }
     }
@@ -2435,9 +2435,9 @@ function qrzSendLogResult(buffer, flag, postData)
 
   if (error != null)
   {
-    addLastTraffic("<font style='font-size: smaller; color:orange'>" + error.replaceAll("ror:", "ror:<br>") + "</font>");
+    addEvent("log", "<font style='font-size: smaller; color:orange'>" + error.replaceAll("ror:", "ror:<br>") + "</font>");
   }
-  addLastTraffic("<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "QRZ.com") + "</font>");
+  addEvent("log", "<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "QRZ.com") + "</font>");
 }
 
 function postRetryErrorCallaback(file_url, callback, flag, mode, port, theData, timeoutMs, timeoutCallback, who)
@@ -2472,7 +2472,7 @@ function sendQrzLogEntry(report)
 
 function clubLogQsoResult(buffer, flag)
 {
-  addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "ClubLog.org") + "</font>");
+  addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "ClubLog.org") + "</font>");
 }
 
 function sendClubLogEntry(report)
@@ -2542,9 +2542,9 @@ function hrdSendLogResult(buffer, flag)
   else
   {
     if (buffer != null && buffer.indexOf("Unknown user") == -1)
-    { addLastTraffic("<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "HRDLOG.net") + "</font>"); }
+    { addEvent("log", "<font style='color:white'>" + I18N("gt.log.loggedTo").replace("{0}", "HRDLOG.net") + "</font>"); }
     else
-    { addLastTraffic("<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "HRDLOG.net") + "</font>"); }
+    { addEvent("log", "<font style='color:red'>" + I18N("gt.log.failTo").replace("{0}", "HRDLOG.net") + "</font>"); }
   }
 }
 
@@ -3135,7 +3135,7 @@ function sendTcpMessageGetResponse(msg, port, address, callback = null)
   // Consolidated error handler!
   client.on("error", function (err) {
     console.error("TCP Logger Connection Error (ACLog):", err.message);
-    addLastTraffic("<font style='color:orange'>" + I18N("gt.log.n3fjpDownloadFailed") + "</font><br><font style='color:white'>" + I18N("gt.log.n3fjpRunning") + "</font>");
+    addEvent("log", "<font style='color:orange'>" + I18N("gt.log.n3fjpDownloadFailed") + "</font><br><font style='color:white'>" + I18N("gt.log.n3fjpRunning") + "</font>");
     client.destroy(); // Safely kill the socket
     if (callback) callback(null);
   });
@@ -3310,7 +3310,7 @@ function updateAdifBroadcast(port)
     }
     else
     {
-      addLastTraffic("<font color='cyan'>✅ fldigi log test ✅</font>");
+      addEvent("log", "<font color='cyan'>✅ fldigi log test ✅</font>");
     }
   });
 

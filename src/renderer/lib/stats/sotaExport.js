@@ -197,5 +197,5 @@ function doSotaChaserExport()
   saveGridTrackerSettings();
 
   closeSotaChaserExport();
-  addLastTraffic("<font style='color:lightgreen;'>" + I18N("stats.sotaExport.done").replace("{0}", rows.length) + "</font>");
+  addEvent("sota", "<font style='color:lightgreen;'>" + I18N("stats.sotaExport.done").replace("{0}", rows.length) + "</font>");
 }

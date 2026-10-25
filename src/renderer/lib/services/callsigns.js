@@ -487,7 +487,7 @@ function processCtyDat(buffer) {
           fs.unlinkSync(GT.dxccInfoPath);
           fs.renameSync(GT.tempDxccInfoPath, GT.dxccInfoPath);
           
-          addLastTraffic(`<font style='color:yellow'>${I18N("gt.NewVersionDownloaded")} : BigCTY</font>`);
+          addEvent("app", `<font style='color:yellow'>${I18N("gt.NewVersionDownloaded")} : BigCTY</font>`);
         } else {
           if (window.bigctyUpdatedTd) {
             bigctyUpdatedTd.innerHTML = "<div style='color:orange;font-weight:bold'>Mismatch!</div>";
