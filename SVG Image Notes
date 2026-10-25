@@ -269,6 +269,17 @@
   <circle cx="128" cy="128" r="112" fill="none" stroke="#0A2650" stroke-width="7" />
 </svg>
 
+<!-- events.png (512x512, the button panel's Event Viewer button: three rows of a log, a cyan time stamp and a message bar each, on the dark container of feed_menu.png) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="40" fill="#101418" stroke="#1A2229" stroke-width="12"/>
+  <rect x="64" y="108" width="96" height="40" rx="8" fill="#00d4db"/>
+  <rect x="184" y="108" width="264" height="40" rx="8" fill="#ffe600"/>
+  <rect x="64" y="236" width="96" height="40" rx="8" fill="#00d4db"/>
+  <rect x="184" y="236" width="196" height="40" rx="8" fill="#d9dee5"/>
+  <rect x="64" y="364" width="96" height="40" rx="8" fill="#00d4db"/>
+  <rect x="184" y="364" width="232" height="40" rx="8" fill="#d9dee5"/>
+</svg>
+
 <!-- santa_menu.png (Santa Tracker button: a Santa hat) -->
 <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <circle cx="64" cy="64" r="62" fill="#ffffff" />

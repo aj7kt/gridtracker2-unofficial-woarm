@@ -1,6 +1,7 @@
 // Static smoke test of the repo, no app needed: node tools/smoke_static.js   (repo root)
 // JS parses, JSON parses, locales match en.json, used i18n keys exist, no temporary/debug leftovers,
-// no BOMs or mixed line endings, version / CHANGELOG.md / HISTORY.md shape, requireJson data files exist.
+// no BOMs or mixed line endings, version / CHANGELOG.md / HISTORY.md shape, requireJson data files exist, no element id that a
+// page's scripts also declare as a global (the declaration hides the element).
 // Pre-existing COMMENT_ keys that only some locales have are reported but not counted as failures.
 const fs = require("fs");
 const path = require("path");
@@ -84,5 +85,23 @@ const dataRefs = new Set();
 for (const f of walk("src").filter(f => f.endsWith(".js"))) for (const m of fs.readFileSync(f, "utf8").matchAll(/requireJson\("([^"]+)"\)/g)) dataRefs.add(m[1]);
 const missingData = [...dataRefs].filter(r => !fs.existsSync(path.join("resources", r)));
 ok(`${dataRefs.size} requireJson data files exist`, missingData.length === 0, missingData.join(", "));
+
+// 9. No element id in a page is also a global the page's scripts declare (function, class, const, let, var at the top level): the
+// declaration wins, so the element can't be reached by its name (a checkbox that reads as a function never saves)
+const pages = fs.readdirSync("src/renderer").filter(f => f.endsWith(".html"));
+const clashes = [];
+for (const page of pages) {
+  const html = fs.readFileSync(path.join("src/renderer", page), "utf8");
+  const ids = new Set([...html.matchAll(/\bid\s*=\s*["']([A-Za-z_$][\w$]*)["']/g)].map(m => m[1]));
+  for (const m of html.matchAll(/<script[^>]*\bsrc\s*=\s*["']\.?\/?([^"']+\.js)["']/g)) {
+    const file = path.join("src/renderer", m[1]);
+    if (!fs.existsSync(file) || /third-party/.test(file)) continue;
+    for (const d of fs.readFileSync(file, "utf8").matchAll(/^(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)|^(?:const|let|var|class)\s+([A-Za-z_$][\w$]*)/gm)) {
+      const name = d[1] || d[2];
+      if (ids.has(name)) clashes.push(`${page} #${name} / ${m[1]}`);
+    }
+  }
+}
+ok(`${pages.length} pages: no element id is also a global name`, clashes.length === 0, clashes.join(", "));
 
 console.log(fails ? `\n${fails} FAILED` : "\nALL STATIC CHECKS PASSED");
