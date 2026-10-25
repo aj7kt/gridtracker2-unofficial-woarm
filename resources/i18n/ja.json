@@ -1276,7 +1276,7 @@
 	"birdWatch.alerts.soonText.hover": "独自の文言：{N} 衛星名、{T} AOS までの分数、{D} 最大仰角（度）。空欄：灰色で表示されたメッセージ",
 	"birdWatch.alerts.risingText.hover": "独自の文言：{N} 衛星名、{D} 昇る方位角（度）。空欄：灰色で表示されたメッセージ",
 	"gt.button.events.hover": "イベントビューアー",
-	"events.title.label": "イベントビューアー",
+	"events.title.label": "イベント",
 	"events.menu.main.label": "メインウィンドウに表示",
 	"events.menu.window.label": "ウィンドウとして表示",
 	"events.time.label": "時刻",
@@ -1290,7 +1290,5 @@
 	"events.source.birdwatch": "BirdWatch",
 	"events.source.rotor": "ローテーター",
 	"events.source.sota": "SOTA",
-	"events.clear.label": "クリア",
-	"events.toWindow.label": "ウィンドウへ",
-	"events.toMain.label": "メインへ"
+	"events.clear.label": "クリア"
 }

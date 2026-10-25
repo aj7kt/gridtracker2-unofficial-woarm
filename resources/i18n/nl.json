@@ -1276,7 +1276,7 @@
   "birdWatch.alerts.soonText.hover": "Uw eigen tekst: {N} de naam van de satelliet, {T} de minuten tot AOS, {D} de maximale elevatie in graden. Leeg: het grijze bericht",
   "birdWatch.alerts.risingText.hover": "Uw eigen tekst: {N} de naam van de satelliet, {D} het azimut waar hij opkomt in graden. Leeg: het grijze bericht",
   "gt.button.events.hover": "Gebeurtenissenweergave",
-  "events.title.label": "Gebeurtenissenweergave",
+  "events.title.label": "Gebeurtenissen",
   "events.menu.main.label": "In hoofdvenster tonen",
   "events.menu.window.label": "Als venster tonen",
   "events.time.label": "Tijd",
@@ -1290,7 +1290,5 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "Rotor",
   "events.source.sota": "SOTA",
-  "events.clear.label": "Wissen",
-  "events.toWindow.label": "Naar venster",
-  "events.toMain.label": "Naar hoofdvenster"
+  "events.clear.label": "Wissen"
 }

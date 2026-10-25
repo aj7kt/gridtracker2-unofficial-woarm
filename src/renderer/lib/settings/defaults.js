@@ -242,7 +242,9 @@ const def_settings = {
     logEventMedia: "Ping-coin.mp3",
     buttonPanelOrder: [],
     // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own
-    eventViewer: "main"
+    eventViewer: "main",
+    // Where the user dragged the main window's Event Viewer panel to ({ x, y } in the window), null while it is where it comes up
+    eventViewerPos: null
   },
   appLogs: [],
   map: {

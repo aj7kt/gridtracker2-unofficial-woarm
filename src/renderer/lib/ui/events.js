@@ -5,7 +5,7 @@
 // The Event Viewer: what the control panel's traffic list used to show (QSOs logged, alerts, BirdWatch's announcements, errors...) is
 // kept as events, newest first, this session's and never older than a day; nothing is saved to disk. They are shown in the main window
 // (a panel like Settings; one of those is open at a time) or in a window of their own (gt_events.html), as the button panel's Event
-// Viewer button is set (a right click on it: View In Main / View As Window; the headers' To Window and To Main move it too). A list
+// Viewer button is set (a right click on it: View In Main / View As Window). A list
 // draws only the rows in view (virtual scrolling, like the Satellites lists), and its columns are as wide as the widest row seen, never
 // narrower (until Clear)
 
@@ -60,9 +60,8 @@ function eventsMeasure(event, force = false)
   {
     W.time = width(I18N("events.time.label"));
     W.source = width(I18N("events.source.label"));
-    // The Event column's header holds the Clear and To Window / To Main buttons too (their text, padding and gaps)
-    const buttons = width(I18N("events.clear.label")) + Math.max(width(I18N("events.toWindow.label")), width(I18N("events.toMain.label"))) + 2 * 16 + 12;
-    W.text = width(I18N("events.text.label")) + 10 + buttons;
+    // The Event column's header holds Clear too (its text and padding)
+    W.text = width(I18N("events.text.label")) + 10 + width(I18N("events.clear.label")) + 16;
   }
   context.font = "12px Sans-Serif";
   for (const e of force ? GT.events : [event])
@@ -186,20 +185,14 @@ function eventsDraw(list, force)
     }
     return div;
   };
-  // The header: at the right of its Event column, Clear and (the panel's) To Window or (the window's) To Main
+  // The header: Clear at the far right of its Event column, which reaches the list's right edge (and Clear stays in view when the
+  // columns are wider than the window: style.css)
   const head = row([["eventTime", I18N("events.time.label")], ["eventSource", I18N("events.source.label")], ["eventText", I18N("events.text.label")]], true);
-  const buttons = doc.createElement("span");
-  buttons.className = "eventHeadButtons";
-  const inWindow = list !== (typeof eventsListMain != "undefined" ? eventsListMain : null);
-  for (const [key, action] of [["events.clear.label", eventsClear], [inWindow ? "events.toMain.label" : "events.toWindow.label", inWindow ? eventViewerToMain : eventViewerToWindow]])
-  {
-    const button = doc.createElement("span");
-    button.className = "button birdTleButton";
-    button.textContent = I18N(key);
-    button.onclick = () => action();
-    buttons.appendChild(button);
-  }
-  head.lastElementChild.appendChild(buttons);
+  const clear = doc.createElement("span");
+  clear.className = "button birdTleButton eventHeadClear";
+  clear.textContent = I18N("events.clear.label");
+  clear.onclick = () => eventsClear();
+  head.lastElementChild.appendChild(clear);
   const nodes = [head];
   if (first > 0) nodes.push(spacer(first));
   for (let i = first; i < last; i++)
@@ -220,28 +213,83 @@ function eventViewerShowMain()
   helpDiv.style.display = "none";
   GT.helpShow = false;
   eventViewerDiv.style.display = "inline-flex";
+  eventViewerDragInit();
+  eventViewerPlace();
   eventsDraw(eventsListMain, true);
+}
+
+// ---- The panel can be dragged by its title bar, and comes up where it was left (settings.app.eventViewerPos); until it is dragged it
+// sits where the other panels do (in the page's flow, at the top)
+
+// The panel where it was left, kept on screen: its title bar always in view, and its height no more than what is left under it
+function eventViewerPlace()
+{
+  const pos = GT.settings.app.eventViewerPos;
+  const panel = eventViewerDiv;
+  // The panel's own style has it relative, in the flow, as the other panels: absolute once dragged
+  if (!pos)
+  {
+    panel.classList.remove("eventViewerMoved");
+    panel.style.position = "relative";
+    panel.style.left = panel.style.top = panel.style.maxHeight = "";
+    eventsListMain.style.maxHeight = "";
+    return;
+  }
+  panel.classList.add("eventViewerMoved");
+  panel.style.position = "absolute";
+  const x = Math.max(0, Math.min(Number(pos.x) || 0, window.innerWidth - panel.offsetWidth));
+  const y = Math.max(0, Math.min(Number(pos.y) || 0, window.innerHeight - 40));
+  panel.style.left = x + "px";
+  panel.style.top = y + "px";
+  panel.style.maxHeight = (window.innerHeight - y - 2) + "px";
+  // Ten rows (style.css), or fewer where the screen ends
+  eventsListMain.style.maxHeight = Math.min(222, window.innerHeight - y - 36) + "px";
+}
+
+function eventViewerDragInit()
+{
+  if (GT.eventViewerDragHooked) return;
+  GT.eventViewerDragHooked = true;
+  const bar = eventViewerDiv.querySelector(".settingstab");
+  let drag = null;
+  bar.addEventListener("pointerdown", (event) =>
+  {
+    // Not from the X: that closes the panel
+    if (event.button != 0 || event.target.closest("button, .button")) return;
+    const rect = eventViewerDiv.getBoundingClientRect();
+    drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top };
+    // Taken out of the flow where it is, so it doesn't jump as the drag starts
+    GT.settings.app.eventViewerPos = { x: rect.left, y: rect.top };
+    eventViewerPlace();
+    try { bar.setPointerCapture(event.pointerId); } catch (e) { /* a synthetic event */ }
+    event.preventDefault();
+  });
+  bar.addEventListener("pointermove", (event) =>
+  {
+    if (!drag) return;
+    GT.settings.app.eventViewerPos = { x: event.clientX - drag.dx, y: event.clientY - drag.dy };
+    eventViewerPlace();
+  });
+  const done = (event) =>
+  {
+    if (!drag) return;
+    drag = null;
+    try { bar.releasePointerCapture(event.pointerId); } catch (e) { /* not captured */ }
+    // Kept as placed (clamped)
+    GT.settings.app.eventViewerPos = { x: parseInt(eventViewerDiv.style.left) || 0, y: parseInt(eventViewerDiv.style.top) || 0 };
+  };
+  bar.addEventListener("pointerup", done);
+  bar.addEventListener("pointercancel", done);
+  // A smaller window: the panel kept on screen
+  window.addEventListener("resize", () =>
+  {
+    if (eventViewerDiv.style.display == "inline-flex" && GT.settings.app.eventViewerPos) eventViewerPlace();
+  });
 }
 
 function closeEventViewer()
 {
   if (typeof eventViewerDiv != "undefined") eventViewerDiv.style.display = "none";
-}
-
-// The panel's To Window button: the viewer moves to a window of its own, and stays one
-function eventViewerToWindow()
-{
-  GT.settings.app.eventViewer = "window";
-  closeEventViewer();
-  eventsWindowOpen(true);
-}
-
-// The window's To Main button: the viewer moves to the main window's panel, and stays there
-function eventViewerToMain()
-{
-  GT.settings.app.eventViewer = "main";
-  eventsWindowOpen(false);
-  eventViewerShowMain();
 }
 
 // The time's form changed (local or UTC, toggleTime): the time column measured again and every list redrawn
@@ -251,7 +299,7 @@ function eventsTimeFormatChanged()
   eventsRedraw(true);
 }
 
-// Clear, on either header: every event is let go
+// Clear, on either list's header: every event is let go
 function eventsClear()
 {
   GT.events = [];

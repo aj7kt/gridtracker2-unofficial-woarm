@@ -2105,17 +2105,25 @@ button:focus {
   font-size: 13.3333px;
 }
 
-/* The header's Clear and To Window / To Main, at the right of its Event column (the header's cell lays its label and them out in a
-   row, the buttons pushed to its right) */
-.eventHeadButtons {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 20px;
+/* The panel is dragged by its title bar (eventViewerDragInit); once dragged it is placed where it was left (eventViewerPlace) */
+#eventViewerDiv .settingstab {
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.eventHeadButtons .button {
+#eventViewerDiv .settingstab button,
+#eventViewerDiv .settingstab .button {
+  cursor: pointer;
+}
+
+#eventViewerDiv.eventViewerMoved {
+  margin: 0;
+}
+
+/* The header's Clear, at the right end of the Event column (whose header cell grows to the list's right edge) */
+.eventHeadClear {
+  margin-left: auto;
   font-weight: normal;
   line-height: 14px;
 }
@@ -2131,9 +2139,10 @@ button:focus {
   max-width: calc(100vw - 14px);
 }
 
+/* The panel's list shows the header and ten rows, and scrolls for the rest */
 #eventsListMain {
   min-width: 320px;
-  max-height: calc(100vh - 36px);
+  max-height: 222px;
 }
 
 .eventRow {
@@ -2182,10 +2191,13 @@ button:focus {
   text-overflow: ellipsis;
 }
 
+/* The header's Event cell grows to the row's right edge, so Clear sits at the right of the list */
 .eventHead .eventText {
   overflow: visible;
   display: flex;
   align-items: center;
+  flex: 1 0 var(--evText, 240px);
+  width: auto;
 }
 
 /* Rig Control's LO badge (rig.js, rigLoBadge): after a frequency that has a converter offset, in its color */

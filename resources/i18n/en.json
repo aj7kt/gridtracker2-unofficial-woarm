@@ -1276,7 +1276,7 @@
 	"birdWatch.alerts.soonText.hover": "Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in grey",
 	"birdWatch.alerts.risingText.hover": "Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in grey",
 	"gt.button.events.hover": "Event Viewer",
-	"events.title.label": "Event Viewer",
+	"events.title.label": "Events",
 	"events.menu.main.label": "View In Main",
 	"events.menu.window.label": "View As Window",
 	"events.time.label": "Time",
@@ -1290,7 +1290,5 @@
 	"events.source.birdwatch": "BirdWatch",
 	"events.source.rotor": "Rotor",
 	"events.source.sota": "SOTA",
-	"events.clear.label": "Clear",
-	"events.toWindow.label": "To Window",
-	"events.toMain.label": "To Main"
+	"events.clear.label": "Clear"
 }

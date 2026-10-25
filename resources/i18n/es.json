@@ -1269,7 +1269,7 @@
   "birdWatch.alerts.soonText.hover": "Su propio texto: {N} el nombre del satélite, {T} los minutos hasta AOS, {D} su elevación máxima en grados. Vacío: el mensaje en gris",
   "birdWatch.alerts.risingText.hover": "Su propio texto: {N} el nombre del satélite, {D} el azimut por el que sale en grados. Vacío: el mensaje en gris",
   "gt.button.events.hover": "Visor de eventos",
-  "events.title.label": "Visor de eventos",
+  "events.title.label": "Eventos",
   "events.menu.main.label": "Ver en la ventana principal",
   "events.menu.window.label": "Ver como ventana",
   "events.time.label": "Hora",
@@ -1283,7 +1283,5 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "Rotor",
   "events.source.sota": "SOTA",
-  "events.clear.label": "Vaciar",
-  "events.toWindow.label": "A ventana",
-  "events.toMain.label": "A principal"
+  "events.clear.label": "Vaciar"
 }
