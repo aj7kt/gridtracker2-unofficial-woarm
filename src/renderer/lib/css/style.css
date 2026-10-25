@@ -494,6 +494,18 @@ html, body {
   border-color: #fff;
 }
 
+/* The button panel's buttons: the one under the mouse grows, over its neighbours, to show its icon's detail */
+#buttonsDiv .iconButton {
+  position: relative;
+  transition: transform 0.12s ease-out;
+}
+
+#buttonsDiv .iconButton:hover {
+  transform: scale(1.5);
+  z-index: 10;
+  background-color: #000;
+}
+
 .mapItem {
   margin: 2px;
   padding: 0px;

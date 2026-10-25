@@ -562,12 +562,12 @@ GT.terminatorDegreesNames = ["Horizon", "Civil", "Nautical", "Astronomical"];
 
 GT.GraylineImageArray = ["img/grayline_on.png", "img/grayline_off.png"];
 GT.gtFlagImageArray = ["img/flag_off.png", "img/flag_on.png"];
-GT.pinImageArray = ["img/gt_grid.png", "img/red_pin_32.png"];
+GT.pinImageArray = ["img/gridtracker.png", "img/push-pin.png"];
 GT.qsoLockImageArray = ["img/qso_unlocked_32.png", "img/qso_locked_32.png"];
 GT.qslLockImageArray = ["img/qsl_unlocked_32.png", "img/qsl_locked_32.png"];
 GT.alertImageArray = ["img/unmuted-button.png", "img/muted-button.png"];
 GT.spotImageArray = ["img/spots.png", "img/spots.png", "img/heat.png"];
-GT.maidenheadModeImageArray = ["img/mh4_32.png", "img/mh6_32.png"];
+GT.maidenheadModeImageArray = ["img/mh4.png", "img/mh6.png"];
 GT.predImageArray = ["img/no-pred.png", "img/muf.png", "img/fof2.png", "img/epi.png", "img/auf.png", "img/tropo.png"];
 
 GT.tropoData = { nodes: {}, alert_id: 0, refresh: 128, timeout: null };
