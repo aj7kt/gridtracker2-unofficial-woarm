@@ -1290,5 +1290,7 @@
 	"events.source.birdwatch": "BirdWatch",
 	"events.source.rotor": "Rotor",
 	"events.source.sota": "SOTA",
-	"events.clear.label": "Effacer"
+	"events.clear.label": "Effacer",
+	"birdWatch.doppler.sticky.label": "Mode persistant",
+	"birdWatch.doppler.sticky.hover": "Quand un satellite est sélectionné (par vous ou par Auto-Track), la radio suit un de ses émetteurs : un dans le mode de l'émetteur suivi avant, sinon le dernier suivi sur ce satellite, sinon le premier du tableau"
 }

@@ -321,11 +321,61 @@ function birdWatchDopplerClick(index, part)
   GT.rigDoppler = D && (D.rx || D.tx || D.mode) ? D : null;
   if (GT.rigDoppler)
   {
+    birdWatchStickyRemember(GT.rigDoppler);
     GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
     // The mode is set once (it doesn't move with the satellite); RX and TX are followed
     birdWatchDopplerFollow(setMode ? birdWatchRigMode(t) : null);
     if (setTone) rigTune({ tone: birdWatchTransmitterTone(t) || 0 });
   }
+  birdWatchTransmitterWindowUpdate();
+}
+
+// ---- Sticky Mode (BirdWatch settings, General): a satellite selected (by the user or by Auto-Track), the rig follows one of its
+// transmitters, as a click on its name would: the first in the mode of the one followed before (one with an uplink, when that had
+// one), else the one last followed on this satellite, else the first in the Doppler table. The one last followed on each satellite is
+// kept (settings.Birdwatch.stickyLast), whichever way it was picked
+
+function birdWatchStickyRemember(D)
+{
+  GT.settings.Birdwatch.stickyLast[D.norad] = D.uuid;
+}
+
+// The transmitter followed now, or null
+function birdWatchStickyPrevious()
+{
+  const D = GT.rigDoppler;
+  return D ? birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid) || null : null;
+}
+
+// The transmitter Sticky Mode follows on a satellite, from the ones the Doppler table shows
+function birdWatchStickyPick(norad, previous)
+{
+  const list = birdWatchTransmitters(norad).filter((t) => !(GT.settings.Birdwatch.hideNoUplink && !(t.uplink_low > 0)));
+  if (list.length == 0) return null;
+  if (previous)
+  {
+    const mode = String(previous.mode || "").toUpperCase();
+    const same = list.filter((t) => String(t.mode || "").toUpperCase() == mode);
+    const pick = (previous.uplink_low > 0 && same.find((t) => t.uplink_low > 0)) || same[0];
+    if (pick) return pick;
+  }
+  const last = GT.settings.Birdwatch.stickyLast[norad];
+  return list.find((t) => t.uuid == last) || list[0];
+}
+
+function birdWatchStickyFollow(norad, previous)
+{
+  if (!GT.settings.Birdwatch.sticky || GT.rig.status != "connected") return;
+  const t = birdWatchStickyPick(norad, previous);
+  if (!t) return;
+  const canTx = rigTuneCanTx() && t.uplink_low > 0;
+  const mode = birdWatchRigMode(t);
+  // The mode and the tone go with the first frequencies sent (the satellite's place may only come at the next tick)
+  const D = { norad: norad, uuid: t.uuid, rx: t.downlink_low > 0, tx: canTx, mode: !!mode, sentRx: null, sentTx: null, pendingMode: mode, pendingTone: canTx ? birdWatchTransmitterTone(t) || 0 : undefined };
+  if (!(D.rx || D.tx || D.mode)) return;
+  GT.rigDoppler = D;
+  birdWatchStickyRemember(D);
+  birdWatchDopplerFollow();
   birdWatchTransmitterWindowUpdate();
 }
 
@@ -348,6 +398,8 @@ function birdWatchDopplerFollow(mode = null)
   const t = birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid);
   if (!sat || sat.error || !t) return;
   const tuning = birdWatchTransmitterTuning(t, sat.doppler);
+  // A mode still to be set (Sticky Mode's) goes with these frequencies
+  mode = mode || D.pendingMode || null;
   const spec = { mode: mode, txMode: mode && t.uplink_low > 0 ? birdWatchRigMode({ mode: t.uplink_mode || t.mode }) : null };
   if (D.rx && tuning.rx && (D.sentRx === null || D.sentRx === undefined || Math.abs(tuning.rx - D.sentRx) >= 5)) spec.rx = tuning.rx;
   if (D.tx && tuning.tx && rigTuneCanTx() && (D.sentTx === null || D.sentTx === undefined || Math.abs(tuning.tx - D.sentTx) >= 5)) spec.tx = tuning.tx;
@@ -356,6 +408,12 @@ function birdWatchDopplerFollow(mode = null)
   {
     if (spec.rx) D.sentRx = spec.rx;
     if (spec.tx) D.sentTx = spec.tx;
+    D.pendingMode = null;
+    if (D.pendingTone !== undefined)
+    {
+      rigTune({ tone: D.pendingTone });
+      D.pendingTone = undefined;
+    }
   }
 }
 

@@ -1291,5 +1291,7 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "旋转器",
   "events.source.sota": "SOTA",
-  "events.clear.label": "清除"
+  "events.clear.label": "清除",
+  "birdWatch.doppler.sticky.label": "保持模式",
+  "birdWatch.doppler.sticky.hover": "选择卫星时（手动或 Auto-Track），电台跟随其一个发射机：与之前跟随的发射机模式相同的，否则为该卫星上次跟随的，否则为表中第一个"
 }

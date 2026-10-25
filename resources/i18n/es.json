@@ -1283,5 +1283,7 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "Rotor",
   "events.source.sota": "SOTA",
-  "events.clear.label": "Vaciar"
+  "events.clear.label": "Vaciar",
+  "birdWatch.doppler.sticky.label": "Modo persistente",
+  "birdWatch.doppler.sticky.hover": "Al seleccionar un satélite (usted o Auto-Track), el equipo sigue uno de sus transmisores: uno en el modo del transmisor seguido antes, si no el último seguido en este satélite, si no el primero de la tabla"
 }

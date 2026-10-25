@@ -1290,5 +1290,7 @@
 	"events.source.birdwatch": "BirdWatch",
 	"events.source.rotor": "ローテーター",
 	"events.source.sota": "SOTA",
-	"events.clear.label": "クリア"
+	"events.clear.label": "クリア",
+	"birdWatch.doppler.sticky.label": "モード維持",
+	"birdWatch.doppler.sticky.hover": "衛星を選択すると（手動または Auto-Track）、無線機はその送信機の1つに追従します：直前に追従した送信機と同じモードのもの、なければこの衛星で最後に追従したもの、なければ表の先頭"
 }

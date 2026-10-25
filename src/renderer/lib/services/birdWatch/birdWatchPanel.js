@@ -66,6 +66,8 @@ function birdWatchSelect(norad)
 {
   const T = GT.birdWatchTrack;
   norad = norad == T.selected ? null : Number(norad);
+  // The transmitter followed until now, for Sticky Mode's choice on the new satellite
+  const previous = birdWatchStickyPrevious();
   T.selected = norad;
   // The rig stops following the last satellite's transmitter (birdWatchDoppler.js)
   birdWatchDopplerStopFollow();
@@ -76,6 +78,8 @@ function birdWatchSelect(norad)
   birdWatchPredictApply();
   if (norad) birdWatchPanelFill(norad);
   else birdWatchSetSat(null);
+  // Sticky Mode: the rig follows one of the new satellite's transmitters
+  if (norad) birdWatchStickyFollow(norad, previous);
 }
 
 // The ground circle a satellite can be seen from (its footprint, or radio horizon): where it is at least at the horizon,

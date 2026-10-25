@@ -24,6 +24,7 @@ function birdWatchSatsRender()
   birdWatchAutoMinEl.value = GT.settings.Birdwatch.autoMinElevation;
   birdWatchAutoMinElText.textContent = GT.settings.Birdwatch.autoMinElevation + "°";
   birdWatchHideNoUplinkValue.checked = GT.settings.Birdwatch.hideNoUplink;
+  birdWatchStickyValue.checked = GT.settings.Birdwatch.sticky;
   birdWatchSatUplink.checked = GT.settings.Birdwatch.uplinkOnly;
   birdWatchSatRigRender();
   birdWatchSatVirtual(birdWatchSatTrackedList, GT.settings.Birdwatch.tracked, "remove", false);

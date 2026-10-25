@@ -18,6 +18,11 @@ function birdWatchLogTag(record)
   record.SAT_NAME = tle.name;
 }
 
+function birdWatchStickyChange()
+{
+  GT.settings.Birdwatch.sticky = birdWatchStickyValue.checked;
+}
+
 function birdWatchHideNoUplinkChange()
 {
   GT.settings.Birdwatch.hideNoUplink = birdWatchHideNoUplinkValue.checked;

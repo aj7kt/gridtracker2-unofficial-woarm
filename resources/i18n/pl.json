@@ -1290,5 +1290,7 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "Rotor",
   "events.source.sota": "SOTA",
-  "events.clear.label": "Wyczyść"
+  "events.clear.label": "Wyczyść",
+  "birdWatch.doppler.sticky.label": "Tryb trwały",
+  "birdWatch.doppler.sticky.hover": "Po wybraniu satelity (przez Ciebie lub Auto-Track) radio śledzi jeden z jego nadajników: w trybie wcześniej śledzonego, w przeciwnym razie ostatnio śledzony na tym satelicie, a w przeciwnym razie pierwszy z tabeli"
 }

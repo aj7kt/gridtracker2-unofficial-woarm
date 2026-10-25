@@ -1291,5 +1291,7 @@
 	"events.source.birdwatch": "BirdWatch",
 	"events.source.rotor": "Rotor",
 	"events.source.sota": "SOTA",
-	"events.clear.label": "Leeren"
+	"events.clear.label": "Leeren",
+	"birdWatch.doppler.sticky.label": "Modus beibehalten",
+	"birdWatch.doppler.sticky.hover": "Wird ein Satellit gewählt (von Ihnen oder von Auto-Track), folgt das Funkgerät einem seiner Sender: einem im Modus des bisher verfolgten Senders, sonst dem zuletzt auf diesem Satelliten verfolgten, sonst dem ersten der Tabelle"
 }

@@ -1290,5 +1290,7 @@
   "events.source.birdwatch": "BirdWatch",
   "events.source.rotor": "Rotor",
   "events.source.sota": "SOTA",
-  "events.clear.label": "Wissen"
+  "events.clear.label": "Wissen",
+  "birdWatch.doppler.sticky.label": "Modus vasthouden",
+  "birdWatch.doppler.sticky.hover": "Als een satelliet wordt gekozen (door u of door Auto-Track), volgt de radio een van zijn zenders: een in de modus van de eerder gevolgde zender, anders de laatst gevolgde op deze satelliet, anders de eerste in de tabel"
 }
