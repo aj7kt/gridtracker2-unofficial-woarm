@@ -109,9 +109,9 @@ const def_settings = {
     info: { featured: "ttgo", order: [], hidden: [], known: [], colors: {} },
     // The Doppler table leaves out the transmitters with no uplink, the beacons and other downlink-only ones (BirdWatch settings, General)
     hideNoUplink: false,
-    // Sticky Mode (BirdWatch settings, General): a satellite selected, the rig follows one of its transmitters (birdWatchStickyFollow)
+    // Sticky Mode (BirdWatch settings, General): a satellite selected, the rig follows the previous satellite's mode first (birdWatchStickyFollow)
     sticky: false,
-    // The transmitter last followed on each satellite, by catalog number (its uuid), for Sticky Mode
+    // The transmitter last followed on each satellite, by catalog number (its uuid): followed again whenever it is selected
     stickyLast: {},
     // Pass alerts (BirdWatch settings, Alerts): a tracked satellite about to rise is announced this many minutes before its AOS (and at
     // it), when its pass climbs at least minElevation degrees, by voice, in the traffic list, and with Pushover / Simplepush

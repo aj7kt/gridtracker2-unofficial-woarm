@@ -330,10 +330,10 @@ function birdWatchDopplerClick(index, part)
   birdWatchTransmitterWindowUpdate();
 }
 
-// ---- Sticky Mode (BirdWatch settings, General): a satellite selected (by the user or by Auto-Track), the rig follows one of its
-// transmitters, as a click on its name would: the first in the mode of the one followed before (one with an uplink, when that had
-// one), else the one last followed on this satellite, else the first in the Doppler table. The one last followed on each satellite is
-// kept (settings.Birdwatch.stickyLast), whichever way it was picked
+// ---- A satellite selected (by the user or by Auto-Track), the rig follows one of its transmitters, as a click on its name would. Always:
+// the one last followed on this satellite, when there is one (settings.Birdwatch.stickyLast keeps it, whichever way it was picked).
+// With Sticky Mode (BirdWatch settings, General) the previous satellite's mode comes first: the first transmitter in the mode of the one
+// followed before (one with an uplink, when that had one); then the one last followed on this satellite; then the first in the table
 
 function birdWatchStickyRemember(D)
 {
@@ -347,12 +347,12 @@ function birdWatchStickyPrevious()
   return D ? birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid) || null : null;
 }
 
-// The transmitter Sticky Mode follows on a satellite, from the ones the Doppler table shows
-function birdWatchStickyPick(norad, previous)
+// The transmitter to follow on a satellite, from the ones the Doppler table shows; null for none (Sticky Mode off and none followed here yet)
+function birdWatchStickyPick(norad, previous, sticky = GT.settings.Birdwatch.sticky)
 {
   const list = birdWatchTransmitters(norad).filter((t) => !(GT.settings.Birdwatch.hideNoUplink && !(t.uplink_low > 0)));
   if (list.length == 0) return null;
-  if (previous)
+  if (sticky && previous)
   {
     const mode = String(previous.mode || "").toUpperCase();
     const same = list.filter((t) => String(t.mode || "").toUpperCase() == mode);
@@ -360,12 +360,12 @@ function birdWatchStickyPick(norad, previous)
     if (pick) return pick;
   }
   const last = GT.settings.Birdwatch.stickyLast[norad];
-  return list.find((t) => t.uuid == last) || list[0];
+  return list.find((t) => t.uuid == last) || (sticky ? list[0] : null);
 }
 
 function birdWatchStickyFollow(norad, previous)
 {
-  if (!GT.settings.Birdwatch.sticky || GT.rig.status != "connected") return;
+  if (GT.rig.status != "connected") return;
   const t = birdWatchStickyPick(norad, previous);
   if (!t) return;
   const canTx = rigTuneCanTx() && t.uplink_low > 0;

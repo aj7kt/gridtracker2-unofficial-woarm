@@ -78,7 +78,7 @@ function birdWatchSelect(norad)
   birdWatchPredictApply();
   if (norad) birdWatchPanelFill(norad);
   else birdWatchSetSat(null);
-  // Sticky Mode: the rig follows one of the new satellite's transmitters
+  // The rig follows the transmitter last followed on the new satellite, or (Sticky Mode) the previous satellite's mode
   if (norad) birdWatchStickyFollow(norad, previous);
 }
 
