@@ -84,7 +84,7 @@ function birdWatchSatRigAvailable()
   const key = birdWatchSatRigKeyOf(ranges);
   if (key == birdWatchSatRigKey) return;
   birdWatchSatRigRender();
-  if (GT.settings.Birdwatch.rigFilter != "off" && !GT.birdWatchScan.active && birdWatchSettingsDiv.style.display != "none") birdWatchSatSearchChange(false);
+  if (GT.settings.Birdwatch.rigFilter != "off" && !GT.birdWatchScan.active && birdWatchSatellitesDiv.offsetParent !== null) birdWatchSatSearchChange(false);
 }
 
 // The results list: the search, or the scan's results
@@ -166,9 +166,7 @@ function birdWatchSatMeasure(list, items, scan)
 // wide as its widest row (a wrapped container would otherwise keep the width of the one row they would make if they fit)
 function birdWatchTabsFit()
 {
-  // A resize of the window can come while the page is still loading, before the settings window's elements are there
-  if (typeof birdWatchSettingsDiv == "undefined") return;
-  for (const columns of birdWatchSettingsDiv.querySelectorAll(".mapGroups"))
+  for (const columns of document.querySelectorAll(".birdWatchSettingsTabcontent .mapGroups"))
   {
     columns.style.width = "";
     if (columns.offsetParent === null) continue;
@@ -404,7 +402,7 @@ function birdWatchMmss(ms)
 // Each tracker tick: the times to AOS in the rows drawn count down
 function birdWatchSatScanTick()
 {
-  if (!GT.birdWatchScan.active || birdWatchSettingsDiv.style.display == "none") return;
+  if (!GT.birdWatchScan.active || birdWatchSatellitesDiv.offsetParent === null) return;
   const now = Date.now();
   for (const cell of birdWatchSatResults.querySelectorAll(".birdSatAos[data-aos]")) cell.textContent = birdWatchMmss(Number(cell.dataset.aos) - now);
 }

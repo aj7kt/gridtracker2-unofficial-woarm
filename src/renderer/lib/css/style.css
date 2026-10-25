@@ -678,17 +678,31 @@ a {
 /* Shown as inline-flex: a column capped at the window size, so the tab bar wraps
    and the tab content takes the remaining height and scrolls */
 #rootSettingsDiv,
-#birdWatchSettingsDiv,
 #eventViewerDiv {
   flex-direction: column;
   max-width: calc(100vw - 12px);
   max-height: calc(100vh - 2px);
 }
 
-/* BirdWatch's settings window: as wide and as tall as the tab's content needs, never more than the app window (a small
-   window gets scroll bars and the window stays centered) */
-#birdWatchSettingsDiv .birdWatchSettingsTabcontent {
+/* BirdWatch's tabs in the main Settings: their content reads from the left */
+.birdWatchSettingsTabcontent {
   text-align: left;
+}
+
+/* The BirdWatch tab: the boxes of a row as tall as each other; the small ones in pairs that wrap as one */
+#birdWatchGeneralDiv .mapGroups {
+  align-items: stretch;
+}
+
+.birdWatchPair {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+/* BirdWatch's tabs: a row of their own above the main Settings' tabs */
+.birdWatchTabRow {
+  margin-bottom: 3px;
 }
 
 /* The satellite info rows (birdWatchInfo.js): the one under the mouse is shaded like a table's, and a row being dragged shows where it will land */
@@ -1020,7 +1034,7 @@ table.darkTable.birdDopplerTable td {
 }
 
 /* Local and Remote: each its own box inside the TLE Sources box */
-#birdWatchSettingsDiv .birdTleBox {
+.birdWatchSettingsTabcontent .birdTleBox {
   display: block;
   margin: 8px 0 0;
   padding: 4px 10px 6px;
@@ -1094,7 +1108,7 @@ table.darkTable.birdDopplerTable td {
   gap: 0 10px;
 }
 
-#birdWatchSettingsDiv .birdTleTop > .birdTleBox {
+.birdWatchSettingsTabcontent .birdTleTop > .birdTleBox {
   width: fit-content;
 }
 
@@ -1264,23 +1278,24 @@ table.darkTable.birdDopplerTable td {
   padding: 1px 6px;
 }
 
-/* Its colors answer the main Settings' yellow on blue: cyan on violet, a night-sky look for the satellites */
-#birdWatchSettingsDiv .settingstab button.settingsTablinks {
+/* BirdWatch's tabs and their content: the main Settings' yellow on blue answered with cyan on violet, a night-sky look for the
+   satellites */
+.settingstab button.settingsTablinks.birdWatchTab {
   border-color: #8a5cf0;
   color: #cfe;
 }
 
-#birdWatchSettingsDiv .settingstab button.settingsTablinks:hover {
+.settingstab button.settingsTablinks.birdWatchTab:hover {
   background: #1d0f45;
 }
 
-#birdWatchSettingsDiv .settingstab button.settingsTablinks.active {
+.settingstab button.settingsTablinks.birdWatchTab.active {
   background: linear-gradient(#6a3fd0, #3a1a80);
   color: #5ff;
   text-shadow: 0 1px 2px #000;
 }
 
-#birdWatchSettingsDiv .settingsTabcontent {
+.settingsTabcontent.birdWatchSettingsTabcontent {
   border-color: #8a5cf0;
   background: linear-gradient(#150a38, #000 70%);
   color: #cfe;
@@ -2083,6 +2098,44 @@ button:focus {
   padding-left: 18px;
 }
 
+/* Rig Control's VFO-A (Downlink) and VFO-B (Uplink): a box each, tabbed in a little under Rig Control, its title like a group's with
+   its Connect to the right of it */
+.mapGroup .rigVfoBox {
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 2px 6px 3px 6px;
+  margin: 3px 0 3px 6px;
+}
+
+/* The title's text, the box and its label centered on one line */
+.mapGroup .rigVfoConnect {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 14px;
+  color: #fff;
+}
+
+.mapGroup .rigVfoConnect input[type="checkbox"] {
+  position: static;
+  top: 0;
+  margin: 0;
+}
+
+.mapGroup .rigVfoTitle {
+  display: flex;
+  align-items: center;
+  color: cyan;
+  font-weight: bold;
+  text-align: left;
+  border-bottom: 1px solid #444;
+  margin-bottom: 2px;
+}
+
+.mapGroup .rigVfoBox td.mapRowLabel.mapIndent {
+  padding-left: 0;
+}
+
 /* Rig Control's second rig (VFO-B on a rig of its own): its rows under the VFO-B choice, a line down their left */
 .mapGroup table.rigSecondTable {
   border-left: 2px solid #555;
@@ -2331,6 +2384,12 @@ button:focus {
 .mapGroup .mapInlineButton {
   display: inline-block;
   text-align: center;
+}
+
+/* Rig Control's settings while connected (rig.js, rigLockField): greyed, and clicks go nowhere */
+.rigLocked {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .mapGroup .mapInline {

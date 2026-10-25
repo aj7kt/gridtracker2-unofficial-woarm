@@ -61,8 +61,8 @@ function birdWatchSatDescription(norad, tle, info)
   return lines.join("\n");
 }
 
-// Left click on a satellite on the map: select it, or clear the selection when it already is
-function birdWatchSelect(norad)
+// Left click on a satellite on the map: select it, or clear the selection when it already is. auto: Auto-Track's pick (Sticky Mode then)
+function birdWatchSelect(norad, auto = false)
 {
   const T = GT.birdWatchTrack;
   norad = norad == T.selected ? null : Number(norad);
@@ -78,8 +78,8 @@ function birdWatchSelect(norad)
   birdWatchPredictApply();
   if (norad) birdWatchPanelFill(norad);
   else birdWatchSetSat(null);
-  // The rig follows the transmitter last followed on the new satellite, or (Sticky Mode) the previous satellite's mode
-  if (norad) birdWatchStickyFollow(norad, previous);
+  // The rig follows the transmitter last followed on the new satellite, or (Sticky Mode, Auto-Track's pick only) the previous satellite's mode
+  if (norad) birdWatchStickyFollow(norad, previous, auto);
 }
 
 // The ground circle a satellite can be seen from (its footprint, or radio horizon): where it is at least at the horizon,

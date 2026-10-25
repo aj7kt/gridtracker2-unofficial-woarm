@@ -97,6 +97,12 @@ function birdWatchRigMode(t)
   return null;
 }
 
+// The rig's mode for a transmitter's uplink (its own mode, else the downlink's); null for none or no uplink
+function birdWatchRigUpMode(t)
+{
+  return t.uplink_low > 0 ? birdWatchRigMode({ mode: t.uplink_mode || t.mode }) : null;
+}
+
 // What to tune the rig to for a transmitter, where the satellite is now: the middle of a range, shifted (the uplink the other way)
 function birdWatchTransmitterTuning(t, factor)
 {
@@ -155,9 +161,13 @@ function birdWatchTransmitterTableHtml(norad)
     }
     const about = [t.description, t.type, t.service, t.invert ? "inverting" : ""].filter(Boolean).join("  ·  ");
     const tuning = birdWatchTransmitterTuning(t, factor === null ? 1 : factor);
+    // The uplink's mode where it isn't the downlink's
+    const upMode = t.uplink_low > 0 && t.uplink_mode && t.uplink_mode != t.mode ? t.uplink_mode : null;
     rows += "<tr data-tx='" + index + "'" + (birdWatchAmateurTransmitter(t) ? "" : " style='opacity:0.6'") + ">" +
       "<td style='color:yellow' title='" + htmlEntities(about) + "'" + partAttrs("name") + ">" + htmlEntities(t.description) + "</td>" +
-      cell(htmlEntities(t.mode + (t.baud > 0 ? " " + t.baud : "")), "lightgreen", false, null, birdWatchRigMode(t) ? "mode" : null) +
+      // The downlink's mode, and the uplink's after it where it differs (an inverting transponder: USB / LSB)
+      cell(htmlEntities(t.mode + (upMode ? " / " + upMode : "") + (t.baud > 0 ? " " + t.baud : "")), "lightgreen", false,
+        upMode ? htmlEntities(I18N("birdWatch.doppler.modes.hover").replace("{down}", t.mode).replace("{up}", upMode)).replace(/'/g, "&#39;") : null, birdWatchRigMode(t) || birdWatchRigUpMode(t) ? "mode" : null) +
       cell(tuned(tuning.rx, t.downlink_low, t.downlink_high), "cyan", true, original(t.downlink_low, t.downlink_high), t.downlink_low > 0 ? "rx" : null) +
       // The satellite hears the uplink shifted too, so it is sent that much the other way
       cell(tuned(tuning.tx, t.uplink_low, t.uplink_high), "orange", true, original(t.uplink_low, t.uplink_high), t.uplink_low > 0 ? "tx" : null) +
@@ -294,7 +304,7 @@ function birdWatchDopplerClick(index, part)
   if (!t || !T || !T.selected || GT.rig.status != "connected") return;
   const canTx = rigTuneCanTx() && t.uplink_low > 0;
   let D = GT.rigDoppler && GT.rigDoppler.norad == T.selected && GT.rigDoppler.uuid == t.uuid ? GT.rigDoppler : null;
-  const hasMode = !!birdWatchRigMode(t);
+  const hasMode = !!(birdWatchRigMode(t) || birdWatchRigUpMode(t));
   let setMode = false;
   if (part == "name")
   {
@@ -324,7 +334,7 @@ function birdWatchDopplerClick(index, part)
     birdWatchStickyRemember(GT.rigDoppler);
     GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
     // The mode is set once (it doesn't move with the satellite); RX and TX are followed
-    birdWatchDopplerFollow(setMode ? birdWatchRigMode(t) : null);
+    birdWatchDopplerFollow(setMode);
     if (setTone) rigTune({ tone: birdWatchTransmitterTone(t) || 0 });
   }
   birdWatchTransmitterWindowUpdate();
@@ -332,8 +342,9 @@ function birdWatchDopplerClick(index, part)
 
 // ---- A satellite selected (by the user or by Auto-Track), the rig follows one of its transmitters, as a click on its name would. Always:
 // the one last followed on this satellite, when there is one (settings.Birdwatch.stickyLast keeps it, whichever way it was picked).
-// With Sticky Mode (BirdWatch settings, General) the previous satellite's mode comes first: the first transmitter in the mode of the one
-// followed before (one with an uplink, when that had one); then the one last followed on this satellite; then the first in the table
+// With Sticky Mode (BirdWatch settings, General) and the satellite Auto-Track's pick, the previous satellite's mode comes first (a click
+// in the transmitters window always sets what was clicked): the first transmitter in the mode of the one
+// followed before (one with an uplink, when that had one, in its uplink's mode first); then the one last followed on this satellite; then the first in the table
 
 function birdWatchStickyRemember(D)
 {
@@ -356,22 +367,23 @@ function birdWatchStickyPick(norad, previous, sticky = GT.settings.Birdwatch.sti
   {
     const mode = String(previous.mode || "").toUpperCase();
     const same = list.filter((t) => String(t.mode || "").toUpperCase() == mode);
-    const pick = (previous.uplink_low > 0 && same.find((t) => t.uplink_low > 0)) || same[0];
+    const upMode = (t) => String(t.uplink_mode || t.mode || "").toUpperCase();
+    const pick = (previous.uplink_low > 0 && (same.find((t) => t.uplink_low > 0 && upMode(t) == upMode(previous)) || same.find((t) => t.uplink_low > 0))) || same[0];
     if (pick) return pick;
   }
   const last = GT.settings.Birdwatch.stickyLast[norad];
   return list.find((t) => t.uuid == last) || (sticky ? list[0] : null);
 }
 
-function birdWatchStickyFollow(norad, previous)
+function birdWatchStickyFollow(norad, previous, auto = false)
 {
   if (GT.rig.status != "connected") return;
-  const t = birdWatchStickyPick(norad, previous);
+  const t = birdWatchStickyPick(norad, previous, auto && GT.settings.Birdwatch.sticky);
   if (!t) return;
   const canTx = rigTuneCanTx() && t.uplink_low > 0;
-  const mode = birdWatchRigMode(t);
-  // The mode and the tone go with the first frequencies sent (the satellite's place may only come at the next tick)
-  const D = { norad: norad, uuid: t.uuid, rx: t.downlink_low > 0, tx: canTx, mode: !!mode, sentRx: null, sentTx: null, pendingMode: mode, pendingTone: canTx ? birdWatchTransmitterTone(t) || 0 : undefined };
+  const mode = !!(birdWatchRigMode(t) || birdWatchRigUpMode(t));
+  // The modes and the tone go with the first frequencies sent (the satellite's place may only come at the next tick)
+  const D = { norad: norad, uuid: t.uuid, rx: t.downlink_low > 0, tx: canTx, mode: mode, sentRx: null, sentTx: null, pendingMode: mode, pendingTone: canTx ? birdWatchTransmitterTone(t) || 0 : undefined };
   if (!(D.rx || D.tx || D.mode)) return;
   GT.rigDoppler = D;
   birdWatchStickyRemember(D);
@@ -387,9 +399,9 @@ function birdWatchDopplerStopFollow()
   birdWatchTransmitterWindowUpdate();
 }
 
-// The rig set to the followed transmitter's sides, where the satellite is now: sent when a side moved 5 Hz or more (a mode only with it;
-// a second rig for VFO-B gets the uplink's mode, rigTune's txMode)
-function birdWatchDopplerFollow(mode = null)
+// The rig set to the followed transmitter's sides, where the satellite is now: sent when a side moved 5 Hz or more. setModes: the
+// downlink's mode and the uplink's (VFO-B's, rigTune's txMode) set too, each one the rig has a name for
+function birdWatchDopplerFollow(setModes = false)
 {
   const D = GT.rigDoppler;
   const T = GT.birdWatchTrack;
@@ -398,12 +410,11 @@ function birdWatchDopplerFollow(mode = null)
   const t = birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid);
   if (!sat || sat.error || !t) return;
   const tuning = birdWatchTransmitterTuning(t, sat.doppler);
-  // A mode still to be set (Sticky Mode's) goes with these frequencies
-  mode = mode || D.pendingMode || null;
-  const spec = { mode: mode, txMode: mode && t.uplink_low > 0 ? birdWatchRigMode({ mode: t.uplink_mode || t.mode }) : null };
+  // Modes still to be set (Sticky Mode's) go with these frequencies
+  const spec = setModes || D.pendingMode ? { mode: birdWatchRigMode(t), txMode: birdWatchRigUpMode(t) } : {};
   if (D.rx && tuning.rx && (D.sentRx === null || D.sentRx === undefined || Math.abs(tuning.rx - D.sentRx) >= 5)) spec.rx = tuning.rx;
   if (D.tx && tuning.tx && rigTuneCanTx() && (D.sentTx === null || D.sentTx === undefined || Math.abs(tuning.tx - D.sentTx) >= 5)) spec.tx = tuning.tx;
-  if (!spec.rx && !spec.tx && !spec.mode) return;
+  if (!spec.rx && !spec.tx && !spec.mode && !spec.txMode) return;
   if (rigTune(spec))
   {
     if (spec.rx) D.sentRx = spec.rx;

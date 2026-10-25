@@ -80,7 +80,7 @@ function rigRangesOf(R)
 
 // What Scan By Rig goes by: receiving on VFO-A's rig, transmitting on the uplink's (VFO-B: the same rig, a second one, or none), as the
 // satellite's frequencies (each VFO's converter offset taken off the rig's ranges): { rx, tx, model, canTx }, canTx false when no uplink
-// can be tuned (VFO-B is None; the rig has no second VFO; the second rig isn't connected, or its ranges aren't known); null while VFO-A's
+// can be tuned (VFO-B is None, or its Connect unchecked; the rig has no second VFO; the second rig isn't connected, or its ranges aren't known); null while VFO-A's
 // rig isn't connected or its ranges aren't known
 function rigRanges()
 {
@@ -88,7 +88,7 @@ function rigRanges()
   if (!a) return null;
   const shift = (list, vfo) => list.map(([low, high]) => [low - rigOffset(vfo), high - rigOffset(vfo)]);
   const choice = rigVfoBChoice();
-  if (choice == "none") return { rx: shift(a.rx, "a"), tx: [], model: a.model, canTx: false };
+  if (choice == "none" || !rigUplinkOn()) return { rx: shift(a.rx, "a"), tx: [], model: a.model, canTx: false };
   if (choice == "same") return { rx: shift(a.rx, "a"), tx: shift(a.tx, "b"), model: a.model, canTx: GT.rig.dual !== false };
   const b = rigRangesOf(GT.rigB);
   return { rx: shift(a.rx, "a"), tx: b ? shift(b.tx, "b") : [], model: a.model + " + " + ((b && b.model) || rigModelName(GT.rigB) || "?"), canTx: !!b };

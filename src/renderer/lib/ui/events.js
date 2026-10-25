@@ -209,7 +209,6 @@ function eventsDraw(list, force)
 function eventViewerShowMain()
 {
   rootSettingsDiv.style.display = "none";
-  closeBirdWatchSettings();
   helpDiv.style.display = "none";
   GT.helpShow = false;
   eventViewerDiv.style.display = "inline-flex";

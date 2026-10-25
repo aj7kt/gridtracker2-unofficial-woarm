@@ -6,7 +6,6 @@
 
 function showSettingsBox()
 {
-  closeBirdWatchSettings();
   closeEventViewer();
   if (rootSettingsDiv.style.display == "inline-flex")
   {
@@ -19,6 +18,8 @@ function showSettingsBox()
     rootSettingsDiv.style.display = "inline-flex";
     // Reopened on the About tab: its animation (aboutFx.js) starts again
     if (aboutDiv.style.display != "none") startAboutFx();
+    // Reopened on one of BirdWatch's tabs: its values filled in again
+    if (document.querySelector(".settingstab .birdWatchTab.active")) birdWatchSettingsTabShown();
   }
 }
 
@@ -79,7 +80,6 @@ function openInfoTab(evt, tabName, callFunc, callObj)
 
 function openAboutBox()
 {
-  closeBirdWatchSettings();
   closeEventViewer();
   openSettingsTab(aboutbut, 'aboutDiv');
   helpDiv.style.display = "none";
@@ -89,7 +89,6 @@ function openAboutBox()
 
 function openLogbookSettings()
 {
-  closeBirdWatchSettings();
   closeEventViewer();
   openSettingsTab(logbut, 'logbookSettingsDiv');
   helpDiv.style.display = "none";
@@ -100,7 +99,6 @@ function openLogbookSettings()
 // rosterName: which roster's Audio Alerts to show ("call" / "feed"), from the roster window's 🔔
 function openAudioAlertSettings(rosterName = null)
 {
-  closeBirdWatchSettings();
   closeEventViewer();
   if (rosterName) showAudioAlertsRoster(rosterName);
   openSettingsTab(audioalertbut, 'audioAlertsDiv');
@@ -113,7 +111,6 @@ function openAudioAlertSettings(rosterName = null)
 // From the roster window's Settings -> Colors: clicking the Band or Mode swatch
 function openColorSettings()
 {
-  closeBirdWatchSettings();
   closeEventViewer();
   openSettingsTab(colorsSettingsButton, 'bandColorsSettingsDiv');
   helpDiv.style.display = "none";
@@ -148,6 +145,8 @@ function openSettingsTab(evt, tabName)
   else evt.className += " active";
   // About: its animation (aboutFx.js); it stops itself when another tab shows
   if (tabName == "aboutDiv") startAboutFx();
+  // One of BirdWatch's tabs: its values filled in
+  if (/^birdWatch/.test(tabName)) birdWatchSettingsTabShown();
 }
 
 function initSettingsTabs()

@@ -80,15 +80,22 @@ function rigSecondUsed()
   return GT.settings.rig.enable && rigVfoBChoice() == "second";
 }
 
-// Whether a rig is to be connected: VFO-A's while Rig Control is on, the second one while VFO-B is on it
-function rigWanted(R)
+// VFO-B's Connect: unchecked, no uplink is tuned (and a second rig is let go). Never with VFO-B None, where it can't be checked
+function rigUplinkOn()
 {
-  return R.key == "a" ? GT.settings.rig.enable : rigSecondUsed();
+  return GT.settings.rig.connectB !== false && rigVfoBChoice() != "none";
 }
 
-// The rig the uplink (TX) is tuned on: the second one, or VFO-A's (its second VFO); null with VFO-B None
+// Whether a rig is to be connected: VFO-A's while Rig Control is on, the second one while VFO-B is on it; each with its Connect checked
+function rigWanted(R)
+{
+  return R.key == "a" ? GT.settings.rig.enable && GT.settings.rig.connect !== false : rigSecondUsed() && rigUplinkOn();
+}
+
+// The rig the uplink (TX) is tuned on: the second one, or VFO-A's (its second VFO); null with VFO-B None, or its Connect unchecked
 function rigUplink()
 {
+  if (!rigUplinkOn()) return null;
   const choice = rigVfoBChoice();
   return choice == "second" ? GT.rigB : choice == "same" ? GT.rig : null;
 }
@@ -168,6 +175,8 @@ const RIG_PROTOCOLS = {
     setFreq: (hz) => "+F " + Math.round(hz) + "\n",
     setMode: (mode) => "+M " + mode + " 0\n",
     setTx: (hz) => "+I " + Math.round(hz) + "\n",
+    // The split (TX) VFO's own mode (X): an inverting transponder's uplink is LSB under a USB downlink
+    setTxMode: (mode) => "+X " + mode + " 0\n",
     splitOn: () => "+S 1 VFOB\n",
     // The CTCSS tone in tenths of a hertz (C), and the tone turned on or off (U TONE)
     setTone: (hz) => (hz > 0 ? "+C " + Math.round(hz * 10) + "\n+U TONE 1\n" : "+U TONE 0\n"),
@@ -210,6 +219,7 @@ const RIG_PROTOCOLS = {
     setFreq: (hz) => ["rig.set_vfoA", "<double>" + Math.round(hz) + "</double>"],
     setMode: (mode) => ["rig.set_modeA", "<string>" + mode + "</string>"],
     setTx: (hz) => ["rig.set_vfoB", "<double>" + Math.round(hz) + "</double>"],
+    setTxMode: (mode) => ["rig.set_modeB", "<string>" + mode + "</string>"],
     splitOn: () => ["rig.set_split", "<int>1</int>"]
   },
   civ: {
@@ -224,6 +234,12 @@ const RIG_PROTOCOLS = {
     setFreq: (hz, R) => rigCivFrame(rigCivAddress(R), 0x05, rigCivHzToBcd(hz)),
     setTx: (hz, R) => rigCivFrame(rigCivAddress(R), 0x25, [0x01, ...rigCivHzToBcd(hz)]),
     splitOn: (R) => rigCivFrame(rigCivAddress(R), 0x0f, [0x01]),
+    // 26 01: the unselected (TX) VFO's mode, data mode off, filter 1 (the IC-7300, 7610, 9700, 705 have it; an older Icom answers NG)
+    setTxMode: (mode, R) =>
+    {
+      const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
+      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x26, [0x01, code, 0x00, 0x01]) : null;
+    },
     // 1B 00 sets the repeater tone (00, then the tenths of a hertz as four BCD digits: 67.0 is 00 06 70), 16 42 turns it on (01) or off (00)
     setTone: (hz, R) =>
     {
@@ -424,20 +440,39 @@ function rigSettingsRender()
 {
   const S = GT.settings.rig;
   rigEnable.checked = S.enable;
+  rigConnectValue.checked = S.connect !== false;
   rigVfoB.value = rigVfoBChoice();
-  rigVfoBTr.style.display = S.enable ? "" : "none";
+  // VFO-A's box and VFO-B's (their titles VFO-A (Downlink), VFO-B (Uplink))
+  rigVfoABoxTr.style.display = S.enable ? "" : "none";
+  rigVfoBBoxTr.style.display = S.enable ? "" : "none";
   rigSecondTr.style.display = rigSecondUsed() ? "" : "none";
   rigOffsetATr.style.display = S.enable ? "" : "none";
   rigOffsetBTr.style.display = S.enable && rigVfoBChoice() != "none" ? "" : "none";
   rigOffsetA.value = String(rigOffset("a"));
   rigOffsetB.value = String(rigOffset("b"));
-  rigSettingsRenderOne(GT.rig, S.enable);
-  rigSettingsRenderOne(GT.rigB, rigSecondUsed());
+  // Connected (each box's Connect checked), its settings can't be changed: nothing half set goes live to a rig
+  rigBConnectValue.checked = rigUplinkOn();
+  const locked = S.connect !== false;
+  const lockedB = rigUplinkOn();
+  rigLockField(rigOffsetA, locked);
+  for (const el of [rigVfoB, rigOffsetB]) rigLockField(el, lockedB);
+  // VFO-B None: nothing to connect
+  rigLockField(rigBConnectValue, rigVfoBChoice() == "none");
+  rigSettingsRenderOne(GT.rig, S.enable, locked);
+  rigSettingsRenderOne(GT.rigB, rigSecondUsed(), lockedB);
 }
 
-// One rig's rows: shown (on) or not
-function rigSettingsRenderOne(R, on)
+// A setting's field greyed and left alone (locked), or not
+function rigLockField(el, locked)
 {
+  el.disabled = locked;
+  el.classList.toggle("rigLocked", locked);
+}
+
+// One rig's rows: shown (on) or not, their fields locked or not
+function rigSettingsRenderOne(R, on, locked = false)
+{
+  for (const name of ["Protocol", "Choose", "Baud", "DataBits", "Parity", "StopBits", "CivValue", "Host", "NetPort"]) rigLockField(rigEl(R, name), locked);
   const S = rigSettingsOf(R);
   const protocolSelect = rigEl(R, "Protocol");
   const baudSelect = rigEl(R, "Baud");
@@ -490,10 +525,27 @@ function rigEnableChanged()
   rigConnect(GT.rigB);
 }
 
+// A box's Connect unchecked: its rig let go (VFO-B's: no uplink tuned), its settings free to change; checked: locked, and connected
+// with them (key: "a" VFO-A's box, "b" VFO-B's)
+function rigConnectChanged(key = "a")
+{
+  if (key == "b")
+  {
+    GT.settings.rig.connectB = rigBConnectValue.checked;
+    // The uplink followed is sent again once it is on
+    if (GT.rigDoppler) GT.rigDoppler.sentTx = null;
+  }
+  else GT.settings.rig.connect = rigConnectValue.checked;
+  rigSettingsRender();
+  rigConnect(key == "b" ? GT.rigB : GT.rig);
+}
+
 // VFO-B on the same rig, a second one, or none: the second rig connected, or let go
 function rigVfoBChanged()
 {
   GT.settings.rig.vfoB = ["none", "same", "second"].includes(rigVfoB.value) ? rigVfoB.value : "none";
+  // VFO-B's Connect stays unchecked after a choice (None can't connect; another one goes live only once Connect is checked)
+  GT.settings.rig.connectB = false;
   rigSettingsRender();
   rigConnect(GT.rigB);
 }
@@ -568,7 +620,7 @@ function rigFrequencyText(R)
 {
   if (R.freq === null) return "";
   const one = (dial, vfo) => formatDialFreq(dial - rigOffset(vfo)) + (rigOffset(vfo) ? " LO" : "");
-  const showB = R.key == "a" && rigVfoBChoice() == "same" && R.dual && R.freqB !== null;
+  const showB = R.key == "a" && rigVfoBChoice() == "same" && rigUplinkOn() && R.dual && R.freqB !== null;
   return one(R.freq, R.key == "a" ? "a" : "b") + (showB ? " (" + one(R.freqB, "b") + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "");
 }
 
@@ -598,7 +650,7 @@ function rigLineRender()
   const part = (inner) => "<span style='white-space:nowrap'>" + inner + "</span>";
   let html = "<div style='white-space:normal'>" + part(label("rig.line.rig") + (aUp ? freq(A.freq, "a", "yellow") : orange(rigStatusShort(A))));
   if (second) html += " " + part("(" + (bUp ? freq(B.freq, "b", "#ffd27f") : orange(rigStatusShort(B))) + ")");
-  else if (rigVfoBChoice() == "same" && aUp && A.dual && A.freqB !== null) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + ")");
+  else if (rigVfoBChoice() == "same" && rigUplinkOn() && aUp && A.dual && A.freqB !== null) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + ")");
   html += "</div>";
   if (aUp || bUp)
   {
@@ -1005,8 +1057,9 @@ function rigReceive(R, data)
 
 // The rigs set to what is given of { rx, mode, tx, txMode, tone }, rx and tx the satellite's frequencies (each VFO's offset is added
 // to what is sent: rigOffset): rx (Hz) and mode ("USB", "FM", ...) on VFO-A's rig; tx (Hz) on the
-// uplink: the second rig's VFO A, or VFO-A's rig's second VFO with split on (only a rig that has one: rigTuneCanTx); txMode the second
-// rig's mode (the same rig's TX VFO keeps its own); tone (Hz) the uplink rig's CTCSS tone turned on (0: turned off, if it was turned on
+// uplink: the second rig's VFO A, or VFO-A's rig's second VFO with split on (only a rig that has one: rigTuneCanTx); txMode the uplink's
+// mode: the second rig's, or the same rig's TX VFO's where its protocol can set that (setTxMode: rigctld, flrig, CI-V); tone (Hz) the
+// uplink rig's CTCSS tone turned on (0: turned off, if it was turned on
 // here; only a rig that can: rigTuneCanTone). True when something was sent
 function rigTune(spec)
 {
@@ -1036,7 +1089,17 @@ function rigTune(spec)
       stepsA.push(A.protocol.setTx(txDial, A));
     }
   }
+  // The uplink's mode: the second rig's own, or (the same rig) its TX VFO's where the protocol can set it (rigctld, flrig, CI-V)
   if (bUp && spec.txMode) stepsB.push(B.protocol.setMode(spec.txMode, B));
+  else if (!second && aUp && spec.txMode && rigTuneCanTx() && A.protocol.setTxMode)
+  {
+    if (!A.split)
+    {
+      stepsA.push(A.protocol.splitOn(A));
+      A.split = true;
+    }
+    stepsA.push(A.protocol.setTxMode(spec.txMode, A));
+  }
   if (spec.tone !== undefined && spec.tone !== null && rigTuneCanTone())
   {
     const U = rigUplink();
@@ -1069,9 +1132,10 @@ function rigSend(R, steps)
 }
 
 // Whether the uplink (TX) can be tuned: VFO-B on the second rig and it is connected, or on VFO-A's rig and it has a second VFO that
-// answers; never with VFO-B None
+// answers; never with VFO-B None, or its Connect unchecked
 function rigTuneCanTx()
 {
+  if (!rigUplinkOn()) return false;
   const choice = rigVfoBChoice();
   if (choice == "second") return GT.rigB.status == "connected";
   if (choice == "same") return GT.rig.status == "connected" && GT.rig.dual === true;

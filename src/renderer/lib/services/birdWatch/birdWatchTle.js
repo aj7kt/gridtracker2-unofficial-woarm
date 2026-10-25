@@ -832,9 +832,7 @@ function birdWatchTleEditSatellite(norad)
     W.drafts.push(source);
   }
   W.editing.add(source.id);
-  openBirdWatchSettingsTab(birdWatchTelemetryBut, "birdWatchTelemetryDiv");
-  birdWatchTleRender();
-  birdWatchTabsFit();
+  showBirdWatchSettings("birdWatchTelemetryDiv");
   const form = birdWatchTleTypedList.querySelector("[data-id=\"" + source.id + "\"]");
   if (!form) return;
   form.focusFirst();

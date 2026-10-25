@@ -16,7 +16,9 @@ function changeBirdWatchEnable()
 function updateBirdWatchViews()
 {
   birdWatchEnable.checked = GT.settings.Birdwatch.enable;
-  birdWatchButton.style.display = GT.settings.Birdwatch.enable ? "" : "none";
+  // The Satellite Tracking button, BirdWatch's own buttons after it, and its row of Settings tabs
+  for (const button of [birdWatchButton, birdWatchAutoButton, birdWatchDopplerButton, birdWatchTimelineButton]) button.style.display = GT.settings.Birdwatch.enable ? "" : "none";
+  birdWatchTabRow.style.display = GT.settings.Birdwatch.enable ? "" : "none";
   birdWatchImg.style.filter = GT.settings.Birdwatch.active ? "" : "grayscale(1)";
   birdWatchAutoImg.style.filter = GT.settings.Birdwatch.auto ? "" : "grayscale(1)";
   birdWatchDopplerButtonUpdate();
@@ -102,42 +104,33 @@ function applyBirdWatchLayout()
   }
 }
 
-// The BirdWatch panel's settings button opens the satellite settings window, like the main Settings window: its tabs,
-// the X button and Esc close it. One of the two is open at a time
-function showBirdWatchSettings()
+// BirdWatch's settings are tabs of the main Settings, a row of their own in its colors (BirdWatch, Telemetry, Satellites), there while
+// BirdWatch is on. The main Settings opened on one of them (the BirdWatch tab unless another is named)
+function showBirdWatchSettings(tabName = "birdWatchGeneralDiv")
 {
-  if (birdWatchSettingsDiv.style.display == "inline-flex")
-  {
-    closeBirdWatchSettings();
-    return;
-  }
-  rootSettingsDiv.style.display = "none";
   closeEventViewer();
   helpDiv.style.display = "none";
   GT.helpShow = false;
-  // The tab that was last shown (the main Settings hides every tab's content at startup, so show it again)
-  const tab = birdWatchSettingsDiv.querySelector(".settingsTablinks.active") || birdWatchGeneralBut;
-  openBirdWatchSettingsTab(tab, tab.dataset.tab);
+  rootSettingsDiv.style.display = "inline-flex";
+  openSettingsTab(document.querySelector(".birdWatchTab[data-tab='" + tabName + "']"), tabName);
+}
+
+// From openSettingsTab when one of BirdWatch's tabs is shown (and from showSettingsBox when the Settings open on one): its values
+// filled in, after it is shown, so the lists draw the rows that fit their height
+function birdWatchSettingsTabShown()
+{
   birdWatchTleRender();
   birdWatchColorsRender();
-  birdWatchSettingsDiv.style.display = "inline-flex";
-  // After it is shown: the lists draw the rows that fit their height
   birdWatchSatsRender();
   birdWatchAlertsRender();
+  birdWatchTabsFit();
 }
 
+// BirdWatch switched off: a BirdWatch tab that is showing makes way for General
 function closeBirdWatchSettings()
 {
-  birdWatchSettingsDiv.style.display = "none";
-}
-
-function openBirdWatchSettingsTab(evt, tabName)
-{
-  for (const content of birdWatchSettingsDiv.getElementsByClassName("settingsTabcontent")) content.style.display = "none";
-  for (const link of birdWatchSettingsDiv.getElementsByClassName("settingsTablinks")) link.classList.remove("active");
-  document.getElementById(tabName).style.display = "block";
-  (evt.currentTarget || evt).classList.add("active");
-  birdWatchTabsFit();
+  const active = document.querySelector(".settingstab .birdWatchTab.active");
+  if (active) openSettingsTab(generalbut, "generalSettingsDiv");
 }
 
 // The tracker (birdWatchWorker.js) runs while the BirdWatch panel is in use. It follows the satellites in
@@ -278,58 +271,13 @@ function birdWatchClearControls()
   }
 }
 
-// The BirdWatch panel's buttons are dragged into the order wanted, like the control panel's (buttonPanel.js), and kept in
-// birdWatch.buttonOrder; Reset Button Panel (BirdWatch settings, General) puts them back
+// BirdWatch's buttons are the main button panel's now (buttonPanel.js orders and drags them); the map's controls are kept clear of the
+// panels as they change size
 function birdWatchButtonsInit()
 {
-  const buttons = birdWatchButtonsDiv.querySelectorAll(".iconButton");
-  GT.birdWatchDefaultButtons = [...buttons].map((button) => button.id);
-  for (const button of buttons)
-  {
-    button.draggable = true;
-    button.addEventListener("dragstart", birdWatchButtonDragStart);
-  }
-  birdWatchButtonsDiv.addEventListener("dragover", (event) =>
-  {
-    if (event.dataTransfer.types.includes("birdwatchbutton")) event.preventDefault();
-  });
-  birdWatchButtonsDiv.addEventListener("drop", birdWatchButtonDrop);
   const watcher = new ResizeObserver(birdWatchClearControls);
   watcher.observe(birdWatchDiv);
   watcher.observe(menuDiv);
   watcher.observe(legendDiv);
   window.addEventListener("resize", birdWatchClearControls);
-
-  // The saved order, less any button that is no more and with any new one at the end
-  const order = GT.settings.Birdwatch.buttonOrder.filter((id) => GT.birdWatchDefaultButtons.includes(id));
-  for (const id of GT.birdWatchDefaultButtons) if (!order.includes(id)) order.push(id);
-  birdWatchButtonsSet(order);
-}
-
-function birdWatchButtonsSet(order)
-{
-  const byId = new Map([...birdWatchButtonsDiv.querySelectorAll(".iconButton")].map((button) => [button.id, button]));
-  for (const id of order) birdWatchButtonsDiv.appendChild(byId.get(id));
-  GT.settings.Birdwatch.buttonOrder = [...order];
-}
-
-function birdWatchButtonDragStart(event)
-{
-  event.dataTransfer.setData("BirdWatchButton", event.currentTarget.id);
-  event.dataTransfer.effectAllowed = "move";
-}
-
-function birdWatchButtonDrop(event)
-{
-  const id = event.dataTransfer.getData("BirdWatchButton");
-  if (!id) return;
-  event.stopPropagation();
-  event.preventDefault();
-  const moving = document.getElementById(id);
-  const target = event.target.closest(".iconButton");
-  if (!moving || !target || target == moving) return;
-  const buttons = [...birdWatchButtonsDiv.querySelectorAll(".iconButton")];
-  // Dropped on a button further along it goes after it, dropped on one before it goes before it
-  birdWatchButtonsDiv.insertBefore(moving, buttons.indexOf(moving) < buttons.indexOf(target) ? target.nextElementSibling : target);
-  GT.settings.Birdwatch.buttonOrder = [...birdWatchButtonsDiv.querySelectorAll(".iconButton")].map((button) => button.id);
 }

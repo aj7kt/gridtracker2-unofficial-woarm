@@ -1018,6 +1018,19 @@
   <path d="M50 352 C55 339.3 71.2 271.3 80 276 C88.8 280.7 93 380.3 103 380 C113 379.7 128.5 273 140 274 C151.5 275 160 386 172 386 C184 386 196.3 273.7 212 274 C227.7 274.3 247.7 388.3 266 388 C284.3 387.7 302.3 272 322 272 C341.7 272 361.3 387 384 388 C406.7 389 445.7 296.3 458 278" fill="none" stroke="#ffe600" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
 
+<!-- sat-timeline.png (512x512, the Upcoming Passes button: three passes rising over the horizon, low, high and middling, the satellite at the top of the high one, the hours under it; on the dark blue disc of sat-auto.png) -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="250" fill="#0a1a4a" stroke="#c9c9c9" stroke-width="10" />
+  <path d="M70 290 Q118 222 166 290" fill="none" stroke="#ffe600" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M186 290 Q256 64 326 290" fill="none" stroke="#ffe600" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M346 290 Q394 174 442 290" fill="none" stroke="#ffe600" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="170" r="24" fill="#e0392d" stroke="#0f141a" stroke-width="8" />
+  <line x1="52" y1="300" x2="460" y2="300" stroke="#d9dee5" stroke-width="16" stroke-linecap="round" />
+  <line x1="118" y1="320" x2="118" y2="364" stroke="#00d4db" stroke-width="14" stroke-linecap="round" />
+  <line x1="256" y1="320" x2="256" y2="364" stroke="#00d4db" stroke-width="14" stroke-linecap="round" />
+  <line x1="394" y1="320" x2="394" y2="364" stroke="#00d4db" stroke-width="14" stroke-linecap="round" />
+</svg>
+
 <!-- sat-settings.png (512x512, the BirdWatch button panel's settings button: the settings gears, the big one primary orange and the small one secondary green) -->
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- The big gear, orange -->

@@ -9,7 +9,6 @@ function onMyKeyDown(event)
   if (event.keyCode == 27)
   {
     rootSettingsDiv.style.display = "none";
-    birdWatchSettingsDiv.style.display = "none";
     closeEventViewer();
     birdWatchTimelineClose();
     helpDiv.style.display = "none";
@@ -30,7 +29,7 @@ function onMyKeyDown(event)
     }
   }
 
-  if (rootSettingsDiv.style.display == "none" && birdWatchSettingsDiv.style.display == "none")
+  if (rootSettingsDiv.style.display == "none")
   {
     if (event.code in GT.hotKeys)
     {

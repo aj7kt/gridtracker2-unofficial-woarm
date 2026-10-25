@@ -151,6 +151,13 @@ function rotorSettingsRender()
 {
   const S = GT.settings.rotor;
   rotorEnable.checked = S.enable;
+  rotorConnectValue.checked = S.connect !== false;
+  // Connected (Connect checked), the settings can't be changed: nothing half set goes live to the controller (.rigLocked: greyed)
+  for (const el of [rotorProtocol, rotorChoose, rotorBaud, rotorDataBits, rotorParity, rotorStopBits, rotorHost, rotorNetPort])
+  {
+    el.disabled = S.connect !== false;
+    el.classList.toggle("rigLocked", S.connect !== false);
+  }
   if (!rotorProtocol.options.length)
   {
     for (const [key, protocol] of Object.entries(ROTOR_PROTOCOLS))
@@ -182,7 +189,7 @@ function rotorSettingsRender()
   rotorPortName.textContent = S.port ? serialPortShortName(S.port) : I18N("settings.rotor.none.label");
   rotorPortName.title = S.port ? S.port.displayName || "" : "";
   const serial = rotorProtocolChosen().serial;
-  const rows = { rotorProtocolTr: S.enable, rotorPortTr: S.enable && serial, rotorBaudTr: S.enable && serial, rotorHostTr: S.enable && !serial, rotorFollowTr: S.enable, rotorStatusTr: S.enable };
+  const rows = { rotorConnectTr: S.enable, rotorProtocolTr: S.enable, rotorPortTr: S.enable && serial, rotorBaudTr: S.enable && serial, rotorHostTr: S.enable && !serial, rotorFollowTr: S.enable, rotorStatusTr: S.enable };
   for (const [id, on] of Object.entries(rows)) document.getElementById(id).style.display = on ? "" : "none";
   // Linux: a user who isn't in the group that owns the serial devices can't open them; said under the port, with the fix
   serialLinuxRender(rotorLinuxTr, rotorLinuxText, S.port, S.enable && serial);
@@ -197,6 +204,14 @@ function rotorEnableChanged()
   GT.settings.rotor.enable = rotorEnable.checked;
   rotorSettingsRender();
   rotorAimingChanged();
+  rotorConnect();
+}
+
+// Connect unchecked: the rotator let go, its settings free to change; checked: locked, and connected with them
+function rotorConnectChanged()
+{
+  GT.settings.rotor.connect = rotorConnectValue.checked;
+  rotorSettingsRender();
   rotorConnect();
 }
 
@@ -233,12 +248,12 @@ function rotorAimingChanged()
   if (GT.callRosterWindowInitialized) GT.callRosterWindowHandle.window.setPstrotatorEnable(GT.settings.rotor.enable);
 }
 
-// The Settings window on Features, where Rotor Control is (a click on the status in the BirdWatch panel)
+// The Settings window on Features, where Rotor Control and Rig Control are (a click on the rotor's status, or the Rig box, in the
+// BirdWatch panel)
 function rotorOpenSettings()
 {
   const button = document.querySelector(".settingstab button[onclick*='featuresSettingsDiv']");
   if (!button) return;
-  closeBirdWatchSettings();
   closeEventViewer();
   openSettingsTab(button, "featuresSettingsDiv");
   helpDiv.style.display = "none";
@@ -373,7 +388,7 @@ async function rotorConnect()
   const S = GT.settings.rotor;
   R.az = R.el = null;
   R.hasEl = null;
-  if (!S.enable)
+  if (!S.enable || S.connect === false)
   {
     rotorSetStatus("off");
     return;

@@ -28,11 +28,15 @@ function buttonPanelInit()
       }
     }
 
+    // A button that is new to the saved order goes after the one it follows in the page (BirdWatch's after Satellite Tracking),
+    // or at the end when none before it is there
     for (let i = 0; i < GT.defaultButtons.length; i++)
     {
       if (GT.settings.app.buttonPanelOrder.indexOf(GT.defaultButtons[i]) == -1)
       {
-        GT.settings.app.buttonPanelOrder.push(GT.defaultButtons[i]);
+        const after = GT.settings.app.buttonPanelOrder.indexOf(GT.defaultButtons[i - 1]);
+        if (i > 0 && after != -1) GT.settings.app.buttonPanelOrder.splice(after + 1, 0, GT.defaultButtons[i]);
+        else GT.settings.app.buttonPanelOrder.push(GT.defaultButtons[i]);
       }
     }
 

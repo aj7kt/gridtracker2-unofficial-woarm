@@ -124,8 +124,6 @@ const def_settings = {
     },
     // The satellites tracked, by catalog number: ISS, SO-50, AO-91, RS-44, AO-7
     tracked: [25544, 27607, 43017, 44909, 7530],
-    // The BirdWatch panel's buttons, in the order they were dragged to (the ids of its buttons; empty is the order they come in)
-    buttonOrder: [],
     // BirdWatch's element sets (Telemetry tab): AMSAT's daily file, and the user's own, each { id, kind, enabled, ... }: kind
     // "local" (path), "remote" (url, user, pass if the address needs a login, refresh every 24 hours: on by default) or
     // "tle" (a typed one: name, norad, line1, line2, override); with loaded, count and error for the first two
@@ -489,7 +487,7 @@ const def_settings = {
   // Rotor Control (Settings -> Features -> Service, rotor.js): an antenna rotator on a serial port (gs232, easycomm, spid) or through
   // Hamlib's rotctld (host, netPort) or CatRotator / PstRotator (host, udpPort). The serial port chosen is kept by its identity, so it
   // is opened again at each start. follow: the rotator tracks BirdWatch's selected satellite
-  rotor: { enable: false, protocol: "gs232", baud: 9600, dataBits: 8, parity: "none", stopBits: 1, port: null, host: "127.0.0.1", netPort: 4533, udpPort: 12000, follow: true },
+  rotor: { enable: false, protocol: "gs232", baud: 9600, dataBits: 8, parity: "none", stopBits: 1, port: null, host: "127.0.0.1", netPort: 4533, udpPort: 12000, follow: true, connect: true },
   // Rig Control (Settings -> Features -> Service, rig.js): the rig through Hamlib's rigctld (host, netPort), flrig (host, flrigPort) or an
   // Icom over CI-V on a serial port (port, baud...; civAddress in hex only to insist on one: the rig is asked for its own). That rig is
   // VFO-A's, the downlink; VFO-B, the uplink, is none (vfoB "none"), its second VFO ("same") or a second rig ("second", set up in
@@ -498,6 +496,10 @@ const def_settings = {
   rig: {
     enable: false, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "",
     vfoB: "auto",
+    // Connect (VFO-A's box): unchecked, VFO-A's rig is let go while its settings are changed; connectB (VFO-B's box): unchecked, no
+    // uplink is tuned (a second rig is let go) while VFO-B's settings are changed
+    connect: true,
+    connectB: true,
     offsetA: 0,
     offsetB: 0,
     second: { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" }

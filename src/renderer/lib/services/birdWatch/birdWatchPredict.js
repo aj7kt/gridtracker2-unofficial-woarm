@@ -227,7 +227,7 @@ function birdWatchAutoUpdate()
   if (pick && pick != T.autoPick)
   {
     T.autoPick = pick;
-    if (T.selected != pick) birdWatchSelect(pick);
+    if (T.selected != pick) birdWatchSelect(pick, true);
   }
 }
 
