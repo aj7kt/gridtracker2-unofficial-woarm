@@ -8,7 +8,7 @@
 // grants it again at each start, so getPorts() finds it without asking. With a port kept by each service, getPorts() is asked for one
 // service's alone (serialPortGrantOnly), as the browser doesn't say which granted port is which
 
-// The service whose Choose Port is open: { purpose, done(port) }
+// The service whose Choose Port is open: { purpose, done(port), taken: [ports the other services have open] }
 GT.serialPicking = null;
 
 function serialPortsInit()
@@ -42,10 +42,32 @@ function serialPortTell(purpose, port)
   electron.ipcRenderer.send("serialPortWanted", purpose, port ? { portName: port.portName, displayName: port.displayName || "", serialNumber: port.serialNumber || "", deviceInstanceId: port.deviceInstanceId || "" } : null);
 }
 
-// Choose Port (a click: the browser only asks on a user's gesture): done(identity) once one is picked
+// Whether two kept ports (or a list entry) are the same device: by the identity Chromium grants by
+function serialPortSame(a, b)
+{
+  if (!a || !b) return false;
+  if (a.deviceInstanceId && b.deviceInstanceId) return a.deviceInstanceId == b.deviceInstanceId;
+  if (a.serialNumber && b.serialNumber) return a.serialNumber == b.serialNumber;
+  return a.portName == b.portName;
+}
+
+// The ports the services other than this one have open (connected on them): the rotor, VFO-A's rig, VFO-B's second rig
+function serialPortsTaken(purpose)
+{
+  const open = [];
+  if (purpose != "rotor" && GT.rotor.status == "connected" && rotorProtocolChosen().serial) open.push(GT.settings.rotor.port);
+  for (const R of [GT.rig, GT.rigB])
+  {
+    if (purpose != rigPurpose(R) && R.status == "connected" && rigProtocolChosen(R).serial) open.push(rigSettingsOf(R).port);
+  }
+  return open.filter(Boolean);
+}
+
+// Choose Port (a click: the browser only asks on a user's gesture): done(identity) once one is picked; the ports the other services
+// have open are in the menu greyed (disabled)
 function serialPortChoose(purpose, done)
 {
-  GT.serialPicking = { purpose: purpose, done: done };
+  GT.serialPicking = { purpose: purpose, done: done, taken: serialPortsTaken(purpose) };
   navigator.serial.requestPort().catch(() => { /* nothing chosen */ }).finally(() => { GT.serialPicking = null; });
 }
 
@@ -61,6 +83,7 @@ function serialPortPick(list)
     const model = serialPortModel(port);
     menu.append(new MenuItem({
       label: (port.displayName && port.displayName != port.portName ? port.displayName + "  (" + port.portName + ")" : port.portName) + (model ? "  \u2014  " + model : ""),
+      enabled: !(picking && picking.taken.some((taken) => serialPortSame(taken, port))),
       click: () =>
       {
         chosen = true;

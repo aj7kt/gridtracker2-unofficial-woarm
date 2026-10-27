@@ -373,6 +373,8 @@ function changeDistanceUnit()
 
   GT.settings.app.distanceUnit = newUnit;
   GT.scaleLine.setUnits(GT.scaleUnits[newUnit]);
+  // Station Elevation in feet or meters, as the new unit goes
+  renderStationElevation();
   
   // Updating range rings will natively call updateRangeRingsUI()
   drawRangeRings();

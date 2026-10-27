@@ -1288,7 +1288,7 @@
 	"events.source.sota": "SOTA",
 	"events.clear.label": "クリア",
 	"birdWatch.doppler.sticky.label": "モード維持",
-	"birdWatch.doppler.sticky.hover": "Auto-Track が衛星を選択すると、無線機はその送信機の1つに追従します: 前に追従した送信機と同じモードのもの、なければこの衛星で最後に追従したもの、なければ表の最初のもの。ドップラー表でのクリックは常にクリックした内容を設定します",
+	"birdWatch.doppler.sticky.hover": "自動追跡が衛星を選択すると、無線機はまず前に追従していた送信機と同じモードの送信機を追従します。それ以外（および自分で選択した衛星）では、その衛星で最後に追従した送信機、なければ表の最初の送信機を追従します。ドップラー表のクリックは常にクリックしたものを設定します",
 	"birdWatch.doppler.modes.hover": "ダウンリンク {down}、アップリンク {up}",
 	"settings.rig.connect.label": "接続",
 	"settings.rig.connect.hover": "チェックを外すと無線機を切断して設定を変更できます。チェックすると設定はロックされ、その設定で無線機に接続します",
@@ -1351,5 +1351,17 @@
 	"cwViewer.ft8.how.a3.hover": "a3：2周期前にこの周波数で聞こえたQSOの次のメッセージであると仮定して解読しました",
 	"cwViewer.split.hover": "上下にドラッグして、ウォーターフォールまたは解読された行の表示領域を広げます",
 	"cwViewer.ft8.how.a4.hover": "a4：2周期前にこの周波数で聞こえた局の次のメッセージとして、送られうるものの中から解読しました",
-	"cwViewer.ft8.how.c.hover": "c：2周期前に送られた同じメッセージと足し合わせて解読しました（どちらも単独では解読できませんでした）"
+	"cwViewer.ft8.how.c.hover": "c：2周期前に送られた同じメッセージと足し合わせて解読しました（どちらも単独では解読できませんでした）",
+	"birdWatch.event.autoSelected": "自動追跡が {sat} を選択しました",
+	"birdWatch.event.selected": "{sat} を選択しました",
+	"birdWatch.event.deselected": "衛星が選択されていません",
+	"birdWatch.event.following": "無線機が {sat} を追従: {tx}、ダウンリンク {down}、アップリンク {up}",
+	"rig.userOffset.hover": "ドップラー周波数からのあなたの同調のずれ。衛星の移動中も保持されます。別の送信機を追従すると消去されます",
+	"birdWatch.event.farRead": "{vfo} の読み取り値 {read} MHz は送信した {sent} MHz から離れています: 同調とは見なさず、再設定しました",
+	"birdWatch.event.sideStopped": "{vfo} は {sent} MHz に設定しても {read} MHz のままでした: 追従を停止しました",
+	"settings.general.openEventViewerOnError.label": "エラー時にイベントビューアーを開く",
+	"settings.general.openEventViewerOnError.hover": "エラー（ログのアップロード失敗など）が起きると、設定された場所にイベントビューアーを開きます",
+	"birdWatch.event.vfoClash": "VFO-B ({up} MHz) を設定すると VFO-A が動きます: この無線機にはアップリンク用の別の VFO がないため、VFO-B の追従を停止しました",
+	"settings.general.stationElevation.label": "標高",
+	"settings.general.stationElevation.hover": "海抜でのあなたの局の高さ（マイルまたは海里ではフィート、それ以外はメートル）。\nBirdWatch はこれから衛星の位置、ドップラー、出入りの時刻を計算します"
 }

@@ -1289,7 +1289,7 @@
 	"events.source.sota": "SOTA",
 	"events.clear.label": "Leeren",
 	"birdWatch.doppler.sticky.label": "Modus beibehalten",
-	"birdWatch.doppler.sticky.hover": "Wenn Auto-Track einen Satelliten auswählt, folgt das Funkgerät einem seiner Sender: einem in der Betriebsart des zuvor verfolgten Senders, sonst dem zuletzt auf diesem Satelliten verfolgten, sonst dem ersten in der Tabelle. Ein Klick in der Doppler-Tabelle stellt immer das Angeklickte ein",
+	"birdWatch.doppler.sticky.hover": "Wenn Auto-Tracking einen Satelliten auswählt, folgt das Funkgerät zuerst einem Sender in der Betriebsart des zuvor verfolgten. Sonst (und bei einem von Ihnen ausgewählten Satelliten) folgt es dem zuletzt auf diesem Satelliten verfolgten, sonst dem ersten in der Tabelle. Ein Klick in der Doppler-Tabelle stellt immer ein, was Sie anklicken",
 	"birdWatch.doppler.modes.hover": "Downlink {down}, Uplink {up}",
 	"settings.rig.connect.label": "Verbinden",
 	"settings.rig.connect.hover": "Deaktivieren, um das Funkgerät zu trennen und seine Einstellungen zu ändern; aktiviert sind sie gesperrt und das Funkgerät ist mit ihnen verbunden",
@@ -1352,5 +1352,17 @@
 	"cwViewer.ft8.how.a3.hover": "a3: dekodiert mit der Annahme, dass es die nächste Nachricht eines QSOs war, das zwei Perioden zuvor auf dieser Frequenz zu hören war",
 	"cwViewer.split.hover": "Nach oben oder unten ziehen, um dem Wasserfall oder den dekodierten Zeilen mehr Platz zu geben",
 	"cwViewer.ft8.how.a4.hover": "a4: dekodiert als nächste Nachricht einer Station, die zwei Perioden zuvor auf dieser Frequenz zu hören war, aus denen, die sie senden konnte",
-	"cwViewer.ft8.how.c.hover": "c: dekodiert, indem sie zu derselben Nachricht von zwei Perioden zuvor addiert wurde; keine der beiden war allein dekodierbar"
+	"cwViewer.ft8.how.c.hover": "c: dekodiert, indem sie zu derselben Nachricht von zwei Perioden zuvor addiert wurde; keine der beiden war allein dekodierbar",
+	"birdWatch.event.autoSelected": "Auto-Tracking hat {sat} ausgewählt",
+	"birdWatch.event.selected": "{sat} ausgewählt",
+	"birdWatch.event.deselected": "Kein Satellit ausgewählt",
+	"birdWatch.event.following": "Rig folgt {sat}: {tx}, Downlink {down}, Uplink {up}",
+	"rig.userOffset.hover": "Ihre Abstimmung neben der Doppler-Frequenz, beibehalten, während sich der Satellit bewegt. Ein anderer verfolgter Sender setzt sie zurück",
+	"birdWatch.event.farRead": "{vfo} las {read} MHz, weit weg von den gesendeten {sent} MHz: nicht als Ihre Abstimmung übernommen, neu gesetzt",
+	"birdWatch.event.sideStopped": "{vfo} blieb auf {read} MHz, als {sent} MHz gesetzt wurde: wird nicht mehr verfolgt",
+	"settings.general.openEventViewerOnError.label": "Ereignisanzeige Bei Fehler Öffnen",
+	"settings.general.openEventViewerOnError.hover": "Ein Fehler (ein fehlgeschlagener Log-Upload, ...) öffnet die Ereignisanzeige dort, wo sie angezeigt werden soll",
+	"birdWatch.event.vfoClash": "VFO-B setzen ({up} MHz) verstellt VFO-A: dieses Funkgerät hat keinen eigenen VFO für den Uplink, VFO-B wird nicht mehr verfolgt",
+	"settings.general.stationElevation.label": "Höhe",
+	"settings.general.stationElevation.hover": "Die Höhe Ihrer Station über dem Meeresspiegel (Fuß bei Meilen oder Seemeilen, sonst Meter).\nBirdWatch berechnet daraus, wo die Satelliten stehen, ihren Doppler und wann sie auf- und untergehen"
 }

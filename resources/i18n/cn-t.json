@@ -1290,7 +1290,7 @@
   "events.source.sota": "SOTA",
   "events.clear.label": "清除",
   "birdWatch.doppler.sticky.label": "保持模式",
-  "birdWatch.doppler.sticky.hover": "當 Auto-Track 選擇衛星時，電台跟隨其一個發射機：與之前跟隨的發射機模式相同的一個，否則為此衛星上次跟隨的一個，否則為表中第一個。在都卜勒表中點擊時始終設定所點擊的內容",
+  "birdWatch.doppler.sticky.hover": "自動追蹤選擇衛星時，電台首先跟蹤與之前所跟蹤發射機相同模式的發射機。否則（以及您自己選擇的衛星），跟蹤該衛星上次跟蹤的發射機，若無則跟蹤表中第一個。在都卜勒表中點擊總是設定您點擊的內容",
   "birdWatch.doppler.modes.hover": "下行 {down}，上行 {up}",
   "settings.rig.connect.label": "連線",
   "settings.rig.connect.hover": "取消勾選可中斷電台並變更其設定；勾選時設定被鎖定，並以這些設定連線電台",
@@ -1353,5 +1353,17 @@
   "cwViewer.ft8.how.a3.hover": "a3：假定為兩個週期前在此頻率上聽到的 QSO 的下一條訊息後解碼",
   "cwViewer.split.hover": "上下拖動，為瀑布圖或已解碼的行留出更多空間",
   "cwViewer.ft8.how.a4.hover": "a4：從可能發送的訊息中，解碼為兩個週期前在此頻率上聽到的電台的下一條訊息",
-  "cwViewer.ft8.how.c.hover": "c：與兩個週期前發送的同一條訊息疊加後解碼（兩者單獨都無法解碼）"
+  "cwViewer.ft8.how.c.hover": "c：與兩個週期前發送的同一條訊息疊加後解碼（兩者單獨都無法解碼）",
+  "birdWatch.event.autoSelected": "自動追蹤已選擇 {sat}",
+  "birdWatch.event.selected": "已選擇 {sat}",
+  "birdWatch.event.deselected": "未選擇衛星",
+  "birdWatch.event.following": "電台跟蹤 {sat}：{tx}，下行 {down}，上行 {up}",
+  "rig.userOffset.hover": "您相對都卜勒頻率的調諧偏移，衛星移動時保持不變。跟蹤其他發射機時清除",
+  "birdWatch.event.farRead": "{vfo} 讀數 {read} MHz，與已傳送的 {sent} MHz 相差太遠：不視為您的調諧，已重新設定",
+  "birdWatch.event.sideStopped": "{vfo} 設定為 {sent} MHz 後仍停留在 {read} MHz：不再跟蹤",
+  "settings.general.openEventViewerOnError.label": "出錯時開啟事件檢視器",
+  "settings.general.openEventViewerOnError.hover": "出現錯誤（日誌上傳失敗等）時，在設定的位置開啟事件檢視器",
+  "birdWatch.event.vfoClash": "設定 VFO-B（{up} MHz）會移動 VFO-A：該電台沒有單獨的上行 VFO，已停止跟蹤 VFO-B",
+  "settings.general.stationElevation.label": "海拔",
+  "settings.general.stationElevation.hover": "您的電台的海拔高度（使用英里或海里時為英尺，否則為公尺）。\nBirdWatch 據此計算衛星的位置、都卜勒以及升起和落下的時間"
 }

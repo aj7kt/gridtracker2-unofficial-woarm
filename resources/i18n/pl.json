@@ -1288,7 +1288,7 @@
   "events.source.sota": "SOTA",
   "events.clear.label": "Wyczyść",
   "birdWatch.doppler.sticky.label": "Tryb trwały",
-  "birdWatch.doppler.sticky.hover": "Gdy Auto-Track wybiera satelitę, radio śledzi jeden z jego nadajników: w emisji poprzednio śledzonego nadajnika, w przeciwnym razie ostatnio śledzony na tym satelicie, a w przeciwnym razie pierwszy w tabeli. Kliknięcie w tabeli Dopplera zawsze ustawia to, co kliknięto",
+  "birdWatch.doppler.sticky.hover": "Gdy automatyczne śledzenie wybiera satelitę, radio najpierw śledzi nadajnik w emisji poprzednio śledzonego. W przeciwnym razie (i dla satelity wybranego przez Ciebie) śledzi ostatnio śledzony na tym satelicie, a jeśli go nie ma, pierwszy w tabeli. Kliknięcie w tabeli Dopplera zawsze ustawia to, co klikniesz",
   "birdWatch.doppler.modes.hover": "Downlink {down}, uplink {up}",
   "settings.rig.connect.label": "Połącz",
   "settings.rig.connect.hover": "Odznacz, aby rozłączyć radio i zmienić jego ustawienia; zaznaczone są zablokowane, a radio jest z nimi połączone",
@@ -1351,5 +1351,17 @@
   "cwViewer.ft8.how.a3.hover": "a3: zdekodowano przy założeniu, że to kolejna wiadomość QSO słyszanego na tej częstotliwości dwa okresy wcześniej",
   "cwViewer.split.hover": "Przeciągnij w górę lub w dół, aby dać więcej miejsca wodospadowi lub zdekodowanym wierszom",
   "cwViewer.ft8.how.a4.hover": "a4: zdekodowano jako kolejną wiadomość stacji słyszanej na tej częstotliwości dwa okresy wcześniej, spośród tych, które mogła wysłać",
-  "cwViewer.ft8.how.c.hover": "c: zdekodowano przez dodanie do tej samej wiadomości wysłanej dwa okresy wcześniej; żadnej nie dało się zdekodować osobno"
+  "cwViewer.ft8.how.c.hover": "c: zdekodowano przez dodanie do tej samej wiadomości wysłanej dwa okresy wcześniej; żadnej nie dało się zdekodować osobno",
+  "birdWatch.event.autoSelected": "Automatyczne śledzenie wybrało {sat}",
+  "birdWatch.event.selected": "Wybrano {sat}",
+  "birdWatch.event.deselected": "Nie wybrano satelity",
+  "birdWatch.event.following": "Radio śledzi {sat}: {tx}, downlink {down}, uplink {up}",
+  "rig.userOffset.hover": "Twoje dostrojenie obok częstotliwości Dopplera, zachowane, gdy satelita się porusza. Śledzenie innego nadajnika je kasuje",
+  "birdWatch.event.farRead": "{vfo} odczytał {read} MHz, daleko od wysłanych {sent} MHz: nie uznano za Twoje dostrojenie, ustawiono ponownie",
+  "birdWatch.event.sideStopped": "{vfo} pozostał na {read} MHz po ustawieniu {sent} MHz: nie jest już śledzony",
+  "settings.general.openEventViewerOnError.label": "Otwórz Podgląd Zdarzeń Przy Błędzie",
+  "settings.general.openEventViewerOnError.hover": "Błąd (nieudane wysłanie logu, ...) otwiera podgląd zdarzeń tam, gdzie ma być wyświetlany",
+  "birdWatch.event.vfoClash": "Ustawienie VFO-B ({up} MHz) przestawia VFO-A: to radio nie ma osobnego VFO dla uplinku, VFO-B nie jest już śledzony",
+  "settings.general.stationElevation.label": "Wysokość",
+  "settings.general.stationElevation.hover": "Wysokość Twojej stacji nad poziomem morza (stopy przy milach lub milach morskich, w przeciwnym razie metry).\nBirdWatch wylicza z niej położenie satelitów, ich Dopplera oraz czas wschodu i zachodu"
 }

@@ -322,7 +322,42 @@ function tryUpdateQTH(grid)
     redrawGrids();
     // RX Spots' paths start at the new QTH (their cached paths start over with the grid)
     redrawSpots();
+    // BirdWatch's satellites seen from the new QTH
+    if (typeof birdWatchObserverSend == "function") birdWatchObserverSend();
   }
+}
+
+// Settings -> General -> Station -> Elevation: kept in meters (settings.app.myElevation), shown in feet with miles or nautical miles
+// (as charts and aviation give heights), in meters with kilometers or degrees. From the Dead Sea to Everest's height
+const STATION_ELEVATION_MIN_M = -500;
+const STATION_ELEVATION_MAX_M = 9000;
+const FEET_PER_METER = 3.28084;
+
+function stationElevationFeet()
+{
+  return GT.settings.app.distanceUnit == "MI" || GT.settings.app.distanceUnit == "NM";
+}
+
+// The field and its unit, as the setting is (and again when Distance Units changes)
+function renderStationElevation()
+{
+  if (typeof stationElevationInput == "undefined") return;
+  const meters = Number(GT.settings.app.myElevation) || 0;
+  stationElevationInput.value = String(Math.round(stationElevationFeet() ? meters * FEET_PER_METER : meters));
+  stationElevationUnit.textContent = stationElevationFeet() ? "ft" : "m";
+  setInputStatus(stationElevationInput, true, null);
+}
+
+function saveStationElevation(input)
+{
+  const text = input.value.trim();
+  const value = /^-?\d+$/.test(text) ? Number(text) : NaN;
+  const meters = stationElevationFeet() ? value / FEET_PER_METER : value;
+  const valid = Number.isFinite(meters) && meters >= STATION_ELEVATION_MIN_M && meters <= STATION_ELEVATION_MAX_M;
+  setInputStatus(input, valid || text.length == 0, null);
+  if (!valid && text.length > 0) return;
+  GT.settings.app.myElevation = text.length == 0 ? 0 : Math.round(meters * 10) / 10;
+  if (typeof birdWatchObserverSend == "function") birdWatchObserverSend();
 }
 
 function setCenterGridsquare()

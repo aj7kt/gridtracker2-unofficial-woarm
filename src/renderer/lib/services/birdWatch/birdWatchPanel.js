@@ -78,6 +78,10 @@ function birdWatchSelect(norad, auto = false)
   birdWatchPredictApply();
   if (norad) birdWatchPanelFill(norad);
   else birdWatchSetSat(null);
+  // In the Event Viewer: which satellite, and whether Auto-Track picked it
+  const tle = norad ? birdWatchTleGet(norad) : null;
+  const name = tle ? tle.name : String(norad);
+  addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(norad ? I18N(auto ? "birdWatch.event.autoSelected" : "birdWatch.event.selected").replace("{sat}", () => name) : I18N("birdWatch.event.deselected")) + "</font>");
   // The rig follows the transmitter last followed on the new satellite, or (Sticky Mode, Auto-Track's pick only) the previous satellite's mode
   if (norad) birdWatchStickyFollow(norad, previous, auto);
 }

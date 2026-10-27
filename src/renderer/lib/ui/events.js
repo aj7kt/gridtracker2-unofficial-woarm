@@ -7,10 +7,12 @@
 // (a panel like Settings; one of those is open at a time) or in a window of their own (gt_events.html), as the button panel's Event
 // Viewer button is set (a right click on it: View In Main / View As Window). A list
 // draws only the rows in view (virtual scrolling, like the Satellites lists), and its columns are as wide as the widest row seen, never
-// narrower (until Clear)
+// narrower (until Clear); the Event column wraps to the list's width, so a row is one line or more (its height reckoned from its text's
+// width, and kept once it has been drawn)
 
 const EVENTS_KEEP_MS = 24 * 3600 * 1000;
 const EVENTS_ROW = 20;
+const EVENTS_LINE = 16;
 const EVENTS_BUFFER = 8;
 
 // Each { time (ms), source (the key of its name, events.source.<source>), text (html, one line) }
@@ -19,8 +21,9 @@ GT.events = [];
 GT.eventsWidths = { time: 0, source: 0, text: 0 };
 
 // An event from a part of the app: source "app", "log", "decode", "wsjtx", "roster", "birdwatch", "rotor" or "sota"; html the text
-// (html coloring allowed; a message's line breaks become spaces, each row is one height)
-function addEvent(source, html)
+// (html coloring allowed; a message's line breaks become spaces). error: an error, which opens the Event Viewer (Settings -> General,
+// Open Event Viewer On Error); by default one said in red, as the app says its errors
+function addEvent(source, html, error = /color:\s*red\b|color=["']red["']/i.test(String(html)))
 {
   const now = Date.now();
   const event = { time: now, source: source, text: String(html).replace(/<br\s*\/?>/gi, " ") };
@@ -28,6 +31,25 @@ function addEvent(source, html)
   eventsPrune(now);
   eventsMeasure(event);
   eventsRedraw(true);
+  if (error && GT.settings.app.openEventViewerOnError) eventViewerOpen();
+}
+
+// The Event Viewer shown where it is set to be (the main window's panel, or its window), if it isn't already
+function eventViewerOpen()
+{
+  try
+  {
+    if (GT.settings.app.eventViewer == "window") eventsWindowOpen(true);
+    else if (typeof eventViewerDiv != "undefined" && eventViewerDiv.style.display != "inline-flex")
+    {
+      eventsWindowOpen(false);
+      eventViewerShowMain();
+    }
+  }
+  catch (e)
+  {
+    // Not set up yet (an error at startup): it is there in the list when the user opens it
+  }
 }
 
 // Nothing older than a day (the list is newest first)
@@ -68,7 +90,9 @@ function eventsMeasure(event, force = false)
   {
     W.time = Math.max(W.time, width(userTimeString(e.time)));
     W.source = Math.max(W.source, width(eventsSourceName(e.source)));
-    W.text = Math.max(W.text, width(eventsPlainText(eventsRowHtml(e))));
+    // Its text's width on one line, for its height where the Event column wraps it
+    e.textWidth = width(eventsPlainText(eventsRowHtml(e)));
+    W.text = Math.max(W.text, e.textWidth);
   }
   for (const list of eventsLists()) eventsApplyWidths(list);
 }
@@ -120,12 +144,12 @@ function eventsRedraw(force)
   for (const list of eventsLists()) eventsDraw(list, force);
 }
 
-// A list's scroll redraws it (once per frame)
+// A list's scroll redraws it (once per frame), and so does its window's resize (the Event column wraps to the new width)
 function eventsHook(list)
 {
   if (list.eventsHooked) return;
   list.eventsHooked = true;
-  list.addEventListener("scroll", () =>
+  const redraw = (force) =>
   {
     const v = list.eventsView;
     if (!v || v.queued) return;
@@ -133,9 +157,33 @@ function eventsHook(list)
     list.ownerDocument.defaultView.requestAnimationFrame(() =>
     {
       v.queued = false;
-      eventsDraw(list, false);
+      eventsDraw(list, force);
     });
-  }, { passive: true });
+  };
+  list.addEventListener("scroll", () => redraw(false), { passive: true });
+  list.ownerDocument.defaultView.addEventListener("resize", () => redraw(true));
+  // A right click on the list moves the viewer between the main window and a window of its own
+  list.addEventListener("contextmenu", (event) =>
+  {
+    event.preventDefault();
+    eventViewerSetMode(GT.settings.app.eventViewer == "window" ? "main" : "window", true);
+  });
+}
+
+// The Event column's width in a list, in px: the rest of the row after the time and source columns, their gaps and the row's padding
+function eventsTextColumnWidth(list)
+{
+  const W = GT.eventsWidths;
+  return Math.max(80, list.clientWidth - 8 - (W.time + 8) - (W.source + 8) - 16);
+}
+
+// A row's height in a list whose Event column is this wide: as drawn there, or reckoned from its text's width until it has been
+function eventsRowHeight(event, textColumn)
+{
+  const drawn = event.heights && event.heights[textColumn];
+  if (drawn) return drawn;
+  const lines = Math.max(1, Math.ceil((event.textWidth || 0) / textColumn));
+  return EVENTS_ROW + (lines - 1) * EVENTS_LINE;
 }
 
 // The rows in view, a spacer standing in for the rest above and below, under a header kept at the top. A hidden list is left for when
@@ -157,8 +205,26 @@ function eventsDraw(list, force)
   }
   const count = GT.events.length;
   const height = list.clientHeight || 300;
-  const shownFirst = Math.max(0, Math.min(count, Math.floor(list.scrollTop / EVENTS_ROW)));
-  const shownLast = Math.min(count, Math.ceil((list.scrollTop + height) / EVENTS_ROW));
+  // Each row's top, and the whole list's height
+  const textColumn = eventsTextColumnWidth(list);
+  const tops = new Array(count + 1);
+  tops[0] = 0;
+  for (let i = 0; i < count; i++) tops[i + 1] = tops[i] + eventsRowHeight(GT.events[i], textColumn);
+  // The first row whose bottom is below the top of the view, and the first whose top is below its bottom (the header's row aside)
+  const rowAt = (y) =>
+  {
+    let low = 0;
+    let high = count;
+    while (low < high)
+    {
+      const mid = (low + high) >> 1;
+      if (tops[mid + 1] <= y) low = mid + 1;
+      else high = mid;
+    }
+    return low;
+  };
+  const shownFirst = rowAt(list.scrollTop);
+  const shownLast = Math.min(count, rowAt(list.scrollTop + height) + 1);
   if (!force && shownFirst >= v.first && shownLast <= v.last) return;
 
   const first = Math.max(0, shownFirst - EVENTS_BUFFER);
@@ -166,10 +232,10 @@ function eventsDraw(list, force)
   v.first = first;
   v.last = last;
   const doc = list.ownerDocument;
-  const spacer = (rows) =>
+  const spacer = (px) =>
   {
     const div = doc.createElement("div");
-    div.style.height = rows * EVENTS_ROW + "px";
+    div.style.height = px + "px";
     return div;
   };
   const row = (cells, head) =>
@@ -194,14 +260,34 @@ function eventsDraw(list, force)
   clear.onclick = () => eventsClear();
   head.lastElementChild.appendChild(clear);
   const nodes = [head];
-  if (first > 0) nodes.push(spacer(first));
+  if (first > 0) nodes.push(spacer(tops[first]));
+  const rows = [];
   for (let i = first; i < last; i++)
   {
     const e = GT.events[i];
-    nodes.push(row([["eventTime", userTimeString(e.time)], ["eventSource", htmlEntities(eventsSourceName(e.source))], ["eventText", eventsRowHtml(e)]], false));
+    const div = row([["eventTime", userTimeString(e.time)], ["eventSource", htmlEntities(eventsSourceName(e.source))], ["eventText", eventsRowHtml(e)]], false);
+    rows.push([e, div]);
+    nodes.push(div);
   }
-  if (last < count) nodes.push(spacer(count - last));
+  if (last < count) nodes.push(spacer(tops[count] - tops[last]));
   list.replaceChildren(...nodes);
+  // The rows drawn, their heights kept (the wrap as it came out); where one differs from what was reckoned, the spacers are put right
+  let changed = false;
+  for (const [e, div] of rows)
+  {
+    const drawn = div.offsetHeight;
+    if (!drawn) continue;
+    if (drawn != eventsRowHeight(e, textColumn)) changed = true;
+    // A few widths kept (the panel's, the window's), not every one a resize went through
+    if (!e.heights || (!(textColumn in e.heights) && Object.keys(e.heights).length >= 4)) e.heights = {};
+    e.heights[textColumn] = drawn;
+  }
+  if (changed && !v.remeasured)
+  {
+    v.remeasured = true;
+    eventsDraw(list, true);
+  }
+  v.remeasured = false;
 }
 
 // ---- The main window's panel: a panel like Settings (one of Settings, BirdWatch's settings, the hot keys and this is open)
@@ -232,6 +318,7 @@ function eventViewerPlace()
     panel.style.position = "relative";
     panel.style.left = panel.style.top = panel.style.maxHeight = "";
     eventsListMain.style.maxHeight = "";
+    eventViewerApplySize();
     return;
   }
   panel.classList.add("eventViewerMoved");
@@ -241,8 +328,31 @@ function eventViewerPlace()
   panel.style.left = x + "px";
   panel.style.top = y + "px";
   panel.style.maxHeight = (window.innerHeight - y - 2) + "px";
-  // Ten rows (style.css), or fewer where the screen ends
-  eventsListMain.style.maxHeight = Math.min(222, window.innerHeight - y - 36) + "px";
+  // Ten rows (style.css), or fewer where the screen ends; a panel the user sized, its list fills it
+  eventsListMain.style.maxHeight = GT.settings.app.eventViewerSize ? "" : Math.min(222, window.innerHeight - y - 36) + "px";
+  eventViewerApplySize();
+}
+
+// The size the user gave the panel (its corner dragged: settings.app.eventViewerSize), kept within the window from where it is; none,
+// it fits its columns and ten rows
+function eventViewerApplySize()
+{
+  const panel = eventViewerDiv;
+  const size = GT.settings.app.eventViewerSize;
+  panel.classList.toggle("eventViewerSized", !!size);
+  if (!size)
+  {
+    GT.eventViewerSetSize = null;
+    panel.style.width = panel.style.height = "";
+    return;
+  }
+  const rect = panel.getBoundingClientRect();
+  const w = Math.round(Math.max(320, Math.min(Number(size.w) || 320, window.innerWidth - rect.left - 2)));
+  const h = Math.round(Math.max(100, Math.min(Number(size.h) || 100, window.innerHeight - rect.top - 2)));
+  // What is set here isn't taken for the user's resize (eventViewerDragInit's observer)
+  GT.eventViewerSetSize = { w, h };
+  panel.style.width = w + "px";
+  panel.style.height = h + "px";
 }
 
 function eventViewerDragInit()
@@ -279,6 +389,19 @@ function eventViewerDragInit()
   };
   bar.addEventListener("pointerup", done);
   bar.addEventListener("pointercancel", done);
+  // The panel's corner dragged (the browser sets its width and height): the size kept, the list filling it and wrapped to it
+  new MutationObserver(() =>
+  {
+    const w = parseInt(eventViewerDiv.style.width);
+    const h = parseInt(eventViewerDiv.style.height);
+    const set = GT.eventViewerSetSize;
+    if (!w || !h || (set && set.w == w && set.h == h)) return;
+    GT.settings.app.eventViewerSize = { w, h };
+    GT.eventViewerSetSize = { w, h };
+    eventViewerDiv.classList.add("eventViewerSized");
+    eventsListMain.style.maxHeight = "";
+    eventsDraw(eventsListMain, true);
+  }).observe(eventViewerDiv, { attributes: true, attributeFilter: ["style"] });
   // A smaller window: the panel kept on screen
   window.addEventListener("resize", () =>
   {
@@ -383,23 +506,26 @@ function eventViewerMenu(event)
       label: I18N(key),
       type: "radio",
       checked: current == mode,
-      click: () =>
-      {
-        if (GT.settings.app.eventViewer == mode) return;
-        GT.settings.app.eventViewer = mode;
-        if (mode == "window")
-        {
-          const wasOpen = eventViewerDiv.style.display == "inline-flex";
-          closeEventViewer();
-          if (wasOpen) eventsWindowOpen(true);
-        }
-        else
-        {
-          eventsWindowOpen(false);
-          eventViewerShowMain();
-        }
-      }
+      click: () => eventViewerSetMode(mode, eventViewerDiv.style.display == "inline-flex")
     }));
   }
   menu.popup();
+}
+
+// Where the viewer shows: "main" (the main window's panel) or "window"; it moves there. shown: the panel was open (to the window: it
+// opens there; to the main window it always opens, from the window or its button's menu)
+function eventViewerSetMode(mode, shown)
+{
+  if (GT.settings.app.eventViewer == mode) return;
+  GT.settings.app.eventViewer = mode;
+  if (mode == "window")
+  {
+    closeEventViewer();
+    if (shown) eventsWindowOpen(true);
+  }
+  else
+  {
+    eventsWindowOpen(false);
+    eventViewerShowMain();
+  }
 }

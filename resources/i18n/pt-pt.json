@@ -1288,7 +1288,7 @@
   "events.source.sota": "SOTA",
   "events.clear.label": "Limpar",
   "birdWatch.doppler.sticky.label": "Modo persistente",
-  "birdWatch.doppler.sticky.hover": "Quando o Auto-Track selecciona um satélite, o rádio segue um dos seus transmissores: um no modo do transmissor seguido antes, senão o último seguido neste satélite, senão o primeiro da tabela. Um clique na tabela Doppler define sempre o que clicar",
+  "birdWatch.doppler.sticky.hover": "Quando o seguimento automático seleciona um satélite, o rádio segue primeiro um transmissor no modo do seguido antes. Caso contrário (e para um satélite que seleciona), segue o último seguido nesse satélite, senão o primeiro da tabela. Um clique na tabela Doppler ajusta sempre o que clica",
   "birdWatch.doppler.modes.hover": "Downlink {down}, uplink {up}",
   "settings.rig.connect.label": "Ligar",
   "settings.rig.connect.hover": "Desmarque para desligar o rádio e alterar as suas definições; marcada, ficam bloqueadas e o rádio é ligado com elas",
@@ -1351,5 +1351,17 @@
   "cwViewer.ft8.how.a3.hover": "a3: descodificado supondo que era a mensagem seguinte de um QSO ouvido nesta frequência dois períodos antes",
   "cwViewer.split.hover": "Arraste para cima ou para baixo para dar mais espaço à cascata ou às linhas descodificadas",
   "cwViewer.ft8.how.a4.hover": "a4: descodificado como a mensagem seguinte de uma estação ouvida nesta frequência dois períodos antes, entre as que podia enviar",
-  "cwViewer.ft8.how.c.hover": "c: descodificado somando-o à mesma mensagem enviada dois períodos antes; nenhuma das duas podia ser descodificada sozinha"
+  "cwViewer.ft8.how.c.hover": "c: descodificado somando-o à mesma mensagem enviada dois períodos antes; nenhuma das duas podia ser descodificada sozinha",
+  "birdWatch.event.autoSelected": "Seguimento automático selecionou {sat}",
+  "birdWatch.event.selected": "{sat} selecionado",
+  "birdWatch.event.deselected": "Nenhum satélite selecionado",
+  "birdWatch.event.following": "O rádio segue {sat}: {tx}, downlink {down}, uplink {up}",
+  "rig.userOffset.hover": "A sua sintonia fora da frequência Doppler, mantida enquanto o satélite se move. Seguir outro transmissor apaga-a",
+  "birdWatch.event.farRead": "{vfo} leu {read} MHz, longe dos {sent} MHz enviados: não considerado como a sua sintonia, ajustado de novo",
+  "birdWatch.event.sideStopped": "{vfo} ficou em {read} MHz ao ajustar {sent} MHz: deixou de ser seguido",
+  "settings.general.openEventViewerOnError.label": "Abrir Visualizador De Eventos Em Caso De Erro",
+  "settings.general.openEventViewerOnError.hover": "Um erro (um envio de log que falhou, ...) abre o visualizador de eventos onde está configurado para aparecer",
+  "birdWatch.event.vfoClash": "Ajustar o VFO-B ({up} MHz) move o VFO-A: este rádio não tem um VFO separado para o uplink, o VFO-B deixou de ser seguido",
+  "settings.general.stationElevation.label": "Altitude",
+  "settings.general.stationElevation.hover": "A altitude da sua estação acima do nível do mar (pés com milhas ou milhas náuticas, caso contrário metros).\nO BirdWatch calcula a partir dela onde estão os satélites, o seu Doppler e quando nascem e se põem"
 }

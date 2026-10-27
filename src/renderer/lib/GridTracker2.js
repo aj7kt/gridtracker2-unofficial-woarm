@@ -63,6 +63,14 @@ function loadAllSettings()
       GT.settings.map.animateFps = Math.max(1, Math.min(30, Math.round(60 / GT.settings.map.animateSpeed)));
     }
     if (GT.settings.map) delete GT.settings.map.animateSpeed;
+    // The traffic list's Decode Traffic Waterfall (map.trafficDecode) became Settings -> General's Open Event Viewer On Error
+    // (app.openEventViewerOnError): its choice carries over
+    if (GT.settings.map && "trafficDecode" in GT.settings.map)
+    {
+      GT.settings.app = GT.settings.app || {};
+      if (!("openEventViewerOnError" in GT.settings.app)) GT.settings.app.openEventViewerOnError = GT.settings.map.trafficDecode !== false;
+      delete GT.settings.map.trafficDecode;
+    }
     GT.settings = deepmerge(def_settings, GT.settings, { arrayMerge: (destinationArray, sourceArray) => sourceArray } );
     for (const key in GT.settings.roster.exceptions)
     {
