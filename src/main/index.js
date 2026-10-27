@@ -362,6 +362,24 @@ ipcMain.on('showWin', (event, what) => {
   }
 });
 
+// A window fitted to its content, in the page's CSS pixels (the zoom applied here): its width, and its height when given (else it keeps
+// the user's), no bigger than fits from where it is to the screen's right and bottom edges (unless it already is); then shown, when asked.
+// Done here, before showing, so it never shows at one size and then another
+ipcMain.on('fitWin', (event, what, width, height, show) => {
+  const win = allowedWindows[what]?.window;
+  if (!win || win.isDestroyed()) return;
+  const zoom = win.webContents.getZoomFactor() || 1;
+  const content = win.getContentBounds();
+  const area = screen.getDisplayMatching(win.getBounds()).workArea;
+  const w = Math.min(Math.ceil(width * zoom), Math.max(area.x + area.width - content.x, content.width));
+  const h = height ? Math.min(Math.ceil(height * zoom), Math.max(area.y + area.height - content.y, content.height)) : content.height;
+  if (Math.abs(w - content.width) > 1 || Math.abs(h - content.height) > 1) win.setContentSize(w, h);
+  if (show) {
+    win.show();
+    allowedWindows[what].options.show = true;
+  }
+});
+
 ipcMain.on('hideWin', (event, what) => {
   if (allowedWindows[what]?.window) {
     allowedWindows[what].window.hide();

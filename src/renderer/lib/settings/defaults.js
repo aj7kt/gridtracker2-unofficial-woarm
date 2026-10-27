@@ -246,7 +246,12 @@ const def_settings = {
     // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own
     eventViewer: "main",
     // Where the user dragged the main window's Event Viewer panel to ({ x, y } in the window), null while it is where it comes up
-    eventViewerPos: null
+    eventViewerPos: null,
+    // The size the user gave the main window's Event Viewer panel ({ w, h } in px, its corner dragged), null while it fits its columns
+    eventViewerSize: null,
+    // Settings -> General: an error (an event in red: a log upload that failed, ...) opens the Event Viewer where it is set to show.
+    // It took over from the traffic list's Decode Traffic Waterfall (map.trafficDecode), whose choice it carries over
+    openEventViewerOnError: true
   },
   appLogs: [],
   map: {

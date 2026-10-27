@@ -2201,8 +2201,24 @@ button:focus {
 }
 
 /* The Event Viewer (ui/events.js): the panel in the main window (#eventViewerDiv, a panel like Settings) and the gt_events window's list.
-   A list draws only the rows in view, each one height (EVENTS_ROW); its columns are as wide as the widest row seen (eventsMeasure sets
-   --evTime, --evSource and --evText), and the list as wide as its columns, or the window where it is narrower */
+   A list draws only the rows in view, one line high or more where the Event column wraps; its columns are as wide as the widest row
+   seen (eventsMeasure sets --evTime, --evSource and --evText), and the list as wide as its columns, or the window where it is narrower */
+
+/* The panel can be resized by its bottom right corner; once it has been, its list fills it (eventViewerSized) and its Event column
+   wraps to it */
+#eventViewerDiv {
+  resize: both;
+  overflow: hidden;
+  min-width: 320px;
+  min-height: 100px;
+}
+
+#eventViewerDiv.eventViewerSized #eventsListMain {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  max-height: none;
+}
 .eventViewerTitle {
   display: inline-block;
   padding: 4px 12px 2px 12px;
@@ -2251,13 +2267,15 @@ button:focus {
   max-height: 222px;
 }
 
+/* A row is one line (20px), or more where its Event wraps (16px a line): events.js reckons the heights the same way */
 .eventRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  height: 20px;
+  min-height: 20px;
+  line-height: 16px;
   box-sizing: border-box;
-  padding: 0 4px;
+  padding: 2px 4px;
   white-space: nowrap;
 }
 
@@ -2290,20 +2308,19 @@ button:focus {
   text-overflow: ellipsis;
 }
 
+/* The Event column takes the rest of the row and wraps to it */
 .eventRow .eventText {
-  flex: none;
-  width: var(--evText, 240px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1 1 var(--evText, 240px);
+  min-width: 80px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* The header's Event cell grows to the row's right edge, so Clear sits at the right of the list */
 .eventHead .eventText {
-  overflow: visible;
   display: flex;
   align-items: center;
-  flex: 1 0 var(--evText, 240px);
-  width: auto;
+  white-space: nowrap;
 }
 
 /* Rig Control's LO badge (rig.js, rigLoBadge): after a frequency that has a converter offset, in its color */

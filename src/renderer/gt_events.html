@@ -36,13 +36,14 @@
         font-family: Sans-Serif;
         font-size: 12px;
       }
-      /* The list fills the window and scrolls both ways */
+      /* The list fills the window, its Event column wrapped to the window's width: it only scrolls up and down */
       #eventsList {
         height: 100%;
         max-width: none;
         width: auto;
         min-width: 100%;
         box-sizing: border-box;
+        overflow-x: hidden;
       }
     </style>
     <script src="./lib/first.js"></script>

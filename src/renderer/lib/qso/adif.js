@@ -625,7 +625,7 @@ function addLogToStartupList(name, path)
   }
   if (ValidatePotentialAdifLogFileAgainstInternal(path) == false)
   {
-    addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + name + "</font>");
+    addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + name + "</font>", true);
     return;
   }
 
@@ -976,7 +976,7 @@ GT.appLogsFileSelector.onchange = function ()
     }
     else
     {
-      addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + this.files[0].name + "</font>");
+      addEvent("log", "<font color='white'>" + I18N("gt.log.errorAdding") + "</font><br/><font color='orange'>" + this.files[0].name + "</font>", true);
       return;
     }
 
@@ -2161,7 +2161,7 @@ function sendLotwLogEntry(report, callsignFile, gridFile)
       {
         if (stderr.indexOf("Final Status: Success") < 0)
         {
-          addEvent("log", "<font style='color:orange'>" + I18N("gt.log.failTo").replace("{0}", "TQSL") + "<br/>" + I18N("gt.log.queuedRetry") + "</font>");
+          addEvent("log", "<font style='color:orange'>" + I18N("gt.log.failTo").replace("{0}", "TQSL") + "<br/>" + I18N("gt.log.queuedRetry") + "</font>", true);
           console.error("TQSL: " + stderr);
         }
         else

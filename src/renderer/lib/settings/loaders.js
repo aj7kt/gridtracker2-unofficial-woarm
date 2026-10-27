@@ -131,6 +131,7 @@ function loadViewSettings()
   setGridsquareColorSettings();
 
   mapRightValue.checked = GT.settings.app.mapRight;
+  openEventViewerOnErrorValue.checked = GT.settings.app.openEventViewerOnError;
 
   updateLayout(false);
 }
@@ -139,6 +140,11 @@ function changeMapRight(checkbox)
 {
   GT.settings.app.mapRight = mapRightValue.checked;
   updateLayout(false);
+}
+
+function changeOpenEventViewerOnError()
+{
+  GT.settings.app.openEventViewerOnError = openEventViewerOnErrorValue.checked;
 }
 
 function loadMsgSettings()

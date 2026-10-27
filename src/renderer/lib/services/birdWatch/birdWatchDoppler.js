@@ -221,9 +221,9 @@ function birdWatchTransmitterWindowOpen(show = true)
   {
     if (show)
     {
-      birdWatchTransmitterWindowUpdate(true, true);
+      // Fitted, then shown (by the main process, in that order)
+      birdWatchTransmitterWindowUpdate(true, true, true);
       GT.birdWatchTxEverShown = true;
-      electron.ipcRenderer.send("showWin", "gt_transmitters");
     }
     else electron.ipcRenderer.send("hideWin", "gt_transmitters");
   }
@@ -244,15 +244,14 @@ function birdWatchTransmitterWindowReady()
   GT.birdWatchTxWindowInitialized = true;
   if (!GT.birdWatchTxShowPending) return;
   GT.birdWatchTxShowPending = false;
-  birdWatchTransmitterWindowUpdate(true, true);
+  birdWatchTransmitterWindowUpdate(true, true, true);
   GT.birdWatchTxEverShown = true;
-  electron.ipcRenderer.send("showWin", "gt_transmitters");
 }
 
 // Each tracker tick (and when a setting of the table changes): the selected satellite's name and its transmitters in the window. Its width
 // follows the table's whenever that changes (another satellite, other transmitters, longer numbers); its height is the user's. Not before it
-// has been shown (it is made hidden at startup), unless it is about to be (showing)
-function birdWatchTransmitterWindowUpdate(fit = false, showing = false)
+// has been shown (it is made hidden at startup), unless it is about to be (showing). show: shown once fitted
+function birdWatchTransmitterWindowUpdate(fit = false, showing = false, show = false)
 {
   const handle = GT.birdWatchTxWindowHandle;
   if (!handle || !GT.birdWatchTxWindowInitialized || !(showing || GT.birdWatchTxEverShown)) return;
@@ -273,19 +272,13 @@ function birdWatchTransmitterWindowUpdate(fit = false, showing = false)
     // smaller and have the table scroll
     const fitHeight = fit || norad != GT.birdWatchTxShown;
     GT.birdWatchTxShown = norad;
+    // The table's size (laid out now, shown or not) with the page's margins and a vertical scroll bar's room; the main process sets the
+    // window's content to it (fitWin: no frame to reckon with here), and shows it after when asked. Asked only when it would change
     const box = doc.getElementById("birdTxWrap").getBoundingClientRect();
+    const width = Math.ceil(box.width) + 28;
+    const height = fitHeight ? Math.ceil(box.height) + 16 : 0;
     const win = handle.window;
-    // The table's width, the page's margins and a vertical scroll bar's room, plus the window's frame. resizeBy, not resizeTo: the
-    // size read from the window can lag behind, and only the change asked for is made. No bigger than fits from where the window is to
-    // the screen's right and bottom edges: a window resized past them is moved back onto the screen, and it only moves when the user moves it
-    const screen = win.screen;
-    const roomWidth = (screen.availLeft || 0) + screen.availWidth - win.screenX;
-    const roomHeight = (screen.availTop || 0) + screen.availHeight - win.screenY;
-    const width = Math.min(Math.ceil(box.width) + 28 + (win.outerWidth - win.innerWidth), Math.max(roomWidth, win.outerWidth));
-    const height = Math.min(Math.ceil(box.height) + 16 + (win.outerHeight - win.innerHeight), Math.max(roomHeight, win.outerHeight));
-    const dw = Math.abs(win.outerWidth - width) > 2 ? width - win.outerWidth : 0;
-    const dh = fitHeight && Math.abs(win.outerHeight - height) > 2 ? height - win.outerHeight : 0;
-    if (dw || dh) win.resizeBy(dw, dh);
+    if (show || Math.abs(win.innerWidth - width) > 2 || (fitHeight && Math.abs(win.innerHeight - height) > 2)) electron.ipcRenderer.send("fitWin", "gt_transmitters", width, height, show);
   }
   catch (e)
   {
@@ -327,12 +320,18 @@ function birdWatchDopplerClick(index, part)
     D = D ? Object.assign(D, { tx: !D.tx }) : { norad: T.selected, uuid: t.uuid, rx: false, tx: true, mode: false };
   }
   else return;
+  // The sides the user wants followed: the name all the transmitter has (one a rig can't take yet is followed once it can), a side's
+  // own click that side as it is now
+  if (D) D.wanted = part == "name" ? { rx: t.downlink_low > 0, tx: t.uplink_low > 0 } : Object.assign(D.wanted || { rx: false, tx: false }, part == "rx" ? { rx: D.rx } : part == "tx" ? { tx: D.tx } : {});
   const setTone = !!D && D.tx && (part == "name" || part == "tx");
   GT.rigDoppler = D && (D.rx || D.tx || D.mode) ? D : null;
   if (GT.rigDoppler)
   {
     birdWatchStickyRemember(GT.rigDoppler);
+    birdWatchFollowEvent(GT.rigDoppler);
+    // Set as clicked: the user's offsets start again
     GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
+    GT.rigDoppler.offset = { rx: 0, tx: 0 };
     // The mode is set once (it doesn't move with the satellite); RX and TX are followed
     birdWatchDopplerFollow(setMode);
     if (setTone) rigTune({ tone: birdWatchTransmitterTone(t) || 0 });
@@ -351,6 +350,20 @@ function birdWatchStickyRemember(D)
   GT.settings.Birdwatch.stickyLast[D.norad] = D.uuid;
 }
 
+// In the Event Viewer: the transmitter the rig follows from now on, and its sides followed (the satellite's own frequencies; "-" for a
+// side not followed). Only when what is followed changes, never for the Doppler steps
+function birdWatchFollowEvent(D)
+{
+  const t = birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid);
+  if (!t) return;
+  const tle = birdWatchTleGet(D.norad);
+  const name = tle ? tle.name : String(D.norad);
+  const side = (on, low, high) => (on && low > 0 ? birdWatchFrequency(low, high, 1) + " MHz" : "-");
+  const text = I18N("birdWatch.event.following").replace("{sat}", () => name).replace("{tx}", () => t.description || "")
+    .replace("{down}", () => side(D.rx, t.downlink_low, t.downlink_high)).replace("{up}", () => side(D.tx, t.uplink_low, t.uplink_high));
+  addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(text) + "</font>");
+}
+
 // The transmitter followed now, or null
 function birdWatchStickyPrevious()
 {
@@ -358,7 +371,7 @@ function birdWatchStickyPrevious()
   return D ? birdWatchTransmitters(D.norad).find((x) => x.uuid == D.uuid) || null : null;
 }
 
-// The transmitter to follow on a satellite, from the ones the Doppler table shows; null for none (Sticky Mode off and none followed here yet)
+// The transmitter to follow on a satellite, from the ones the Doppler table shows; null when it shows none
 function birdWatchStickyPick(norad, previous, sticky = GT.settings.Birdwatch.sticky)
 {
   const list = birdWatchTransmitters(norad).filter((t) => !(GT.settings.Birdwatch.hideNoUplink && !(t.uplink_low > 0)));
@@ -372,21 +385,28 @@ function birdWatchStickyPick(norad, previous, sticky = GT.settings.Birdwatch.sti
     if (pick) return pick;
   }
   const last = GT.settings.Birdwatch.stickyLast[norad];
-  return list.find((t) => t.uuid == last) || (sticky ? list[0] : null);
+  return list.find((t) => t.uuid == last) || list[0];
 }
+
+// The satellite following was last started for (with the rig connected): one selected before the rig was (at startup) is started
+// once it is (birdWatchDopplerUpdate); one the user stopped following stays stopped
+GT.birdWatchFollowTried = null;
 
 function birdWatchStickyFollow(norad, previous, auto = false)
 {
   if (GT.rig.status != "connected") return;
+  GT.birdWatchFollowTried = norad;
   const t = birdWatchStickyPick(norad, previous, auto && GT.settings.Birdwatch.sticky);
   if (!t) return;
   const canTx = rigTuneCanTx() && t.uplink_low > 0;
   const mode = !!(birdWatchRigMode(t) || birdWatchRigUpMode(t));
   // The modes and the tone go with the first frequencies sent (the satellite's place may only come at the next tick)
-  const D = { norad: norad, uuid: t.uuid, rx: t.downlink_low > 0, tx: canTx, mode: mode, sentRx: null, sentTx: null, pendingMode: mode, pendingTone: canTx ? birdWatchTransmitterTone(t) || 0 : undefined };
+  const D = { norad: norad, uuid: t.uuid, rx: t.downlink_low > 0, tx: canTx, mode: mode, sentRx: null, sentTx: null, pendingMode: mode, pendingTone: canTx ? birdWatchTransmitterTone(t) || 0 : undefined,
+    wanted: { rx: t.downlink_low > 0, tx: t.uplink_low > 0 } };
   if (!(D.rx || D.tx || D.mode)) return;
   GT.rigDoppler = D;
   birdWatchStickyRemember(D);
+  birdWatchFollowEvent(D);
   birdWatchDopplerFollow();
   birdWatchTransmitterWindowUpdate();
 }
@@ -399,8 +419,130 @@ function birdWatchDopplerStopFollow()
   birdWatchTransmitterWindowUpdate();
 }
 
-// The rig set to the followed transmitter's sides, where the satellite is now: sent when a side moved 5 Hz or more. setModes: the
-// downlink's mode and the uplink's (VFO-B's, rigTune's txMode) set too, each one the rig has a name for
+// ---- The user's own tuning, kept as the satellite moves: each side (rx VFO-A, tx VFO-B) is read before it is set again. The first read
+// after a setting is what the rig made of it (a tuning step may have rounded it: an FM step of 5 kHz), the baseline; a later read away
+// from it is the user's tuning, added to the Doppler frequency from then on. Within the deadband it is noise; past the limit (or a first
+// read that far from what was sent) it isn't fine tuning (the rig wouldn't take it, another band, the VFOs swapped) and the side is set
+// again as it was. A new transmitter followed (or a click in the transmitters window) starts with no offset
+const BIRD_WATCH_TUNE_DEADBAND_HZ = 25;
+const BIRD_WATCH_TUNE_LIMIT_HZ = 50000;
+// A side set waits for a read that reflects it, but no longer than this (a rig or server whose reads can't be told apart)
+const BIRD_WATCH_READ_WAIT_MS = 3000;
+// Read far from what was sent this many times in a row, and for this long: the side is no longer followed (a rig changing bands has
+// the time it takes)
+const BIRD_WATCH_FAR_STOP = 3;
+const BIRD_WATCH_FAR_STOP_MS = 5000;
+
+// A side's rig and what its dial reads, as the satellite's frequency (less the VFO's converter offset); hz null when it can't be read
+function birdWatchSideRead(side)
+{
+  if (side == "rx") return { R: GT.rig, hz: GT.rig.status == "connected" && GT.rig.freq !== null ? GT.rig.freq - rigOffset("a") : null };
+  const U = rigUplink();
+  if (!U) return null;
+  const dial = U === GT.rigB ? U.freq : U.freqB;
+  return { R: U, hz: U.status == "connected" && dial !== null ? dial - rigOffset("b") : null };
+}
+
+// What to send a side: its Doppler frequency plus the user's offset, the rig read first; null to wait for a read
+function birdWatchSideTarget(D, side, doppler)
+{
+  D.offset = D.offset || { rx: 0, tx: 0 };
+  D.sentSeq = D.sentSeq || {};
+  D.sentAt = D.sentAt || {};
+  D.base = D.base || {};
+  D.farCount = D.farCount || {};
+  const sentKey = side == "rx" ? "sentRx" : "sentTx";
+  const sent = D[sentKey];
+  // Nothing sent yet: set as it is
+  if (sent === null || sent === undefined) return doppler + D.offset[side];
+  const read = birdWatchSideRead(side);
+  // A side that can't be read follows the Doppler frequency as it is
+  if (!read || read.hz === null) return doppler + D.offset[side];
+  const R = read.R;
+  const sentSeq = D.sentSeq[side] || 0;
+  // Not read since it was set: waited for, but not without end (a rig whose reads can't be told apart)
+  if (R.readSeq < sentSeq) return Date.now() - (D.sentAt[side] || 0) < BIRD_WATCH_READ_WAIT_MS ? null : doppler + D.offset[side];
+  const base = D.base[side];
+  if (!base || base.seq < sentSeq)
+  {
+    // The first read since it was set: what the rig made of it, which later reads are measured from. Not set again before the next
+    if (Math.abs(read.hz - sent) > BIRD_WATCH_TUNE_LIMIT_HZ) return birdWatchSideFar(D, side, read, sent);
+    D.farCount[side] = 0;
+    D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount };
+    return null;
+  }
+  // No newer read yet
+  if (R.readCount <= base.count) return null;
+  const moved = read.hz - base.hz;
+  // The rig moved off by itself (another band, the VFOs swapped): not the user's tuning
+  if (Math.abs(moved) > BIRD_WATCH_TUNE_LIMIT_HZ) return birdWatchSideFar(D, side, read, sent);
+  if (Math.abs(moved) > BIRD_WATCH_TUNE_DEADBAND_HZ) D.offset[side] += moved;
+  D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount };
+  return doppler + D.offset[side];
+}
+
+// A side read far from what was sent: set again (said in the Event Viewer); a rig that stays there (it can't tune to the satellite's band)
+// is let be, that side no longer followed. Null: nothing sent this tick
+function birdWatchSideFar(D, side, read, sent)
+{
+  // Both sides on one rig (VFO-B Same as VFO-A), and this one reads what the other was sent: setting VFO-B moves VFO-A (the rig, or
+  // what speaks for it, has no separate VFO for the uplink). Set again they would take turns without end: the second time, the uplink
+  // is no longer followed and the downlink is set again
+  const other = side == "rx" ? "tx" : "rx";
+  const otherSent = D[other == "rx" ? "sentRx" : "sentTx"];
+  const otherRead = birdWatchSideRead(other);
+  const dial = (hz, s) => hz + rigOffset(s == "rx" ? "a" : "b");
+  if (D[other] && otherSent && otherRead && otherRead.R === read.R && Math.abs(dial(read.hz, side) - dial(otherSent, other)) <= BIRD_WATCH_TUNE_LIMIT_HZ)
+  {
+    D.clash = (D.clash || 0) + 1;
+    if (D.clash >= 2)
+    {
+      D.tx = false;
+      D.stoppedOn = D.stoppedOn || {};
+      D.stoppedOn.tx = read.R.key + ":" + read.R.generation;
+      D.sentRx = null;
+      D.base = {};
+      D.farCount = {};
+      const up = side == "tx" ? sent : otherSent;
+      addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(I18N("birdWatch.event.vfoClash").replace("{up}", formatDialFreq(dial(up, "tx")))) + "</font>");
+      birdWatchTransmitterWindowUpdate();
+      return null;
+    }
+  }
+  D.farCount[side] = (D.farCount[side] || 0) + 1;
+  D.farSince = D.farSince || {};
+  if (D.farCount[side] == 1) D.farSince[side] = Date.now();
+  D.base[side] = null;
+  if (D.farCount[side] >= BIRD_WATCH_FAR_STOP && Date.now() - D.farSince[side] >= BIRD_WATCH_FAR_STOP_MS)
+  {
+    D[side] = false;
+    // Followed again once that rig is connected anew (birdWatchRefollow), not on this connection
+    D.stoppedOn = D.stoppedOn || {};
+    D.stoppedOn[side] = read.R.key + ":" + read.R.generation;
+    const text = I18N("birdWatch.event.sideStopped").replace("{vfo}", side == "rx" ? "VFO-A" : "VFO-B").replace("{read}", formatDialFreq(read.hz)).replace("{sent}", formatDialFreq(sent));
+    addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+    birdWatchTransmitterWindowUpdate();
+    return null;
+  }
+  birdWatchFarReadEvent(D, side, read.hz, sent);
+  // Sent again on the next tick, whatever the step
+  D[side == "rx" ? "sentRx" : "sentTx"] = null;
+  return null;
+}
+
+// In the Event Viewer: a side read far from what was sent (not taken as the user's tuning), at most every ten seconds a side
+function birdWatchFarReadEvent(D, side, readHz, sentHz)
+{
+  D.farAt = D.farAt || {};
+  const now = Date.now();
+  if (now - (D.farAt[side] || 0) < 10000) return;
+  D.farAt[side] = now;
+  const text = I18N("birdWatch.event.farRead").replace("{vfo}", side == "rx" ? "VFO-A" : "VFO-B").replace("{read}", formatDialFreq(readHz)).replace("{sent}", formatDialFreq(sentHz));
+  addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+}
+
+// The rig set to the followed transmitter's sides, where the satellite is now, with the user's offsets: sent when a side moved 5 Hz or
+// more. setModes: the downlink's mode and the uplink's (VFO-B's, rigTune's txMode) set too, each one the rig has a name for
 function birdWatchDopplerFollow(setModes = false)
 {
   const D = GT.rigDoppler;
@@ -412,13 +554,31 @@ function birdWatchDopplerFollow(setModes = false)
   const tuning = birdWatchTransmitterTuning(t, sat.doppler);
   // Modes still to be set (Sticky Mode's) go with these frequencies
   const spec = setModes || D.pendingMode ? { mode: birdWatchRigMode(t), txMode: birdWatchRigUpMode(t) } : {};
-  if (D.rx && tuning.rx && (D.sentRx === null || D.sentRx === undefined || Math.abs(tuning.rx - D.sentRx) >= 5)) spec.rx = tuning.rx;
-  if (D.tx && tuning.tx && rigTuneCanTx() && (D.sentTx === null || D.sentTx === undefined || Math.abs(tuning.tx - D.sentTx) >= 5)) spec.tx = tuning.tx;
+  for (const side of ["rx", "tx"])
+  {
+    if (!D[side] || !tuning[side] || (side == "tx" && !rigTuneCanTx())) continue;
+    const target = birdWatchSideTarget(D, side, tuning[side]);
+    const sent = D[side == "rx" ? "sentRx" : "sentTx"];
+    if (target !== null && (sent === null || sent === undefined || Math.abs(target - sent) >= 5)) spec[side] = target;
+  }
   if (!spec.rx && !spec.tx && !spec.mode && !spec.txMode) return;
   if (rigTune(spec))
   {
-    if (spec.rx) D.sentRx = spec.rx;
-    if (spec.tx) D.sentTx = spec.tx;
+    const polled = new Set();
+    for (const side of ["rx", "tx"])
+    {
+      if (!spec[side]) continue;
+      D[side == "rx" ? "sentRx" : "sentTx"] = spec[side];
+      const read = birdWatchSideRead(side);
+      D.sentSeq[side] = read ? read.R.tuneSeq : 0;
+      D.sentAt[side] = Date.now();
+      // Read again now, not at the next poll: what the rig made of it comes back in a moment (the baseline), so the next tick can set it again
+      if (read && !polled.has(read.R))
+      {
+        polled.add(read.R);
+        rigPollSoon(read.R);
+      }
+    }
     D.pendingMode = null;
     if (D.pendingTone !== undefined)
     {
@@ -428,10 +588,41 @@ function birdWatchDopplerFollow(setModes = false)
   }
 }
 
+// A side wanted followed but not (its rig wasn't connected, or it wouldn't tune there: birdWatchSideTarget) is followed again once its
+// rig is connected, and for one that wouldn't, connected anew (another connection, or another rig); its offset starts again and its mode
+// is set with it
+function birdWatchRefollow()
+{
+  const D = GT.rigDoppler;
+  if (!D || !D.wanted) return;
+  let again = false;
+  for (const side of ["rx", "tx"])
+  {
+    if (!D.wanted[side] || D[side]) continue;
+    const R = side == "rx" ? GT.rig : rigUplink();
+    if (!R || R.status != "connected" || (side == "tx" && !rigTuneCanTx())) continue;
+    if (D.stoppedOn && D.stoppedOn[side] == R.key + ":" + R.generation) continue;
+    D[side] = true;
+    if (D.stoppedOn) delete D.stoppedOn[side];
+    if (D.farCount) D.farCount[side] = 0;
+    if (D.offset) D.offset[side] = 0;
+    D[side == "rx" ? "sentRx" : "sentTx"] = null;
+    again = true;
+  }
+  if (!again) return;
+  D.clash = 0;
+  if (D.mode) D.pendingMode = true;
+  birdWatchFollowEvent(D);
+  birdWatchTransmitterWindowUpdate();
+}
+
 // Each tracker tick: the transmitters window follows the satellite (and the hover tooltip, while one is under the mouse), and the rig the
 // transmitter clicked
 function birdWatchDopplerUpdate()
 {
+  const T = GT.birdWatchTrack;
+  if (T && T.selected && !GT.rigDoppler && GT.birdWatchFollowTried != T.selected && GT.rig.status == "connected") birdWatchStickyFollow(T.selected, null);
+  birdWatchRefollow();
   birdWatchDopplerFollow();
   birdWatchTransmitterWindowUpdate();
 }

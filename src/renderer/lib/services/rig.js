@@ -42,7 +42,12 @@ function rigNewState(key)
     queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
     lastSent: null,     // serial: the frame out last (a Kenwood or Yaesu "?;" refuses it)
     catId: null,        // Kenwood, Yaesu: what the rig answered to ID; ("019", "0570")
-    waiting: null       // serial: the timer for the reply to the frame out, after which the next goes anyway
+    waiting: null,      // serial: the timer for the reply to the frame out, after which the next goes anyway
+    tuneSeq: 0,         // how many times settings were sent (rigSend); never reset
+    readSeq: 0,         // the tuneSeq the last whole poll was asked after: what was read reflects the settings up to it
+    readCount: 0,       // how many whole polls have been read (a later read is a higher count); never reset
+    netAnswers: [],     // rigctld: the answers still to come, in order, each { count: its RPRT lines, seq: a poll's tuneSeq, or null }
+    httpChain: Promise.resolve() // flrig: the calls one after another (the polls and the settings), so a poll reads what was set before it
   };
 }
 
@@ -661,13 +666,22 @@ function rigLineRender()
   const freq = (dial, vfo, color) => "<span style='color:" + color + "'>" + formatDialFreq(dial - rigOffset(vfo)) + rigLoBadge(rigOffset(vfo), dial) + "</span>";
   const aUp = A.status == "connected" && A.freq !== null;
   const bUp = B.status == "connected" && B.freq !== null;
+  // The user's tuning away from the Doppler frequency, on a side BirdWatch follows (birdWatchSideTarget): "+120 Hz", "-1.25 kHz"
+  const userOffset = (side) =>
+  {
+    const D = GT.rigDoppler;
+    const hz = D && D[side] && D.offset ? Math.round(D.offset[side] || 0) : 0;
+    if (!hz) return "";
+    const size = Math.abs(hz) < 1000 ? Math.abs(hz) + " Hz" : (Math.abs(hz) / 1000).toFixed(2) + " kHz";
+    return " <span style='color:#aaa' title='" + htmlEntities(I18N("rig.userOffset.hover")).replace(/'/g, "&#39;") + "'>" + (hz > 0 ? "+" : "-") + size + "</span>";
+  };
   // The uplink goes onto a line of its own when both don't fit (GHz frequencies with LO badges); each part kept whole
   const part = (inner) => "<span style='white-space:nowrap'>" + inner + "</span>";
-  let html = "<div style='white-space:normal'>" + part(label("rig.line.rig") + (aUp ? freq(A.freq, "a", "yellow") : orange(rigStatusShort(A))));
+  let html = "<div style='white-space:normal'>" + part(label("rig.line.rig") + (aUp ? freq(A.freq, "a", "yellow") + userOffset("rx") : orange(rigStatusShort(A))));
   // VFO-B on this rig's second VFO: its frequency, and its mode where the rig says it ("-" where it can't: Kenwood, Yaesu CAT)
   const sameB = !second && rigVfoBChoice() == "same" && rigUplinkOn() && aUp && A.dual && A.freqB !== null;
-  if (second) html += " " + part("(" + (bUp ? freq(B.freq, "b", "#ffd27f") : orange(rigStatusShort(B))) + ")");
-  else if (sameB) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + ")");
+  if (second) html += " " + part("(" + (bUp ? freq(B.freq, "b", "#ffd27f") + userOffset("tx") : orange(rigStatusShort(B))) + ")");
+  else if (sameB) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + userOffset("tx") + ")");
   html += "</div>";
   if (aUp || bUp)
   {
@@ -738,6 +752,8 @@ function rigDisconnect(R)
   R.busy = false;
   R.queue = [];
   R.lastSent = null;
+  R.netAnswers = [];
+  R.httpChain = Promise.resolve();
   nodeTimers.clearTimeout(R.waiting);
   R.waiting = null;
   if (writer)
@@ -791,12 +807,23 @@ async function rigConnect(R)
   });
 }
 
-// Lost, or never got there: tried again in a while, as long as the rig is wanted
+// Lost, or rigctld / flrig not there (yet): tried again in a while, as long as the rig is wanted. A serial rig that never got there:
+// its box's Connect unchecked, the error left showing and the settings free to change
 function rigFail(R, message)
 {
+  const retry = R.status == "connected" || !(R.protocol && R.protocol.serial);
   rigDisconnect(R);
   rigSetStatus(R, "error", message);
-  R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
+  if (retry) R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
+  else rigConnectOff(R);
+}
+
+// A serial rig that couldn't be connected: its box's Connect unchecked (VFO-B's for the second rig), its settings unlocked
+function rigConnectOff(R)
+{
+  if (R.key == "b") GT.settings.rig.connectB = false;
+  else GT.settings.rig.connect = false;
+  rigSettingsRender();
 }
 
 async function rigOpenSerial(R, generation)
@@ -812,7 +839,7 @@ async function rigOpenSerial(R, generation)
   if (!port)
   {
     rigSetStatus(R, "notFound", serialPortShortName(S.port));
-    R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
+    rigConnectOff(R);
     return;
   }
   await port.open({ baudRate: Number(S.baud) || 19200, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" });
@@ -920,10 +947,26 @@ function rigHttpCall(R, method, paramsXml = "")
   });
 }
 
+// A poll, after the settings sent before it (in the one chain with them): what it reads reflects them
 async function rigHttpPoll(R, generation)
 {
   if (R.busy) return;
   R.busy = true;
+  const seq = R.tuneSeq;
+  const run = R.httpChain.then(() => rigHttpPollNow(R, generation, seq));
+  R.httpChain = run.catch(() => {});
+  try
+  {
+    await run;
+  }
+  finally
+  {
+    R.busy = false;
+  }
+}
+
+async function rigHttpPollNow(R, generation, seq)
+{
   try
   {
     if (R.model === null)
@@ -951,16 +994,14 @@ async function rigHttpPoll(R, generation)
       R.freqB = freqB;
       R.modeB = modeB;
     }
+    R.readSeq = Math.max(R.readSeq, seq);
     if (R.status != "connected") rigSetStatus(R, "connected");
     else rigStatusRender(R);
+    rigReadWhole(R);
   }
   catch (e)
   {
     if (generation == R.generation) rigFail(R, e.message);
-  }
-  finally
-  {
-    R.busy = false;
   }
 }
 
@@ -974,13 +1015,46 @@ function rigConnected(R)
   R.pollTimer = nodeTimers.setInterval(() => rigPoll(R), RIG_POLL_MS);
 }
 
+// The poll's asks, then (serial) a mark in the queue: once the queue reaches it, they have been answered, and what was read reflects the
+// settings sent before the poll (readSeq)
 function rigPoll(R)
 {
   const asks = R.protocol.poll(R);
-  for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask);
+  const seq = R.tuneSeq;
+  for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask, seq);
+  if (R.writer) rigWrite(R, { readMark: seq });
 }
 
-function rigWrite(R, data)
+// A poll now, besides the regular ones (after a setting: what the rig made of it)
+function rigPollSoon(R)
+{
+  if (R.status != "connected" || !R.protocol) return;
+  if (R.protocol.http) rigHttpPoll(R, R.generation);
+  else rigPoll(R);
+}
+
+// rigctld: one RPRT line ends each command's answer; a poll's last one means it was read whole
+function rigNetAnswered(R)
+{
+  const head = R.netAnswers[0];
+  if (!head) return;
+  if (--head.count > 0) return;
+  R.netAnswers.shift();
+  if (head.seq === null) return;
+  R.readSeq = Math.max(R.readSeq, head.seq);
+  rigReadWhole(R);
+}
+
+// A whole poll read: counted, and BirdWatch's Doppler following is told at once, so what it sets next is decided on a read only moments
+// old (a turn of the rig's knob is less likely to be overwritten)
+function rigReadWhole(R)
+{
+  R.readCount++;
+  if (typeof birdWatchDopplerFollow == "function") birdWatchDopplerFollow();
+}
+
+// pollSeq: a poll's ask, and the settings sent before it (rigctld counts its answers)
+function rigWrite(R, data, pollSeq = null)
 {
   if (!R.link || data === null) return;
   // A serial rig takes one command at a time: queued, sent as the one before is answered (a backlog, when it doesn't answer, is capped)
@@ -990,6 +1064,12 @@ function rigWrite(R, data)
     R.queue.push(data);
     rigDrain(R);
     return;
+  }
+  if (R.protocol === RIG_PROTOCOLS.rigctld)
+  {
+    // Answers that never came (a server that doesn't end each with RPRT) aren't waited for without end
+    if (R.netAnswers.length > 50) R.netAnswers = [];
+    R.netAnswers.push({ count: (String(data).match(/\n/g) || []).length, seq: pollSeq });
   }
   try
   {
@@ -1007,6 +1087,14 @@ function rigDrain(R)
 {
   if (R.waiting || !R.writer || R.queue.length == 0) return;
   const data = R.queue.shift();
+  // A poll's mark (rigPoll): everything before it has been answered
+  if (data.readMark !== undefined)
+  {
+    R.readSeq = Math.max(R.readSeq, data.readMark);
+    rigReadWhole(R);
+    rigDrain(R);
+    return;
+  }
   R.lastSent = data;
   if (R.protocol.beforeSend) R.protocol.beforeSend(data, R);
   const answered = !R.protocol.replies || R.protocol.replies(data);
@@ -1072,6 +1160,7 @@ function rigReceive(R, data)
     if (line.trim() == "") continue;
     const problem = R.protocol.parse(line, R);
     if (problem) R.error = problem;
+    if (R.protocol === RIG_PROTOCOLS.rigctld && /^RPRT\s/.test(line)) rigNetAnswered(R);
     if (R.protocol.split) rigReplied(R);
   }
   rigStatusRender(R);
@@ -1145,11 +1234,13 @@ function rigSend(R, steps)
 {
   const sent = steps.filter((step) => step !== null && step !== undefined);
   if (sent.length == 0) return false;
+  R.tuneSeq++;
   if (R.protocol.http)
   {
-    let chain = Promise.resolve();
+    let chain = R.httpChain;
     for (const [method, params] of sent) chain = chain.then(() => rigHttpCall(R, method, params));
     chain.catch((e) => rigFail(R, e.message));
+    R.httpChain = chain.catch(() => {});
     return true;
   }
   for (const step of sent) rigWrite(R, step);
