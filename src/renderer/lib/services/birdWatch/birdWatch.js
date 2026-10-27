@@ -168,8 +168,26 @@ function birdWatchTrackUpdate()
     T.listening = true;
     birdWatchTleListen(birdWatchTrackSendTles);
   }
-  T.worker.postMessage({ type: "observer", lat: GT.myLat, lon: GT.myLon, alt: 0, minEl: 0 });
+  birdWatchObserverSend();
   birdWatchTrackSendTles();
+}
+
+// The horizon seen from a height (meters above sea level), in degrees: below 0 by the dip, acos(R / (R + h)) (0.3° at 100 m, 1° at
+// 1000 m); 0 at sea level or below
+function birdWatchHorizonEl(meters)
+{
+  return meters > 0 ? -Math.acos(EARTH_RADIUS_KM / (EARTH_RADIUS_KM + meters / 1000)) * 180 / Math.PI : 0;
+}
+
+// The station to the tracker: its place, its height (Settings -> General -> Station -> Elevation) and the horizon from there, which a
+// satellite is up above and rises and sets at. Again whenever one of them changes: the passes worked out from the old ones go
+function birdWatchObserverSend()
+{
+  const T = GT.birdWatchTrack;
+  if (!T || !T.worker) return;
+  const meters = Number(GT.settings.app.myElevation) || 0;
+  T.worker.postMessage({ type: "observer", lat: GT.myLat, lon: GT.myLon, alt: meters, minEl: birdWatchHorizonEl(meters) });
+  T.passes.clear();
 }
 
 // The element sets in use go to the worker; it keeps what it tracks if they are still there

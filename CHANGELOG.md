@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Five new base maps: Topographical by OpenTopoMap, Satellite (no labels), Topographical and Satellite Topo by USGS (best coverage in the US), and Satellite Firefly by Esri
 - New Santa Tracker: a new button in the button panel will appear on Dec 12th that follows Santa and his reindeer around the world, using amateur radio tracking technology
   - Move the mouse over a stop to see its DXCC entity, and state or province
+- The Kp button now grows smoothly under the mouse, like the other buttons in the button panel
 
 ### HTML List
 
@@ -24,5 +25,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Move the mouse over a stop to see its DXCC entity, and state or province</li>
     </ul>
   </li>
+  <li>The Kp button now grows smoothly under the mouse, like the other buttons in the button panel</li>
 </ul>
 ```

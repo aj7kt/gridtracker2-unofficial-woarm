@@ -247,6 +247,9 @@ const def_settings = {
     eventViewer: "main",
     // Where the user dragged the main window's Event Viewer panel to ({ x, y } in the window), null while it is where it comes up
     eventViewerPos: null,
+    // Settings -> General -> Station: the station's height above sea level, in meters (shown in feet with miles or nautical miles);
+    // BirdWatch reckons look angles, Doppler and the horizon (rise and set) from it
+    myElevation: 0,
     // The size the user gave the main window's Event Viewer panel ({ w, h } in px, its corner dragged), null while it fits its columns
     eventViewerSize: null,
     // Settings -> General: an error (an event in red: a log upload that failed, ...) opens the Event Viewer where it is set to show.

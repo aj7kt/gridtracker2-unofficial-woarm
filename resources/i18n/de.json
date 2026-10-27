@@ -1306,5 +1306,7 @@
 	"birdWatch.event.sideStopped": "{vfo} blieb auf {read} MHz, als {sent} MHz gesetzt wurde: wird nicht mehr verfolgt",
 	"settings.general.openEventViewerOnError.label": "Ereignisanzeige Bei Fehler Öffnen",
 	"settings.general.openEventViewerOnError.hover": "Ein Fehler (ein fehlgeschlagener Log-Upload, ...) öffnet die Ereignisanzeige dort, wo sie angezeigt werden soll",
-	"birdWatch.event.vfoClash": "VFO-B setzen ({up} MHz) verstellt VFO-A: dieses Funkgerät hat keinen eigenen VFO für den Uplink, VFO-B wird nicht mehr verfolgt"
+	"birdWatch.event.vfoClash": "VFO-B setzen ({up} MHz) verstellt VFO-A: dieses Funkgerät hat keinen eigenen VFO für den Uplink, VFO-B wird nicht mehr verfolgt",
+	"settings.general.stationElevation.label": "Höhe",
+	"settings.general.stationElevation.hover": "Die Höhe Ihrer Station über dem Meeresspiegel (Fuß bei Meilen oder Seemeilen, sonst Meter). BirdWatch berechnet daraus, wo die Satelliten stehen, ihren Doppler und wann sie auf- und untergehen"
 }

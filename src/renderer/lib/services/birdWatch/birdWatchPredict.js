@@ -311,7 +311,7 @@ function birdWatchSkyDraw(sat, pass, points)
   c.textAlign = "center";
   c.textBaseline = "middle";
   const busy = points.map((q) => at(q[1], q[2]));
-  if (sat && !sat.error && sat.el >= 0) busy.push(at(sat.az, sat.el));
+  if (sat && !sat.error && sat.up) busy.push(at(sat.az, sat.el));
   for (const el of [30, 60])
   {
     let best = 225;
@@ -368,8 +368,8 @@ function birdWatchSkyDraw(sat, pass, points)
     c.fillText(top[2].toFixed(0) + "°", tx, ty - 9);
   }
 
-  // Where it is now, when it is up
-  if (sat && !sat.error && sat.el >= 0)
+  // Where it is now, when it is up (above the horizon from the station's height: just under 0° it sits on the outer ring)
+  if (sat && !sat.error && sat.up)
   {
     const [x, y] = at(sat.az, sat.el);
     c.fillStyle = "#00e5ff";

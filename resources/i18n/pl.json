@@ -1305,5 +1305,7 @@
   "birdWatch.event.sideStopped": "{vfo} pozostał na {read} MHz po ustawieniu {sent} MHz: nie jest już śledzony",
   "settings.general.openEventViewerOnError.label": "Otwórz Podgląd Zdarzeń Przy Błędzie",
   "settings.general.openEventViewerOnError.hover": "Błąd (nieudane wysłanie logu, ...) otwiera podgląd zdarzeń tam, gdzie ma być wyświetlany",
-  "birdWatch.event.vfoClash": "Ustawienie VFO-B ({up} MHz) przestawia VFO-A: to radio nie ma osobnego VFO dla uplinku, VFO-B nie jest już śledzony"
+  "birdWatch.event.vfoClash": "Ustawienie VFO-B ({up} MHz) przestawia VFO-A: to radio nie ma osobnego VFO dla uplinku, VFO-B nie jest już śledzony",
+  "settings.general.stationElevation.label": "Wysokość",
+  "settings.general.stationElevation.hover": "Wysokość Twojej stacji nad poziomem morza (stopy przy milach lub milach morskich, w przeciwnym razie metry). BirdWatch wylicza z niej położenie satelitów, ich Dopplera oraz czas wschodu i zachodu"
 }

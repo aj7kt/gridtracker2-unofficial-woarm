@@ -327,6 +327,7 @@ function startupButtonsAndInputs()
     // Station Callsign: in place of the one read from WSJT-X's settings (updateBasedOnIni) until an instance connects
     stationCallsignInput.value = GT.settings.app.stationCallsign;
     saveStationCallsign(stationCallsignInput);
+    renderStationElevation();
 
     if (GT.settings.map.offlineMode == true)
     {

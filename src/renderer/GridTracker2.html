@@ -1045,6 +1045,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.general.CenterGrid.label" for="homeQTHInput">Center Gridsquare</label></td>
               <td><input id="homeQTHInput" type="text" class="inputTextValue" maxlength="8" size="8" oninput="{ if ( ValidateGridsquare(this,null) ) { saveCenterGridsquare(); }}" /></td>
             </tr>
+            <tr>
+              <td class="mapRowLabel"><label data-i18n="settings.general.stationElevation.label" for="stationElevationInput">Elevation</label></td>
+              <td><input id="stationElevationInput" type="text" class="inputTextValue" maxlength="6" size="6" data-i18n="settings.general.stationElevation.hover" title="Your station's height above sea level (feet with miles or nautical miles, meters otherwise). BirdWatch reckons where satellites are, their Doppler and when they rise and set from it" oninput="saveStationElevation(this);" /> <span id="stationElevationUnit">m</span></td>
+            </tr>
           </table>
         </div>
         <div class="mapGroup">

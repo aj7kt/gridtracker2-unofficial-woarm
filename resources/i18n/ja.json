@@ -1305,5 +1305,7 @@
 	"birdWatch.event.sideStopped": "{vfo} は {sent} MHz に設定しても {read} MHz のままでした: 追従を停止しました",
 	"settings.general.openEventViewerOnError.label": "エラー時にイベントビューアーを開く",
 	"settings.general.openEventViewerOnError.hover": "エラー（ログのアップロード失敗など）が起きると、設定された場所にイベントビューアーを開きます",
-	"birdWatch.event.vfoClash": "VFO-B ({up} MHz) を設定すると VFO-A が動きます: この無線機にはアップリンク用の別の VFO がないため、VFO-B の追従を停止しました"
+	"birdWatch.event.vfoClash": "VFO-B ({up} MHz) を設定すると VFO-A が動きます: この無線機にはアップリンク用の別の VFO がないため、VFO-B の追従を停止しました",
+	"settings.general.stationElevation.label": "標高",
+	"settings.general.stationElevation.hover": "海抜でのあなたの局の高さ（マイルまたは海里ではフィート、それ以外はメートル）。BirdWatch はこれから衛星の位置、ドップラー、出入りの時刻を計算します"
 }
