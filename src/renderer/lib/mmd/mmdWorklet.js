@@ -5,7 +5,7 @@
 // The Multi-Mode Decoder's AudioWorklet (its audio thread, mmDecoder.js): the Input Device's samples into cwdecoder.wasm (built
 // from src/wasm/cwdecoder by tools/build_cw_wasm.js), and out to the page with each waterfall row: the row, the channels' table, the
 // characters decoded since the last, and the texts of transmissions read again. The .wasm's bytes come from the page
-// (processorOptions.wasm): a worklet can't read files
+// (processorOptions.wasm): a worklet can't read files. Also iq-usb (below): a SPY Server's I/Q as the audio it decodes
 
 const CW_CHANNEL_FIELDS = 8;
 // FT8 mode: the audio at 12 kHz (ft8_lib's rate), sent on in chunks of this many samples (0.4 s)
@@ -31,7 +31,12 @@ class CwDecoderProcessor extends AudioWorkletProcessor
         this.seq = event.data.seq;
       }
       else if (event.data.type == "range") this.wasm.cw_set_range(event.data.min, event.data.max);
+      // CW decoded only in CW mode (FT8 and SSTV decode their own audio): otherwise the waterfall's rows alone
+      else if (event.data.type == "decode") this.wasm.cw_set_decode(event.data.on ? 1 : 0);
       else if (event.data.type == "ft8") this.ft8Start(event.data.on);
+      else if (event.data.type == "raw") this.rawStart(event.data.on);
+      // The waterfall's own spectrum: its window's length (0 to 3: a quarter to twice the FFT) and shape (0 Hann, 1 Blackman-Harris)
+      else if (event.data.type == "view") this.wasm.cw_set_view(event.data.scale | 0, event.data.window | 0);
     };
     try
     {
@@ -81,6 +86,34 @@ class CwDecoderProcessor extends AudioWorkletProcessor
     this.ft8Count = 0;
   }
 
+  // Packet mode on or off. On: the input's samples as they come (at the context's rate: FSK 9600 needs more than 12 kHz), sent on in
+  // chunks of a tenth of a second
+  rawStart(on)
+  {
+    // Already on (another mode that takes it too): the chunk under way kept, so the stream has no gap (a decoder carried on across the
+    // change, as one an RSID was clicked for, would lose its place)
+    if (on && this.raw) return;
+    this.raw = !!on;
+    // The chunk's size kept apart: a chunk sent is handed over (its buffer detached, its length 0 after)
+    this.rawSize = Math.round(sampleRate / 10);
+    this.rawOut = this.raw ? new Float32Array(this.rawSize) : null;
+    this.rawCount = 0;
+  }
+
+  rawFeed(samples)
+  {
+    for (let j = 0; j < samples.length; j++)
+    {
+      this.rawOut[this.rawCount++] = samples[j];
+      if (this.rawCount == this.rawSize)
+      {
+        this.port.postMessage({ type: "rawaudio", samples: this.rawOut, rate: sampleRate, seq: this.seq }, [this.rawOut.buffer]);
+        this.rawOut = new Float32Array(this.rawSize);
+        this.rawCount = 0;
+      }
+    }
+  }
+
   // The samples of a block into the 12 kHz stream; each full chunk to the page with the audio clock at its last sample
   ft8Feed(samples)
   {
@@ -116,6 +149,7 @@ class CwDecoderProcessor extends AudioWorkletProcessor
     // The first channel: a rig's USB audio has the receiver on both (or on the left only)
     const samples = input[0];
     if (this.ft8) this.ft8Feed(samples);
+    if (this.raw) this.rawFeed(samples);
     const X = this.wasm;
     new Float32Array(X.memory.buffer, X.cw_input(), samples.length).set(samples);
     if (X.cw_process(samples.length))
@@ -137,10 +171,118 @@ class CwDecoderProcessor extends AudioWorkletProcessor
         revisions[slot] = text;
       }
       X.cw_events_clear();
-      this.port.postMessage({ type: "row", seq: this.seq, row: row, channels: channels, events: events, revisions: revisions }, [row.buffer, channels.buffer, events.buffer]);
+      // The waterfall's spectrum (cw_view): each bin's dB over its floor, then its dB re full scale
+      const view = new Float32Array(X.memory.buffer, X.cw_view(), this.bins * 2).slice();
+      this.port.postMessage({ type: "row", seq: this.seq, row: row, view: view, channels: channels, events: events, revisions: revisions }, [row.buffer, view.buffer, channels.buffer, events.buffer]);
     }
     return true;
   }
 }
 
 registerProcessor("cw-decoder", CwDecoderProcessor);
+
+// A SPY Server's I/Q (the page's mmdSpyIq: I and Q in turn, at the context's rate) made into the audio above its centre, as a rig in USB
+// gives it: a complex filter that passes the frequencies above 0 Hz and not those below (a half-band low-pass, cut at a quarter of the
+// rate, moved up by a quarter), its real part out. A half-band filter's taps are 0 at every even distance from its middle but the middle:
+// moved up, the I side is the middle tap alone (a delay, times a half) and the Q side a Hilbert transformer, its taps at odd distances
+// only and opposite either side, so each sample takes one multiply for each pair (IQ_TAPS / 4), whatever the rate.
+// The server's clock and the sound card's differ a little: the samples wait in a queue, played from once it holds IQ_START_S; emptied
+// (a gap), it fills to that again; grown past IQ_MAX_S, the oldest are dropped down to IQ_START_S
+const IQ_TAPS = 255;
+const IQ_START_S = 0.15;
+const IQ_MAX_S = 0.6;
+
+class IqUsbProcessor extends AudioWorkletProcessor
+{
+  constructor()
+  {
+    super();
+    const c = (IQ_TAPS - 1) / 2;
+    let sum = 0;
+    const lp = new Float32Array(IQ_TAPS);
+    for (let i = 0; i < IQ_TAPS; i++)
+    {
+      const m = i - c;
+      const sinc = m == 0 ? 0.5 : Math.sin((Math.PI / 2) * m) / (Math.PI * m);
+      const w = 0.42 - 0.5 * Math.cos((2 * Math.PI * i) / (IQ_TAPS - 1)) + 0.08 * Math.cos((4 * Math.PI * i) / (IQ_TAPS - 1));
+      lp[i] = sinc * w;
+      sum += lp[i];
+    }
+    // The middle tap (I's), and the Q side's for each odd distance m from the middle: the tap m after it (the one m before it is that,
+    // turned over)
+    this.mid = lp[c] / sum;
+    this.odd = [];
+    this.gain = [];
+    for (let m = 1; m <= c; m += 2)
+    {
+      this.odd.push(m);
+      this.gain.push((lp[c + m] / sum) * Math.sin((Math.PI / 2) * m));
+    }
+    this.c = c;
+    // The filter's history, I and Q, each kept twice over so its taps read it in one straight run
+    this.xi = new Float32Array(IQ_TAPS * 2);
+    this.xq = new Float32Array(IQ_TAPS * 2);
+    this.pos = 0;
+    // The queue: I and Q in turn, a ring
+    this.queue = new Float32Array(Math.ceil(sampleRate * IQ_MAX_S * 2) * 2);
+    this.head = 0;
+    this.count = 0;
+    this.playing = false;
+    this.port.onmessage = (event) => this.push(event.data);
+  }
+
+  push(iq)
+  {
+    const size = this.queue.length;
+    for (let i = 0; i < iq.length; i++)
+    {
+      this.queue[(this.head + this.count) % size] = iq[i];
+      if (this.count < size) this.count++;
+      else this.head = (this.head + 1) % size;
+    }
+    // Too far behind: the oldest dropped, down to where it starts from (a whole pair at a time)
+    if (this.count > sampleRate * IQ_MAX_S * 2)
+    {
+      const drop = (this.count - Math.round(sampleRate * IQ_START_S) * 2) & ~1;
+      this.head = (this.head + drop) % size;
+      this.count -= drop;
+    }
+  }
+
+  process(inputs, outputs)
+  {
+    const out = outputs[0] && outputs[0][0];
+    if (!out) return true;
+    const size = this.queue.length;
+    if (!this.playing && this.count >= sampleRate * IQ_START_S * 2) this.playing = true;
+    for (let j = 0; j < out.length; j++)
+    {
+      if (!this.playing || this.count < 2)
+      {
+        this.playing = false;
+        out[j] = 0;
+        continue;
+      }
+      const i = this.queue[this.head];
+      const q = this.queue[(this.head + 1) % size];
+      this.head = (this.head + 2) % size;
+      this.count -= 2;
+      this.xi[this.pos] = this.xi[this.pos + IQ_TAPS] = i;
+      this.xq[this.pos] = this.xq[this.pos + IQ_TAPS] = q;
+      this.pos = this.pos + 1 >= IQ_TAPS ? 0 : this.pos + 1;
+      // The real part of the filtered sample: the history runs oldest to newest from pos, its middle (c samples ago) at pos + c; the
+      // sample m before the middle is at pos + c - m, the one m after it at pos + c + m
+      const middle = this.pos + this.c;
+      let y = this.mid * this.xi[middle];
+      for (let k = 0; k < this.odd.length; k++)
+      {
+        const m = this.odd[k];
+        y -= this.gain[k] * (this.xq[middle - m] - this.xq[middle + m]);
+      }
+      out[j] = y;
+    }
+    return true;
+  }
+}
+
+registerProcessor("iq-usb", IqUsbProcessor);

@@ -78,20 +78,23 @@ function rigRangesOf(R)
   return { rx: hz(known.rx), tx: hz(known.tx), model: model };
 }
 
-// What Scan By Rig goes by: receiving on VFO-A's rig, transmitting on the uplink's (VFO-B: the same rig, a second one, or none), as the
-// satellite's frequencies (each VFO's converter offset taken off the rig's ranges): { rx, tx, model, canTx }, canTx false when no uplink
-// can be tuned (VFO-B is None, or its Connect unchecked; the rig has no second VFO; the second rig isn't connected, or its ranges aren't known); null while VFO-A's
-// rig isn't connected or its ranges aren't known
+// What Scan By Rig goes by: receiving on BirdWatch's downlink VFO's rig, transmitting on its uplink VFO's (rigRoleVfo), as the satellite's
+// frequencies (each VFO's converter offset taken off its rig's ranges): { rx, tx, model, canTx }, canTx false when no uplink can be tuned
+// (no uplink VFO, or its Connect unchecked; a second VFO its rig hasn't; its rig isn't connected, or its ranges aren't known); null while
+// the downlink VFO's rig isn't connected or its ranges aren't known
 function rigRanges()
 {
-  const a = rigRangesOf(GT.rig);
+  const rx = rigRoleVfo("rx");
+  const rxR = rx && rigVfoOn(rx) ? rigVfoLink(rx) : null;
+  const a = rxR ? rigRangesOf(rxR) : null;
   if (!a) return null;
-  const shift = (list, vfo) => list.map(([low, high]) => [low - rigOffset(vfo), high - rigOffset(vfo)]);
-  const choice = rigVfoBChoice();
-  if (choice == "none" || !rigUplinkOn()) return { rx: shift(a.rx, "a"), tx: [], model: a.model, canTx: false };
-  if (choice == "same") return { rx: shift(a.rx, "a"), tx: shift(a.tx, "b"), model: a.model, canTx: GT.rig.dual !== false };
-  const b = rigRangesOf(GT.rigB);
-  return { rx: shift(a.rx, "a"), tx: b ? shift(b.tx, "b") : [], model: a.model + " + " + ((b && b.model) || rigModelName(GT.rigB) || "?"), canTx: !!b };
+  const shift = (list, v) => list.map(([low, high]) => [low - rigOffset(v), high - rigOffset(v)]);
+  const tx = rigRoleVfo("tx");
+  if (!tx || !rigVfoOn(tx)) return { rx: shift(a.rx, rx), tx: [], model: a.model, canTx: false };
+  const txR = rigVfoLink(tx);
+  if (txR === rxR) return { rx: shift(a.rx, rx), tx: shift(a.tx, tx), model: a.model, canTx: !rigVfoIsSecond(tx) || rxR.dual !== false };
+  const b = txR ? rigRangesOf(txR) : null;
+  return { rx: shift(a.rx, rx), tx: b ? shift(b.tx, tx) : [], model: a.model + " + " + ((b && b.model) || (txR && rigModelName(txR)) || "?"), canTx: !!b && (!rigVfoIsSecond(tx) || txR.dual !== false) };
 }
 
 // Whether a frequency (or a range of them, low to high) is inside one of the ranges

@@ -47,10 +47,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/third-party/ol.js" type="text/javascript"></script>
   <script src="./lib/third-party/arc.js" type="text/javascript"></script>
   <script src="./lib/map/geocircle.js" type="text/javascript"></script>
-  <script src="./lib/third-party/moment-with-locales.js" type="text/javascript"></script>
-  <script src="./lib/third-party/moment-timezone-with-data.js" type="text/javascript"></script>
   <script src="./lib/services/callsigns.js" type="text/javascript"></script>
   <script src="./lib/ui/i18n.js" type="text/javascript"></script>
+  <script src="./lib/ui/panelBoxes.js" type="text/javascript"></script>
   <script src="./lib/map/grayline.js" type="text/javascript"></script>
   <script src="./lib/services/rtsn.js" type="text/javascript"></script>
   <script src="./lib/services/pota.js" type="text/javascript"></script>
@@ -71,6 +70,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/serialPorts.js" type="text/javascript"></script>
   <script src="./lib/services/rotor.js" type="text/javascript"></script>
   <script src="./lib/services/rig.js" type="text/javascript"></script>
+  <script src="./lib/services/rigSpy.js" type="text/javascript"></script>
+  <script src="./lib/services/rigSdrpp.js" type="text/javascript"></script>
+  <script src="./lib/services/rigIq.js" type="text/javascript"></script>
   <script src="./lib/services/rigRanges.js" type="text/javascript"></script>
   <script src="./lib/services/mmDecoder.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
@@ -318,22 +320,59 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </td>
           </tr>
         </table>
-      <!-- The satellite selected on the map (birdWatchPanel.js): inside the title's box, like the control panel's status under its title -->
-      <div id="birdWatchInfoDiv" style="display: none; margin: 0; padding: 0 4px 3px 4px; font-size: 12px; white-space: nowrap; overflow: hidden;">
+      </div>
+      <!-- The boxes under the BirdWatch title, in the order the user dragged them to (birdWatchPanel.js, birdWatchBoxesInit; the title always
+           on top): the satellite's info, Rig Control's, the sky plot and the side views (Bird Views) -->
+      <div id="birdWatchBoxes">
+      <!-- The satellite selected on the map (birdWatchPanel.js), in a box of its own like the control panel's Map View Filters; - / +
+           minimizes it to the satellite's name -->
+      <div id="birdWatchInfoDiv" class="roundBorder" data-box="info" style="display: none; border: 1px solid cyan; margin: 1px; padding: 0 4px 3px 4px; font-size: 12px; white-space: nowrap; overflow: hidden;">
         <div id="birdWatchInfoNames" style="cursor: pointer;" onclick="birdWatchCenterOnSelected();">
-          <div id="birdWatchInfoName" oncontextmenu="birdWatchOpenSatnogs(event);" style="font-size: 15px; font-weight: bold; color: cyan; overflow: hidden; text-overflow: ellipsis;"></div>
+          <div style="display: flex; align-items: center;">
+            <div id="birdWatchInfoName" oncontextmenu="birdWatchOpenSatnogs(event);" style="flex: 1; min-width: 0; padding-left: 15px; text-align: center; font-size: 15px; font-weight: bold; color: cyan; overflow: hidden; text-overflow: ellipsis;"></div>
+            <div style="margin-left: 3px; cursor: pointer;" onclick="event.stopPropagation(); birdWatchInfoCollapseToggle();"><img id="birdWatchInfoCollapseImg" class="roundBorder" src="img/minimize.png" height="12" /></div>
+          </div>
           <div id="birdWatchInfoLong" style="color: #aaa; overflow: hidden; text-overflow: ellipsis; min-height: 15px;"></div>
         </div>
-        <table id="birdWatchInfoPos" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 2px; text-align: left;">
+        <table id="birdWatchInfoPos" class="birdWatchInfoPos" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 2px; text-align: left;">
           <!-- The rows are drawn by birdWatchInfo.js: the featured item first, then the user's list -->
           <tbody id="birdWatchInfoBody"></tbody>
         </table>
       </div>
+      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; as wide as the sky plot's. A click opens the Doppler (transmitters) window; a right click BirdWatch's settings, where its Rig Control is -->
+      <!-- Its buttons are kept apart from the text redrawn with each frequency read, so a click isn't lost to a redraw: Follow / Unfollow the selected satellite, Re-center (the user's tuning dropped) -->
+      <div id="birdWatchRigLine" class="roundBorder" data-box="rig" onclick="birdWatchTransmitterWindowOpen();" oncontextmenu="showBirdWatchSettings(); return false;" style="display: none; cursor: pointer; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <!-- Columns of fixed width but the frequency's: Re-center (>|<, lit while the user's tuning is off the Doppler frequency) on the
+             left, beside both rows when there's an uplink; the downlink's frequency and mode, the uplink's under them; Lock VFOs on the
+             right beside both (birdWatchLockFollow; the same setting as in BirdWatch's settings), a bracket from each row to it -->
+        <div id="birdWatchRigGrid" class="birdWatchRigGrid">
+          <!-- Each VFO's Connect before its frequency (birdWatchRigConnectToggle) -->
+          <div id="birdWatchRigRxDot" class="birdWatchRigDot birdWatchRigRxDot" onclick="event.stopPropagation(); birdWatchRigConnectToggle('rx');"><svg width="16" height="12" viewBox="0 0 16 12"><g transform="rotate(-20 8 6)" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M0.8 6 A7.2 2.4 0 0 1 15.2 6" /><circle cx="8" cy="6" r="3.4" fill="#000" /><path d="M0.8 6 A7.2 2.4 0 0 0 15.2 6" /></g></svg></div>
+          <div id="birdWatchRigTxDot" class="birdWatchRigDot birdWatchRigTxDot" onclick="event.stopPropagation(); birdWatchRigConnectToggle('tx');"><svg width="16" height="12" viewBox="0 0 16 12"><g transform="rotate(-20 8 6)" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M0.8 6 A7.2 2.4 0 0 1 15.2 6" /><circle cx="8" cy="6" r="3.4" fill="#000" /><path d="M0.8 6 A7.2 2.4 0 0 0 15.2 6" /></g></svg></div>
+          <div id="birdWatchRigRxFreq" class="birdWatchRigFreq birdWatchRigRxFreq"></div>
+          <div id="birdWatchRigRxMode" class="birdWatchRigMode birdWatchRigRxMode"></div>
+          <div id="birdWatchRecenterButton" class="birdWatchRigIcon birdWatchRigRecenter" onclick="event.stopPropagation(); birdWatchRecenter();">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 4 L5.5 8 L1.5 12 M14.5 4 L10.5 8 L14.5 12 M8 2 V14" /></svg>
+          </div>
+          <div id="birdWatchRigTxFreq" class="birdWatchRigFreq birdWatchRigTxFreq"></div>
+          <div id="birdWatchRigTxMode" class="birdWatchRigMode birdWatchRigTxMode"></div>
+          <div id="birdWatchRigLock" class="birdWatchRigIcon birdWatchRigLockCell" onclick="event.stopPropagation(); birdWatchLockVfosSet(GT.settings.BirdWatch.lockVfos !== true);">
+            <div class="birdWatchRigBracket birdWatchRigBracketTop"></div>
+            <svg id="birdWatchRigLocked" width="16" height="16" viewBox="0 0 16 16"><path d="M5 7.5 V5 a3 3 0 0 1 6 0 V7.5" fill="none" stroke="currentColor" stroke-width="1.8" /><rect x="3" y="7" width="10" height="8" rx="1.5" fill="currentColor" /></svg>
+            <svg id="birdWatchRigUnlocked" width="16" height="16" viewBox="0 0 16 16"><path d="M11 7.5 V4.5 a3 3 0 0 0 -6 0 V5" fill="none" stroke="currentColor" stroke-width="1.8" /><rect x="3" y="7" width="10" height="8" rx="1.5" fill="currentColor" /></svg>
+            <div class="birdWatchRigBracket birdWatchRigBracketBottom"></div>
+          </div>
+        </div>
+        <div id="birdWatchRigButtons" style="display: none; margin-top: 3px;">
+          <div id="birdWatchFollowButton" class="button" style="font-size: 12px; font-weight: bold;" onclick="event.stopPropagation(); birdWatchFollowToggle();"></div>
+        </div>
       </div>
-      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; between the BirdWatch box and the sky plot's, as wide as the sky plot's. A click opens the Doppler (transmitters) window; a right click Settings on Features, where Rig Control is -->
-      <div id="birdWatchRigLine" class="roundBorder" onclick="birdWatchTransmitterWindowOpen();" oncontextmenu="rotorOpenSettings(); return false;" style="display: none; cursor: pointer; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-      <!-- The sky plot of the selected satellite, in a box of its own like the control panel's Rx Calls box -->
-      <div id="birdWatchSkyBox" class="roundBorder" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
+      <!-- The sky plot of the selected satellite, in a box of its own like the control panel's Rx Calls box; the side views (Bird Views) under it -->
+      <div id="birdWatchSkyBox" data-box="sky" class="roundBorder" data-i18n="birdWatch.view.skybox.hover" title="Skybox&#10;The whole sky as a circle: north at the top, east on the right, the horizon around the edge and straight overhead in the center. The selected satellite's pass runs from AOS (green) to LOS (red), with its highest elevation marked; the cyan dot is where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideProfileBox" data-box="profile" class="roundBorder" data-i18n="birdWatch.view.profile.hover" title="Pass Profile&#10;The selected satellite's elevation through its pass, from AOS (green) to LOS (red): their times under the ends, its highest elevation marked, and the cyan dot where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideProfileCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideHorizonBox" data-box="horizon" class="roundBorder" data-i18n="birdWatch.view.horizon.hover" title="Horizon&#10;The selected satellite's pass as you would see it facing the horizon: compass directions along the bottom, centered on its highest point, and elevation up the side. AOS is green, LOS red, and the cyan dot is where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideHorizonCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideEarthBox" data-box="earth" class="roundBorder" data-i18n="birdWatch.view.earth.hover" title="Earth&#10;The selected satellite seen from the side, above the curve of the Earth: your station on top, your horizon dashed, east to the right. The line to the satellite is green when it is above your horizon and red when it is below, with its height (↑) and its distance from you (↔)" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideEarthCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      </div>
     </div>
     <!-- The passes of the tracked satellites over the next 24 hours (birdWatchPredict.js) -->
     <div id="birdWatchTimelineDiv" class="roundBorder" style="display: none; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); z-index: 590; background-color: #000000; border: 1px solid white; padding: 4px 8px 8px 8px; text-align: left;">
@@ -344,7 +383,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <button class="Xbutton" onclick="birdWatchTimelineClose();">X</button>
         </span>
       </div>
-      <canvas id="birdWatchTimelineCanvas" onmousemove="birdWatchTimelineMove(event);" onclick="birdWatchTimelineClick(event);" style="display: block;"></canvas>
+      <!-- A row for each tracked satellite: as tall as the window allows, then it scrolls (and across, in a narrow window) -->
+      <div style="max-height: calc(100vh - 60px); max-width: calc(100vw - 40px); overflow: auto;">
+        <canvas id="birdWatchTimelineCanvas" onmousemove="birdWatchTimelineMove(event);" onclick="birdWatchTimelineClick(event);" style="display: block;"></canvas>
+      </div>
     </div>
     <div id="birdWatchChevronDiv" class="chevronDivClass" data-i18n="birdWatch.showPanel.hover" title="Click to show BirdWatch" onclick="showBirdWatchPanel(true);"></div>
     <div id="chevronDiv" class="chevronDivClass" data-i18n="map.showMenu.hover" title="Click me, place holder" onclick="updateLayout(false)">↔</div>
@@ -447,7 +489,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
       </div>
 
-      <div id="bandActivityDiv" class="roundBorder" style="
+      <!-- The boxes under the status lines, in the order the user dragged them to by their top borders (panelBoxes.js, settings.app.panelBoxOrder): Band Activity, the counts, Map View Filters and the button grid -->
+      <div id="mainPanelBoxes">
+      <div id="bandActivityDiv" data-box="bandActivity" class="roundBorder" style="
             position: relative;
             background-color: #000;
             border: 1px solid purple;
@@ -461,7 +505,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
       </div>
 
-      <div id="actionDiv" style="border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px"
+      <div id="actionDiv" data-box="counts" style="border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px"
         class="roundBorder" title="Quick Stats">
         <table align="center">
           <tr>
@@ -532,7 +576,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </tr>
         </table>
       </div>
-      <div id="filterDiv" class="roundBorder"
+      <div id="filterDiv" data-box="mapViewFilters" class="roundBorder"
         style="position: relative; background-color: #000; border: 1px solid cyan; margin: 1px; margin-bottom: 1px"
         >
         <div>
@@ -650,7 +694,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </tr>
         </table>
       </div>
-      <div id="buttonsDiv" style="margin-top:1px;margin-left: 1px; display:grid;gap:0px;grid-template-columns: 1fr 1fr 1fr 1fr 1fr;grid-template-rows: auto;">
+      <div id="buttonsDiv" data-box="buttons" data-box-fixed style="margin-top:1px;margin-left: 1px; display:grid;gap:0px;grid-template-columns: 1fr 1fr 1fr 1fr 1fr;grid-template-rows: auto;">
         <div id="homeButton" class="iconButton" onclick="setCenterQTH();" data-i18n="gt.button.home.hover" title="Re-center map">
           <img id="homeImg" src="img/home.png" class="buttonImg" />
         </div>
@@ -760,16 +804,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="birdWatchAutoButton" class="iconButton" style="display:none;" onclick="birdWatchAutoToggle();" data-i18n="birdWatch.auto.hover" title="Auto Select Next AOS Satellite">
           <img id="birdWatchAutoImg" src="img/sat-auto.png" class="buttonImg" />
         </div>
-        <div id="birdWatchDopplerButton" class="iconButton" style="display:none;" onclick="birdWatchDopplerPressed();" data-i18n="birdWatch.doppler.hover" title="Transmitters and Doppler-corrected frequencies of the selected satellite">
+        <div id="birdWatchDopplerButton" class="iconButton" style="display:none;" onclick="birdWatchDopplerPressed();" oncontextmenu="birdWatchDopplerPressed(false);" data-i18n="birdWatch.doppler.hover" title="Transmitters and Doppler-corrected frequencies of the selected satellite">
           <img id="birdWatchDopplerImg" src="img/sat-doppler.png" class="buttonImg" />
         </div>
         <div id="birdWatchTimelineButton" class="iconButton" style="display:none;" onclick="birdWatchTimelineToggle();" data-i18n="birdWatch.timeline.hover" title="Upcoming passes of the tracked satellites">
           <img src="img/sat-timeline.png" class="buttonImg" />
         </div>
         <!-- Shown while the Multi-Mode Decoder is on (services/mmDecoder.js) -->
-        <div id="mmDecoderButton" onclick="toggleMmDecoder();" class="iconButton" style="display:none;" title="Toggle Multi-Mode Decoder" data-i18n="gt.button.cwViewer.hover">
+        <div id="mmDecoderButton" onclick="toggleMmDecoder();" oncontextmenu="toggleMmDecoder(false);" class="iconButton" style="display:none;" title="Toggle Multi-Mode Decoder" data-i18n="gt.button.cwViewer.hover">
           <img id="mmDecoderImg" src="img/mm-decoder.png" class="buttonImg" />
         </div>
+      </div>
       </div>
     </div>
     <div id="myFlagtip" class="myFlagtipEnd"></div>
@@ -1113,7 +1158,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div class="mapGroup">
           <div class="mapGroupTitle" data-i18n="roster.menu.Settings">Settings</div>
           <div class="mapButtons">
-            <div data-i18n="settings.general.ResetButtonPanel.label" class="button" onclick="setButtonPanelOrder(GT.defaultButtons)">Reset-Button-Panel</div>
+            <div data-i18n="settings.general.ResetPanels.label" class="button" onclick="resetPanelBoxOrder()">Reset Panels</div>
+            <div data-i18n="settings.general.ResetButtonPanel.label" class="button" onclick="setButtonPanelOrder(GT.defaultButtons)">Reset Button Order</div>
             <div class="mapButtons mapFramed mapPair">
               <div data-i18n="settings.general.ExportSettings.label" class="button" id="exportSettingsButton">Export Settings</div>
               <div data-i18n="settings.general.ImportSettings.label" id="importSettingsButton" class="button">Import Settings</div>
@@ -1157,6 +1203,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <!-- A service's box in front of its name, as in the Online group; the rows under one are tabbed in -->
               <tr>
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.label" for="birdWatchEnable">BirdWatch</label></td>
+              </tr>
+              <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from each mode's Input Device (picked there) -->
+              <tr>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.hover" title="Decodes the CW, FT8 or SSTV signals in the receiver's passband, heard on each mode's Input Device (picked in its window), and shows them in the Multi-Mode Decoder window" type="checkbox" id="mmDecoderEnable" onclick="mmDecoderEnableChanged();" /> <label data-i18n="cwViewer.title" for="mmDecoderEnable">Multi-Mode Decoder</label></td>
               </tr>
               <tr>
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rotor.hover" title="Points an antenna rotator from GridTracker: a controller on a serial port, or Hamlib's rotctld" type="checkbox" id="rotorEnable" onclick="rotorEnableChanged();" /> <label data-i18n="settings.rotor.label" for="rotorEnable">Rotor Control</label></td>
@@ -1204,151 +1254,90 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr>
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rig.hover" title="Talks to the rig: Hamlib's rigctld, flrig, or on a serial port an Icom (CI-V), a Kenwood or a Yaesu (CAT)" type="checkbox" id="rigEnable" onclick="rigEnableChanged();" /> <label data-i18n="settings.rig.label" for="rigEnable">Rig Control</label></td>
               </tr>
-              <!-- VFO-A, the downlink (RX): VFO-A's rig, in a box of its own titled VFO-A (Downlink) -->
-              <tr id="rigVfoABoxTr">
+              <!-- The VFOs (rig.js, rigSettingsRender): a box for each, made from #rigVfoTemplate, then Add VFO -->
+              <tr id="rigVfosTr">
                 <td colspan="2">
-                  <div class="rigVfoBox">
-                    <!-- The title, its Connect to the right of it: checked, the rig connected and VFO-A's settings locked; unchecked, let go and its settings free to change -->
-                    <div class="rigVfoTitle"><span data-i18n="settings.rig.vfoA.label">VFO-A (Downlink)</span>
-                      <span class="rigVfoConnect"><input data-i18n="settings.rig.connect.hover" title="Uncheck to disconnect the rig and change its settings; checked, they are locked and the rig is connected with them" type="checkbox" id="rigConnectValue" onclick="rigConnectChanged();" /> <label data-i18n="settings.rig.connect.label" for="rigConnectValue">Connect</label></span></div>
-                    <table>
-                      <tr id="rigProtocolTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.protocol.label" for="rigProtocol">Protocol</label></td>
-                        <td><select id="rigProtocol" onchange="rigSettingsChanged();"></select></td>
-                      </tr>
-                      <!-- Under Kenwood CAT and Yaesu CAT: the other rigs that speak it (rig.js, rigSettingsRenderOne) -->
-                      <tr id="rigProtocolNoteTr" style="display: none;">
-                        <td></td>
-                        <td><span id="rigProtocolNote" style="color: #aaa; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-                      </tr>
-                      <tr id="rigPortTr">
-                        <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
-                        <td><div id="rigChoose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rigPortName" class="mapValue"></span><div id="rigPortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
-                      </tr>
-                      <tr id="rigLinuxTr" style="display: none;">
-                        <td></td>
-                        <td><span id="rigLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-                      </tr>
-                      <tr id="rigBaudTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rigBaud">Baud</label></td>
-                        <td><select id="rigBaud" onchange="rigSettingsChanged();"></select>
-                          <select id="rigDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged();"><option value="8">8</option><option value="7">7</option></select>
-                          <select id="rigParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged();"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
-                          <select id="rigStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged();"><option value="1">1</option><option value="2">2</option></select></td>
-                      </tr>
-                      <tr id="rigCivTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rig.civ.label" for="rigCivValue">CI-V Address</label></td>
-                        <td><input id="rigCivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged();" /> <span id="rigCivFound" class="mapValue"></span></td>
-                      </tr>
-                      <tr id="rigHostTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.host.label" for="rigHost">Host</label></td>
-                        <td><input id="rigHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged();" /> <label data-i18n="settings.rotor.tcpPort.label" for="rigNetPort">TCP Port</label> <input id="rigNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged();" /></td>
-                      </tr>
-                      <tr id="rigStatusTr">
-                        <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
-                        <td><span id="rigStatus" class="mapValue" style="margin-left: 0;"></span></td>
-                      </tr>
-                      <!-- Each VFO's converter offset (an LNB, an upconverter, a transverter): the rig's dial is the satellite's frequency plus it -->
-                      <tr id="rigOffsetATr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rig.offset.label" for="rigOffsetA">Offset Hz</label></td>
-                        <td><input id="rigOffsetA" type="text" class="inputTextValue" maxlength="15" size="14" data-i18n="settings.rig.offset.hover" title="A converter between the antenna and the rig (an LNB, an upconverter, a transverter): added to the frequency sent to the rig, and taken off what it reads. Negative or positive: an LNB with a 9750 MHz LO is -9750000000" onkeypress="return rigOffsetKey(event);" onchange="rigOffsetChanged();" /></td>
-                      </tr>
-                    </table>
-                  </div>
+                  <div id="rigVfosDiv"></div>
+                  <div id="rigAddVfo" class="button mapInlineButton" data-i18n="settings.rig.addVfo.hover" title="Adds a VFO: a rig of its own, or the second VFO of a rig set up above. BirdWatch and the Multi-Mode Decoder each pick the VFOs they use" onclick="rigVfoAdd();"><span data-i18n="settings.rig.addVfo.label">Add VFO</span></div>
                 </td>
               </tr>
-              <!-- VFO-B, the uplink (TX): none, the same rig's second VFO (split on), or a second rig of its own, its rows in the table under the choice -->
-              <tr id="rigVfoBBoxTr">
-                <td colspan="2">
-                  <div class="rigVfoBox">
-                    <!-- VFO-B's Connect, to the right of the title: checked, the uplink tuned (a second rig connected) and VFO-B's settings locked; unchecked, no uplink and its settings free to change -->
-                    <div class="rigVfoTitle"><span data-i18n="settings.rig.vfoB.label">VFO-B (Uplink)</span>
-                      <span class="rigVfoConnect"><input data-i18n="settings.rig.connectB.hover" title="Uncheck to stop tuning the uplink (a second rig is disconnected) and change VFO-B's settings; checked, they are locked and the uplink is tuned with them" type="checkbox" id="rigBConnectValue" onclick="rigConnectChanged('b');" /> <label data-i18n="settings.rig.connect.label" for="rigBConnectValue">Connect</label></span></div>
-                    <table>
-                      <tr id="rigVfoBTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="rig.line.rig" for="rigVfoB">Rig</label></td>
-                        <td><select id="rigVfoB" data-i18n="settings.rig.vfoB.hover" title="Where the uplink (TX) is tuned: the same rig's second VFO, with split on, or a second rig of its own" onchange="rigVfoBChanged();"><option value="none" data-i18n="settings.rig.vfoB.none.label">None</option><option value="same" data-i18n="settings.rig.vfoB.same.label">Same Rig</option><option value="second" data-i18n="settings.rig.vfoB.second.label">Second Rig</option></select></td>
-                      </tr>
-                      <tr id="rigSecondTr" style="display: none;">
-                        <td></td>
-                        <td>
-                          <table class="rigSecondTable">
-                            <tr id="rigBProtocolTr">
-                              <td class="mapRowLabel"><label data-i18n="settings.rotor.protocol.label" for="rigBProtocol">Protocol</label></td>
-                              <td><select id="rigBProtocol" onchange="rigSettingsChanged('b');"></select></td>
-                            </tr>
-                            <tr id="rigBProtocolNoteTr" style="display: none;">
-                              <td></td>
-                              <td><span id="rigBProtocolNote" style="color: #aaa; white-space: normal; display: inline-block; max-width: 300px;"></span></td>
-                            </tr>
-                            <tr id="rigBPortTr">
-                              <td class="mapRowLabel" data-i18n="settings.rotor.port.label">Port</td>
-                              <td><div id="rigBChoose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort('b');"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rigBPortName" class="mapValue"></span><div id="rigBPortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
-                            </tr>
-                            <tr id="rigBLinuxTr" style="display: none;">
-                              <td></td>
-                              <td><span id="rigBLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-                            </tr>
-                            <tr id="rigBBaudTr">
-                              <td class="mapRowLabel"><label data-i18n="settings.rotor.baud.label" for="rigBBaud">Baud</label></td>
-                              <td><select id="rigBBaud" onchange="rigSettingsChanged('b');"></select>
-                                <select id="rigBDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged('b');"><option value="8">8</option><option value="7">7</option></select>
-                                <select id="rigBParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged('b');"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
-                                <select id="rigBStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged('b');"><option value="1">1</option><option value="2">2</option></select></td>
-                            </tr>
-                            <tr id="rigBCivTr">
-                              <td class="mapRowLabel"><label data-i18n="settings.rig.civ.label" for="rigBCivValue">CI-V Address</label></td>
-                              <td><input id="rigBCivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged('b');" /> <span id="rigBCivFound" class="mapValue"></span></td>
-                            </tr>
-                            <tr id="rigBHostTr">
-                              <td class="mapRowLabel"><label data-i18n="settings.rotor.host.label" for="rigBHost">Host</label></td>
-                              <td><input id="rigBHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged('b');" /> <label data-i18n="settings.rotor.tcpPort.label" for="rigBNetPort">TCP Port</label> <input id="rigBNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged('b');" /></td>
-                            </tr>
-                            <tr id="rigBStatusTr">
-                              <td class="mapRowLabel" data-i18n="settings.rotor.status.label">Status</td>
-                              <td><span id="rigBStatus" class="mapValue" style="margin-left: 0;"></span></td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr id="rigOffsetBTr">
-                        <td class="mapRowLabel mapIndent"><label data-i18n="settings.rig.offset.label" for="rigOffsetB">Offset Hz</label></td>
-                        <td><input id="rigOffsetB" type="text" class="inputTextValue" maxlength="15" size="14" data-i18n="settings.rig.offset.hover" title="A converter between the antenna and the rig (an LNB, an upconverter, a transverter): added to the frequency sent to the rig, and taken off what it reads. Negative or positive: an LNB with a 9750 MHz LO is -9750000000" onkeypress="return rigOffsetKey(event);" onchange="rigOffsetChanged();" /></td>
-                      </tr>
-                    </table>
-                  </div>
-                </td>
-              </tr>
-              <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from Settings -> Audio's Input Device -->
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.hover" title="Decodes the CW or FT8 signals in the receiver's passband, heard on the Input Device (Settings, Audio), and shows them in the Multi-Mode Decoder window" type="checkbox" id="mmDecoderEnable" onclick="mmDecoderEnableChanged();" /> <label data-i18n="cwViewer.title" for="mmDecoderEnable">Multi-Mode Decoder</label></td>
-              </tr>
-              <!-- Its options, shown while it is on: CW's in a box titled CW Decoder, FT8's in one titled FT8 Decoder -->
-              <tr id="mmDecoderBoxTr">
-                <td colspan="2">
-                  <div class="rigVfoBox">
-                    <div class="rigVfoTitle"><span data-i18n="settings.cwDecoder.label">CW Decoder</span></div>
-                    <table>
-                      <tr>
-                        <td class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.wide.hover" title="While the Multi-Mode Decoder is decoding, Rig Control opens the rig's filter to its widest (an Icom over CI-V, or rigctld), so more signals are heard; the filter is put back when it stops" type="checkbox" id="mmDecoderWide" onclick="mmDecoderWideChanged();" /> <label data-i18n="settings.cwDecoder.wide.label" for="mmDecoderWide">Wide Filter</label></td>
-                      </tr>
-                      <tr>
-                        <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.mmDecoder.fallSpeed.label">Waterfall Speed</span></td>
-                        <td><input data-i18n="settings.mmDecoder.fallSpeed.hover" title="How fast the waterfall moves down: 1× as it is heard (about 7 seconds in view); slower holds more time (about a minute at 0.1×), faster gives each moment more room" type="range" min="0.1" max="4" step="0.05" value="1" class="slider" id="cwFallSpeed" oninput="mmDecoderFallSpeedChanged();" /><span id="cwFallSpeedTd" class="mapValue">1×</span></td>
-                      </tr>
-                    </table>
-                  </div>
-                  <div class="rigVfoBox">
-                    <div class="rigVfoTitle"><span data-i18n="settings.ft8Decoder.label">FT8 Decoder</span></div>
-                    <table>
-                      <tr>
-                        <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.mmDecoder.fallSpeed.label">Waterfall Speed</span></td>
-                        <td><input data-i18n="settings.mmDecoder.fallSpeed.hover" title="How fast the waterfall moves down: 1× as it is heard (about 7 seconds in view); slower holds more time (about a minute at 0.1×), faster gives each moment more room" type="range" min="0.1" max="4" step="0.05" value="1" class="slider" id="ft8FallSpeed" oninput="mmDecoderFallSpeedChanged();" /><span id="ft8FallSpeedTd" class="mapValue">1×</span></td>
-                      </tr>
-                    </table>
-                  </div>
-                </td>
-              </tr>
+              <!-- A VFO's box: its letter, its own name and its Connect on the title line (checked, connected and its settings locked; unchecked,
+                   let go and its settings free to change), the X that removes it (with Connect unchecked); then where it is (a rig of its own, or
+                   another one's second VFO), its rig's rows (one of its own), its status and its offset. Its fields are found by data-f -->
+              <template id="rigVfoTemplate">
+                <div class="rigVfoBox">
+                  <div class="rigVfoTitle"><span data-f="Title"></span> <input data-f="Name" type="text" class="inputTextValue" size="10" maxlength="20" data-i18n="settings.rig.vfoName.hover" title="Your own name for this VFO, shown after its letter: VFO-C (SDR)" onchange="rigVfoNameChanged(this);" />
+                    <span class="rigVfoConnect"><input data-f="Connect" data-i18n="settings.rig.connect.hover" title="Uncheck to disconnect the rig and change its settings; checked, they are locked and the rig is connected with them" type="checkbox" onclick="rigConnectChanged(this);" /> <label data-for="Connect" data-i18n="settings.rig.connect.label">Connect</label> <span data-f="Remove" class="rigVfoRemove" data-i18n="settings.rig.removeVfo.hover" title="Removes this VFO" onclick="rigVfoRemove(this);">✕</span></span></div>
+                  <table>
+                    <tr data-f="SourceTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Source" data-i18n="rig.line.rig">Rig</label></td>
+                      <td><select data-f="Source" data-i18n="settings.rig.source.hover" title="Where this VFO is: a rig of its own, with its own connection, or the second VFO (VFO B, or Sub) of a rig set up in another box" onchange="rigVfoSourceChanged(this);"></select></td>
+                    </tr>
+                    <tr data-f="ProtocolTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Protocol" data-i18n="settings.rotor.protocol.label">Protocol</label></td>
+                      <td><select data-f="Protocol" onchange="rigSettingsChanged(this);"></select></td>
+                    </tr>
+                    <!-- Under Kenwood CAT and Yaesu CAT: the other rigs that speak it (rig.js, rigSettingsRenderOne) -->
+                    <tr data-f="ProtocolNoteTr" style="display: none;">
+                      <td></td>
+                      <td><span data-f="ProtocolNote" style="color: #aaa; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                    </tr>
+                    <tr data-f="PortTr">
+                      <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
+                      <td><div data-f="Choose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort(this);"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span data-f="PortName" class="mapValue"></span><div data-f="PortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
+                    </tr>
+                    <tr data-f="LinuxTr" style="display: none;">
+                      <td></td>
+                      <td><span data-f="LinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                    </tr>
+                    <tr data-f="BaudTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Baud" data-i18n="settings.rotor.baud.label">Baud</label></td>
+                      <td><select data-f="Baud" onchange="rigSettingsChanged(this);"></select>
+                        <select data-f="DataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged(this);"><option value="8">8</option><option value="7">7</option></select>
+                        <select data-f="Parity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged(this);"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
+                        <select data-f="StopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged(this);"><option value="1">1</option><option value="2">2</option></select></td>
+                    </tr>
+                    <tr data-f="CivTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="CivValue" data-i18n="settings.rig.civ.label">CI-V Address</label></td>
+                      <td><input data-f="CivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged(this);" /> <span data-f="CivFound" class="mapValue"></span></td>
+                    </tr>
+                    <tr data-f="HostTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
+                      <td><input data-f="Host" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged(this);" /> <label data-for="NetPort" data-i18n="settings.rotor.tcpPort.label">TCP Port</label> <input data-f="NetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged(this);" /></td>
+                    </tr>
+                    <tr data-f="SdrppSourceTr" style="display: none;">
+                      <td class="mapRowLabel mapIndent"><label data-for="SdrppSource" data-i18n="settings.rig.sdrpp.source.label">Source</label></td>
+                      <td><select data-f="SdrppSource" data-i18n="settings.rig.sdrpp.source.hover" title="The SDR++ Server's source, as its own menu has it" onchange="rigSdrppPick(this, 'source');"></select></td>
+                    </tr>
+                    <tr data-f="SdrppDeviceTr" style="display: none;">
+                      <td class="mapRowLabel mapIndent"><label data-for="SdrppDevice" data-i18n="settings.rig.sdrpp.device.label">Device</label></td>
+                      <td><select data-f="SdrppDevice" data-i18n="settings.rig.sdrpp.device.hover" title="The device the source uses" onchange="rigSdrppPick(this, 'device');"></select> <span data-f="SdrppRefresh" class="button mapInlineButton" data-i18n="settings.rig.sdrpp.refresh.hover" title="Looks for devices again" onclick="rigSdrppRefresh(this);"><span data-i18n="settings.rig.sdrpp.refresh.label">Refresh</span></span></td>
+                    </tr>
+                    <tr data-f="SdrppRateTr" style="display: none;">
+                      <td class="mapRowLabel mapIndent"><label data-for="SdrppRate" data-i18n="settings.rig.sdrpp.rate.label">Sample Rate</label></td>
+                      <td><select data-f="SdrppRate" data-i18n="settings.rig.sdrpp.rate.hover" title="The device's sample rate: the decoder takes what it needs from it" onchange="rigSdrppPick(this, 'rate');"></select></td>
+                    </tr>
+                    <tr data-f="ForceVfoTr">
+                      <td class="mapRowLabel mapIndent"></td>
+                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="ForceVfo" data-i18n="settings.rig.forceVfo.hover" title="Asks rigctld for its VFO mode on Rig Control's own connection, as rigctld --vfo gives, so each VFO is tuned by name. Needed for VFO-B on a radio whose VFOs are Main and Sub (Yaesu FTX-1). Other programs connected to the same rigctld keep its usual mode" onclick="rigSettingsChanged(this);" /> <label data-for="ForceVfo" data-i18n="settings.rig.forceVfo.label">Force VFO Mode</label></td>
+                    </tr>
+                    <tr data-f="StatusTr">
+                      <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+                      <td><span data-f="Status" class="mapValue" style="margin-left: 0;"></span></td>
+                    </tr>
+                    <!-- The VFO's converter offset (an LNB, an upconverter, a transverter): the rig's dial is the frequency on the air plus it -->
+                    <tr data-f="OffsetTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Offset" data-i18n="settings.rig.offset.label">Offset Hz</label></td>
+                      <td><input data-f="Offset" type="text" class="inputTextValue" maxlength="15" size="14" data-i18n="settings.rig.offset.hover" title="A converter between the antenna and the rig (an LNB, an upconverter, a transverter): added to the frequency sent to the rig, and taken off what it reads. Negative or positive: an LNB with a 9750 MHz LO is -9750000000" onkeypress="return rigOffsetKey(event);" onchange="rigOffsetChanged(this);" /></td>
+                    </tr>
+                    <!-- SSB's Data: the digital modes set on this VFO in USB or LSB (the Multi-Mode Decoder's) set as its data mode; a rig of its own's -->
+                    <tr data-f="SsbTr">
+                      <td class="mapRowLabel mapIndent" data-i18n="settings.rig.ssb.label">SSB</td>
+                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="SsbData" data-i18n="settings.rig.ssbData.hover" title="Digital modes use the data mode (USB-D) on this VFO" onclick="rigSsbDataChanged(this);" /> <label data-for="SsbData" data-i18n="settings.rig.ssbData.label">Data</label></td>
+                    </tr>
+                  </table>
+                </div>
+              </template>
             </table>
           </div>
         </div>
@@ -1541,11 +1530,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <tr>
               <td class="mapRowLabel" data-i18n="settings.audio.row.outputDevice.label">Output Device</td>
               <td><div id="soundCardDiv"></div></td>
-            </tr>
-            <!-- What the decoders listen to (the Multi-Mode Decoder): the rig's audio -->
-            <tr>
-              <td class="mapRowLabel" data-i18n="settings.audio.row.inputDevice.label">Input Device</td>
-              <td><div id="inputCardDiv"></div></td>
             </tr>
             <tr>
               <td class="mapRowLabel" data-i18n="settings.audio.QSOLogEventFile.label">QSO Log Event Notification</td>
@@ -2497,59 +2481,85 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- BirdWatch's tabs (birdWatch.js): in its colors, shown while BirdWatch is on -->
       <div id="birdWatchGeneralDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
         <div class="mapGroups">
+          <!-- Rig Control's VFOs that follow the satellite (birdWatchLog.js, birdWatchRigVfosRender): the downlink's and the uplink's, None for a
+               side not followed. The title's box (as Footprint's): the rig follows Auto-Track's pick too (birdWatchStickyFollow) -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchAutoRigValue" style="margin: 0;" data-i18n="birdWatch.auto.rig.hover" title="A satellite Auto-Track selects is followed by the rig too (with Rig Control), as a satellite you select is; off, Auto-Track only selects it" onclick="birdWatchAutoRigChange()" /><label for="birdWatchAutoRigValue" data-i18n="settings.rig.label">Rig Control</label></div>
+            <table class="mapChecks">
+              <tr><td><label data-i18n="birdWatch.rig.downlink.label" for="birdWatchDownlinkVfo">Downlink</label></td><td><select id="birdWatchDownlinkVfo" data-i18n="birdWatch.rig.downlink.hover" title="The VFO that follows the satellite's downlink (its frequency, Doppler and mode)" onchange="birdWatchRigVfosChange()"></select></td></tr>
+              <tr><td><label data-i18n="birdWatch.rig.uplink.label" for="birdWatchUplinkVfo">Uplink</label></td><td><select id="birdWatchUplinkVfo" data-i18n="birdWatch.rig.uplink.hover" title="The VFO that follows the satellite's uplink (its frequency, Doppler, mode and tone): another VFO than the downlink's" onchange="birdWatchRigVfosChange()"></select></td></tr>
+              <tr><td colspan="2"><input type="checkbox" id="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.hover" title="Turning one VFO's dial tunes the other with it, for a linear transponder: the change scaled by the two frequencies, the other way for an inverting one. Both keep following the Doppler" onclick="birdWatchLockVfosSet(this.checked)" /> <label for="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.label">Lock VFOs</label></td></tr>
+            </table>
+          </div>
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="birdWatch.auto.group.label">Auto-Track</div>
             <table class="mapChecks">
               <tr><td><label data-i18n="birdWatch.auto.minEl.label" for="birdWatchAutoMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="60" value="0" step="1" class="slider" id="birdWatchAutoMinEl" data-i18n="birdWatch.auto.minEl.hover" title="Auto-Track only selects a satellite whose pass climbs at least this high; 0° selects every pass" oninput="birdWatchAutoMinElChange()" /><span id="birdWatchAutoMinElText" class="mapValue" style="min-width: 26px;">0°</span></td></tr>
             </table>
           </div>
-          <!-- Logging and the Doppler Table: a pair that wraps as one -->
-          <div class="birdWatchPair">
-            <div class="mapGroup">
-              <div class="mapGroupTitle" data-i18n="birdWatch.log.title.label">Logging</div>
-              <table class="mapChecks">
-                <tr><td><input type="checkbox" id="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.hover" title="A QSO logged while the selected satellite is up is logged as a satellite contact: PROP_MODE SAT and its SAT_NAME. A logger's own values are kept" onclick="birdWatchLogTagChange()" /> <label for="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.label">Log Satellite Contacts</label></td></tr>
-              </table>
-            </div>
-            <div class="mapGroup">
-              <div class="mapGroupTitle" data-i18n="birdWatch.doppler.group.label">Doppler Table</div>
-              <table class="mapChecks">
-                <tr><td><input type="checkbox" id="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.hover" title="Leaves the transmitters with no uplink, such as beacons, out of the Doppler table" onclick="birdWatchHideNoUplinkChange()" /> <label for="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.label">Hide Rows With No Uplink</label></td></tr>
-                <tr><td><input type="checkbox" id="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.hover" title="When a satellite is selected (by you or by Auto-Track), the rig follows one of its transmitters: one in the mode of the transmitter followed before, else the one last followed on this satellite, else the first in the table" onclick="birdWatchStickyChange()" /> <label for="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.label">Sticky Mode</label></td></tr>
-              </table>
-            </div>
-          </div>
-          <!-- Auto-Track, Logging and the Doppler Table on the first row; Control Panel, the map's Footprint and Predicted Path on the second;
-               Pass Alerts alone on the last -->
-          <div style="flex-basis: 100%; height: 0;"></div>
           <div class="mapGroup">
-            <div class="mapGroupTitle" data-i18n="birdWatch.panel.title.label">Control Panel</div>
+            <div class="mapGroupTitle" data-i18n="birdWatch.log.title.label">Logging</div>
             <table class="mapChecks">
-              <tr><td><input type="checkbox" id="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.hover" title="Shows the sky plot of the selected satellite in the BirdWatch panel" onclick="birdWatchSkyboxChange()" /> <label for="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.label">Enable Skybox</label></td></tr>
+              <tr><td><input type="checkbox" id="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.hover" title="A QSO logged while the selected satellite is up is logged as a satellite contact: PROP_MODE SAT and its SAT_NAME. A logger's own values are kept" onclick="birdWatchLogTagChange()" /> <label for="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.label">Log Satellite Contacts</label></td></tr>
             </table>
           </div>
+          <!-- Rig Control, Auto-Track and Logging on the first row; the Doppler Table, Panel View and Map on the second; Pass Alerts alone
+               on the last -->
+          <div style="flex-basis: 100%; height: 0;"></div>
           <div class="mapGroup">
-            <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchFootprintOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchFootprintOn" data-i18n="birdWatch.colors.footprint.label">Footprint</label></div>
-            <!-- Ring and Fill on a line, Transparency on a line of its own under them: the box as wide as the wider line -->
-            <div id="birdWatchFootprintOptions" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-              <div style="display: flex; align-items: center; gap: 4px 18px;">
-                <label class="mapColorItem"><input type="color" id="birdWatchFootprintRing" value="#000000" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.ring.label">Ring</span></label>
-                <label class="mapColorItem"><input type="color" id="birdWatchFootprintFill" value="#8f8f8f" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.fill.label">Fill</span></label>
-              </div>
-              <span><label data-i18n="birdWatch.colors.transparency.label" for="birdWatchFootprintTransparency">Transparency</label> <input type="range" min="0" max="1" value="0.86" step="0.01" class="slider" id="birdWatchFootprintTransparency" oninput="birdWatchColorsChange()" /><span id="birdWatchFootprintTransparencyText" class="mapValue">86%</span></span>
+            <div class="mapGroupTitle" data-i18n="birdWatch.doppler.group.label">Doppler Table</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.hover" title="Leaves the transmitters with no uplink, such as beacons, out of the Doppler table" onclick="birdWatchHideNoUplinkChange()" /> <label for="birdWatchHideNoUplinkValue" data-i18n="birdWatch.doppler.nouplink.label">Hide Rows With No Uplink</label></td></tr>
+              <tr><td><input type="checkbox" id="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.hover" title="When a satellite is selected (by you or by Auto-Track), the rig follows one of its transmitters: one in the mode of the transmitter followed before, else the one last followed on this satellite, else the first in the table" onclick="birdWatchStickyChange()" /> <label for="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.label">Sticky Mode</label></td></tr>
+            </table>
+          </div>
+          <!-- The BirdWatch panel: the Bird Views it shows, and Reset Panels (its boxes back in their first order, birdWatchResetPanels) -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.panelView.title.label">Panel View</div>
+            <table class="mapChecks">
+              <tr><td><input type="checkbox" id="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.hover" title="Shows the sky plot of the selected satellite in the BirdWatch panel" onclick="birdWatchSkyboxChange()" /> <label for="birdWatchSkyboxValue" data-i18n="birdWatch.panel.skybox.label">Skybox</label></td></tr>
+              <tr><td><input type="checkbox" id="birdWatchSideProfileValue" data-i18n="birdWatch.panel.sideView.profile.hover" title="Shows the selected satellite's pass in the BirdWatch panel: its elevation over the time of the pass" onclick="birdWatchSideViewChange()" /> <label for="birdWatchSideProfileValue" data-i18n="birdWatch.panel.sideView.profile.label">Pass Profile</label></td></tr>
+              <tr><td><input type="checkbox" id="birdWatchSideHorizonValue" data-i18n="birdWatch.panel.sideView.horizon.hover" title="Shows the selected satellite's pass in the BirdWatch panel as seen facing the horizon: its elevation along the azimuth" onclick="birdWatchSideViewChange()" /> <label for="birdWatchSideHorizonValue" data-i18n="birdWatch.panel.sideView.horizon.label">Horizon</label></td></tr>
+              <tr><td><input type="checkbox" id="birdWatchSideEarthValue" data-i18n="birdWatch.panel.sideView.earth.hover" title="Shows the selected satellite in the BirdWatch panel above the curve of the Earth, at its height and range" onclick="birdWatchSideViewChange()" /> <label for="birdWatchSideEarthValue" data-i18n="birdWatch.panel.sideView.earth.label">Earth</label></td></tr>
+            </table>
+            <div class="mapButtons">
+              <div data-i18n="settings.general.ResetPanels.label" class="button" onclick="birdWatchResetPanels()">Reset Panels</div>
             </div>
           </div>
+          <!-- The satellites on the map, laid out as Settings -> Map's boxes: the selected satellite's footprint and its predicted path, each
+               a row with its tick before its name and its options beside it, its sliders under them; a row's options greyed while it is
+               off (data-opt, birdWatchColorsEnable) -->
           <div class="mapGroup">
-            <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchPathOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathOn" data-i18n="birdWatch.colors.path.label">Predicted Path</label></div>
-            <div id="birdWatchPathOptions" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-              <!-- Line, Dash and Outline on one row, the checkboxes at the same height -->
-              <div style="display: flex; align-items: center; gap: 4px 14px;">
-                <label class="mapColorItem"><input type="color" id="birdWatchPathLine" value="#00008b" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.line.label">Line</span></label>
-                <span style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="birdWatchPathDashOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathDashOn" data-i18n="birdWatch.colors.dash.label">Dash</label></span>
-                <span style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="birdWatchPathOutlineOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathOutlineOn" data-i18n="birdWatch.colors.outline.label">Outline</label><label class="mapColorItem" id="birdWatchPathOutlineSwatch"><input type="color" id="birdWatchPathOutline" value="#ffffff" oninput="birdWatchColorsChange()" /></label></span>
-              </div>
-              <span><label style="display: inline-block; min-width: 66px;" data-i18n="birdWatch.colors.width.label" for="birdWatchPathWidth">Width</label> <input type="range" min="0.5" max="8" value="1.5" step="0.1" class="slider" id="birdWatchPathWidth" oninput="birdWatchColorsChange()" /><span id="birdWatchPathWidthText" class="mapValue">1.5</span></span>              <span><span style="display: inline-flex; align-items: center; gap: 6px; min-width: 66px; vertical-align: middle;"><input type="checkbox" id="birdWatchPathTimeOn" style="margin: 0;" onclick="birdWatchColorsChange()" /><label for="birdWatchPathTimeOn" data-i18n="birdWatch.colors.time.label">Time</label></span> <input type="range" min="6" max="20" value="11" step="1" class="slider" id="birdWatchPathTimeSize" oninput="birdWatchColorsChange()" /><span id="birdWatchPathTimeSizeText" class="mapValue">11 pt</span></span>
-            </div>
+            <div class="mapGroupTitle" data-i18n="birdWatch.map.title.label">Map</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="birdWatchFootprintOn" onclick="birdWatchColorsChange()" /> <label class="mapRowLabelText" for="birdWatchFootprintOn" data-i18n="birdWatch.colors.footprint.label">Footprint</label></td>
+              </tr>
+              <tr data-opt="footprint">
+                <td class="mapRowLabel mapIndent"><label class="mapColorItem"><input type="color" id="birdWatchFootprintRing" value="#000000" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.ring.label">Ring</span></label></td>
+                <td><span class="birdWatchMapItems"><label class="mapColorItem"><input type="color" id="birdWatchFootprintFill" value="#8f8f8f" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.fill.label">Fill</span></label></span></td>
+              </tr>
+              <tr data-opt="footprint">
+                <td class="mapRowLabel mapIndent"><label data-i18n="birdWatch.colors.transparency.label" for="birdWatchFootprintTransparency">Transparency</label></td>
+                <td><input type="range" min="0" max="1" value="0.86" step="0.01" class="slider" id="birdWatchFootprintTransparency" oninput="birdWatchColorsChange()" /><span id="birdWatchFootprintTransparencyText" class="mapValue">86%</span></td>
+              </tr>
+              <tr class="mapRuleRow"><td colspan="2"><hr /></td></tr>
+              <tr>
+                <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="birdWatchPathOn" onclick="birdWatchColorsChange()" /> <label class="mapRowLabelText" for="birdWatchPathOn" data-i18n="birdWatch.colors.path.label">Predicted Path</label></td>
+              </tr>
+              <tr data-opt="path">
+                <td class="mapRowLabel mapIndent"><label class="mapColorItem"><input type="color" id="birdWatchPathLine" value="#00008b" oninput="birdWatchColorsChange()" /><span data-i18n="birdWatch.colors.line.label">Line</span></label></td>
+                <td><span class="birdWatchMapItems"><span class="birdWatchMapCheck"><input type="checkbox" id="birdWatchPathDashOn" onclick="birdWatchColorsChange()" /><label for="birdWatchPathDashOn" data-i18n="birdWatch.colors.dash.label">Dash</label></span><span class="birdWatchMapCheck"><input type="checkbox" id="birdWatchPathOutlineOn" onclick="birdWatchColorsChange()" /><label for="birdWatchPathOutlineOn" data-i18n="birdWatch.colors.outline.label">Outline</label><label class="mapColorItem" id="birdWatchPathOutlineSwatch"><input type="color" id="birdWatchPathOutline" value="#ffffff" oninput="birdWatchColorsChange()" /></label></span></span></td>
+              </tr>
+              <tr data-opt="path">
+                <td class="mapRowLabel mapIndent"><label data-i18n="birdWatch.colors.width.label" for="birdWatchPathWidth">Width</label></td>
+                <td><input type="range" min="0.5" max="8" value="1.5" step="0.1" class="slider" id="birdWatchPathWidth" oninput="birdWatchColorsChange()" /><span id="birdWatchPathWidthText" class="mapValue">1.5</span></td>
+              </tr>
+              <tr data-opt="path">
+                <td class="mapRowLabel mapIndent"><input type="checkbox" id="birdWatchPathTimeOn" onclick="birdWatchColorsChange()" /> <label for="birdWatchPathTimeOn" data-i18n="birdWatch.colors.time.label">Time</label></td>
+                <td><input type="range" min="6" max="20" value="11" step="1" class="slider" id="birdWatchPathTimeSize" oninput="birdWatchColorsChange()" /><span id="birdWatchPathTimeSizeText" class="mapValue">11 pt</span></td>
+              </tr>
+            </table>
           </div>
           <div style="flex-basis: 100%; height: 0;"></div>
           <div class="mapGroup">

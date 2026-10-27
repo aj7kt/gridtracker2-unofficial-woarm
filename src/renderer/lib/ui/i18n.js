@@ -21,9 +21,10 @@ function loadI18n()
   refreshI18NStrings();
 }
 
-function renderI18n()
+// root: the page, or part of it made after (a Rig Control VFO's box, from its template)
+function renderI18n(root = document)
 {
-  const elements = document.querySelectorAll("[data-i18n]");
+  const elements = root.querySelectorAll("[data-i18n]");
   for (let x = 0; x < elements.length; x++)
   {
     const key = elements[x].getAttribute("data-i18n");
@@ -99,7 +100,7 @@ function setLogbookOptionLabels(select, feed)
 function changeLocale()
 {
   GT.settings.app.locale = languageLocale.value;
-  renderI18n(GT.settings.app.locale);
+  renderI18n();
   saveAndCloseApp(true);
 }
 

@@ -1,0 +1,243 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "bands-schema.json",
+    "title": "GridTracker2 band plans",
+    "description": "Band plans: each entity's licence segments (bandplans), and each mode's usual frequencies (frequencies).",
+    "type": "object",
+    "default": {},
+    "required": [
+        "bandplans"
+    ],
+    "properties": {
+        "bandplans": {
+            "title": "The bandplans Schema",
+            "description": "An array of band plan objects.",
+            "type": "array",
+            "default": [],
+            "additionalItems": true,
+            "items": {
+                "title": "Band plan object",
+                "description": "An object that defines the band plan for an entity.",
+                "type": "object",
+                "default": {},
+                "required": [
+                    "dxcc",
+                    "name",
+                    "classes",
+                    "bands"
+                ],
+                "properties": {
+                    "dxcc": {
+                        "title": "DXCCs array",
+                        "description": "An array of integers defining the entities this plan is valid for.",
+                        "type": "array",
+                        "default": [],
+                        "additionalItems": true,
+                        "items": {
+                            "title": "DXCC values",
+                            "description": "Each integer points to a DXCC entity defined by the ARRL DXCC List or ADIF Spec.",
+                            "type": "number",
+                            "examples": [
+                                6,
+                                110,
+                                291
+                            ]
+                        }
+                    },
+                    "name": {
+                        "title": "Band plan name",
+                        "description": "A common name for the band plan.",
+                        "type": "string",
+                        "default": "",
+                        "examples": [
+                            "United States Amateur Band Plan"
+                        ]
+                    },
+                    "classes": {
+                        "title": "License classes array",
+                        "description": "An array of objects that map license classes for the entity. This is used for defining license privileges for a band.",
+                        "type": "array",
+                        "default": [],
+                        "additionalItems": true,
+                        "items": {
+                            "title": "License class object",
+                            "description": "An object with a char and string that define license classes.",
+                            "type": "object"
+                        },
+                        "examples": [
+                            {"N":"Novice"},
+                            {"T":"Technician"},
+                            {"G":"General"},
+                            {"A":"Advanced"},
+                            {"E":"Extra"}
+                        ]
+                    },
+                    "bands": {
+                        "title": "The bands array",
+                        "description": "An array of band objects.",
+                        "type": "array",
+                        "default": [],
+                        "additionalItems": true,
+                        "items": {
+                            "title": "Band object",
+                            "description": "Defines the properties of a band segment.",
+                            "type": "object",
+                            "required": [
+                                "band",
+                                "modes",
+                                "freq",
+                                "classes"
+                            ],
+                            "properties": {
+                                "band": {
+                                    "title": "Band string",
+                                    "description": "A string 'name' for each band, can be duplicate if multiple segments for a band.",
+                                    "type": "string",
+                                    "examples": [
+                                        "2200m",
+                                        "630m",
+                                        "160m",
+                                        "80m",
+                                        "60m",
+                                        "40m",
+                                        "30m",
+                                        "20m",
+                                        "17m",
+                                        "15m",
+                                        "12m",
+                                        "10m",
+                                        "6m",
+                                        "2m",
+                                        "1.25m",
+                                        "70cm",
+                                        "33cm",
+                                        "23cm"
+                                    ]
+                                },
+                                "modes": {
+                                    "title": "Modes array",
+                                    "description": "An array of strings for each mode valid in this band segment.",
+                                    "type": "array",
+                                    "additionalItems": true,
+                                    "items": {
+                                        "title": "Mode string",
+                                        "description": "A string for the mode or types of modes that are valid in this band segment.",
+                                        "type": "string",
+                                        "examples": [
+                                            "CW",
+                                            "DIG",
+                                            "PHONE",
+                                            "IMAGE"
+                                        ]
+                                    }
+                                },
+                                "freq": {
+                                    "title": "Band edge frequency array",
+                                    "description": "An array of 2 numbers defining the start and end limits of a band segment, in MHz.",
+                                    "type": "array",
+                                    "additionalItems": true,
+                                    "items": {
+                                        "title": "Band edge frequency",
+                                        "description": "A frequency in MHz.",
+                                        "type": "number"
+                                    },
+                                    "examples": [
+                                        [0.1357, 0.1378],
+                                        [0.427, 0.479],
+                                        [1.8, 2.0],
+                                        [3.5, 3.6],
+                                        [3.6, 4.0]
+                                    ]
+                                },
+                                "classes": {
+                                    "title": "License classes array",
+                                    "description": "An array of license classes that can use this segment based on the defined list above.",
+                                    "type": "array",
+                                    "additionalItems": true,
+                                    "items": {
+                                        "title": "License class char",
+                                        "description": "A char that matches an option defined in the classes object array above.",
+                                        "type": "string",
+                                        "examples": [
+                                            "E",
+                                            "A",
+                                            "G"
+                                        ]
+                                    },
+                                    "examples": [
+                                        ["E","A","G","T","N"],
+                                        ["E","A","G"],
+                                        ["A","G"],
+                                        ["T","N"],
+                                        ["E"],
+                                        ["A"],
+                                        ["G"]
+                                    ]
+                                },
+                                "note": {
+                                    "title": "Note string",
+                                    "description": "A note for this segment defining special conditions, power limits, restrictions or other information.",
+                                    "type": "string",
+                                    "examples": [
+                                        "1W EIRP, must register with Utilities Technology Council before operating.",
+                                        "5W EIRP except Alaska within 496mi of Russia 1W EIRP, must register with Utilities Technology Council before operating.",
+                                        "Novices and Technicians are limited to 200W on 80m."
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "frequencies": {
+            "title": "The frequencies array",
+            "description": "Each mode's usual frequencies (calling and activity frequencies, as the dial is set), for every entity. The Multi-Mode Decoder's Frequency menu lists its mode's.",
+            "type": "array",
+            "default": [],
+            "items": {
+                "title": "Frequency object",
+                "description": "One mode's usual frequency.",
+                "type": "object",
+                "required": [
+                    "mode",
+                    "band",
+                    "freq",
+                    "rigMode"
+                ],
+                "properties": {
+                    "mode": {
+                        "title": "Mode string",
+                        "description": "The mode used there.",
+                        "type": "string",
+                        "examples": ["CW", "FT8", "FT4", "SSTV", "Packet", "PSK31", "RTTY", "Olivia", "JS8", "WSPR"]
+                    },
+                    "band": {
+                        "title": "Band string",
+                        "description": "The band it is in, named as in bandplans.",
+                        "type": "string",
+                        "examples": ["40m", "20m", "2m"]
+                    },
+                    "freq": {
+                        "title": "Frequency",
+                        "description": "The dial frequency in MHz (for USB modes the audio is above it).",
+                        "type": "number",
+                        "examples": [14.074, 144.39]
+                    },
+                    "rigMode": {
+                        "title": "Rig mode string",
+                        "description": "The mode the rig is set to for it.",
+                        "type": "string",
+                        "enum": ["USB", "LSB", "CW", "FM", "AM"]
+                    },
+                    "note": {
+                        "title": "Note string",
+                        "description": "Where or what it is for (a region, a use).",
+                        "type": "string",
+                        "examples": ["APRS: North America", "QRP calling (IARU)"]
+                    }
+                }
+            }
+        }
+    }
+}

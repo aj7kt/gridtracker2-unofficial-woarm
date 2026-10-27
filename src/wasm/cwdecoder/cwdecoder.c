@@ -20,6 +20,11 @@
 //   cw_events(), cw_event_count(), cw_events_clear(): the characters decoded since the last clear, as (channel id, character) pairs
 //   cw_retune():          the rig moved: everything found so far is let go
 //   cw_set_range(lo, hi): the audio decoded (Hz; Settings, Min Freq and Max Freq): signals outside it aren't
+//   cw_set_decode(on):    CW decoded (1, as at the start) or not (0: the waterfall's rows only, for FT8 and SSTV)
+//   cw_set_view(s, w):    the waterfall's own spectrum: its window a quarter, half, the same or twice the FFT (s 0 to 3), Hann (w 0) or
+//                         Blackman-Harris (1); it never changes what is decoded
+//   cw_view():            that spectrum for the last row: cw_row_bins() floats of dB over each bin's noise floor, then as many of dB re
+//                         full scale
 //
 // The events' characters: a character's code; 1, a channel's transmission starts (after a pause); below 0, the transmission so far read
 // again with what has been learned since and come out differently: its whole text, in cw_revision_text(-c - 1), takes the place of
@@ -46,9 +51,15 @@
 #define CW_CHANNEL_FIELDS 8
 // A channel's boxcars: 8 ms at up to 192 kHz
 #define CW_BOX_MAX 1536
+// Strong signals subtracted: a channel this far over its noise (dB), keyed (this many marks) and heard lately has its signal rebuilt and
+// taken out of the audio the other channels decode (cw_process)
+#define CW_SUB_SNR 15.0f
+#define CW_SUB_MARKS 4
 #define CW_EVENTS_MAX 2048
 #define CW_SYMBOL_MAX 8
 #define CW_RECENT 20
+// A Farnsworth sender's space between characters is learned up to this many dits (9 units at 18/8 WPM)
+#define CW_FARNSWORTH_DITS 12.0
 // A transmission's marks and spaces kept to read it again (txRevise), its text, and the pause that ends it (ms; longer for a slow sender)
 #define CW_TIMELINE 2048
 #define CW_TX_TEXT 512
@@ -87,6 +98,13 @@ typedef struct
   float r1i[CW_BOX_MAX], r1q[CW_BOX_MAX], r2i[CW_BOX_MAX], r2q[CW_BOX_MAX];
   double s1i, s1q, s2i, s2q;
   int pos;
+  // The measuring filter (the raw audio): its boxcars; the mixer's phasor turned back D samples (cD, sD: that turn); the signal rebuilt
+  // at n - D (rec, 0 unless sub: a strong channel's, subtracted from the others')
+  float m1i[CW_BOX_MAX], m1q[CW_BOX_MAX], m2i[CW_BOX_MAX], m2q[CW_BOX_MAX];
+  double t1i, t1q, t2i, t2q;
+  double cD, sD, pc, ps;
+  float rec;
+  int sub;
   int tick;
   // The adaptive threshold
   float sig, noise;
@@ -105,6 +123,9 @@ typedef struct
   char symbol[CW_SYMBOL_MAX + 1];
   int symLen;
   int charDone, wordDone;
+  // The characters of the word under way, and the words of one character in a row: three of those in a row are a Farnsworth sender's
+  // long spaces between characters taken for word spaces (spaceEnded)
+  int wordChars, singleWords;
   double seenMs;        // since its carrier was last over the floor in the spectrum
   int marks;
   // The transmission under way: its marks (ms, above 0) and spaces (ms, below 0) in order, and its text as sent so far
@@ -156,8 +177,13 @@ static float g_db[CW_BINS_MAX];
 static float g_floor[CW_BINS_MAX];
 static float g_hold[CW_BINS_MAX];
 static float g_hits[CW_BINS_MAX];
+static float g_line[CW_BINS_MAX];
 static int g_floorPrimed = 0;
 static unsigned char g_row[CW_BINS_MAX];
+// CW is decoded (cw_set_decode): off (the viewer in another mode), only the waterfall's rows are made, no carrier found or channel run
+static int g_decodeOn = 1;
+// The waterfall's own spectrum learned again (below, with the spectrum)
+static void viewReset(void);
 
 static CwChannel g_ch[CW_MAX_CHANNELS];
 static float g_chOut[CW_MAX_CHANNELS * CW_CHANNEL_FIELDS];
@@ -293,6 +319,8 @@ int cw_init(double rate, double span)
   memset(g_hits, 0, sizeof(g_hits));
   memset(g_ch, 0, sizeof(g_ch));
   g_eventCount = 0;
+  // The waterfall's spectrum made again for this FFT size (viewSetup)
+  viewReset();
   return 1;
 }
 
@@ -323,6 +351,7 @@ void cw_retune(void)
   g_floorPrimed = 0;
   g_rows = 0;
   g_historyLen = 0;
+  viewReset();
 }
 
 // ---- Channels
@@ -333,6 +362,8 @@ static void channelTune(CwChannel *ch, float freq)
   double w = 2.0 * M_PI * freq / g_fs;
   ch->dc = cos(w);
   ch->ds = sin(w);
+  ch->cD = cos(w * (g_box - 1));
+  ch->sD = sin(w * (g_box - 1));
 }
 
 static CwChannel *channelOpen(float freq, float holdDb)
@@ -401,8 +432,9 @@ static int splitTwo(const double *lengths, int n, double ratio, double *low, dou
 }
 
 // The sender's dit and dah from their last marks: two groups at least 2:1 apart are the dits and the dahs, whatever the fist's weighting;
-// marks all of one length so far are dits when about as long as the spaces between them, dahs when longer. A new speed is learned within
-// a few characters
+// marks all of one length so far are dits when about as long as the spaces between them, dahs when longer, once a space has been measured
+// (before that the starting guess stays: a fast sender's first dah taken for a dit against a guessed space would lock the speed far too
+// slow, its spaces then read as dropouts). A new speed is learned within a few characters
 static void speedLearn(CwChannel *ch)
 {
   double low, high;
@@ -411,7 +443,7 @@ static void speedLearn(CwChannel *ch)
     ch->dit = low;
     ch->dah = high;
   }
-  else if (ch->recentCount > 0)
+  else if (ch->recentCount > 0 && ch->gapCount > 0)
   {
     if (low > 2.0 * ch->gap)
     {
@@ -540,7 +572,10 @@ static double wordEndMs(CwChannel *ch)
 // dropout in a fade, not the sender's spacing)
 static void spaceEnded(CwChannel *ch, double s)
 {
-  if (s >= wordEndMs(ch) || s < ch->dit * 0.5) return;
+  // A word's space isn't learned from, unless words of one character keep coming (a Farnsworth sender's long spaces between characters,
+  // which would otherwise never be learned): then up to CW_FARNSWORTH_DITS
+  if (s < ch->dit * 0.5) return;
+  if (s >= wordEndMs(ch) && (ch->singleWords < 3 || s >= ch->dit * CW_FARNSWORTH_DITS)) return;
   ch->gaps[ch->gapPos] = s;
   ch->gapPos = (ch->gapPos + 1) % CW_RECENT;
   if (ch->gapCount < CW_RECENT) ch->gapCount++;
@@ -612,6 +647,8 @@ static void txLocal(CwChannel *ch, int pos, CwTiming *t)
   for (int i = 0; i < ns; i++)
   {
     if (spaces[i] < t->dit * 5.0 && spaces[i] >= t->dit * 0.5) spaces[kept++] = spaces[i];
+    // A Farnsworth sender's spaces between characters, as the channel learned them (longer than 5 dits): kept
+    else if (ch->charGap > ch->dit * 4.0 && spaces[i] < ch->charGap * 1.4 && spaces[i] >= t->dit * 0.5) spaces[kept++] = spaces[i];
   }
   if (splitTwo(spaces, kept, 1.7, &low, &high))
   {
@@ -716,11 +753,14 @@ static void upCheck(CwChannel *ch)
     else if (!c) ch->txUnknown++;
     ch->symLen = 0;
     ch->charDone = 1;
+    ch->wordChars++;
     ended = 1;
   }
   if (ch->charDone && !ch->wordDone && ch->upMs > wordEndMs(ch))
   {
     txEmit(ch, ' ');
+    ch->singleWords = ch->wordChars == 1 ? ch->singleWords + 1 : 0;
+    ch->wordChars = 0;
     ch->wordDone = 1;
     ended = 1;
     wordEnded = 1;
@@ -843,7 +883,7 @@ static void channelTick(CwChannel *ch, float a)
   if (ch->seenMs > CW_CHANNEL_IDLE_MS) ch->used = 0;
 }
 
-static void channelSample(CwChannel *ch, float x)
+static void channelMeasure(CwChannel *ch, float x)
 {
   // The mixer: the carrier to 0 Hz
   double c = ch->c * ch->dc - ch->s * ch->ds;
@@ -859,6 +899,32 @@ static void channelSample(CwChannel *ch, float x)
   ch->s = s;
   float i = (float)(x * c);
   float q = (float)(-x * s);
+  int p = ch->pos;
+  ch->t1i += i - ch->m1i[p];
+  ch->t1q += q - ch->m1q[p];
+  ch->m1i[p] = i;
+  ch->m1q[p] = q;
+  float i1 = (float)ch->t1i;
+  float q1 = (float)ch->t1q;
+  ch->t2i += i1 - ch->m2i[p];
+  ch->t2q += q1 - ch->m2q[p];
+  ch->m2i[p] = i1;
+  ch->m2q[p] = q1;
+  // The phasor D samples back: the decoding filter's mixer, and the rebuilt signal's carrier
+  ch->pc = c * ch->cD + s * ch->sD;
+  ch->ps = s * ch->cD - c * ch->sD;
+  if (ch->sub)
+  {
+    double scale = 2.0 / ((double)g_box * g_box);
+    ch->rec = (float)((ch->t2i * ch->pc - ch->t2q * ch->ps) * scale);
+  }
+  else ch->rec = 0.0f;
+}
+
+static void channelDecode(CwChannel *ch, float x)
+{
+  float i = (float)(x * ch->pc);
+  float q = (float)(-x * ch->ps);
   int p = ch->pos;
   ch->s1i += i - ch->r1i[p];
   ch->s1q += q - ch->r1q[p];
@@ -880,12 +946,37 @@ static void channelSample(CwChannel *ch, float x)
   }
 }
 
+// The audio kept, k samples back from the newest (0: the newest)
+static float historyAt(int k)
+{
+  if (k >= g_historyLen) return 0.0f;
+  return g_history[(g_historyPos - 1 - k + 2 * CW_HISTORY) % CW_HISTORY];
+}
+
 // A new channel: the last 0.6 s of audio replayed into it, so the start of what found it isn't lost
 static void channelReplay(CwChannel *ch)
 {
   int n = (int)(0.6 * g_fs) < g_historyLen ? (int)(0.6 * g_fs) : g_historyLen;
-  for (int j = n; j > 0; j--) channelSample(ch, g_history[(g_historyPos - j + CW_HISTORY) % CW_HISTORY]);
+  for (int j = n - 1; j >= 0; j--)
+  {
+    channelMeasure(ch, historyAt(j));
+    channelDecode(ch, historyAt(j + g_box - 1));
+  }
   ch->seenMs = 0.0;
+}
+
+// CW decoded or not (the viewer's mode: off in FT8 and SSTV, which decode their own audio): off, the channels are let go and only the
+// waterfall's rows are made; on again, carriers are found afresh
+void cw_set_decode(int on)
+{
+  on = on ? 1 : 0;
+  if (on == g_decodeOn) return;
+  g_decodeOn = on;
+  memset(g_ch, 0, sizeof(g_ch));
+  memset(g_chOut, 0, sizeof(g_chOut));
+  memset(g_hits, 0, sizeof(g_hits));
+  g_eventCount = 0;
+  g_revCount = 0;
 }
 
 // The audio decoded (Settings, Min Freq and Max Freq; Hz): no carrier is found outside it, and the channels outside it are let go
@@ -911,23 +1002,10 @@ static int floatCompare(const void *a, const void *b)
   return (x > y) - (x < y);
 }
 
-static void spectrum(void)
+// A row's noise floor, each bin's: each block of bins' median (a carrier or two in it don't lift it), between the blocks' middles a
+// straight line (out: the line's level at each bin)
+static void floorLine(const float *db, float *out)
 {
-  for (int i = 0; i < g_fftN; i++) g_fftIn[i] = g_ring[(g_ringPos + i) % g_fftN] * g_window[i];
-  kiss_fftr(g_fft, g_fftIn, g_fftOut);
-  for (int k = 0; k < g_bins; k++)
-  {
-    float p = g_fftOut[k].r * g_fftOut[k].r + g_fftOut[k].i * g_fftOut[k].i;
-    g_db[k] = 10.0f * log10f(p + 1e-20f);
-  }
-  // Nothing is judged until the FFT's samples are all audio (the first rows are part silence, under any carrier or noise)
-  if (++g_rows <= g_fftN / g_fftHop)
-  {
-    memset(g_row, 0, sizeof(g_row));
-    return;
-  }
-
-  // Each block of bins' noise floor: its median (a carrier or two in it don't lift it), between the blocks' middles a straight line
   float level[CW_BINS_MAX / CW_FLOOR_BLOCK + 1];
   float sorted[CW_FLOOR_BLOCK];
   int blocks = (g_bins + CW_FLOOR_BLOCK - 1) / CW_FLOOR_BLOCK;
@@ -935,7 +1013,7 @@ static void spectrum(void)
   {
     int start = b * CW_FLOOR_BLOCK;
     int n = g_bins - start < CW_FLOOR_BLOCK ? g_bins - start : CW_FLOOR_BLOCK;
-    memcpy(sorted, g_db + start, n * sizeof(float));
+    memcpy(sorted, db + start, n * sizeof(float));
     qsort(sorted, n, sizeof(float), floatCompare);
     level[b] = sorted[n / 2];
   }
@@ -954,7 +1032,143 @@ static void spectrum(void)
       b = blocks - 1;
       t = 0.0f;
     }
-    float f = b + 1 < blocks ? level[b] + (level[b + 1] - level[b]) * t : level[b];
+    out[k] = b + 1 < blocks ? level[b] + (level[b + 1] - level[b]) * t : level[b];
+  }
+}
+
+// ---- The waterfall's own spectrum (cw_set_view, cw_view): the decoder's above finds and reads the carriers and is never changed by it.
+// This one is drawn: its window a quarter, half, the same or twice as long as the decoder's FFT (shorter: sharper in time, a CW dit its
+// own rows; longer: sharper in frequency), Hann or Blackman-Harris (less leakage: a darker floor beside a strong signal). It is read from
+// the audio kept (g_history), zero-padded to the decoder's FFT when shorter, and when longer each bin the stronger of its two, so it has
+// the decoder's bins (one row the same width, at the same pace). Out, for each bin: dB over its own noise floor, then dB re full scale
+// (a full-scale sine 0 dB)
+#define CW_VIEW_MAX (CW_FFT_MAX * 2)
+static int g_viewScale = 2;   // the window's length: g_fftN * 2^scale / 4 (0 a quarter, 1 half, 2 the same, 3 twice)
+static int g_viewWindow = 0;  // 0 Hann, 1 Blackman-Harris
+static int g_viewN = 0;       // the FFT's size made for it (0: none yet)
+static int g_viewLen = 0;
+static float g_viewNorm = 0.0f; // dB taken off a bin's power so a full-scale sine is 0 dB
+static float g_viewWin[CW_VIEW_MAX];
+static float g_viewIn[CW_VIEW_MAX];
+static kiss_fft_cpx g_viewOut[CW_VIEW_MAX / 2 + 1];
+static kiss_fftr_cfg g_viewFft = 0;
+static float g_viewDb[CW_BINS_MAX];
+static float g_viewFloor[CW_BINS_MAX];
+static float g_viewLine[CW_BINS_MAX];
+static float g_view[CW_BINS_MAX * 2];
+static int g_viewPrimed = 0;
+
+float *cw_view(void) { return g_view; }
+
+static void viewReset(void)
+{
+  g_viewN = 0;
+  g_viewPrimed = 0;
+}
+
+// Its window's length and shape (the waterfall's Resolution and Window); the noise floor learned again
+void cw_set_view(int scale, int window)
+{
+  if (scale < 0) scale = 0;
+  if (scale > 3) scale = 3;
+  if (g_fftN * 2 > CW_VIEW_MAX && scale > 2) scale = 2;
+  g_viewScale = scale;
+  g_viewWindow = window == 1 ? 1 : 0;
+  viewReset();
+}
+
+// Its FFT, window and scale made for the decoder's FFT size (cw_init can change it), the first time it's wanted after a change
+static int viewSetup(void)
+{
+  int len = g_fftN * (1 << g_viewScale) / 4;
+  int n = len > g_fftN ? len : g_fftN;
+  if (g_viewN == n && g_viewLen == len && g_viewFft) return 1;
+  if (g_viewFft)
+  {
+    free(g_viewFft);
+    g_viewFft = 0;
+  }
+  g_viewFft = kiss_fftr_alloc(n, 0, 0, 0);
+  if (!g_viewFft) return 0;
+  g_viewN = n;
+  g_viewLen = len;
+  double sum = 0.0;
+  for (int i = 0; i < len; i++)
+  {
+    double x = 2.0 * M_PI * i / (len - 1);
+    double w = g_viewWindow == 1 ? 0.35875 - 0.48829 * cos(x) + 0.14128 * cos(2.0 * x) - 0.01168 * cos(3.0 * x) : 0.5 - 0.5 * cos(x);
+    g_viewWin[i] = (float)w;
+    sum += w;
+  }
+  // A sine of amplitude A peaks at A * sum / 2 in its bin
+  g_viewNorm = (float)(10.0 * log10(0.25 * sum * sum));
+  g_viewPrimed = 0;
+  return 1;
+}
+
+static void viewSpectrum(int ready)
+{
+  if (!ready || !viewSetup())
+  {
+    for (int k = 0; k < g_bins; k++)
+    {
+      g_view[k] = -5.0f;
+      g_view[g_bins + k] = -200.0f;
+    }
+    return;
+  }
+  // The newest g_viewLen samples, oldest first, the rest zero
+  for (int i = 0; i < g_viewLen; i++) g_viewIn[i] = historyAt(g_viewLen - 1 - i) * g_viewWin[i];
+  for (int i = g_viewLen; i < g_viewN; i++) g_viewIn[i] = 0.0f;
+  kiss_fftr(g_viewFft, g_viewIn, g_viewOut);
+  int per = g_viewN / g_fftN;
+  for (int k = 0; k < g_bins; k++)
+  {
+    float p = 0.0f;
+    for (int j = 0; j < per; j++)
+    {
+      kiss_fft_cpx c = g_viewOut[k * per + j];
+      float q = c.r * c.r + c.i * c.i;
+      if (q > p) p = q;
+    }
+    g_viewDb[k] = 10.0f * log10f(p + 1e-20f) - g_viewNorm;
+  }
+  floorLine(g_viewDb, g_viewLine);
+  for (int k = 0; k < g_bins; k++)
+  {
+    // Followed as the decoder's floor is
+    if (!g_viewPrimed || g_viewLine[k] > g_viewFloor[k] + 6.0f) g_viewFloor[k] = g_viewLine[k];
+    else g_viewFloor[k] += (g_viewLine[k] - g_viewFloor[k]) * 0.1f;
+    g_view[k] = g_viewDb[k] - g_viewFloor[k];
+    g_view[g_bins + k] = g_viewDb[k];
+  }
+  g_viewPrimed = 1;
+}
+
+static void spectrum(void)
+{
+  for (int i = 0; i < g_fftN; i++) g_fftIn[i] = g_ring[(g_ringPos + i) % g_fftN] * g_window[i];
+  kiss_fftr(g_fft, g_fftIn, g_fftOut);
+  for (int k = 0; k < g_bins; k++)
+  {
+    float p = g_fftOut[k].r * g_fftOut[k].r + g_fftOut[k].i * g_fftOut[k].i;
+    g_db[k] = 10.0f * log10f(p + 1e-20f);
+  }
+  // Nothing is judged until the FFT's samples are all audio (the first rows are part silence, under any carrier or noise)
+  int ready = ++g_rows > g_fftN / g_fftHop;
+  // The waterfall's spectrum (its own: cw_set_view)
+  viewSpectrum(ready);
+  if (!ready)
+  {
+    memset(g_row, 0, sizeof(g_row));
+    return;
+  }
+
+  // Each bin's noise floor (floorLine), followed row to row
+  floorLine(g_db, g_line);
+  for (int k = 0; k < g_bins; k++)
+  {
+    float f = g_line[k];
     if (!g_floorPrimed)
     {
       g_floor[k] = f;
@@ -970,6 +1184,8 @@ static void spectrum(void)
     g_row[k] = v < 0.0f ? 0 : v > 255.0f ? 255 : (unsigned char)v;
   }
   g_floorPrimed = 1;
+  // Not decoding CW: the row is all that is wanted
+  if (!g_decodeOn) return;
 
   // Each channel's carrier still there: its bin or one either side over the floor, and narrow (over the bins 35 Hz either side as well:
   // static and a sloping floor are wide)
@@ -1067,6 +1283,7 @@ static void spectrum(void)
     out[1] = ch->freq;
     out[2] = (float)(1200.0 / ch->dit);
     out[3] = ch->noise > 0.0f ? 20.0f * log10f(ch->sig / ch->noise) : 0.0f;
+    ch->sub = ch->used && ch->primed >= CW_WARMUP_TICKS && out[3] >= CW_SUB_SNR && ch->seenMs < CW_SEEN_MS && ch->marks >= CW_SUB_MARKS;
     out[4] = (float)ch->key;
     out[5] = (float)ch->used;
     out[6] = (float)(ch->dah / ch->dit);
@@ -1097,9 +1314,22 @@ int cw_process(int n)
     g_history[g_historyPos] = x;
     g_historyPos = g_historyPos + 1 >= CW_HISTORY ? 0 : g_historyPos + 1;
     if (g_historyLen < CW_HISTORY) g_historyLen++;
-    for (int i = 0; i < CW_MAX_CHANNELS; i++)
+    // Each channel's measuring filter on the audio now (and the strong ones' signals rebuilt D samples back); then each channel decodes
+    // the audio D samples back with the strong signals taken out, all but its own. Not decoding CW: none
+    if (g_decodeOn)
     {
-      if (g_ch[i].used) channelSample(&g_ch[i], x);
+      float total = 0.0f;
+      for (int i = 0; i < CW_MAX_CHANNELS; i++)
+      {
+        if (!g_ch[i].used) continue;
+        channelMeasure(&g_ch[i], x);
+        total += g_ch[i].rec;
+      }
+      float xd = historyAt(g_box - 1);
+      for (int i = 0; i < CW_MAX_CHANNELS; i++)
+      {
+        if (g_ch[i].used) channelDecode(&g_ch[i], xd - total + g_ch[i].rec);
+      }
     }
     if (++g_hopCount >= g_fftHop)
     {

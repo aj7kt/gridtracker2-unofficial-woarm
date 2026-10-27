@@ -3,7 +3,7 @@ const validSettings = [
   "acLog",
   "adifLog",
   "app",
-  "Birdwatch",
+  "BirdWatch",
   "appLogs",
   "audio",
   "awardTracker",
@@ -35,8 +35,8 @@ const validSettings = [
   "bandColors",
   "pstrotator",
   "rotor",
-  "rig",
-  "cwDecoder",
+  "Rigs",
+  "MMD",
   "HRDLogbookLog",
   "defaultsApplied"
 ];
@@ -88,7 +88,7 @@ const k_feedRosterColumnColors = {
 const def_settings = {
   defaultsApplied: true,
   // BirdWatch (satellite tracking): all of its settings (its settings window, and the panel and button panel)
-  Birdwatch: {
+  BirdWatch: {
     // BirdWatch (Settings -> Features -> Service): satellite tracking, shows its button in the main button panel
     enable: false,
     // The BirdWatch button's toggle (grey when off); enabling or disabling BirdWatch doesn't change it
@@ -97,6 +97,15 @@ const def_settings = {
     auto: true,
     // Auto Select only picks a satellite whose pass climbs at least this many degrees (BirdWatch settings, General): 0 to 60
     autoMinElevation: 0,
+    // Rig Control's VFOs (BirdWatch settings, General) that follow the satellite: its downlink's and its uplink's, by their ids
+    // (settings.Rigs.vfos; "" for none: that side isn't followed)
+    downlinkVfo: "v1",
+    uplinkVfo: "v2",
+    // Lock VFOs: turning one side's dial tunes the other too (a transponder followed on both: birdWatchLockFollow)
+    lockVfos: false,
+    // BirdWatch's Rig Control (BirdWatch settings, General): the rig follows the selected satellite, Auto-Track's pick or the user's; off,
+    // BirdWatch sends the rig nothing (birdWatchStickyFollow)
+    autoRig: true,
     // The Satellites tab's search and scan only list the satellites with a transmitter that has an uplink (the SatNOGS transmitters, not beacons alone)
     uplinkOnly: false,
     // Scan By Rig (Add Satellite): "off", "hear" (a downlink the rig can receive), "work" (and an uplink it can transmit on)
@@ -105,6 +114,15 @@ const def_settings = {
     logTag: false,
     // The sky plot of the selected satellite in the BirdWatch panel (BirdWatch settings, General)
     skybox: true,
+    // The side views under it, each on its own (BirdWatch settings, General, Bird Views): the pass's profile (elevation over its time), the
+    // pass across the horizon (azimuth along it), the satellite above the curve of the Earth (at its height and range)
+    sideProfile: false,
+    sideHorizon: false,
+    sideEarth: true,
+    // The BirdWatch panel's boxes under its title, in the order dragged to (birdWatchBoxesInit), and the satellite's info box minimized to
+    // its name
+    boxOrder: ["info", "rig", "sky", "profile", "horizon", "earth"],
+    infoCollapsed: false,
     // The satellite info panel's list (BirdWatch panel, right click): the featured item (large, at the top), the order of the others,
     // the ones hidden, and the colors picked for values, by name (birdWatchInfo.js)
     info: { featured: "ttgo", order: [], hidden: [], known: [], colors: {} },
@@ -216,9 +234,6 @@ const def_settings = {
     sixWideMode: 0,
     soundCard: "default",
     soundCardName: null,
-    // The Input Device (Settings -> Audio, audio.js): what the Multi-Mode Decoder listens to; its name too, as device ids can change
-    inputCard: "default",
-    inputCardName: null,
     soundcards: null,
     warnOnSoundcardsChange: false,
     spotView: 0,
@@ -247,6 +262,9 @@ const def_settings = {
     collapsedMapViewFilters: false,
     logEventMedia: "Ping-coin.mp3",
     buttonPanelOrder: [],
+    // The control panel's boxes (Band Activity, the counts, Map View Filters, the button grid) in the order dragged to by their top
+    // borders (panelBoxes.js); empty: the page's order
+    panelBoxOrder: [],
     // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own
     eventViewer: "main",
     // Where the user dragged the main window's Event Viewer panel to ({ x, y } in the window), null while it is where it comes up
@@ -500,28 +518,47 @@ const def_settings = {
   // Hamlib's rotctld (host, netPort) or CatRotator / PstRotator (host, udpPort). The serial port chosen is kept by its identity, so it
   // is opened again at each start. follow: the rotator tracks BirdWatch's selected satellite
   rotor: { enable: false, protocol: "gs232", baud: 9600, dataBits: 8, parity: "none", stopBits: 1, port: null, host: "127.0.0.1", netPort: 4533, udpPort: 12000, follow: true, connect: true },
-  // Rig Control (Settings -> Features -> Service, rig.js): the rig through Hamlib's rigctld (host, netPort), flrig (host, flrigPort) or an
-  // Icom over CI-V on a serial port (port, baud...; civAddress in hex only to insist on one: the rig is asked for its own). That rig is
-  // VFO-A's, the downlink; VFO-B, the uplink, is none (vfoB "none"), its second VFO ("same") or a second rig ("second", set up in
-  // second); "auto" until the user picks: the same rig when it has a second VFO, else none (rig.js, rigVfoBChoice).
-  // offsetA / offsetB: each VFO's converter (an LNB, an upconverter, a transverter), in Hz: the rig's dial is the satellite's frequency plus it
-  rig: {
-    enable: false, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "",
-    vfoB: "auto",
-    // Connect (VFO-A's box): unchecked, VFO-A's rig is let go while its settings are changed; connectB (VFO-B's box): unchecked, no
-    // uplink is tuned (a second rig is let go) while VFO-B's settings are changed
-    connect: true,
-    connectB: true,
-    offsetA: 0,
-    offsetB: 0,
-    second: { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" }
+  // Rig Control (Settings -> Features -> Service, rig.js): the VFOs, VFO-A, VFO-B ... by their place in vfos. Each { id, name (the
+  // user's own, shown after its letter), connect (unchecked: let go while its settings are changed; unchecked until the user checks it,
+  // so nothing is opened before the VFO is set up), offset (its converter: an LNB, an
+  // upconverter, a transverter, in Hz: the rig's dial is the frequency on the air plus it), source: "own" a rig of its own, through
+  // Hamlib's rigctld (host, netPort), flrig (host, flrigPort), SPY Server by Airspy (host, spyPort), SDR++ Server (host, sdrppPort;
+  // sdrppFreq where it was last tuned) or on a serial port (port, baud ...; civAddress in hex only to insist on
+  // one: the rig is asked for its own; forceVfo: rigctld's VFO mode asked for on Rig Control's own connection, as rigctld --vfo gives),
+  // or "of" the second VFO (VFO B, or Sub) of the VFO whose id is in of }. BirdWatch and the Multi-Mode Decoder pick theirs by id
+  Rigs: {
+    enable: false,
+    vfos: [
+      { id: "v1", name: "", connect: false, offset: 0, ssbData: false, source: "own", of: null, protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false },
+      { id: "v2", name: "", connect: false, offset: 0, ssbData: false, source: "of", of: "v1", protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false }
+    ]
   },
-  // Multi-Mode Decoder (Settings -> Features -> Service, mmDecoder.js): decodes in its window from the Input Device (key kept as cwDecoder). wideFilter: while it
-  // decodes, Rig Control opens the rig's filter to its widest, and puts it back after. scanDwell: the Multi-Mode Decoder's band scan, the seconds at
-  // each step. span: its Bandwidth, the audio decoded from 0 Hz up (an SDR's can be wide). minHz, maxHz: within it, the audio decoded (Hz;
-  // the Multi-Mode Decoder's [ and ], dragged on its scale; maxHz 0 is the span's top). cwFallSpeed, ft8FallSpeed: each mode's Waterfall
-  // Speed (1 as heard). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out)
-  cwDecoder: { enable: false, wideFilter: true, scanDwell: 10, span: 4000, minHz: 250, maxHz: 0, cwFallSpeed: 1, ft8FallSpeed: 1, fallShare: 0 },
+  // Multi-Mode Decoder (Settings -> Features -> Service, mmDecoder.js): decodes in its window from the Input Device. span: its Bandwidth, the audio decoded from 0 Hz up (an SDR's can be wide). minHz, maxHz: within it, the audio decoded (Hz;
+  // the Multi-Mode Decoder's [ and ], dragged on its scale; maxHz 0 is the span's top; the mode shown's, each mode's own kept in ranges:
+  // { cw: { minHz, maxHz } }, a mode with none starting with the last one's). fallSpeed: the Waterfall
+  // Speed, every mode's (1 as heard; set at startup from the mode shown's own, from before). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
+  // ft8Depth: the FT8 Decoder's Depth, "normal" (ft8_lib as it comes) or "deep" (ft8wasm.c's passes, fine reading, guesses ...).
+  // ft8Instance: Enable GridTracker Instance, FT8's decodes to GridTracker as an instance named MMD, with the window closed too (off).
+  // PSK31 and RTTY: their Set Frequency and Set Mode (USB).
+  // Olivia: oliviaSubmode ("olivia 8/500", "contestia 16/500" ...: its menu), oliviaCenter (audio Hz: where its signal is).
+  // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
+  // UTC clock every 10, 30 or 60 s (0 none) in every mode but FT8 and FT4. ft8SlotFinder, ft4SlotFinder: the clearest places to
+  // transmit marked on the waterfall (off unless turned on). rsid: the RSIDs heard in every mode named on the waterfall (on). commonInput, commonVfo:
+  // every mode on the one Input Device (inputs.common) and the one VFO (vfos.common: None until picked), each mode's own kept for when
+  // they're off (on).
+  // viewMode: the mode the window decodes (its Mode menu): "cw", "ft8", "ft4", "sstv" or "packet". FT4's own: ft4SetFreq, ft4SetMode (its mode
+  // USB). USB or LSB is set as the rig's data mode when the VFO's SSB Data is checked (Rigs.vfos[].ssbData).
+  // rigControl (the window's Settings, Decoders): whether the decoder may send the rig anything at all; then for each mode, a frequency
+  // picked in the window's Frequency menu: ft8SetFreq, cwSetFreq, sstvSetFreq, packetSetFreq tune the rig there, ft8SetMode, cwSetMode,
+  // sstvSetMode, packetSetMode set its mode (each on its own; FT8 USB, its data mode with the VFO's SSB Data; CW CW; SSTV its sideband; Packet FM,
+  // HF packet LSB), on unless turned off.
+  // rigControl off: nothing is sent unless turned on.
+  // The SSTV Decoder's: sstvSave each picture saved as it ends, into sstvFolder ("": SSTV Pictures in
+  // GridTracker's own folder, mmDecoderSstvFolder). inputs: each mode's Input Device, { cw: { id, name } } (its menu in the window);
+  // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
+  // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
+  // a mode not in it: the first VFO)
+  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8Instance: false, ft4SetFreq: true, ft4SetMode: true, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
   audio: {
     alertMute: 0,
     speechRate: 1,

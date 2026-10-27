@@ -2,17 +2,19 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Rig Control (Settings -> Features -> Service): the rig's frequency and mode, read every second and set on request (rigTune), through
-// Hamlib's rigctld (TCP), flrig (XML-RPC over HTTP), or on a serial port (Web Serial, serialPorts.js) an Icom over CI-V, a Kenwood or a
-// newer Yaesu over their CAT (rigCatProtocol). WSJT-X usually
+// Rig Control (Settings -> Features -> Service): each VFO's frequency and mode, read every second and set on request (rigTune), through
+// Hamlib's rigctld (TCP), flrig (XML-RPC over HTTP), SPY Server by Airspy and SDR++ Server (TCP, rigSpy.js and rigSdrpp.js: an SDR, its
+// I/Q for the Multi-Mode Decoder too, rigIq.js), SDR++'s Rigctl Server (plain rigctl, rigSdrpp.js),
+// or on a serial port (Web Serial, serialPorts.js) an Icom over CI-V, a Kenwood or a newer Yaesu over their CAT (rigCatProtocol). WSJT-X usually
 // holds the rig's serial port: a port that can't be opened says so under Choose Port, with the way to share the rig (rigctld or flrig).
-// The rig set up is VFO-A's, the downlink (RX); VFO-B, the uplink (TX), is the same rig's second VFO (split on) or a second rig of its
-// own (settings.rig.second, its VFO A), each rig with its own link
+// The VFOs (settings.Rigs.vfos, VFO-A, VFO-B ... by their place in the list): each one a rig of its own with its own link, or the second
+// VFO (VFO B, or Sub) of one of those. The features each pick theirs: BirdWatch its downlink's and uplink's (rigRoleVfo), the Multi-Mode
+// Decoder one for each mode
 
 function rigNewState(key)
 {
   return {
-    key: key,           // "a": VFO-A's rig (settings.rig), "b": VFO-B's second rig (settings.rig.second)
+    key: key,           // the id of the VFO this is the rig of (settings.Rigs.vfos)
     link: null,         // the open serial port, or the socket (flrig: nothing kept, each call is a request)
     writer: null,
     reader: null,
@@ -24,9 +26,18 @@ function rigNewState(key)
     freqB: null,        // Hz, the second VFO's (the TX one), when the rig has one
     modeB: null,        // the second VFO's mode, where the rig can say it (rigctld x, flrig get_modeB, CI-V 26 01); asked with VFO-B on it
     modeBAsk: true,     // CI-V: false once the rig answered NG to 26 01 (it hasn't it), so it isn't asked again
+    civMode: null,      // CI-V: the mode as 04 says it, without its data mode (mode is it with "-D" while data mode is on: rigCivModeShow)
+    dataMode: null,     // CI-V: whether data mode is on (1A 06; null until it has answered)
+    dataAsk: true,      // CI-V: false once the rig answered NG to 1A 06 (it hasn't it), so it isn't asked again
     dual: null,         // whether the rig has a second VFO that can be read and set: known once it has answered (null until then)
+    mainSub: false,     // rigctld: the backend names its VFOs Main and Sub (its VFO list), not VFOA and VFOB
+    vfoMode: null,      // rigctld: runs in VFO mode (--vfo: every command names its VFO); null until it has said (rigNetChkVfo)
+    answerB: false,     // rigctld in VFO mode: the answer coming is VFO-B's on this rig (its second VFO)
+    vfoWarned: false,   // rigctld: told on this connection that VFO-B needs VFO mode (rigNetVfoWarn)
+    vfoOptPending: false, // rigctld: Force VFO Mode's \set_vfo_opt asked, its answer not in yet (rigNetChkVfo)
     split: false,       // split (TX on the second VFO) has been asked of the rig
-    civFound: null,     // CI-V: the address the rig answered from (asked with 19 00 at the broadcast address, 00, which every Icom answers)
+    civFound: null,     // CI-V: the address the rig answered from (asked with 19 00 at the address used, or the known ones in turn: rigCivProbe)
+    civProbe: 0,        // CI-V: the next known address rigCivProbe asks
     model: null,        // the rig's name, as rigctld or flrig say it, or the Icom its CI-V address is the default of
     toneFreq: null,     // rigctld: whether it can set the rig's CTCSS tone, and turn it on (its capabilities: Can set CTCSS Tone, Set functions TONE)
     toneFunc: null,
@@ -35,6 +46,8 @@ function rigNewState(key)
     rangeSection: null, // rigctld: the capabilities' ranges being read ("rx", "tx"), while their lines come
     pollTimer: null,
     retryTimer: null,
+    openTries: 0,       // serial: the opens tried again since it was last asked to connect (rigSerialRetry)
+    connectedAt: 0,     // when its link opened (a rig that hasn't answered since a while after: rigNoAnswer)
     generation: 0,      // a connect under way is the newest one; an older one that finishes is ignored
     pending: "",        // text received that isn't a whole line yet
     bytes: [],          // CI-V bytes that aren't a whole frame yet
@@ -42,21 +55,22 @@ function rigNewState(key)
     queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
     lastSent: null,     // serial: the frame out last (a Kenwood or Yaesu "?;" refuses it)
     catId: null,        // Kenwood, Yaesu: what the rig answered to ID; ("019", "0570")
-    filterWidth: null,  // CI-V: the IF filter's width as the rig numbers it (1A 03: 0 to 40, 40 the widest), when asked (the Multi-Mode Decoder)
-    cwPitch: null,      // CI-V: the CW pitch in Hz (14 09), when asked (the Multi-Mode Decoder)
-    passband: null,     // rigctld: the mode's passband in Hz ("Passband: 2400", with the mode)
-    tuningStep: null,   // the rig's tuning step in Hz, when asked (the Multi-Mode Decoder's mouse wheel): CI-V 10, rigctld n
+    civFilter: null,    // CI-V: the filter in use, FIL1 to FIL3 (1 to 3), as the mode's answer tells it; a mode set keeps it (setMode)
+    civFilterB: null,   // CI-V: the same for the other VFO (26 01's answer; setTxMode)
+    cwPitch: null,      // CI-V: the CW pitch in Hz (14 09), when an answer tells it (nothing asks it now)
+    tuningStep: null,   // the rig's tuning step in Hz, when an answer tells it (CI-V 10, rigctld n; nothing asks it now)
     waiting: null,      // serial: the timer for the reply to the frame out, after which the next goes anyway
     tuneSeq: 0,         // how many times settings were sent (rigSend); never reset
     readSeq: 0,         // the tuneSeq the last whole poll was asked after: what was read reflects the settings up to it
     readCount: 0,       // how many whole polls have been read (a later read is a higher count); never reset
     netAnswers: [],     // rigctld: the answers still to come, in order, each { count: its RPRT lines, seq: a poll's tuneSeq, or null }
+    plainQueue: [],     // SDR++ (rigctl): the answers still to come, in order, each { kind: "freq", "mode", "width", "rprt", or "done" and a poll's seq }
     httpChain: Promise.resolve() // flrig: the calls one after another (the polls and the settings), so a poll reads what was set before it
   };
 }
 
-GT.rig = rigNewState("a");
-GT.rigB = rigNewState("b");
+// Each rig's state, by the id of its VFO: one for each VFO that is a rig of its own (rigLinksSync)
+GT.rigs = {};
 
 const RIG_REPLY_MS = 250;
 const RIG_GAP_MS = 30;
@@ -71,61 +85,188 @@ const RIG_CIV_MODELS = { 0x94: "IC-7300", 0xa2: "IC-9700", 0xa4: "IC-705", 0x88:
 const RIG_CIV_STEPS = { 0: 10, 1: 100, 2: 500, 3: 1000, 4: 5000, 5: 6250, 6: 8330, 7: 9000, 8: 10000, 9: 12500, 10: 20000, 11: 25000, 12: 50000, 13: 100000 };
 const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: "RTTY", 0x05: "FM", 0x06: "WFM", 0x07: "CW-R", 0x08: "RTTY-R", 0x17: "DV" };
 
-// A rig's settings: VFO-A's are settings.rig, the second rig's settings.rig.second
+// ---- The VFOs: each { id, name, connect, offset, source, of, and its rig's link: protocol, host, netPort, flrigPort, spyPort, sdrppPort
+// (and sdrppFreq: where an SDR++ Server was last tuned), port, baud, dataBits,
+// parity, stopBits, civAddress, forceVfo }. source "own": a rig of its own, its link as set; "of": the second VFO of the VFO of (one that
+// is a rig of its own, and has no other second VFO), its link that one's. A VFO with its Connect unchecked is let go (its settings free
+// to change)
+
+const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false };
+// VFO-A to VFO-H
+const RIG_VFOS_MAX = 8;
+
+function rigVfos()
+{
+  return GT.settings.Rigs.vfos;
+}
+
+function rigVfoById(id)
+{
+  return id ? rigVfos().find((v) => v.id == id) || null : null;
+}
+
+// A VFO's name: its letter by its place in the list, with the user's own name after it, "VFO-C (SDR)"; "None" for none
+function rigVfoLabel(v)
+{
+  if (!v) return I18N("settings.rig.vfo.none.label");
+  const letter = "VFO-" + String.fromCharCode(65 + Math.max(0, rigVfos().indexOf(v)));
+  return v.name ? letter + " (" + v.name + ")" : letter;
+}
+
+// The VFO is the second VFO of another one's rig
+function rigVfoIsSecond(v)
+{
+  return !!v && v.source == "of";
+}
+
+// The VFO whose rig a VFO is on: itself, or the one it is the second VFO of
+function rigVfoOwner(v)
+{
+  return rigVfoIsSecond(v) ? rigVfoById(v.of) : v;
+}
+
+// A VFO's rig (its state): its own, or its owner's; null when there is none
+function rigVfoLink(v)
+{
+  const owner = v ? rigVfoOwner(v) : null;
+  return owner && !rigVfoIsSecond(owner) ? GT.rigs[owner.id] || null : null;
+}
+
+// Whether a VFO is in use: Rig Control on and its Connect checked (a second VFO's owner's too)
+function rigVfoOn(v)
+{
+  if (!v || !GT.settings.Rigs.enable || v.connect === false) return false;
+  if (!rigVfoIsSecond(v)) return true;
+  const owner = rigVfoOwner(v);
+  return !!owner && !rigVfoIsSecond(owner) && owner.connect !== false;
+}
+
+// What a VFO reads now: { R: its rig, up, dial, mode }. Up while it is on, its rig connected and read (a second VFO: the rig has one
+// that answers); dial the rig's own frequency, its converter offset not taken off
+function rigVfoRead(v)
+{
+  const R = rigVfoLink(v);
+  if (!R || !rigVfoOn(v) || R.status != "connected") return { R: R, up: false, dial: null, mode: null };
+  const second = rigVfoIsSecond(v);
+  const dial = second ? (R.dual === true ? R.freqB : null) : R.freq;
+  return { R: R, up: dial > 0, dial: dial > 0 ? dial : null, mode: (second ? R.modeB : R.mode) || null };
+}
+
+// A rig's settings (its link's): its VFO's
 function rigSettingsOf(R)
 {
-  return R.key == "a" ? GT.settings.rig : GT.settings.rig.second;
+  return rigVfoById(R.key) || RIG_LINK_DEFAULTS;
 }
 
-// VFO-B, the uplink: "none" (not tuned), "same" (VFO-A's rig's second VFO, split on) or "second" (a rig of its own). Until one is chosen
-// (settings.rig.vfoB "auto"): the same rig, once it has answered as having a second VFO, else none. What is shown is what is used, and
-// nothing is saved until the user picks
-function rigVfoBChoice()
+// The settings as they should be: at least one VFO, each with an id of its own and its link's settings; a second VFO only of a VFO that
+// is a rig of its own, and only one such for each (any other is made a rig of its own, its Connect unchecked)
+function rigVfosNormalize()
 {
-  const value = GT.settings.rig.vfoB;
-  if (value == "none" || value == "same" || value == "second") return value;
-  return GT.rig.dual === true ? "same" : "none";
+  const S = GT.settings.Rigs;
+  if (!Array.isArray(S.vfos) || S.vfos.length == 0) S.vfos = [{ id: "v1", source: "own", connect: false }];
+  S.vfos = S.vfos.filter((v) => v && typeof v == "object").slice(0, RIG_VFOS_MAX);
+  const ids = new Set();
+  for (const v of S.vfos)
+  {
+    if (typeof v.id != "string" || !v.id || ids.has(v.id)) v.id = rigVfoNewId(ids);
+    ids.add(v.id);
+    for (const [key, value] of Object.entries(RIG_LINK_DEFAULTS)) if (v[key] === undefined) v[key] = value;
+    v.name = typeof v.name == "string" ? v.name.slice(0, 20) : "";
+    // Not connected until the user checks Connect
+    v.connect = v.connect === true;
+    if (!Number.isFinite(Number(v.offset)) || Math.abs(Number(v.offset)) > RIG_OFFSET_MAX) v.offset = 0;
+    // SSB's Data (rigSsbDataChanged): off unless checked
+    v.ssbData = v.ssbData === true;
+  }
+  const owned = new Set();
+  for (const v of S.vfos)
+  {
+    if (v.source != "of") v.source = "own";
+    if (v.source == "own")
+    {
+      v.of = null;
+      continue;
+    }
+    const owner = rigVfoById(v.of);
+    if (owner && owner !== v && owner.source != "of" && !owned.has(owner.id)) owned.add(owner.id);
+    else
+    {
+      v.source = "own";
+      v.of = null;
+      v.connect = false;
+    }
+  }
 }
 
-// VFO-B is on a rig of its own
-function rigSecondUsed()
+function rigVfoNewId(taken = new Set(rigVfos().map((v) => v.id)))
 {
-  return GT.settings.rig.enable && rigVfoBChoice() == "second";
+  let n = 1;
+  while (taken.has("v" + n)) n++;
+  return "v" + n;
 }
 
-// VFO-B's Connect: unchecked, no uplink is tuned (and a second rig is let go). Never with VFO-B None, where it can't be checked
-function rigUplinkOn()
+// A rig's state for each VFO that is a rig of its own: one whose VFO is gone, or is now a second VFO, let go
+function rigLinksSync()
 {
-  return GT.settings.rig.connectB !== false && rigVfoBChoice() != "none";
+  for (const v of rigVfos())
+  {
+    if (!rigVfoIsSecond(v) && !GT.rigs[v.id]) GT.rigs[v.id] = rigNewState(v.id);
+  }
+  for (const id of Object.keys(GT.rigs))
+  {
+    const v = rigVfoById(id);
+    if (v && !rigVfoIsSecond(v)) continue;
+    rigDisconnect(GT.rigs[id]);
+    delete GT.rigs[id];
+    serialPortTell("rig_" + id, null);
+  }
 }
 
-// Whether a rig's second VFO's mode is asked: VFO-A's rig, with VFO-B on it (Same as VFO-A) and its Connect checked
+// Whether a rig's second VFO is asked (its frequency where that isn't asked anyway, its mode): a VFO on it that is in use
 function rigModeBWanted(R)
 {
-  return R.key == "a" && rigVfoBChoice() == "same" && rigUplinkOn();
+  return rigVfos().some((v) => rigVfoIsSecond(v) && v.of == R.key && rigVfoOn(v));
 }
 
-// Whether a rig is to be connected: VFO-A's while Rig Control is on, the second one while VFO-B is on it; each with its Connect checked
+// Whether a rig is to be connected: its VFO in use
 function rigWanted(R)
 {
-  return R.key == "a" ? GT.settings.rig.enable && GT.settings.rig.connect !== false : rigSecondUsed() && rigUplinkOn();
+  const v = rigVfoById(R.key);
+  return !!v && !rigVfoIsSecond(v) && rigVfoOn(v);
 }
 
-// The rig the uplink (TX) is tuned on: the second one, or VFO-A's (its second VFO); null with VFO-B None, or its Connect unchecked
-function rigUplink()
+// BirdWatch's VFOs (its settings, General: Rig Control): side "rx" the downlink's, "tx" the uplink's (never the downlink's own); null for
+// none, or one no longer in the list
+function rigRoleVfo(side)
 {
-  if (!rigUplinkOn()) return null;
-  const choice = rigVfoBChoice();
-  return choice == "second" ? GT.rigB : choice == "same" ? GT.rig : null;
+  const S = GT.settings.BirdWatch;
+  const v = rigVfoById(side == "rx" ? S.downlinkVfo : S.uplinkVfo);
+  if (side == "tx" && v && v.id == S.downlinkVfo) return null;
+  return v;
 }
 
-// Each VFO's converter offset, in Hz (vfo "a" the downlink, "b" the uplink): the rig's dial is the satellite's frequency plus it. As
-// large as a converter's LO can be (an LNB's 9750 MHz is -9750000000), both ways
+// A side's VFO is in use and its rig connected
+function rigRoleConnected(side)
+{
+  const v = rigRoleVfo(side);
+  const R = v && rigVfoOn(v) ? rigVfoLink(v) : null;
+  return !!R && R.status == "connected";
+}
+
+// Either side's VFO is in use and its rig connected: there is something to follow a satellite with
+function rigRolesConnected()
+{
+  return rigRoleConnected("rx") || rigRoleConnected("tx");
+}
+
+// Each VFO's converter offset, in Hz (a VFO, or its id): the rig's dial is the frequency on the air plus it. As large as a converter's LO
+// can be (an LNB's 9750 MHz is -9750000000), both ways
 const RIG_OFFSET_MAX = 1e12;
 
-function rigOffset(vfo)
+function rigOffset(v)
 {
-  const value = Number(GT.settings.rig[vfo == "b" ? "offsetB" : "offsetA"]);
+  if (typeof v == "string") v = rigVfoById(v);
+  const value = Number(v && v.offset);
   return Number.isFinite(value) && Math.abs(value) <= RIG_OFFSET_MAX ? Math.round(value) : 0;
 }
 
@@ -137,15 +278,26 @@ function rigLoBadge(offset, dial)
   return "<span class=\"rigLoBadge\" title=\"" + htmlEntities(title) + "\">LO</span>";
 }
 
-// The serial port each rig keeps (serialPorts.js), and its settings' elements: rigProtocol ... for VFO-A's, rigBProtocol ... for the second
+// The serial port each rig keeps (serialPorts.js), and its settings' elements (in its VFO's box: data-f="Protocol" ...)
 function rigPurpose(R)
 {
-  return R.key == "a" ? "rig" : "rigB";
+  return "rig_" + R.key;
+}
+
+function rigVfoBox(id)
+{
+  return typeof rigVfosDiv == "undefined" ? null : rigVfosDiv.querySelector(".rigVfoBox[data-vfo='" + id + "']");
+}
+
+function rigVfoEl(id, name)
+{
+  const box = rigVfoBox(id);
+  return box ? box.querySelector("[data-f='" + name + "']") : null;
 }
 
 function rigEl(R, name)
 {
-  return document.getElementById((R.key == "a" ? "rig" : "rigB") + name);
+  return rigVfoEl(R.key, name);
 }
 
 // ---- CI-V: FE FE <to> <from> <command> <data...> FD; the frequency as five BCD bytes, the lowest digits first
@@ -170,36 +322,78 @@ function rigCivHzToBcd(hz)
   return bytes;
 }
 
-// The address a rig's frames go to: the one set, else the one the rig answered from, else the broadcast address (00), which every Icom
-// answers, from its own
+// A CI-V rig's mode as shown and used: its mode as 04 says it, with "-D" while data mode is on (USB-D, as WSJT-X's Data mode sets it)
+function rigCivModeShow(R)
+{
+  if (R.civMode === null) return;
+  R.mode = R.civMode + (R.dataMode && ["USB", "LSB", "FM", "AM"].includes(R.civMode) ? "-D" : "");
+}
+
+// The address a rig's frames go to: the one set, else the one the rig answered from, else the default address of the Icom its USB port
+// names (IC-7300_... is 94: an IC-7300 doesn't answer the broadcast address), else the broadcast address (00)
 function rigCivAddress(R)
 {
   const value = parseInt(String(rigSettingsOf(R).civAddress).trim(), 16);
   if (Number.isFinite(value) && value > 0 && value < 0xff) return value;
-  return R.civFound || 0x00;
+  if (R.civFound) return R.civFound;
+  const model = serialPortModel(rigSettingsOf(R).port);
+  const known = model ? Object.keys(RIG_CIV_MODELS).find((key) => RIG_CIV_MODELS[key] == model) : undefined;
+  return known !== undefined ? Number(known) : 0x00;
+}
+
+// No address set and none known yet (an IC-7300 doesn't answer the broadcast address, and a CI-V interface or a USB adapter doesn't
+// name the rig): each poll asks three of the known Icoms' addresses who is there (19 00, as Hamlib's probe does), one after another
+// through the list, until a rig answers (its address is then R.civFound)
+const RIG_CIV_PROBE_EACH_POLL = 3;
+
+function rigCivProbe(R)
+{
+  const value = parseInt(String(rigSettingsOf(R).civAddress).trim(), 16);
+  if (R.civFound || (Number.isFinite(value) && value > 0 && value < 0xff) || !rigNoAnswer(R)) return [];
+  const addresses = Object.keys(RIG_CIV_MODELS).map(Number);
+  const frames = [];
+  for (let i = 0; i < RIG_CIV_PROBE_EACH_POLL; i++) frames.push(rigCivFrame(addresses[R.civProbe++ % addresses.length], 0x19, [0x00]));
+  return frames;
 }
 
 // Each protocol: serial (CI-V) or network (rigctld, flrig); what to send to ask and to set, and how the answers read. R is the rig
 //   poll(R):          what asks the frequency and the mode
-//   setFreq(hz, R), setMode(mode, R): what sets them (mode as the rig names it: "USB", "FM", ...)
+//   setFreq(hz, R), setMode(mode, R, data): what sets them (mode as the rig names it: "USB", "FM", ...; data: true for the mode's
+//                     data variant, false for it plain, where the protocol can tell them apart; undefined leaves it as it is)
 //   parse(line | bytes, R): updates R.freq / R.mode from an answer; a string back is an error
 const RIG_PROTOCOLS = {
   rigctld: {
     name: "Hamlib rigctld",
     serial: false,
-    // The extended protocol (+): the answers come labeled, "Frequency: 14074000", "Mode: USB", and end with "RPRT 0". The second VFO
-    // is the split TX one: its frequency is read (i) and set (I) as the split frequency, with split on (S 1 VFOB)
+    // The extended protocol (+): the answers come labeled, "Frequency: 14074000", "Mode: USB", and end with "RPRT 0". Whether rigctld
+    // runs in VFO mode (--vfo) is asked first, on its own (rigNetChkVfo), and nothing is polled until it is known.
+    // In VFO mode every command names its VFO: VFO-A Main (or VFOA), VFO-B on this rig Sub (or VFOB), each set and read as itself; no
+    // split, and the VFO selected (the one a Main/Sub rig transmits on) is never changed.
+    // Otherwise the second VFO is the split TX one: its frequency read (i) and set (I) as the split frequency, with split on (S 1 VFOB).
+    // A Main/Sub backend can't take that (Hamlib 4.7's FTX-1: split on, a set of the selected VFO selects Sub), so on one VFO-B isn't
+    // tuned until rigctld runs in VFO mode (rigTuneCanTx), and the user is told (rigNetVfoWarn)
     caps: () => "+1\n",
-    // With VFO-B on this rig, its mode too (x: the split mode, "TX Mode: LSB")
-    poll: (R) => "+f\n+m\n" + (R.dual ? "+i\n" : "") + (R.dual && rigModeBWanted(R) ? "+x\n" : ""),
-    setFreq: (hz) => "+F " + Math.round(hz) + "\n",
-    setMode: (mode) => "+M " + mode + " 0\n",
-    setTx: (hz) => "+I " + Math.round(hz) + "\n",
+    // The second VFO (i, and x: the split mode, "TX Mode: LSB") only with VFO-B on this rig, and not on a Main/Sub backend: there reading
+    // the split frequency can make the next f answer it for a moment, which BirdWatch would take as VFO-A moving
+    poll: (R) =>
+    {
+      if (R.vfoMode === null) return null;
+      if (R.vfoMode) return "+f " + rigNetVfo(R, "a") + "\n+m " + rigNetVfo(R, "a") + "\n" + (R.dual && rigModeBWanted(R) ? "+f " + rigNetVfo(R, "b") + "\n+m " + rigNetVfo(R, "b") + "\n" : "");
+      return "+f\n+m\n" + (R.dual && rigModeBWanted(R) && !R.mainSub ? "+i\n+x\n" : "");
+    },
+    setFreq: (hz, R) => "+F " + (R.vfoMode ? rigNetVfo(R, "a") + " " : "") + Math.round(hz) + "\n",
+    setMode: (mode, R, data) => "+M " + (R.vfoMode ? rigNetVfo(R, "a") + " " : "") + (data && ["USB", "LSB", "FM"].includes(mode) ? "PKT" + mode : mode) + " 0\n",
+    setTx: (hz, R) => (R.vfoMode ? "+F " + rigNetVfo(R, "b") + " " : "+I ") + Math.round(hz) + "\n",
     // The split (TX) VFO's own mode (X): an inverting transponder's uplink is LSB under a USB downlink
-    setTxMode: (mode) => "+X " + mode + " 0\n",
-    splitOn: () => "+S 1 VFOB\n",
-    // The CTCSS tone in tenths of a hertz (C), and the tone turned on or off (U TONE)
-    setTone: (hz) => (hz > 0 ? "+C " + Math.round(hz * 10) + "\n+U TONE 1\n" : "+U TONE 0\n"),
+    setTxMode: (mode, R) => (R.vfoMode ? "+M " + rigNetVfo(R, "b") + " " : "+X ") + mode + " 0\n",
+    splitOn: (R) => (R.vfoMode ? null : "+S 1 VFOB\n"),
+    // The CTCSS tone in tenths of a hertz (C), and the tone turned on or off (U TONE), on the uplink's VFO: in VFO mode the rig's first
+    // (side "a") or, the uplink on its second VFO, that one ("b")
+    setTone: (hz, R, side) =>
+    {
+      const vfo = R.vfoMode ? rigNetVfo(R, side == "b" ? "b" : "a") + " " : "";
+      return hz > 0 ? "+C " + vfo + Math.round(hz * 10) + "\n+U " + vfo + "TONE 1\n" : "+U " + vfo + "TONE 0\n";
+    },
     canTone: (R) => R.toneFreq === true && R.toneFunc === true,
     parse: (line, R) =>
     {
@@ -219,16 +413,22 @@ const RIG_PROTOCOLS = {
         return null;
       }
       if (!/^\s/.test(line)) R.rangeSection = null;
-      if ((m = /^Frequency:\s*(\d+)/.exec(line))) R.freq = Number(m[1]);
+      // In VFO mode an answer starts by naming its VFO ("get_freq: Sub"): VFO-B's frequency and mode are this rig's second VFO's
+      if ((m = /^get_(?:freq|mode):\s*(\S*)/.exec(line))) R.answerB = R.vfoMode === true && m[1] == rigNetVfo(R, "b");
+      else if ((m = /^Frequency:\s*(\d+)/.exec(line))) R[R.answerB ? "freqB" : "freq"] = Number(m[1]);
       else if ((m = /^TX Frequency:\s*(\d+)/.exec(line))) R.freqB = Number(m[1]);
       else if ((m = /^TX Mode:\s*(\S+)/.exec(line))) R.modeB = m[1];
-      else if ((m = /^VFO list:\s*(.*)/.exec(line))) R.dual = /VFOB|Sub/i.test(m[1]);
+      else if ((m = /^VFO list:\s*(.*)/.exec(line)))
+      {
+        R.dual = /VFOB|Sub/i.test(m[1]);
+        R.mainSub = /\bMain\b/.test(m[1]) && /\bSub\b/.test(m[1]) && !/\bVFOB\b/.test(m[1]);
+        rigNetVfoWarn(R);
+      }
       else if ((m = /^Model name:\s*(.+)/.exec(line))) R.model = m[1].trim();
       else if ((m = /^Can set CTCSS Tone:\s*(\S)/.exec(line))) R.toneFreq = m[1] == "Y";
       else if ((m = /^Set functions:\s*(.*)/.exec(line))) R.toneFunc = /\bTONE\b/.test(m[1]);
-      else if ((m = /^Passband:\s*(\d+)/.exec(line))) R.passband = Number(m[1]);
       else if ((m = /^Tuning Step:\s*(\d+)/.exec(line))) R.tuningStep = Number(m[1]) || null;
-      else if ((m = /^Mode:\s*(\S+)/.exec(line))) R.mode = m[1];
+      else if ((m = /^Mode:\s*(\S+)/.exec(line))) R[R.answerB ? "modeB" : "mode"] = m[1];
       else if ((m = /^RPRT\s+(-\d+)/.exec(line))) return "RPRT " + m[1];
       return null;
     }
@@ -240,7 +440,8 @@ const RIG_PROTOCOLS = {
     // XML-RPC: VFO A is the RX one and B the TX one (split on); the gets give strings, the sets take the hertz or the mode's name
     calls: { freq: "rig.get_vfoA", mode: "rig.get_modeA", freqB: "rig.get_vfoB", modeB: "rig.get_modeB", model: "rig.get_xcvr" },
     setFreq: (hz) => ["rig.set_vfoA", "<double>" + Math.round(hz) + "</double>"],
-    setMode: (mode) => ["rig.set_modeA", "<string>" + mode + "</string>"],
+    // Data: the name most rigs' flrig modes give it (an Icom's USB-D)
+    setMode: (mode, R, data) => ["rig.set_modeA", "<string>" + (data && ["USB", "LSB"].includes(mode) ? mode + "-D" : mode) + "</string>"],
     setTx: (hz) => ["rig.set_vfoB", "<double>" + Math.round(hz) + "</double>"],
     setTxMode: (mode) => ["rig.set_modeB", "<string>" + mode + "</string>"],
     splitOn: () => ["rig.set_split", "<int>1</int>"]
@@ -254,16 +455,19 @@ const RIG_PROTOCOLS = {
     // 03 asks the frequency, 04 the mode; 05 and 06 set them. The other VFO (the TX one, with split on: 0F 01) is read and set
     // without switching to it, with 25 01 (the IC-7300, 7610, 9700 and 705 have it; a rig that answers NG hasn't, and isn't asked again)
     // With VFO-B on this rig, the other VFO's mode too (26 01), unless the rig answered NG to it
-    poll: (R) => [rigCivFrame(rigCivAddress(R), 0x03), rigCivFrame(rigCivAddress(R), 0x04)].concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(R), 0x25, [0x01])])
-      .concat(R.dual === true && R.modeBAsk && rigModeBWanted(R) ? [rigCivFrame(rigCivAddress(R), 0x26, [0x01])] : []),
+    // Data mode too (1A 06: the IC-7300, 705, 9700, 7610 ...; an older Icom answers NG, and isn't asked again), so USB-D shows as such
+    poll: (R) => rigCivProbe(R).concat([rigCivFrame(rigCivAddress(R), 0x03), rigCivFrame(rigCivAddress(R), 0x04)]).concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(R), 0x25, [0x01])])
+      .concat(R.dual === true && R.modeBAsk && rigModeBWanted(R) ? [rigCivFrame(rigCivAddress(R), 0x26, [0x01])] : [])
+      .concat(R.dataAsk && R.civFound ? [rigCivFrame(rigCivAddress(R), 0x1a, [0x06])] : []),
     setFreq: (hz, R) => rigCivFrame(rigCivAddress(R), 0x05, rigCivHzToBcd(hz)),
     setTx: (hz, R) => rigCivFrame(rigCivAddress(R), 0x25, [0x01, ...rigCivHzToBcd(hz)]),
     splitOn: (R) => rigCivFrame(rigCivAddress(R), 0x0f, [0x01]),
-    // 26 01: the unselected (TX) VFO's mode, data mode off, filter 1 (the IC-7300, 7610, 9700, 705 have it; an older Icom answers NG)
+    // 26 01: the unselected (TX) VFO's mode, data mode off, its filter kept (as last read; FIL1 before one is) (the IC-7300, 7610, 9700,
+    // 705 have it; an older Icom answers NG)
     setTxMode: (mode, R) =>
     {
       const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
-      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x26, [0x01, code, 0x00, 0x01]) : null;
+      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x26, [0x01, code, 0x00, R.civFilterB || 0x01]) : null;
     },
     // 1B 00 sets the repeater tone (00, then the tenths of a hertz as four BCD digits: 67.0 is 00 06 70), 16 42 turns it on (01) or off (00)
     setTone: (hz, R) =>
@@ -274,10 +478,16 @@ const RIG_PROTOCOLS = {
       return [rigCivFrame(rigCivAddress(R), 0x1b, [0x00, bcd(0), bcd(2)]), rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x01])];
     },
     canTone: () => true,
-    setMode: (mode, R) =>
+    // The mode with the filter in use kept (06 mode filter: without one the rig takes the mode's default, FIL2 on the IC-7300; before the
+    // filter is read, the mode alone). Data asked for or against: 1A 06 after the mode, data mode on with that filter (01 and it) or off
+    // (00 00), as the IC-7300, 705, 9700 and 7610 have it; the two frames sent together
+    setMode: (mode, R, data) =>
     {
       const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
-      return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x06, [code]) : null;
+      if (!Number.isFinite(code)) return null;
+      const frame = rigCivFrame(rigCivAddress(R), 0x06, R.civFilter ? [code, R.civFilter] : [code]);
+      if (data === undefined) return frame;
+      return new Uint8Array([...frame, ...rigCivFrame(rigCivAddress(R), 0x1a, [0x06, data ? 0x01 : 0x00, data ? R.civFilter || 0x01 : 0x00])]);
     },
     // A frame from the rig to us (E0), or to everyone (00: the rig telling of a change); our own frames come back (the echo) and are skipped
     parse: (frame, R) =>
@@ -290,23 +500,44 @@ const RIG_PROTOCOLS = {
       const command = frame[4];
       const data = frame.slice(5, frame.length - 1);
       if ((command == 0x03 || command == 0x00) && data.length >= 5) R.freq = rigCivBcdToHz(data.slice(0, 5));
-      else if ((command == 0x04 || command == 0x01) && data.length >= 1) R.mode = RIG_CIV_MODES[data[0]] || ("mode " + data[0]);
+      else if ((command == 0x04 || command == 0x01) && data.length >= 1)
+      {
+        R.civMode = RIG_CIV_MODES[data[0]] || ("mode " + data[0]);
+        // The filter in use after it (FIL1 to FIL3)
+        if (data.length >= 2 && data[1] >= 1 && data[1] <= 3) R.civFilter = data[1];
+        rigCivModeShow(R);
+      }
+      // Data mode (1A 06): 00 off, 01 to 03 D1 to D3
+      else if (command == 0x1a && data.length >= 2 && data[0] == 0x06)
+      {
+        R.dataMode = data[1] > 0;
+        rigCivModeShow(R);
+      }
       else if (command == 0x19 && data.length >= 2 && data[0] == 0x00) R.civFound = data[1];
       else if (command == 0x25 && data.length >= 6 && data[0] == 0x01)
       {
         R.freqB = rigCivBcdToHz(data.slice(1, 6));
         R.dual = true;
       }
-      else if (command == 0x26 && data.length >= 2 && data[0] == 0x01) R.modeB = RIG_CIV_MODES[data[1]] || ("mode " + data[1]);
-      // The Multi-Mode Decoder's: the IF filter's width (1A 03, one BCD byte) and the CW pitch (14 09, 0 to 255 for 300 to 900 Hz, in 5 Hz steps)
-      else if (command == 0x1a && data.length >= 2 && data[0] == 0x03) R.filterWidth = (data[1] >> 4) * 10 + (data[1] & 0x0f);
+      else if (command == 0x26 && data.length >= 2 && data[0] == 0x01)
+      {
+        R.modeB = RIG_CIV_MODES[data[1]] || ("mode " + data[1]);
+        // Its filter (after the mode and the data mode)
+        if (data.length >= 4 && data[3] >= 1 && data[3] <= 3) R.civFilterB = data[3];
+      }
+      // The CW pitch (14 09, 0 to 255 for 300 to 900 Hz, in 5 Hz steps)
       else if (command == 0x14 && data.length >= 3 && data[0] == 0x09) R.cwPitch = Math.round((300 + (rigCivBcdToHz([data[2], data[1]]) * 600) / 255) / 5) * 5;
       // The tuning step (10, one BCD byte): its code as the IC-7300, 705, 9700 and 7610 have them; 00 is TS off, 10 Hz a step
       else if (command == 0x10 && data.length == 1) R.tuningStep = RIG_CIV_STEPS[(data[0] >> 4) * 10 + (data[0] & 0x0f)] || null;
       else if (command == 0xfa)
       {
-        // NG to 26 01: the rig hasn't it, and isn't asked again
+        // NG to 26 01, or to 1A 06: the rig hasn't it, and isn't asked again (nor taken as having no second VFO)
         if (R.lastSent && R.lastSent[4] == 0x26) R.modeBAsk = false;
+        if (R.lastSent && R.lastSent[4] == 0x1a && R.lastSent[5] == 0x06)
+        {
+          R.dataAsk = false;
+          return "NG";
+        }
         // The first NG, before the other VFO ever answered: the rig hasn't the 25 command
         if (R.dual === null) R.dual = false;
         return "NG";
@@ -425,8 +656,12 @@ function rigCatProtocol(cat)
     setFreq: (value) => "FA" + hz(value) + ";",
     setTx: (value) => "FB" + hz(value) + ";",
     splitOn: (R) => cat.splitOn(R.catId),
-    setMode: (mode) =>
+    // Data: the rig's packet mode where it has one (a Yaesu's PKT-U, PKT-L), else the mode plain
+    setMode: (mode, R, data) =>
     {
+      const name = String(mode).toUpperCase();
+      const packet = { USB: "PKT-U", LSB: "PKT-L" }[name];
+      if (data && packet && Object.values(cat.modes).includes(packet)) mode = packet;
       const code = Object.keys(cat.modes).find((key) => cat.modes[key] == String(mode).toUpperCase());
       return code === undefined ? null : cat.modeSet(code);
     },
@@ -462,37 +697,149 @@ function rigCatProtocol(cat)
   };
 }
 
-function rigProtocolChosen(R = GT.rig)
+function rigProtocolChosen(R)
 {
   return RIG_PROTOCOLS[rigSettingsOf(R).protocol] || RIG_PROTOCOLS.rigctld;
 }
 
-// ---- Settings (Features -> Service): VFO-A's rig, then VFO-B (Same Rig or Second Rig) and the second rig's rows under it
+// ---- Settings (Features -> Service): a box for each VFO (made from #rigVfoTemplate), its title its letter, then Add VFO
 
 function rigSettingsRender()
 {
-  const S = GT.settings.rig;
+  // A box shows its rig's state: the states made first (the settings are shown as they load, before rigInit)
+  rigVfosNormalize();
+  rigLinksSync();
+  const S = GT.settings.Rigs;
   rigEnable.checked = S.enable;
-  rigConnectValue.checked = S.connect !== false;
-  rigVfoB.value = rigVfoBChoice();
-  // VFO-A's box and VFO-B's (their titles VFO-A (Downlink), VFO-B (Uplink))
-  rigVfoABoxTr.style.display = S.enable ? "" : "none";
-  rigVfoBBoxTr.style.display = S.enable ? "" : "none";
-  rigSecondTr.style.display = rigSecondUsed() ? "" : "none";
-  rigOffsetATr.style.display = S.enable ? "" : "none";
-  rigOffsetBTr.style.display = S.enable && rigVfoBChoice() != "none" ? "" : "none";
-  rigOffsetA.value = String(rigOffset("a"));
-  rigOffsetB.value = String(rigOffset("b"));
-  // Connected (each box's Connect checked), its settings can't be changed: nothing half set goes live to a rig
-  rigBConnectValue.checked = rigUplinkOn();
-  const locked = S.connect !== false;
-  const lockedB = rigUplinkOn();
-  rigLockField(rigOffsetA, locked);
-  for (const el of [rigVfoB, rigOffsetB]) rigLockField(el, lockedB);
-  // VFO-B None: nothing to connect
-  rigLockField(rigBConnectValue, rigVfoBChoice() == "none");
-  rigSettingsRenderOne(GT.rig, S.enable, locked);
-  rigSettingsRenderOne(GT.rigB, rigSecondUsed(), lockedB);
+  rigVfosTr.style.display = S.enable ? "" : "none";
+  // The boxes made again only when the list changed
+  const ids = rigVfos().map((v) => v.id).join(",");
+  if (rigVfosDiv.dataset.ids != ids)
+  {
+    rigVfosDiv.dataset.ids = ids;
+    rigVfosDiv.innerHTML = "";
+    for (const v of rigVfos()) rigVfosDiv.appendChild(rigVfoBoxMake(v));
+  }
+  rigAddVfo.style.display = rigVfos().length < RIG_VFOS_MAX ? "" : "none";
+  for (const v of rigVfos()) rigVfoBoxRender(v);
+  // The VFOs (added, removed, their letters and names) in the features' menus: BirdWatch's, and the Multi-Mode Decoder's (its window,
+  // when loaded)
+  if (typeof birdWatchRigVfosRender == "function") birdWatchRigVfosRender();
+  try
+  {
+    GT.mmDecoderHandle.window.mmdVfosRender();
+  }
+  catch (e)
+  {
+    // Not loaded: its menus are made as it opens
+  }
+}
+
+// A VFO's box: the template's, its fields' ids its own (rig_<id>_Protocol ...) and their labels pointed at them
+function rigVfoBoxMake(v)
+{
+  const box = rigVfoTemplate.content.firstElementChild.cloneNode(true);
+  box.dataset.vfo = v.id;
+  for (const el of box.querySelectorAll("[data-f]")) el.id = "rig_" + v.id + "_" + el.dataset.f;
+  for (const label of box.querySelectorAll("label[data-for]")) label.htmlFor = "rig_" + v.id + "_" + label.dataset.for;
+  renderI18n(box);
+  return box;
+}
+
+// The VFO a field is in (its box's)
+function rigVfoOfEl(el)
+{
+  const box = el.closest(".rigVfoBox");
+  return box ? rigVfoById(box.dataset.vfo) : null;
+}
+
+// A VFO's box: its title, name and Connect, where it is (its own rig, or another one's second VFO), its offset; its rig's rows for one of
+// its own, or how that rig's second VFO is for a second VFO. Connected (Connect checked), its settings can't be changed: nothing half set
+// goes live to a rig
+function rigVfoBoxRender(v)
+{
+  const el = (name) => rigVfoEl(v.id, name);
+  const second = rigVfoIsSecond(v);
+  const locked = v.connect !== false;
+  el("Title").textContent = rigVfoLabel(v).replace(/ \(.*$/, "");
+  if (document.activeElement !== el("Name")) el("Name").value = v.name;
+  el("Name").placeholder = I18N("settings.rig.vfoName.label");
+  el("Connect").checked = locked;
+  // Removed only with its Connect unchecked, and never the last one
+  el("Remove").style.display = rigVfos().length > 1 && !locked ? "" : "none";
+  // Where it is: its own rig, or the second VFO of a VFO that is a rig of its own with no other second VFO (none for a VFO that has one)
+  const source = el("Source");
+  const hasSecond = rigVfos().some((x) => rigVfoIsSecond(x) && x.of == v.id);
+  const choices = [["own", I18N("settings.rig.source.own.label")]];
+  if (!hasSecond)
+  {
+    for (const owner of rigVfos())
+    {
+      if (owner === v || rigVfoIsSecond(owner)) continue;
+      if (rigVfos().some((x) => x !== v && rigVfoIsSecond(x) && x.of == owner.id)) continue;
+      choices.push([owner.id, I18N("settings.rig.source.second.label").replace("{vfo}", rigVfoLabel(owner))]);
+    }
+  }
+  const key = choices.map(([value, text]) => value + "=" + text).join("|");
+  if (source.dataset.key != key)
+  {
+    source.dataset.key = key;
+    source.innerHTML = "";
+    for (const [value, text] of choices) source.appendChild(new Option(text, value));
+  }
+  source.value = second ? v.of : "own";
+  rigLockField(source, locked);
+  el("Offset").value = String(rigOffset(v));
+  rigLockField(el("Offset"), locked);
+  // SSB's Data: a rig of its own's (a second VFO's mode is set without it)
+  el("SsbData").checked = v.ssbData === true;
+  el("SsbTr").style.display = second ? "none" : "";
+  if (second)
+  {
+    for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "HostTr", "ForceVfoTr"]) el(name).style.display = "none";
+    el("StatusTr").style.display = "";
+    el("PortError").style.display = "none";
+    rigVfoSecondStatusRender(v);
+  }
+  else rigSettingsRenderOne(GT.rigs[v.id], true, locked);
+}
+
+// A second VFO's Status: how its rig is, and whether that rig has a second VFO that answers
+function rigVfoSecondStatusRender(v)
+{
+  const statusEl = rigVfoEl(v.id, "Status");
+  if (!statusEl) return;
+  const R = rigVfoLink(v);
+  const read = rigVfoRead(v);
+  let text;
+  let color;
+  if (!R || !rigVfoOn(v))
+  {
+    text = I18N("rotor.status.off");
+    color = "#ccc";
+  }
+  else if (R.status != "connected" || rigNoAnswer(R))
+  {
+    text = rigStatusShort(R);
+    color = { connecting: "yellow", error: "#ff8080" }[R.status] || "orange";
+  }
+  else if (R.dual === false)
+  {
+    text = I18N("settings.rig.noSecondVfo");
+    color = "orange";
+  }
+  else if (!read.up)
+  {
+    text = I18N("rotor.status.connecting");
+    color = "yellow";
+  }
+  else
+  {
+    text = I18N("rotor.status.connected") + "  " + formatDialFreq(read.dial - rigOffset(v)) + (rigOffset(v) ? " LO" : "") + " MHz" + (read.mode ? " " + read.mode : "");
+    color = "lightgreen";
+  }
+  statusEl.textContent = text;
+  statusEl.style.color = color;
 }
 
 // A setting's field greyed and left alone (locked), or not
@@ -505,7 +852,7 @@ function rigLockField(el, locked)
 // One rig's rows: shown (on) or not, their fields locked or not
 function rigSettingsRenderOne(R, on, locked = false)
 {
-  for (const name of ["Protocol", "Choose", "Baud", "DataBits", "Parity", "StopBits", "CivValue", "Host", "NetPort"]) rigLockField(rigEl(R, name), locked);
+  for (const name of ["Protocol", "Choose", "Baud", "DataBits", "Parity", "StopBits", "CivValue", "Host", "NetPort", "ForceVfo"]) rigLockField(rigEl(R, name), locked);
   const S = rigSettingsOf(R);
   const protocolSelect = rigEl(R, "Protocol");
   const baudSelect = rigEl(R, "Baud");
@@ -534,8 +881,9 @@ function rigSettingsRenderOne(R, on, locked = false)
   rigEl(R, "CivValue").value = S.civAddress;
   rigEl(R, "CivValue").placeholder = I18N("rig.civ.auto");
   rigEl(R, "Host").value = S.host;
+  rigEl(R, "ForceVfo").checked = S.forceVfo === true;
   const protocol = rigProtocolChosen(R);
-  rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : S.netPort;
+  rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : protocol.portKey ? S[protocol.portKey] : S.netPort;
   const portName = rigEl(R, "PortName");
   portName.textContent = S.port ? serialPortShortName(S.port) + (serialPortModel(S.port) ? "  —  " + serialPortModel(S.port) : "") : I18N("settings.rotor.none.label");
   portName.title = S.port ? S.port.displayName || "" : "";
@@ -544,43 +892,116 @@ function rigSettingsRenderOne(R, on, locked = false)
   const note = { kenwood: "settings.rig.kenwood.note", yaesu: "settings.rig.yaesu.note", yaesu817: "settings.rig.yaesu817.note" }[S.protocol];
   // A model's name (TS-990, FTX-1) isn't broken at its hyphen
   rigEl(R, "ProtocolNote").innerHTML = note ? htmlEntities(I18N(note)).replace(/([A-Za-z#]+-[A-Za-z0-9]+)/g, "<span style='white-space:nowrap'>$1</span>") : "";
-  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", HostTr: on && !serial, StatusTr: on };
+  const sdrpp = on && S.protocol == "sdrpp";
+  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", HostTr: on && !serial, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, StatusTr: on };
   for (const [name, shown] of Object.entries(rows)) rigEl(R, name).style.display = shown ? "" : "none";
   serialLinuxRender(rigEl(R, "LinuxTr"), rigEl(R, "LinuxText"), S.port, on && serial);
   rigStatusRender(R);
 }
 
+// Every rig connected (or let go) as its VFO is set
+function rigConnectAll()
+{
+  rigLinksSync();
+  for (const R of Object.values(GT.rigs)) rigConnect(R);
+}
+
 function rigEnableChanged()
 {
-  GT.settings.rig.enable = rigEnable.checked;
+  GT.settings.Rigs.enable = rigEnable.checked;
   rigSettingsRender();
-  rigConnect(GT.rig);
-  rigConnect(GT.rigB);
+  rigConnectAll();
 }
 
-// A box's Connect unchecked: its rig let go (VFO-B's: no uplink tuned), its settings free to change; checked: locked, and connected
-// with them (key: "a" VFO-A's box, "b" VFO-B's)
-function rigConnectChanged(key = "a")
+// A box's Connect unchecked: its rig let go (a second VFO: no longer read or tuned), its settings free to change; checked: locked, and
+// connected with them. What BirdWatch follows is sent again once it is on
+function rigConnectChanged(el)
 {
-  if (key == "b")
+  const v = rigVfoOfEl(el);
+  if (v) rigVfoConnectSet(v, el.checked);
+}
+
+// A VFO's Connect (its box in Settings, or its dot in the BirdWatch panel's rig box)
+function rigVfoConnectSet(v, on)
+{
+  v.connect = on;
+  if (GT.rigDoppler) GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
+  rigSettingsRender();
+  // A second VFO's rig is polled for it (rigModeBWanted) without connecting again; a rig of its own, and the second VFO on it, as it is
+  if (!rigVfoIsSecond(v)) rigConnect(GT.rigs[v.id]);
+}
+
+// Where a VFO is changed: a rig of its own, or the second VFO of another; its Connect left unchecked (it goes live once it is checked)
+function rigVfoSourceChanged(el)
+{
+  const v = rigVfoOfEl(el);
+  if (!v) return;
+  const owner = rigVfoById(el.value);
+  v.source = owner ? "of" : "own";
+  v.of = owner ? owner.id : null;
+  v.connect = false;
+  rigVfosNormalize();
+  rigLinksSync();
+  if (!rigVfoIsSecond(v))
   {
-    GT.settings.rig.connectB = rigBConnectValue.checked;
-    // The uplink followed is sent again once it is on
-    if (GT.rigDoppler) GT.rigDoppler.sentTx = null;
+    serialPortTell(rigPurpose(GT.rigs[v.id]), v.port);
+    rigConnect(GT.rigs[v.id]);
   }
-  else GT.settings.rig.connect = rigConnectValue.checked;
   rigSettingsRender();
-  rigConnect(key == "b" ? GT.rigB : GT.rig);
 }
 
-// VFO-B on the same rig, a second one, or none: the second rig connected, or let go
-function rigVfoBChanged()
+// A VFO's own name, shown after its letter
+function rigVfoNameChanged(el)
 {
-  GT.settings.rig.vfoB = ["none", "same", "second"].includes(rigVfoB.value) ? rigVfoB.value : "none";
-  // VFO-B's Connect stays unchecked after a choice (None can't connect; another one goes live only once Connect is checked)
-  GT.settings.rig.connectB = false;
+  const v = rigVfoOfEl(el);
+  if (!v) return;
+  v.name = el.value.trim().slice(0, 20);
   rigSettingsRender();
-  rigConnect(GT.rigB);
+  rigLineRender();
+}
+
+// Add VFO: a rig of its own, not connected yet (its settings set first, then Connect checked)
+function rigVfoAdd()
+{
+  if (rigVfos().length >= RIG_VFOS_MAX) return;
+  const v = Object.assign({ id: rigVfoNewId(), name: "", connect: false, offset: 0, ssbData: false, source: "own", of: null }, RIG_LINK_DEFAULTS);
+  rigVfos().push(v);
+  rigLinksSync();
+  rigSettingsRender();
+}
+
+// A VFO removed (its Connect unchecked first): its rig let go; a second VFO of it becomes a rig of its own, not connected. A feature
+// that used it uses none until another is picked
+function rigVfoRemove(el)
+{
+  const v = rigVfoOfEl(el);
+  if (!v || v.connect !== false || rigVfos().length <= 1) return;
+  GT.settings.Rigs.vfos = rigVfos().filter((x) => x !== v);
+  // What picked it (BirdWatch's downlink and uplink, the Multi-Mode Decoder's modes) uses none from now on, not a VFO added later and
+  // given its id (rigVfoNewId takes the lowest free one)
+  const B = GT.settings.BirdWatch;
+  const birdWatchUsed = B.downlinkVfo == v.id || B.uplinkVfo == v.id;
+  if (B.downlinkVfo == v.id) B.downlinkVfo = "";
+  if (B.uplinkVfo == v.id) B.uplinkVfo = "";
+  const modes = GT.settings.MMD.vfos || {};
+  for (const mode in modes) if (modes[mode] == v.id) modes[mode] = "";
+  if (birdWatchUsed)
+  {
+    if (GT.rigDoppler) GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
+    if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
+    if (typeof birdWatchTransmitterWindowUpdate == "function") birdWatchTransmitterWindowUpdate();
+  }
+  rigVfosNormalize();
+  rigLinksSync();
+  rigSettingsRender();
+  rigLineRender();
+}
+
+// SSB's Data: the digital modes set on this VFO in USB or LSB (the Multi-Mode Decoder's) set as its data mode
+function rigSsbDataChanged(el)
+{
+  const v = rigVfoOfEl(el);
+  if (v) v.ssbData = el.checked;
 }
 
 // Offset Hz takes digits and a minus sign
@@ -591,22 +1012,23 @@ function rigOffsetKey(event)
 
 // An offset changed: kept when it is a whole number of hertz within the limit (otherwise the one before stays), and the frequencies
 // followed sent again with it
-function rigOffsetChanged()
+function rigOffsetChanged(el)
 {
-  for (const [input, key] of [[rigOffsetA, "offsetA"], [rigOffsetB, "offsetB"]])
-  {
-    const text = input.value.replace(/[\s,._]/g, "");
-    const value = /^-?\d+$/.test(text) ? Number(text) : NaN;
-    if (Number.isFinite(value) && Math.abs(value) <= RIG_OFFSET_MAX) GT.settings.rig[key] = value;
-  }
+  const v = rigVfoOfEl(el);
+  if (!v) return;
+  const text = el.value.replace(/[\s,._]/g, "");
+  const value = /^-?\d+$/.test(text) ? Number(text) : NaN;
+  if (Number.isFinite(value) && Math.abs(value) <= RIG_OFFSET_MAX) v.offset = value;
   if (GT.rigDoppler) GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
   rigSettingsRender();
 }
 
-// A rig's protocol, port settings, address or host changed: connected again with them (key: "a" VFO-A's rig, "b" the second)
-function rigSettingsChanged(key = "a")
+// A rig's protocol, port settings, address or host changed: connected again with them
+function rigSettingsChanged(el)
 {
-  const R = key == "b" ? GT.rigB : GT.rig;
+  const v = rigVfoOfEl(el);
+  const R = v ? GT.rigs[v.id] : null;
+  if (!R) return;
   const S = rigSettingsOf(R);
   const protocolSelect = rigEl(R, "Protocol");
   // Another protocol: the port field still shows the old one's port, so it isn't read; the render below fills it with the new one's
@@ -618,18 +1040,23 @@ function rigSettingsChanged(key = "a")
   S.stopBits = Number(rigEl(R, "StopBits").value);
   S.civAddress = rigEl(R, "CivValue").value.trim().toUpperCase();
   S.host = rigEl(R, "Host").value.trim();
+  S.forceVfo = rigEl(R, "ForceVfo").checked;
   if (sameProtocol)
   {
-    if (rigProtocolChosen(R).http) S.flrigPort = Number(rigEl(R, "NetPort").value) || 12345;
+    const protocol = rigProtocolChosen(R);
+    if (protocol.http) S.flrigPort = Number(rigEl(R, "NetPort").value) || 12345;
+    else if (protocol.portKey) S[protocol.portKey] = Number(rigEl(R, "NetPort").value) || protocol.portDefault;
     else S.netPort = Number(rigEl(R, "NetPort").value) || 4532;
   }
   rigSettingsRender();
   rigConnect(R);
 }
 
-function rigChoosePort(key = "a")
+function rigChoosePort(el)
 {
-  const R = key == "b" ? GT.rigB : GT.rig;
+  const v = rigVfoOfEl(el);
+  const R = v ? GT.rigs[v.id] : null;
+  if (!R) return;
   serialPortChoose(rigPurpose(R), (port) =>
   {
     rigSettingsOf(R).port = port;
@@ -640,77 +1067,174 @@ function rigChoosePort(key = "a")
 
 // A rig's name: as rigctld or flrig said it; a serial rig's from its port's device id (IC-7300_...), else the Icom its address
 // is the default of; "" when none is known
-function rigModelName(R = GT.rig)
+function rigModelName(R)
 {
   if (R.model) return R.model;
   if (rigProtocolChosen(R).serial) return serialPortModel(rigSettingsOf(R).port) || (R.civFound && RIG_CIV_MODELS[R.civFound]) || "";
   return "";
 }
 
-// "14.074.000 (435.250.000) MHz USB (LSB)": VFO A, the second VFO in brackets when the rig has one (and VFO-B is on it), the modes. The
-// satellite's frequencies: a VFO with an offset is the rig's dial less it, "LO" after it
+// "14.074.000 (435.250.000) MHz USB (LSB)": the rig's VFO, its second VFO in brackets when a VFO in use is on it, the modes. The
+// frequencies on the air: a VFO with an offset is the rig's dial less it, "LO" after it
 function rigFrequencyText(R)
 {
   if (R.freq === null) return "";
-  const one = (dial, vfo) => formatDialFreq(dial - rigOffset(vfo)) + (rigOffset(vfo) ? " LO" : "");
-  const showB = R.key == "a" && rigVfoBChoice() == "same" && rigUplinkOn() && R.dual && R.freqB !== null;
-  return one(R.freq, R.key == "a" ? "a" : "b") + (showB ? " (" + one(R.freqB, "b") + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "") + (showB && R.modeB ? " (" + R.modeB + ")" : "");
+  const one = (dial, v) => formatDialFreq(dial - rigOffset(v)) + (rigOffset(v) ? " LO" : "");
+  const second = rigVfos().find((v) => rigVfoIsSecond(v) && v.of == R.key && rigVfoOn(v));
+  const showB = !!second && R.dual && R.freqB !== null;
+  return one(R.freq, rigVfoById(R.key)) + (showB ? " (" + one(R.freqB, second) + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "") + (showB && R.modeB ? " (" + R.modeB + ")" : "");
 }
 
-// A rig's status, in short: "Error", "No Port Chosen", ...
+// Its link is open but the rig hasn't said its frequency in the time it should have: shown as No Answer (a wrong baud rate, the rig's
+// CI-V USB port or CAT off)
+const RIG_NO_ANSWER_MS = 3000;
+
+function rigNoAnswer(R)
+{
+  // A protocol that answers without saying a frequency (SDR++ Server, until it is tuned) says so itself
+  if (R.protocol && R.protocol.answered && R.protocol.answered(R)) return false;
+  return R.status == "connected" && R.freq === null && Date.now() - R.connectedAt > RIG_NO_ANSWER_MS;
+}
+
+// A rig's status, in short: "Error", "No Port Chosen", "No Answer" ...
 function rigStatusShort(R)
 {
+  if (rigNoAnswer(R)) return I18N("rig.status.noAnswer");
   return R.status == "error" ? I18N("rotor.status.errorShort") : I18N("rotor.status." + R.status).replace("{0}", R.error);
 }
 
-// The rig's box in the BirdWatch panel (a box like the sky plot's, its border yellow): the downlink on one line, the uplink in brackets
-// (the second VFO's, or the second rig's), "Rig: 145.800.000 (435.250.000)", the modes on the next, "Mode: USB (LSB)" (the uplink's in
-// brackets: the second rig's, or the second VFO's where the rig says it); a rig's status instead of its frequency while it isn't connected. The satellite's frequencies: a VFO with an offset shows
-// the rig's dial less it, with the LO badge (its tooltip the offset and the dial). There while Rig Control is on
+// The rig's box in the BirdWatch panel (a box like the sky plot's, its border yellow): BirdWatch's downlink VFO's frequency and mode on
+// one row with Re-center, its uplink VFO's on the next with Lock VFOs (the uplink's mode "-" where the rig doesn't say its second VFO's),
+// then Follow / Unfollow; a VFO's status instead of its frequency while it can't be read. The satellite's frequencies: a VFO with an
+// offset shows the rig's dial less it, with the LO badge (its tooltip the offset and the dial). There while Rig Control is on. Each cell
+// is written only when it changed (compared with what was written: innerHTML reads back in the browser's own form), so a click on an
+// icon is never lost to a redraw
 function rigLineRender()
 {
   if (typeof birdWatchRigLine == "undefined") return;
-  const A = GT.rig;
-  const B = GT.rigB;
-  const on = GT.settings.rig.enable;
-  const second = rigSecondUsed();
-  const label = (key) => "<span style='color:white'>" + I18N(key) + ":</span> ";
-  const orange = (text) => "<span style='color:orange'>" + htmlEntities(text) + "</span>";
-  const freq = (dial, vfo, color) => "<span style='color:" + color + "'>" + formatDialFreq(dial - rigOffset(vfo)) + rigLoBadge(rigOffset(vfo), dial) + "</span>";
-  const aUp = A.status == "connected" && A.freq !== null;
-  const bUp = B.status == "connected" && B.freq !== null;
-  // The user's tuning away from the Doppler frequency, on a side BirdWatch follows (birdWatchSideTarget): "+120 Hz", "-1.25 kHz"
-  const userOffset = (side) =>
-  {
-    const D = GT.rigDoppler;
-    const hz = D && D[side] && D.offset ? Math.round(D.offset[side] || 0) : 0;
-    if (!hz) return "";
-    const size = Math.abs(hz) < 1000 ? Math.abs(hz) + " Hz" : (Math.abs(hz) / 1000).toFixed(2) + " kHz";
-    return " <span style='color:#aaa' title='" + htmlEntities(I18N("rig.userOffset.hover")).replace(/'/g, "&#39;") + "'>" + (hz > 0 ? "+" : "-") + size + "</span>";
-  };
-  // The uplink goes onto a line of its own when both don't fit (GHz frequencies with LO badges); each part kept whole
-  const part = (inner) => "<span style='white-space:nowrap'>" + inner + "</span>";
-  let html = "<div style='white-space:normal'>" + part(label("rig.line.rig") + (aUp ? freq(A.freq, "a", "yellow") + userOffset("rx") : orange(rigStatusShort(A))));
-  // VFO-B on this rig's second VFO: its frequency, and its mode where the rig says it ("-" where it can't: Kenwood, Yaesu CAT)
-  const sameB = !second && rigVfoBChoice() == "same" && rigUplinkOn() && aUp && A.dual && A.freqB !== null;
-  if (second) html += " " + part("(" + (bUp ? freq(B.freq, "b", "#ffd27f") + userOffset("tx") : orange(rigStatusShort(B))) + ")");
-  else if (sameB) html += " " + part("(" + freq(A.freqB, "b", "#ffd27f") + userOffset("tx") + ")");
-  html += "</div>";
-  if (aUp || bUp)
-  {
-    const modeB = second ? (bUp && B.mode) || "-" : sameB ? A.modeB || "-" : null;
-    html += "<div>" + label("rig.line.mode") + "<span style='color:lightgreen'>" + htmlEntities((aUp && A.mode) || "-") + "</span>" +
-      (modeB !== null ? " (<span style='color:lightgreen'>" + htmlEntities(modeB) + "</span>)" : "") + "</div>";
-  }
+  // Not there, nor read, while BirdWatch's own Rig Control is off (BirdWatch settings, General)
+  const on = GT.settings.Rigs.enable && GT.settings.BirdWatch.autoRig !== false;
   birdWatchRigLine.style.display = on ? "" : "none";
-  if (on && birdWatchRigLine.innerHTML != html) birdWatchRigLine.innerHTML = html;
+  if (!on) return;
+  const rx = rigRoleVfo("rx");
+  // The uplink's row, not while following a transmitter with no uplink (a beacon, a downlink only): its VFO isn't tuned for it, so it
+  // would show the last transmitter's
+  const followed = GT.rigDoppler && typeof birdWatchStickyPrevious == "function" ? birdWatchStickyPrevious() : null;
+  const tx = followed && !(followed.uplink_low > 0) ? null : rigRoleVfo("tx");
+  const orange = (text) => "<span style='color:orange'>" + htmlEntities(text) + "</span>";
+  const freq = (dial, v, color) => "<span style='color:" + color + "'>" + formatDialFreq(dial - rigOffset(v)) + rigLoBadge(rigOffset(v), dial) + "</span>";
+  // Not read: its rig's status, "Off" for one not in use, "-" without a VFO (or a second VFO its rig hasn't)
+  const status = (v, read) => (!v ? "-" : !rigVfoOn(v) ? I18N("rotor.status.off") : read.R && (read.R.status != "connected" || rigNoAnswer(read.R)) ? rigStatusShort(read.R) : "-");
+  const cell = (el, html) =>
+  {
+    if (el.rigHtml === html) return;
+    el.rigHtml = html;
+    el.innerHTML = html;
+  };
+  const shown = (el, show) =>
+  {
+    const value = show ? "" : "none";
+    if (el.style.display != value) el.style.display = value;
+  };
+  const a = rigVfoRead(rx);
+  cell(birdWatchRigRxFreq, a.up ? freq(a.dial, rx, "yellow") : orange(status(rx, a)));
+  cell(birdWatchRigRxMode, htmlEntities((a.up && a.mode) || "-"));
+  const b = rigVfoRead(tx);
+  for (const el of [birdWatchRigTxDot, birdWatchRigTxFreq, birdWatchRigTxMode, birdWatchRigLock]) shown(el, !!tx);
+  // Re-center beside both rows when there's an uplink
+  const recenterRows = tx ? "1 / span 2" : "1";
+  if (birdWatchRecenterButton.rigRows != recenterRows)
+  {
+    birdWatchRecenterButton.rigRows = recenterRows;
+    birdWatchRecenterButton.style.gridRow = recenterRows;
+  }
+  if (tx)
+  {
+    cell(birdWatchRigTxFreq, b.up ? freq(b.dial, tx, "#ffd27f") : orange(status(tx, b)));
+    cell(birdWatchRigTxMode, htmlEntities((b.up && b.mode) || "-"));
+  }
+  // Each VFO's Connect, a dot before its frequency (birdWatchRigConnectToggle): light blue while it is connected and read, orange while it
+  // is connecting, red when its rig can't be reached (an error, its port not there or not chosen, No Answer), grey while off; an off VFO's
+  // frequency and mode dimmed
+  const failed = (R) => !!R && (["error", "notFound", "noPort"].includes(R.status) || rigNoAnswer(R));
+  const dot = (el, freqEl, modeEl, v, read) =>
+  {
+    const state = !v ? "none" : read.up ? "on" : !rigVfoOn(v) ? "off" : failed(read.R) ? "error" : "trying";
+    if (el.dataset.state != state) el.dataset.state = state;
+    const hover = v ? I18N("birdWatch.rig.connect.hover").replace("{vfo}", rigVfoLabel(v)) : "";
+    if (el.title != hover) el.title = hover;
+    const opacity = v && !rigVfoOn(v) ? "0.4" : "";
+    if (freqEl.style.opacity != opacity) freqEl.style.opacity = modeEl.style.opacity = opacity;
+  };
+  dot(birdWatchRigRxDot, birdWatchRigRxFreq, birdWatchRigRxMode, rx, a);
+  if (tx) dot(birdWatchRigTxDot, birdWatchRigTxFreq, birdWatchRigTxMode, tx, b);
+  // Lock VFOs, there with an uplink (and a downlink to lock it to): locked lit, unlocked grey
+  const locked = GT.settings.BirdWatch.lockVfos === true;
+  birdWatchRigLock.style.visibility = rx && tx ? "" : "hidden";
+  birdWatchRigLock.classList.toggle("active", locked);
+  shown(birdWatchRigLocked, locked);
+  shown(birdWatchRigUnlocked, !locked);
+  const lockHover = I18N("birdWatch.rig.lockVfos.label") + "\n" + I18N("birdWatch.rig.lockVfos.hover");
+  if (birdWatchRigLock.title != lockHover) birdWatchRigLock.title = lockHover;
+  birdWatchRigButtonsRender();
 }
 
-function rigStatusRender(R = GT.rig)
+// A VFO's dot in the rig box clicked: its Connect turned off, or on (a second VFO's own VFO with it, if that is off)
+function birdWatchRigConnectToggle(side)
 {
+  const v = rigRoleVfo(side);
+  if (!v) return;
+  const on = !rigVfoOn(v);
+  if (on && rigVfoIsSecond(v))
+  {
+    const owner = rigVfoOwner(v);
+    if (owner && !rigVfoIsSecond(owner) && owner.connect !== true) rigVfoConnectSet(owner, true);
+  }
+  rigVfoConnectSet(v, on);
+  rigLineRender();
+}
+
+// The user's tuning away from the Doppler frequency on a side BirdWatch follows (birdWatchSideTarget): "+120 Hz", "-1.25 kHz"; "" for none
+function rigUserOffsetText(side)
+{
+  const D = GT.rigDoppler;
+  const hz = D && D[side] && D.offset ? Math.round(D.offset[side] || 0) : 0;
+  if (!hz) return "";
+  return (hz > 0 ? "+" : "-") + (Math.abs(hz) < 1000 ? Math.abs(hz) + " Hz" : (Math.abs(hz) / 1000).toFixed(2) + " kHz");
+}
+
+// The rig box's Follow / Unfollow, while BirdWatch's Rig Control can follow the satellite selected; and Re-center while it follows, lit
+// while the user's tuning is off the Doppler frequency (its tooltip says by how much)
+function birdWatchRigButtonsRender()
+{
+  const T = GT.birdWatchTrack;
+  const following = !!GT.rigDoppler;
+  const show = GT.settings.BirdWatch.autoRig !== false && !!(T && T.selected) && rigRolesConnected();
+  birdWatchRigButtons.style.display = show ? "" : "none";
+  birdWatchRecenterButton.style.visibility = show && following ? "" : "hidden";
+  if (!show) return;
+  const label = I18N(following ? "birdWatch.rig.unfollow.label" : "birdWatch.rig.follow.label");
+  const hover = I18N(following ? "birdWatch.rig.unfollow.hover" : "birdWatch.rig.follow.hover");
+  if (birdWatchFollowButton.textContent != label) birdWatchFollowButton.textContent = label;
+  if (birdWatchFollowButton.title != hover) birdWatchFollowButton.title = hover;
+  const offsets = ["rx", "tx"].map(rigUserOffsetText).filter((text) => text);
+  birdWatchRecenterButton.classList.toggle("active", offsets.length > 0);
+  const recenterHover = I18N("birdWatch.rig.recenter.label") + (offsets.length ? " (" + offsets.join(", ") + ")" : "") + "\n" + I18N("birdWatch.rig.recenter.hover") +
+    (offsets.length ? "\n" + I18N("rig.userOffset.hover") : "");
+  if (birdWatchRecenterButton.title != recenterHover) birdWatchRecenterButton.title = recenterHover;
+}
+
+function rigStatusRender(R)
+{
+  // A second VFO on this rig says how it reads too; BirdWatch's line follows
+  for (const v of rigVfos()) if (rigVfoIsSecond(v) && v.of == R.key) rigVfoSecondStatusRender(v);
+  rigLineRender();
+  if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
+  // A protocol's own rows (SDR++ Server's menus) follow its state too
+  if (R.protocol && R.protocol.render) R.protocol.render(R);
   const statusEl = rigEl(R, "Status");
   if (!statusEl) return;
-  let text = I18N("rotor.status." + R.status).replace("{0}", R.error);
+  let text = rigNoAnswer(R) ? I18N("rig.status.noAnswer") : I18N("rotor.status." + R.status).replace("{0}", R.error);
   // A rig with a second VFO that can be read and set is said so
   if (R.status == "connected" && R.dual) text += " (" + I18N("rig.twoVfos") + ")";
   if (R.status == "connected" && rigModelName(R)) text += "  " + rigModelName(R);
@@ -722,17 +1246,14 @@ function rigStatusRender(R = GT.rig)
   portErrorEl.textContent = portError ? (R.status == "error" ? I18N("serial.inUse").replace("{0}", serialPortShortName(rigSettingsOf(R).port)) + "\n" + R.error : text) : "";
   if (portError) text = I18N("rotor.status.errorShort");
   statusEl.textContent = text;
-  statusEl.style.color = { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
-  if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
-  // VFO-B not chosen yet follows whether VFO-A's rig has a second VFO, which is known once it has answered
-  if (R.key == "a" && typeof rigVfoB != "undefined" && rigVfoB.value != rigVfoBChoice()) rigSettingsRender();
+  statusEl.style.color = rigNoAnswer(R) ? "orange" : { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
   // The CI-V address the rig answered from, beside the field
   rigEl(R, "CivFound").textContent = R.civFound && R.status == "connected" ? I18N("rig.civ.found").replace("{0}", R.civFound.toString(16).toUpperCase().padStart(2, "0")) + (RIG_CIV_MODELS[R.civFound] ? "  ·  " + RIG_CIV_MODELS[R.civFound] : "") : "";
-  rigLineRender();
 }
 
 function rigSetStatus(R, status, error = "")
 {
+  if (status == "connected" && R.status != "connected") R.connectedAt = Date.now();
   R.status = status;
   R.error = error;
   rigStatusRender(R);
@@ -740,11 +1261,11 @@ function rigSetStatus(R, status, error = "")
 
 function rigInit()
 {
-  serialPortTell("rig", GT.settings.rig.port);
-  serialPortTell("rigB", GT.settings.rig.second.port);
+  rigVfosNormalize();
+  rigLinksSync();
+  for (const R of Object.values(GT.rigs)) serialPortTell(rigPurpose(R), rigSettingsOf(R).port);
   rigSettingsRender();
-  rigConnect(GT.rig);
-  rigConnect(GT.rigB);
+  rigConnectAll();
 }
 
 // ---- The link (each rig its own)
@@ -790,14 +1311,29 @@ function rigDisconnect(R)
   return Promise.resolve();
 }
 
-async function rigConnect(R)
+// A serial rig that can't be opened (its port still held by a GridTracker just closed, or a USB port not there yet at startup) is tried
+// again this many times, this far apart, before its Connect is unchecked
+const RIG_SERIAL_TRIES = 5;
+const RIG_SERIAL_RETRY_MS = 2000;
+
+// retry: a serial rig tried again (rigSerialRetry); otherwise a connect of its own, which starts its tries again
+async function rigConnect(R, retry = false)
 {
+  if (!retry) R.openTries = 0;
   const closing = rigDisconnect(R);
   R.freq = R.mode = R.freqB = R.modeB = null;
   R.modeBAsk = true;
   R.dual = null;
+  R.mainSub = false;
+  R.vfoMode = null;
+  R.plainQueue = [];
+  R.answerB = false;
+  R.vfoWarned = false;
   R.split = false;
   R.civFound = null;
+  R.civProbe = 0;
+  R.civMode = R.dataMode = null;
+  R.dataAsk = true;
   R.model = null;
   R.catId = null;
   R.toneFreq = R.toneFunc = null;
@@ -821,21 +1357,30 @@ async function rigConnect(R)
 }
 
 // Lost, or rigctld / flrig not there (yet): tried again in a while, as long as the rig is wanted. A serial rig that never got there:
-// its box's Connect unchecked, the error left showing and the settings free to change
+// tried again a few times (rigSerialRetry), then its box's Connect unchecked, the error left showing and the settings free to change
 function rigFail(R, message)
 {
   const retry = R.status == "connected" || !(R.protocol && R.protocol.serial);
   rigDisconnect(R);
   rigSetStatus(R, "error", message);
   if (retry) R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
-  else rigConnectOff(R);
+  else if (!rigSerialRetry(R)) rigConnectOff(R);
 }
 
-// A serial rig that couldn't be connected: its box's Connect unchecked (VFO-B's for the second rig), its settings unlocked
+// A serial rig's open tried again in a moment, while it has tries left: true when it will be
+function rigSerialRetry(R)
+{
+  if ((R.openTries || 0) >= RIG_SERIAL_TRIES) return false;
+  R.openTries = (R.openTries || 0) + 1;
+  R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R, true), RIG_SERIAL_RETRY_MS);
+  return true;
+}
+
+// A serial rig that couldn't be connected: its VFO's Connect unchecked, its settings unlocked
 function rigConnectOff(R)
 {
-  if (R.key == "b") GT.settings.rig.connectB = false;
-  else GT.settings.rig.connect = false;
+  const v = rigVfoById(R.key);
+  if (v) v.connect = false;
   rigSettingsRender();
 }
 
@@ -852,7 +1397,7 @@ async function rigOpenSerial(R, generation)
   if (!port)
   {
     rigSetStatus(R, "notFound", serialPortShortName(S.port));
-    rigConnectOff(R);
+    if (!rigSerialRetry(R)) rigConnectOff(R);
     return;
   }
   await port.open({ baudRate: Number(S.baud) || 19200, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" });
@@ -905,7 +1450,8 @@ function rigOpenNet(R, generation)
   {
     const net = window.require("net");
     const socket = new net.Socket();
-    socket.setEncoding("utf8");
+    // Text lines, but bytes for a protocol that reads its own (SPY Server's)
+    if (!R.protocol.raw) socket.setEncoding("utf8");
     socket.on("connect", () =>
     {
       if (generation != R.generation)
@@ -920,7 +1466,8 @@ function rigOpenNet(R, generation)
     socket.on("data", (data) => { if (generation == R.generation) rigReceive(R, data); });
     socket.on("error", (e) => { if (generation == R.generation) rigFail(R, e.message); reject(e); });
     socket.on("close", () => { if (generation == R.generation && R.link === socket) rigFail(R, "closed"); });
-    socket.connect(Number(S.netPort) || 4532, S.host || "127.0.0.1");
+    const port = R.protocol.portKey ? Number(S[R.protocol.portKey]) || R.protocol.portDefault : Number(S.netPort) || 4532;
+    socket.connect(port, S.host || "127.0.0.1");
   });
 }
 
@@ -1023,6 +1570,7 @@ function rigConnected(R)
   // A rig that can't say what it is: the protocol names it (the FT-817's)
   if (R.protocol.model) R.model = R.protocol.model;
   rigSetStatus(R, "connected");
+  if (R.protocol === RIG_PROTOCOLS.rigctld) rigNetChkVfoAsk(R);
   if (R.protocol.caps) rigWrite(R, R.protocol.caps(R));
   rigPoll(R);
   R.pollTimer = nodeTimers.setInterval(() => rigPoll(R), RIG_POLL_MS);
@@ -1032,6 +1580,8 @@ function rigConnected(R)
 // settings sent before the poll (readSeq)
 function rigPoll(R)
 {
+  // Nothing in to show it, while the rig doesn't answer: its status shown as the poll goes (No Answer, rigNoAnswer)
+  if (R.freq === null) rigStatusRender(R);
   const asks = R.protocol.poll(R);
   const seq = R.tuneSeq;
   for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask, seq);
@@ -1044,6 +1594,76 @@ function rigPollSoon(R)
   if (R.status != "connected" || !R.protocol) return;
   if (R.protocol.http) rigHttpPoll(R, R.generation);
   else rigPoll(R);
+}
+
+// rigctld's name for VFO-A ("a") or VFO-B on the same rig ("b"), as its backend names its VFOs
+function rigNetVfo(R, vfo)
+{
+  if (R.mainSub) return vfo == "a" ? "Main" : "Sub";
+  return vfo == "a" ? "VFOA" : "VFOB";
+}
+
+// What a rigctld command for VFO-A takes after it in VFO mode (" Main", " VFOA"), else nothing (the Multi-Mode Decoder's own commands)
+function rigNetVfoArg(R)
+{
+  return R.vfoMode ? " " + rigNetVfo(R, "a") : "";
+}
+
+// rigctld: whether it runs in VFO mode, asked before anything else. Its answer has no RPRT line ("ChkVFO: 0", or "1" alone), so it isn't
+// counted as one (netAnswers); an old Hamlib that doesn't know it answers RPRT and an error. Not answered in a while: taken as no.
+// Force VFO Mode (the rig's settings): VFO mode asked for first (\set_vfo_opt 1, for this connection alone), its answer passed over
+// the same way (vfoOptPending)
+const RIG_CHK_VFO_MS = 3000;
+
+function rigNetChkVfoAsk(R)
+{
+  const generation = R.generation;
+  R.vfoOptPending = rigSettingsOf(R).forceVfo === true;
+  try
+  {
+    R.link.write((R.vfoOptPending ? "+\\set_vfo_opt 1\n" : "") + "+\\chk_vfo\n");
+  }
+  catch (e)
+  {
+    rigFail(R, e.message);
+    return;
+  }
+  nodeTimers.setTimeout(() =>
+  {
+    if (generation == R.generation && R.vfoMode === null) rigNetVfoKnown(R, false);
+  }, RIG_CHK_VFO_MS);
+}
+
+// A line in while VFO mode isn't known yet: the answer to \chk_vfo (asked first, so the first lines are its). True when it was
+function rigNetChkVfo(R, line)
+{
+  if (R.vfoMode !== null) return false;
+  // \set_vfo_opt's answer first, up to its RPRT (an error there: \chk_vfo says what it came to)
+  if (R.vfoOptPending)
+  {
+    if (/^RPRT\s/.test(line)) R.vfoOptPending = false;
+    return true;
+  }
+  const m = /^(?:ChkVFO:\s*)?([01])$/i.exec(line.trim());
+  if (m) rigNetVfoKnown(R, m[1] == "1");
+  else if (/^RPRT\s/.test(line)) rigNetVfoKnown(R, false);
+  return true;
+}
+
+function rigNetVfoKnown(R, vfoMode)
+{
+  R.vfoMode = vfoMode;
+  rigNetVfoWarn(R);
+  rigPoll(R);
+}
+
+// A Main/Sub rig whose rigctld isn't in VFO mode: its VFO-B isn't tuned (rigTuneCanTx). An error in the Event Viewer (opened for it, as
+// set) once a connection, as soon as both are known (the capabilities' VFO list, and VFO mode)
+function rigNetVfoWarn(R)
+{
+  if (R.vfoWarned || R.vfoMode !== false || !R.mainSub) return;
+  R.vfoWarned = true;
+  addEvent("rig", "<font style='color:red'>" + htmlEntities(I18N("rig.event.needVfoMode").replace("{rig}", R.model || "rigctld")) + "</font>", true);
 }
 
 // rigctld: one RPRT line ends each command's answer; a poll's last one means it was read whole
@@ -1084,6 +1704,8 @@ function rigWrite(R, data, pollSeq = null)
     if (R.netAnswers.length > 50) R.netAnswers = [];
     R.netAnswers.push({ count: (String(data).match(/\n/g) || []).length, seq: pollSeq });
   }
+  // A protocol that keeps its own account of the answers to come (SDR++ (rigctl)): told what goes out
+  if (R.protocol.wrote) R.protocol.wrote(data, R, pollSeq);
   try
   {
     R.link.write(data);
@@ -1171,6 +1793,7 @@ function rigReceive(R, data)
   for (const line of lines)
   {
     if (line.trim() == "") continue;
+    if (R.protocol === RIG_PROTOCOLS.rigctld && rigNetChkVfo(R, line)) continue;
     const problem = R.protocol.parse(line, R);
     if (problem) R.error = problem;
     if (R.protocol === RIG_PROTOCOLS.rigctld && /^RPRT\s/.test(line)) rigNetAnswered(R);
@@ -1182,64 +1805,73 @@ function rigReceive(R, data)
 // ---- Tuning: for BirdWatch's Doppler, and the Multi-Mode Decoder (a signal clicked, the band scan: the rx alone). The rosters (the Feed Roster's
 // spots too) tune through WSJT-X and the loggers as before, never through Rig Control
 
-// The rigs set to what is given of { rx, mode, tx, txMode, tone }, rx and tx the satellite's frequencies (each VFO's offset is added
-// to what is sent: rigOffset): rx (Hz) and mode ("USB", "FM", ...) on VFO-A's rig; tx (Hz) on the
-// uplink: the second rig's VFO A, or VFO-A's rig's second VFO with split on (only a rig that has one: rigTuneCanTx); txMode the uplink's
-// mode: the second rig's, or the same rig's TX VFO's where its protocol can set that (setTxMode: rigctld, flrig, CI-V); tone (Hz) the
-// uplink rig's CTCSS tone turned on (0: turned off, if it was turned on
-// here; only a rig that can: rigTuneCanTone). True when something was sent
+// The VFOs set to what is given of { rxVfo, rx, mode, data, tx, txMode, tone } (data: the mode's data variant, true, or plain, false: the
+// Multi-Mode Decoder's FT8 frequencies), rx and tx frequencies on the air (each VFO's offset is added to what is sent: rigOffset). rx (Hz)
+// and mode ("USB", "FM", ...) on the VFO rxVfo names (an id; not given: BirdWatch's downlink VFO), a second VFO through its rig's
+// setTx and setTxMode, without split; tx (Hz) and txMode on BirdWatch's uplink VFO (only one that can: rigTuneCanTx): a rig of its own
+// as its VFO, or a rig's second VFO with split on (its mode where the protocol can set it: rigctld, flrig, CI-V); tone (Hz) the uplink's
+// CTCSS tone turned on (0: turned off, if it was turned on here; only a rig that can: rigTuneCanTone). True when something was sent
 function rigTune(spec)
 {
   if (typeof spec != "object" || spec === null) return false;
-  const A = GT.rig;
-  const B = GT.rigB;
-  const second = rigSecondUsed();
-  const aUp = A.status == "connected" && !!A.protocol;
-  const bUp = second && B.status == "connected" && !!B.protocol;
-  const stepsA = [];
-  const stepsB = [];
-  // The rig's dials: the satellite's frequencies plus each VFO's offset (none below 1 Hz is sent)
-  const rxDial = spec.rx > 0 ? spec.rx + rigOffset("a") : 0;
-  const txDial = spec.tx > 0 ? spec.tx + rigOffset("b") : 0;
-  if (aUp && rxDial > 0) stepsA.push(A.protocol.setFreq(rxDial, A));
-  if (aUp && spec.mode) stepsA.push(A.protocol.setMode(spec.mode, A));
-  if (txDial > 0 && rigTuneCanTx())
+  // Each rig's steps, in order
+  const steps = new Map();
+  const add = (R, step) =>
   {
-    if (second) stepsB.push(B.protocol.setFreq(txDial, B));
-    else
+    if (!steps.has(R)) steps.set(R, []);
+    steps.get(R).push(step);
+  };
+  const rx = spec.rxVfo !== undefined ? rigVfoById(spec.rxVfo) : rigRoleVfo("rx");
+  const rxR = rx && rigVfoOn(rx) ? rigVfoLink(rx) : null;
+  if (rxR && rxR.status == "connected" && rxR.protocol)
+  {
+    // A dial is never sent below 1 Hz
+    const dial = spec.rx > 0 ? spec.rx + rigOffset(rx) : 0;
+    if (!rigVfoIsSecond(rx))
     {
-      if (!A.split)
-      {
-        stepsA.push(A.protocol.splitOn(A));
-        A.split = true;
-      }
-      stepsA.push(A.protocol.setTx(txDial, A));
+      if (dial > 0) add(rxR, rxR.protocol.setFreq(dial, rxR));
+      if (spec.mode) add(rxR, rxR.protocol.setMode(spec.mode, rxR, spec.data));
+    }
+    else if (rxR.dual === true)
+    {
+      if (dial > 0 && rxR.protocol.setTx) add(rxR, rxR.protocol.setTx(dial, rxR));
+      if (spec.mode && rxR.protocol.setTxMode) add(rxR, rxR.protocol.setTxMode(spec.mode, rxR));
     }
   }
-  // The uplink's mode: the second rig's own, or (the same rig) its TX VFO's where the protocol can set it (rigctld, flrig, CI-V)
-  if (bUp && spec.txMode) stepsB.push(B.protocol.setMode(spec.txMode, B));
-  else if (!second && aUp && spec.txMode && rigTuneCanTx() && A.protocol.setTxMode)
+  const tx = rigRoleVfo("tx");
+  if ((spec.tx > 0 || spec.txMode) && rigTuneCanTx())
   {
-    if (!A.split)
+    const R = rigVfoLink(tx);
+    const dial = spec.tx > 0 ? spec.tx + rigOffset(tx) : 0;
+    if (!rigVfoIsSecond(tx))
     {
-      stepsA.push(A.protocol.splitOn(A));
-      A.split = true;
+      if (dial > 0) add(R, R.protocol.setFreq(dial, R));
+      if (spec.txMode) add(R, R.protocol.setMode(spec.txMode, R));
     }
-    stepsA.push(A.protocol.setTxMode(spec.txMode, A));
+    else if (dial > 0 || (spec.txMode && R.protocol.setTxMode))
+    {
+      if (!R.split)
+      {
+        add(R, R.protocol.splitOn(R));
+        R.split = true;
+      }
+      if (dial > 0) add(R, R.protocol.setTx(dial, R));
+      if (spec.txMode && R.protocol.setTxMode) add(R, R.protocol.setTxMode(spec.txMode, R));
+    }
   }
   if (spec.tone !== undefined && spec.tone !== null && rigTuneCanTone())
   {
-    const U = rigUplink();
+    const U = rigVfoLink(tx);
     if (spec.tone > 0 || U.toneOn)
     {
-      const tone = U.protocol.setTone(spec.tone, U);
-      (U === A ? stepsA : stepsB).push(...(Array.isArray(tone) ? tone : [tone]));
+      const tone = U.protocol.setTone(spec.tone, U, rigVfoIsSecond(tx) ? "b" : "a");
+      for (const step of Array.isArray(tone) ? tone : [tone]) add(U, step);
       U.toneOn = spec.tone > 0;
     }
   }
-  const sentA = rigSend(A, stepsA);
-  const sentB = rigSend(B, stepsB);
-  return sentA || sentB;
+  let sent = false;
+  for (const [R, list] of steps) if (rigSend(R, list)) sent = true;
+  return sent;
 }
 
 // A rig's steps out: flrig's calls one after another, the others written (serial: queued); true when there were any
@@ -1260,20 +1892,23 @@ function rigSend(R, steps)
   return true;
 }
 
-// Whether the uplink (TX) can be tuned: VFO-B on the second rig and it is connected, or on VFO-A's rig and it has a second VFO that
-// answers; never with VFO-B None, or its Connect unchecked
+// Whether the uplink (TX) can be tuned: BirdWatch's uplink VFO is in use and its rig connected, and (a rig's second VFO) the rig has one
+// that answers; never without an uplink VFO
 function rigTuneCanTx()
 {
-  if (!rigUplinkOn()) return false;
-  const choice = rigVfoBChoice();
-  if (choice == "second") return GT.rigB.status == "connected";
-  if (choice == "same") return GT.rig.status == "connected" && GT.rig.dual === true;
-  return false;
+  const tx = rigRoleVfo("tx");
+  if (!tx || !rigVfoOn(tx)) return false;
+  const R = rigVfoLink(tx);
+  if (!R || R.status != "connected" || !R.protocol) return false;
+  if (!rigVfoIsSecond(tx)) return true;
+  // A Main/Sub rigctld rig only in VFO mode (rigNetVfoWarn)
+  return R.dual === true && !(R.mainSub && R.vfoMode === false);
 }
 
-// Whether a CTCSS tone can be set on the uplink rig: a CI-V rig, or one rigctld says can (flrig has no call for it); none with VFO-B None
+// Whether a CTCSS tone can be set on the uplink's rig: a CI-V rig, or one rigctld says can (flrig has no call for it)
 function rigTuneCanTone()
 {
-  const U = rigUplink();
-  return !!U && U.status == "connected" && !!U.protocol && typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
+  if (!rigTuneCanTx()) return false;
+  const U = rigVfoLink(rigRoleVfo("tx"));
+  return typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
 }

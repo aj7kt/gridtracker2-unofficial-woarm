@@ -4,7 +4,7 @@
 
 // BirdWatch's satellite info panel (under the BirdWatch title): the rows of numbers of the selected satellite. A row can be dragged
 // to another place, a right click on a value picks its color, and a right click on a label opens a menu: make it the featured item
-// (large, at the top), show or hide each row, reset the list. All of it is kept in settings.Birdwatch.info
+// (large, at the top), show or hide each row, reset the list. All of it is kept in settings.BirdWatch.info
 
 // Every row of the list, in the order it comes in. A row added here later is added to the end of everyone's list (birdWatchInfoState)
 //   keys:   the values of the row, each a color's name in the settings (Lat/Lon is one row with two values)
@@ -92,7 +92,7 @@ function birdWatchInfoItem(id)
 // the saved order (added since) at the end. A row seen for the first time that is "off" starts out hidden
 function birdWatchInfoState()
 {
-  const B = GT.settings.Birdwatch;
+  const B = GT.settings.BirdWatch;
   const S = B.info && typeof B.info == "object" ? B.info : (B.info = {});
   const ids = BIRD_WATCH_INFO_ITEMS.map((i) => i.id);
   if (!ids.includes(S.featured)) S.featured = "ttgo";

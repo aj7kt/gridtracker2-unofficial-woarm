@@ -1,0 +1,211 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "cw-5.wav",
+      "module": "cw",
+      "name": "CW",
+      "modes": [
+        "cw"
+      ],
+      "signals": 5,
+      "rsid": false,
+      "sync": null,
+      "description": "Five CW signals at once: 500 Hz 18 WPM, 800 Hz 25 WPM, 1100 Hz 12 WPM, 1450 Hz 30 WPM, 1900 Hz 20 WPM",
+      "source": "generated"
+    },
+    {
+      "file": "olivia-16-500-wikimedia.wav",
+      "module": "downloaded",
+      "name": "Olivia 16/500",
+      "modes": [
+        "olivia"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Olivia 16/500 centred on 1500 Hz, sent with MixW: \"Welcome to Wikipedia, the free encyclopedia that anyone can edit.\" By Geryones (English Wikipedia), public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:OLIVIA_500_16_sample.ogg",
+      "olivia": {
+        "submode": "olivia 16/500",
+        "center": 1500
+      }
+    },
+    {
+      "file": "olivia-32-1000-wikimedia.wav",
+      "module": "downloaded",
+      "name": "Olivia 32/1000",
+      "modes": [
+        "olivia"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Olivia 32/1000 centred on 1000 Hz, sent with MixW: \"Welcome to Wikipedia, the free encyclopedia that anyone can edit.\" By Geryones (English Wikipedia), public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:OLIVIA_1000_32_sample.ogg",
+      "olivia": {
+        "submode": "olivia 32/1000",
+        "center": 1000
+      }
+    },
+    {
+      "file": "ft8-5.wav",
+      "module": "ft8",
+      "name": "FT8",
+      "modes": [
+        "ft8"
+      ],
+      "signals": 5,
+      "rsid": false,
+      "sync": "ft8",
+      "description": "FT8, two 15 s periods: period 1 (0 s): CQ Q1TST CN87 (600 Hz, -4 dB), CQ DX Q2ABC FN31 (1000 Hz, -12 dB), Q3XYZ Q4GRD EM12 (1450 Hz, -1 dB), Q5RX Q6KLM -07 (1900 Hz, +3 dB), Q7ABC Q8DEF R-11 (2400 Hz, -13 dB); period 2 (15 s): Q1TST Q9AA DM79 (800 Hz, -9 dB), Q4GRD Q3XYZ -04 (1250 Hz, -6 dB), Q6KLM Q5RX R-02 (1700 Hz, 0 dB), Q8DEF Q7ABC RR73 (2150 Hz, -11 dB), Q2ABC Q9ZZ FN20 (2600 Hz, -13 dB)",
+      "source": "generated"
+    },
+    {
+      "file": "ft4-5.wav",
+      "module": "ft8",
+      "name": "FT4",
+      "modes": [
+        "ft4"
+      ],
+      "signals": 5,
+      "rsid": false,
+      "sync": "ft4",
+      "description": "FT4, two 7.5 s periods: period 1 (0 s): CQ Q1TST CN87 (500 Hz, -2 dB), CQ Q2ABC FN31 (1000 Hz, -8 dB), Q3XYZ Q4GRD EM12 (1500 Hz, +4 dB), Q5RX Q6KLM -07 (2000 Hz, -5 dB), Q7ABC Q8DEF R-11 (2500 Hz, -10 dB); period 2 (7.5 s): Q1TST Q9AA DM79 (700 Hz, -6 dB), Q4GRD Q3XYZ -04 (1250 Hz, 0 dB), Q6KLM Q5RX R+02 (1800 Hz, -9 dB), Q8DEF Q7ABC RR73 (2300 Hz, -3 dB)",
+      "source": "generated"
+    },
+    {
+      "file": "mixed-rsid.wav",
+      "module": "mixed",
+      "name": "CW + PSK31 + RTTY + Olivia",
+      "modes": [
+        "cw",
+        "psk31",
+        "rtty",
+        "olivia"
+      ],
+      "signals": 4,
+      "rsid": true,
+      "sync": null,
+      "description": "CW at 500 Hz, then after their RSIDs PSK31 at 900 Hz, RTTY centred on 1400 Hz and Olivia 8/500 at 2100 Hz, all at once",
+      "source": "generated"
+    },
+    {
+      "file": "olivia-3.wav",
+      "module": "olivia",
+      "name": "Olivia / Contestia",
+      "modes": [
+        "olivia"
+      ],
+      "signals": 3,
+      "rsid": true,
+      "sync": null,
+      "description": "Olivia and Contestia one after another, each after its RSID: Olivia 8/500 at 900 Hz, Contestia 8/250 at 1600 Hz, Olivia 16/500 at 2350 Hz",
+      "source": "generated"
+    },
+    {
+      "file": "packet-aprs.wav",
+      "module": "packet",
+      "name": "APRS, AFSK 1200",
+      "modes": [
+        "packet"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "AFSK 1200 APRS, five packets one after another: Q1TST-9>APRS,WIDE1-1,WIDE2-1:=4737.25N/12220.50W>GridTracker2 test signal, mobile on 146.520 | Q2ABC>APRS,Q3DIG-1*,WIDE2-1:>GridTracker2 test: status via a digipeater | Q1TST-9>APRS,WIDE2-2::Q5RX-7   :Hello from the GridTracker2 test signal{01 | Q4WX-13>APRS:_10301230c220s004g009t054r000p012P008h87b10152 | Q3DIG-1>APRS,WIDE2-1:;TESTNET  *301900z4736.00N/12219.00W-Test net Thursdays 1900 on 146.520",
+      "source": "generated"
+    },
+    {
+      "file": "packet-hf300.wav",
+      "module": "packet",
+      "name": "HF Packet, 300 Baud",
+      "modes": [
+        "packet"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "HF packet, 300 baud AFSK (1600 / 1800 Hz), three APRS packets one after another: Q6HF>APRS:=4041.00N/07400.00W-GridTracker2 HF packet test, 300 baud | Q7HF-10>APRS:>HF APRS test: 10.1476 MHz LSB | Q6HF>APRS::Q7HF-10  :QSL, 300 baud copied{02",
+      "source": "generated"
+    },
+    {
+      "file": "psk31-5.wav",
+      "module": "psk31",
+      "name": "BPSK31",
+      "modes": [
+        "psk31"
+      ],
+      "signals": 5,
+      "rsid": true,
+      "sync": null,
+      "description": "Five BPSK31 signals at once (600, 900, 1250, 1650, 2100 Hz), those at 600 and 1650 Hz after their RSID",
+      "source": "generated"
+    },
+    {
+      "file": "rtty-5.wav",
+      "module": "rtty",
+      "name": "RTTY 45/170",
+      "modes": [
+        "rtty"
+      ],
+      "signals": 5,
+      "rsid": true,
+      "sync": null,
+      "description": "Five RTTY signals at once, 45.45 baud 170 Hz shift, centred on 550, 1000, 1450, 1900, 2350 Hz; those at 550 and 1900 Hz after their RSID",
+      "source": "generated"
+    },
+    {
+      "file": "sat-genesis-ssdv.wav",
+      "module": "sat",
+      "name": "GENESIS SSDV",
+      "modes": [
+        "sat"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "GENESIS (HADES-SA) 800 bps FSK, 800 / 2400 Hz: a 192x144 SSDV picture (the test card) in 16 packets",
+      "source": "generated"
+    },
+    {
+      "file": "sat-funcube.wav",
+      "module": "sat",
+      "name": "FUNcube",
+      "modes": [
+        "sat"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "FUNcube 1200 bps DBPSK on 1200 Hz, AO-40 FEC: two frames of made-up FUNcube-1 telemetry",
+      "source": "generated"
+    },
+    {
+      "file": "sat-ax100.wav",
+      "module": "sat",
+      "name": "AX100",
+      "modes": [
+        "sat"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "GomSpace AX100 as FM audio: two mode 5 frames at 1200 baud, two mode 6 frames at 2400 baud",
+      "source": "generated"
+    },
+    {
+      "file": "sstv-robot36.wav",
+      "module": "sstv",
+      "name": "Robot 36",
+      "modes": [
+        "sstv"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "SSTV Robot 36 (VIS code 8, 1500 to 2300 Hz): a test card, colour bars, a grey ramp, a grid, GRIDTRACKER2 and TEST",
+      "source": "generated"
+    }
+  ]
+}

@@ -27,7 +27,10 @@ function birdWatchPredictApply()
 {
   const T = GT.birdWatchTrack;
   const P = birdWatchPredictState();
-  birdWatchSkyBox.style.display = T.selected && GT.settings.Birdwatch.skybox ? "block" : "none";
+  birdWatchSkyBox.style.display = T.selected && GT.settings.BirdWatch.skybox ? "block" : "none";
+  birdWatchSideProfileBox.style.display = T.selected && GT.settings.BirdWatch.sideProfile ? "block" : "none";
+  birdWatchSideHorizonBox.style.display = T.selected && GT.settings.BirdWatch.sideHorizon ? "block" : "none";
+  birdWatchSideEarthBox.style.display = T.selected && GT.settings.BirdWatch.sideEarth ? "block" : "none";
   for (const norad of [...P.features.keys()])
   {
     if (!birdWatchPredicted(norad)) birdWatchPathRemove(norad);
@@ -59,7 +62,7 @@ function birdWatchPredictUpdate()
   {
     let p = P.paths.get(norad);
     if (!p) P.paths.set(norad, p = { points: [], at: 0, pending: false });
-    if (GT.settings.Birdwatch.colors.pathOn && !p.pending && now - p.at > BIRD_WATCH_PATH_REFRESH_MS)
+    if (GT.settings.BirdWatch.colors.pathOn && !p.pending && now - p.at > BIRD_WATCH_PATH_REFRESH_MS)
     {
       p.pending = true;
       p.at = now;
@@ -71,7 +74,8 @@ function birdWatchPredictUpdate()
   birdWatchSatScanTick();
   birdWatchAlertsUpdate();
   birdWatchDopplerUpdate();
-  if (T.selected && GT.settings.Birdwatch.skybox) birdWatchSkyUpdate();
+  if (T.selected && GT.settings.BirdWatch.skybox) birdWatchSkyUpdate();
+  if (T.selected) birdWatchSideViewUpdate();
   if (birdWatchTimelineDiv.style.display != "none") birdWatchTimelineDraw();
 }
 
@@ -102,12 +106,12 @@ function birdWatchPredictMessage(m)
 
 function birdWatchPathStyles(label)
 {
-  const color = GT.settings.Birdwatch.colors.pathLine;
-  const width = GT.settings.Birdwatch.colors.pathWidth;
-  const size = GT.settings.Birdwatch.colors.pathTimeSize;
-  const outline = GT.settings.Birdwatch.colors.pathOutlineOn;
-  const dash = GT.settings.Birdwatch.colors.pathDashOn;
-  const halo = new ol.style.Stroke({ color: birdWatchRgba(GT.settings.Birdwatch.colors.pathOutline, 0.55), width: width + 2.5 });
+  const color = GT.settings.BirdWatch.colors.pathLine;
+  const width = GT.settings.BirdWatch.colors.pathWidth;
+  const size = GT.settings.BirdWatch.colors.pathTimeSize;
+  const outline = GT.settings.BirdWatch.colors.pathOutlineOn;
+  const dash = GT.settings.BirdWatch.colors.pathDashOn;
+  const halo = new ol.style.Stroke({ color: birdWatchRgba(GT.settings.BirdWatch.colors.pathOutline, 0.55), width: width + 2.5 });
   return {
     past: (outline ? [new ol.style.Style({ zIndex: -4, stroke: halo })] : []).concat(new ol.style.Style({ zIndex: -3, stroke: new ol.style.Stroke({ color: color, width: width, lineDash: dash ? [2, 5] : undefined }) })),
     future: (outline ? [new ol.style.Style({ zIndex: -4, stroke: halo })] : []).concat(new ol.style.Style({ zIndex: -3, stroke: new ol.style.Stroke({ color: color, width: width, lineDash: dash ? [8, 5] : undefined }) })),
@@ -143,7 +147,7 @@ function birdWatchPathDraw(norad)
   const p = P.paths.get(norad);
   const sat = T.last.get(norad);
   birdWatchPathRemove(norad);
-  if (!GT.settings.Birdwatch.colors.pathOn || !p || p.points.length < 4 || !sat || sat.error || !birdWatchPredicted(norad) || !GT.layerSources.birdWatch) return;
+  if (!GT.settings.BirdWatch.colors.pathOn || !p || p.points.length < 4 || !sat || sat.error || !birdWatchPredicted(norad) || !GT.layerSources.birdWatch) return;
 
   const now = Date.now();
   const pts = [];
@@ -176,7 +180,7 @@ function birdWatchPathDraw(norad)
 
   const last = pts[pts.length - 1][0];
   // The ticks (a mark and its time every ten minutes) are the Time option's
-  for (let t = now + BIRD_WATCH_PATH_TICK_MS; GT.settings.Birdwatch.colors.pathTimeOn && t <= last; t += BIRD_WATCH_PATH_TICK_MS)
+  for (let t = now + BIRD_WATCH_PATH_TICK_MS; GT.settings.BirdWatch.colors.pathTimeOn && t <= last; t += BIRD_WATCH_PATH_TICK_MS)
   {
     let near = at;
     for (let i = at; i < pts.length; i++) if (Math.abs(pts[i][0] - t) < Math.abs(pts[near][0] - t)) near = i;
@@ -190,39 +194,76 @@ function birdWatchPathDraw(norad)
 }
 
 // ---- Auto Satellite Tracking
-// The satellite that is up is selected; with none up, the one that rises next. Of two up at once, the one that sets first
-// is followed until it does, and then the other (when one that was being followed sets, the next to pick is simply the
-// next that is up, so this is no special case). Picked once per change, so a click on another satellite stays until the pick moves on.
-// Only a pass that climbs at least the Auto-Track lowest max elevation (BirdWatch settings, General) counts
+// The satellite that is up is selected; with none up, the one that rises next. Of those up, the most usable (birdWatchAutoRank: one
+// that can be worked first, then one that can be heard); of equally usable ones, the one that sets first. The pick is kept until it
+// sets, even when a more usable one rises, unless it has nothing to hear (when one that was being followed sets, the next to pick is
+// simply the next that is up, so this is no special case). With nothing up that can be heard, the next that can be rises first. Picked
+// once per change, so a click on another satellite stays until the pick moves on. Only a pass that climbs at least the Auto-Track
+// lowest max elevation (BirdWatch settings, General) counts
 
 function birdWatchAutoToggle()
 {
-  GT.settings.Birdwatch.auto = !GT.settings.Birdwatch.auto;
-  birdWatchAutoImg.style.filter = GT.settings.Birdwatch.auto ? "" : "grayscale(1)";
+  GT.settings.BirdWatch.auto = !GT.settings.BirdWatch.auto;
+  birdWatchAutoImg.style.filter = GT.settings.BirdWatch.auto ? "" : "grayscale(1)";
   if (GT.birdWatchTrack) GT.birdWatchTrack.autoPick = null;
   birdWatchAutoUpdate();
+}
+
+// How usable a satellite is to follow, by its best transmitter: 0 an amateur two-way one (a repeater, a transponder), 1 an amateur
+// downlink, 2 another downlink, 3 nothing to hear
+const BIRD_WATCH_AUTO_DEAF = 3;
+// Each satellite's, until the transmitters are read again (birdWatchTransmitterStamp)
+const birdWatchAutoRanks = { stamp: null, ranks: new Map() };
+
+function birdWatchAutoRank(norad)
+{
+  if (birdWatchAutoRanks.stamp != birdWatchTransmitterStamp)
+  {
+    birdWatchAutoRanks.stamp = birdWatchTransmitterStamp;
+    birdWatchAutoRanks.ranks.clear();
+  }
+  if (birdWatchAutoRanks.ranks.has(norad)) return birdWatchAutoRanks.ranks.get(norad);
+  let rank = BIRD_WATCH_AUTO_DEAF;
+  for (const t of birdWatchTransmitters(norad))
+  {
+    if (t.downlink_low > 0) rank = Math.min(rank, birdWatchAmateurTransmitter(t) ? (t.uplink_low > 0 ? 0 : 1) : 2);
+  }
+  birdWatchAutoRanks.ranks.set(norad, rank);
+  return rank;
 }
 
 function birdWatchAutoUpdate()
 {
   const T = GT.birdWatchTrack;
-  if (!GT.settings.Birdwatch.auto || !T.worker) return;
+  if (!GT.settings.BirdWatch.auto || !T.worker) return;
+  // The transmitters read again if their file changed (the ranks with them)
+  birdWatchTransmitters(0);
   const up = [];
   let next = null;
-  const minEl = GT.settings.Birdwatch.autoMinElevation || 0;
+  let nextHeard = null;
+  const minEl = GT.settings.BirdWatch.autoMinElevation || 0;
   const now = Date.now();
-  for (const norad of GT.settings.Birdwatch.tracked)
+  for (const norad of GT.settings.BirdWatch.tracked)
   {
     const sat = T.last.get(norad);
     if (!sat || sat.error) continue;
     const current = birdWatchWantPasses(norad);
     const pass = T.passes.get(norad).list.find((x) => x.los > now && x.maxEl >= minEl) || null;
     if (!pass) continue;
-    if (sat.up && pass === current) up.push({ norad: norad, los: pass.los });
-    else if (!next || pass.aos < next.aos) next = { norad: norad, aos: pass.aos };
+    const rank = birdWatchAutoRank(norad);
+    if (sat.up && pass === current) up.push({ norad: norad, los: pass.los, rank: rank });
+    else
+    {
+      if (!next || pass.aos < next.aos) next = { norad: norad, aos: pass.aos };
+      if (rank < BIRD_WATCH_AUTO_DEAF && (!nextHeard || pass.aos < nextHeard.aos)) nextHeard = { norad: norad, aos: pass.aos };
+    }
   }
   let pick = null;
-  if (up.length) pick = up.some((s) => s.norad == T.autoPick) ? T.autoPick : up.sort((a, b) => a.los - b.los)[0].norad;
+  const best = up.length ? Math.min(...up.map((s) => s.rank)) : BIRD_WATCH_AUTO_DEAF;
+  const usable = up.filter((s) => s.rank == best);
+  if (up.some((s) => s.norad == T.autoPick && s.rank < BIRD_WATCH_AUTO_DEAF)) pick = T.autoPick;
+  else if (up.length && (best < BIRD_WATCH_AUTO_DEAF || !nextHeard)) pick = usable.some((s) => s.norad == T.autoPick) ? T.autoPick : usable.sort((a, b) => a.los - b.los)[0].norad;
+  else if (nextHeard) pick = nextHeard.norad;
   else if (next) pick = next.norad;
   if (pick && pick != T.autoPick)
   {
@@ -238,21 +279,26 @@ const BIRD_WATCH_SKY_SIZE = 176;
 function birdWatchSkyUpdate()
 {
   const T = GT.birdWatchTrack;
-  const P = birdWatchPredictState();
   const norad = T.selected;
-  const sat = T.last.get(norad);
   const pass = birdWatchWantPasses(norad);
+  birdWatchSkyDraw(T.last.get(norad), pass, birdWatchPassArc(norad, pass));
+}
+
+// The sky a pass crosses ([[ms, az, el]..], every 10 s from its AOS to its LOS), asked of the tracker once for each pass: [] until it
+// has come (the sky plot and the side view share it)
+function birdWatchPassArc(norad, pass)
+{
+  const T = GT.birdWatchTrack;
+  const P = birdWatchPredictState();
   let arc = P.arcs.get(norad);
-  if (pass)
+  if (!pass) return [];
+  const key = pass.aos + "|" + pass.los;
+  if (!arc || (arc.key != key && arc.pendingKey != key))
   {
-    const key = pass.aos + "|" + pass.los;
-    if ((!arc || (arc.key != key && arc.pendingKey != key)))
-    {
-      P.arcs.set(norad, arc = { key: arc ? arc.key : null, pendingKey: key, points: arc ? arc.points : [] });
-      T.worker.postMessage({ type: "arc", norad: norad, from: pass.aos, to: pass.los, stepSec: 10, id: key });
-    }
+    P.arcs.set(norad, arc = { key: arc ? arc.key : null, pendingKey: key, points: arc ? arc.points : [] });
+    T.worker.postMessage({ type: "arc", norad: norad, from: pass.aos, to: pass.los, stepSec: 10, id: key });
   }
-  birdWatchSkyDraw(sat, pass, arc && pass && arc.key == pass.aos + "|" + pass.los ? arc.points : []);
+  return arc.key == key ? arc.points : [];
 }
 
 // North at the top, east on the right (looking down at the ground), the horizon the outer circle and the zenith the center
@@ -333,7 +379,7 @@ function birdWatchSkyDraw(sat, pass, points)
     c.fillText(el + "°", x, y + 0.5);
   }
 
-  const color = GT.settings.Birdwatch.colors.pathLine;
+  const color = GT.settings.BirdWatch.colors.pathLine;
   if (pass && points.length > 1)
   {
     c.strokeStyle = "#ffffff";
@@ -382,6 +428,220 @@ function birdWatchSkyDraw(sat, pass, points)
   }
 }
 
+// ---- The side views (under the sky plot, each on its own in BirdWatch settings): the pass's profile (elevation over its time), the
+// pass across the horizon (azimuth along it), and the satellite above the curve of the Earth. The colors are the sky plot's
+
+const BIRD_WATCH_SIDE_W = 176;
+const BIRD_WATCH_SIDE_H = 110;
+const BIRD_WATCH_EARTH_KM = 6371;
+
+function birdWatchSideViewUpdate()
+{
+  const S = GT.settings.BirdWatch;
+  if (!S.sideProfile && !S.sideHorizon && !S.sideEarth) return;
+  const T = GT.birdWatchTrack;
+  const norad = T.selected;
+  const sat = T.last.get(norad);
+  const pass = birdWatchWantPasses(norad);
+  if (S.sideProfile) birdWatchSideProfile(birdWatchSideViewContext(birdWatchSideProfileCanvas), sat, birdWatchPassArc(norad, pass));
+  if (S.sideHorizon) birdWatchSideHorizon(birdWatchSideViewContext(birdWatchSideHorizonCanvas), sat, birdWatchPassArc(norad, pass));
+  if (S.sideEarth) birdWatchSideEarth(birdWatchSideViewContext(birdWatchSideEarthCanvas), sat);
+}
+
+// The canvas at the screen's pixel ratio, cleared to the background
+function birdWatchSideViewContext(canvas)
+{
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  if (canvas.width != Math.ceil(BIRD_WATCH_SIDE_W * dpr))
+  {
+    canvas.width = Math.ceil(BIRD_WATCH_SIDE_W * dpr);
+    canvas.height = Math.ceil(BIRD_WATCH_SIDE_H * dpr);
+  }
+  const c = canvas.getContext("2d");
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.fillStyle = "#06101f";
+  c.fillRect(0, 0, BIRD_WATCH_SIDE_W, BIRD_WATCH_SIDE_H);
+  c.lineWidth = 1;
+  c.font = "9px sans-serif";
+  c.textBaseline = "middle";
+  return c;
+}
+
+// The elevation scale of the profile and the horizon: the lines every 30° up to the pass's top (at least 30°), labeled on the left
+function birdWatchSideElevation(c, points, left, right, top, bottom)
+{
+  const peak = points.reduce((m, q) => Math.max(m, q[2]), 0);
+  const ceil = peak > 60 ? 90 : peak > 30 ? 60 : 30;
+  const y = (el) => bottom - (Math.max(0, el) / ceil) * (bottom - top);
+  c.strokeStyle = "#5a6a85";
+  c.fillStyle = "#8fa0bf";
+  c.textAlign = "right";
+  for (let el = 0; el <= ceil; el += 30)
+  {
+    c.beginPath();
+    c.moveTo(left, y(el) + 0.5);
+    c.lineTo(right, y(el) + 0.5);
+    c.stroke();
+    c.fillText(el + "°", left - 3, y(el) + 0.5);
+  }
+  return y;
+}
+
+// A pass's track (white under the path color), its AOS and LOS (green, red) and its top labeled, as the sky plot draws them
+function birdWatchSideTrack(c, xy, peakAt)
+{
+  for (const [color, width] of [["#ffffff", 4], [GT.settings.BirdWatch.colors.pathLine, 2]])
+  {
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.beginPath();
+    xy.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
+    c.stroke();
+  }
+  birdWatchSideDot(c, xy[0][0], xy[0][1], "#2ecc40", 3.5, "#ffffff", 1);
+  birdWatchSideDot(c, xy[xy.length - 1][0], xy[xy.length - 1][1], "#ff4136", 3.5, "#ffffff", 1);
+  c.fillStyle = "#ffffff";
+  c.font = "10px sans-serif";
+  c.textAlign = "center";
+  c.fillText(peakAt.text, Math.min(BIRD_WATCH_SIDE_W - 12, Math.max(12, peakAt.x)), Math.max(6, peakAt.y - 9));
+  c.font = "9px sans-serif";
+}
+
+function birdWatchSideDot(c, x, y, fill, radius, stroke, width)
+{
+  c.fillStyle = fill;
+  c.strokeStyle = stroke;
+  c.lineWidth = width;
+  c.beginPath();
+  c.arc(x, y, radius, 0, Math.PI * 2);
+  c.fill();
+  c.stroke();
+  c.lineWidth = 1;
+}
+
+// Where it is now, when it is up: the sky plot's dot
+function birdWatchSideNow(c, sat, x, y)
+{
+  if (sat && !sat.error && sat.up) birdWatchSideDot(c, x, y, "#00e5ff", 5, "#000000", 1.5);
+}
+
+// Elevation over the pass's time, its AOS and LOS times under its ends
+function birdWatchSideProfile(c, sat, points)
+{
+  const left = 26;
+  const right = BIRD_WATCH_SIDE_W - 8;
+  const bottom = BIRD_WATCH_SIDE_H - 16;
+  const y = birdWatchSideElevation(c, points, left, right, 10, bottom);
+  if (points.length < 2) return;
+  const t0 = points[0][0];
+  const t1 = points[points.length - 1][0];
+  const x = (ms) => left + ((ms - t0) / Math.max(1, t1 - t0)) * (right - left);
+  let top = points[0];
+  for (const q of points) if (q[2] > top[2]) top = q;
+  birdWatchSideTrack(c, points.map((q) => [x(q[0]), y(q[2])]), { x: x(top[0]), y: y(top[2]), text: top[2].toFixed(0) + "°" });
+  c.fillStyle = "#aab6cc";
+  c.textAlign = "left";
+  c.fillText(birdWatchClock(t0), left - 4, BIRD_WATCH_SIDE_H - 6);
+  c.textAlign = "right";
+  c.fillText(birdWatchClock(t1), right + 4, BIRD_WATCH_SIDE_H - 6);
+  const now = Date.now();
+  if (now >= t0 && now <= t1 && sat) birdWatchSideNow(c, sat, x(now), y(sat.el));
+}
+
+// The pass across the horizon, as seen facing it: azimuth along (centered on the pass's top, so the pass is never cut in two), the
+// points of the compass under it
+function birdWatchSideHorizon(c, sat, points)
+{
+  const left = 26;
+  const right = BIRD_WATCH_SIDE_W - 8;
+  const bottom = BIRD_WATCH_SIDE_H - 16;
+  const y = birdWatchSideElevation(c, points, left, right, 10, bottom);
+  let top = points[0] || null;
+  for (const q of points) if (q[2] > top[2]) top = q;
+  const center = top ? top[1] : sat && !sat.error ? sat.az : 180;
+  const x = (az) => (left + right) / 2 + ((((az - center + 540) % 360) - 180) / 180) * ((right - left) / 2);
+  c.strokeStyle = "#5a6a85";
+  c.fillStyle = "#aab6cc";
+  c.textAlign = "center";
+  c.font = "bold 10px sans-serif";
+  for (const [az, name] of [[0, "N"], [90, "E"], [180, "S"], [270, "W"]])
+  {
+    const at = x(az);
+    c.beginPath();
+    c.moveTo(Math.round(at) + 0.5, bottom);
+    c.lineTo(Math.round(at) + 0.5, bottom + 4);
+    c.stroke();
+    c.fillText(name, Math.min(right, Math.max(left, at)), BIRD_WATCH_SIDE_H - 6);
+  }
+  c.font = "9px sans-serif";
+  if (points.length > 1) birdWatchSideTrack(c, points.map((q) => [x(q[1]), y(q[2])]), { x: x(top[1]), y: y(top[2]), text: top[2].toFixed(0) + "°" });
+  if (sat && !sat.error) birdWatchSideNow(c, sat, x(sat.az), y(sat.el));
+}
+
+// The satellite above the curve of the Earth, at its height and range, from the side: the station on top, the satellite east of it to
+// the right (as the sky plot has it), the station's horizon dashed and the line of sight green when the satellite is up
+function birdWatchSideEarth(c, sat)
+{
+  if (!sat || sat.error || !(sat.range > 0)) return;
+  const R = BIRD_WATCH_EARTH_KM;
+  const r = R + sat.alt;
+  // The angle at the Earth's center between the station and the satellite, from the height and the range
+  const theta = Math.acos(Math.max(-1, Math.min(1, (R * R + r * r - sat.range * sat.range) / (2 * R * r))));
+  const dir = sat.az < 180 ? 1 : -1;
+  // Km about the Earth's center, y up: the station at (0, R)
+  const station = [0, R];
+  const bird = [dir * r * Math.sin(theta), r * Math.cos(theta)];
+  const minX = Math.min(station[0], bird[0]);
+  const maxX = Math.max(station[0], bird[0]);
+  const minY = Math.min(station[1], bird[1]);
+  const maxY = Math.max(station[1], bird[1]);
+  // Both in the box, a band under them for the Earth; never closer than 300 km across the height
+  const scale = Math.min((BIRD_WATCH_SIDE_W - 40) / Math.max(maxX - minX, 1), (BIRD_WATCH_SIDE_H - 44) / Math.max(maxY - minY, 300));
+  const px = (p) => [BIRD_WATCH_SIDE_W / 2 + (p[0] - (minX + maxX) / 2) * scale, 16 + (maxY - p[1]) * scale];
+  const [ex, ey] = px([0, 0]);
+  c.fillStyle = "#14395e";
+  c.strokeStyle = "#3f7fbf";
+  c.beginPath();
+  c.arc(ex, ey, R * scale, 0, Math.PI * 2);
+  c.fill();
+  c.stroke();
+  const [sx, sy] = px(station);
+  const [bx, by] = px(bird);
+  // The station's horizon: the tangent through it
+  c.strokeStyle = "#8fa0bf";
+  c.setLineDash([3, 3]);
+  c.beginPath();
+  c.moveTo(0, Math.round(sy) + 0.5);
+  c.lineTo(BIRD_WATCH_SIDE_W, Math.round(sy) + 0.5);
+  c.stroke();
+  // The line of sight
+  c.strokeStyle = sat.up ? "#2ecc40" : "#ff4136";
+  c.lineWidth = 1.5;
+  if (sat.up) c.setLineDash([]);
+  c.beginPath();
+  c.moveTo(sx, sy);
+  c.lineTo(bx, by);
+  c.stroke();
+  c.setLineDash([]);
+  c.lineWidth = 1;
+  c.fillStyle = "#ffffff";
+  c.beginPath();
+  c.moveTo(sx, sy - 6);
+  c.lineTo(sx - 4, sy + 1);
+  c.lineTo(sx + 4, sy + 1);
+  c.closePath();
+  c.fill();
+  birdWatchSideDot(c, bx, by, "#00e5ff", 5, "#000000", 1.5);
+  // The height over the satellite, the range under the line of sight's middle
+  const clampX = (x) => Math.min(BIRD_WATCH_SIDE_W - 30, Math.max(30, x));
+  c.font = "10px sans-serif";
+  c.textAlign = "center";
+  c.fillStyle = "#ffffff";
+  c.fillText("↑ " + birdWatchDistance(sat.alt), clampX(bx), Math.max(7, by - 11));
+  c.fillStyle = sat.up ? "#2ecc40" : "#ff8a80";
+  c.fillText("↔ " + birdWatchDistance(sat.range), clampX((sx + bx) / 2), Math.min(BIRD_WATCH_SIDE_H - 7, (sy + by) / 2 + 12));
+}
+
 // ---- The timeline
 
 function birdWatchTimelineToggle()
@@ -409,7 +669,7 @@ function birdWatchTimelineDraw()
   const T = GT.birdWatchTrack;
   const P = birdWatchPredictState();
   if (!T.worker) return;
-  const tracked = GT.settings.Birdwatch.tracked;
+  const tracked = GT.settings.BirdWatch.tracked;
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(420, Math.min(1000, window.innerWidth - 470));
   const height = BIRD_WATCH_AXIS + tracked.length * BIRD_WATCH_ROW + 4;

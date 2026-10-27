@@ -60,6 +60,16 @@ function buttonPanelInit()
   {
     GT.settings.app.buttonPanelOrder = [...GT.defaultButtons];
   }
+
+  // The panel's boxes, the button grid one of them, in the order the user dragged them to by their top borders
+  panelBoxesInit(mainPanelBoxes, GT.settings.app.panelBoxOrder, (names) => (GT.settings.app.panelBoxOrder = names));
+}
+
+// Settings -> General -> Reset Panels: the panel's boxes back in the page's order (the order kept empty, as before any was dragged)
+function resetPanelBoxOrder()
+{
+  panelBoxesReset(mainPanelBoxes);
+  GT.settings.app.panelBoxOrder = [];
 }
 
 function setButtonPanelOrder(which)

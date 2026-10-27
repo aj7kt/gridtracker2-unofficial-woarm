@@ -494,18 +494,48 @@ function createFlagTipTable(feature)
 function createTimezoneTipTable(feature)
 {
   let props = feature.getProperties();
-  moment.locale(navigator.languages[0]);
-  let m = moment().tz(props.tzid);
-  let abbr = m.format("zz");
-  let zone = m.format("Z");
-  abbr = zone.indexOf(abbr) > -1 ? "" : ` <font color='orange'>(${abbr})</font>`;
+  let now = timezoneNow(props.tzid);
+  let abbr = now.abbr ? ` <font color='orange'>(${now.abbr})</font>` : "";
 
   myTimezoneTip.innerHTML = `
     <div style='background-color:cyan;color:#000;font-weight:bold;font-size:16px;border:2px solid gray;margin:0px;padding:1px' class='roundBorder'>${props.tzid}</div>
     <table id='tooltipTable' class='darkTable' align=center>
-      <tr><td style='color:yellow;font-weight:bold'>${m.format("LLLL")}</td></tr>
-      <tr><td style='color:#00FF00;font-weight:bold'>${zone}${abbr}</td></tr>
+      <tr><td style='color:yellow;font-weight:bold'>${now.when}</td></tr>
+      <tr><td style='color:#00FF00;font-weight:bold'>${now.zone}${abbr}</td></tr>
     </table>`;
+}
+
+// A time zone (its IANA id) now, from the browser's own time zone data: when (the date and time there, in the user's language), zone (its
+// UTC offset, "-07:00"), abbr (its abbreviation in English, "PDT", "CET", "IST": each English locale names only its own region's, so the
+// first of TIMEZONE_ABBR_LOCALES that has one; "" where none has, "GMT+9")
+const TIMEZONE_ABBR_LOCALES = ["en-US", "en-GB", "en-IN", "en-AU", "en-ZA", "en-SG", "en-CA"];
+
+function timezoneNow(tzid)
+{
+  const now = new Date();
+  try
+  {
+    const part = (locale, options) => new Intl.DateTimeFormat(locale, Object.assign({ timeZone: tzid }, options)).formatToParts(now).find((p) => p.type == "timeZoneName").value;
+    const when = new Intl.DateTimeFormat(navigator.languages[0], { timeZone: tzid, dateStyle: "full", timeStyle: "short" }).format(now);
+    // "GMT-07:00", or "GMT" itself at +00:00
+    const offset = part("en-US", { timeZoneName: "longOffset" }).replace(/^GMT/, "") || "+00:00";
+    let abbr = "";
+    for (const locale of TIMEZONE_ABBR_LOCALES)
+    {
+      const short = part(locale, { timeZoneName: "short" });
+      if (!/^(GMT|UTC)?[+-]/.test(short))
+      {
+        abbr = short;
+        break;
+      }
+    }
+    return { when: when, zone: offset, abbr: abbr };
+  }
+  catch (e)
+  {
+    // A zone the browser doesn't know
+    return { when: now.toUTCString(), zone: "", abbr: "" };
+  }
 }
 
 function moonOver(feature)

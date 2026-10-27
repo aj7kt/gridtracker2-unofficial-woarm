@@ -33,7 +33,7 @@ function satDir()
 // The copy is kept up to date only while BirdWatch is on and we're online
 function satSyncAllowed()
 {
-  return GT.settings.Birdwatch.enable == true && GT.settings.map.offlineMode == false;
+  return GT.settings.BirdWatch.enable == true && GT.settings.map.offlineMode == false;
 }
 
 function satSyncState()
@@ -397,7 +397,7 @@ async function satSyncRun()
     const state = satSyncState();
 
     // AMSAT's element sets only when the Telemetry tab says to use them
-    const names = Object.keys(SAT_LISTS).filter((name) => name != "dailytle" || GT.settings.Birdwatch.tle.amsat);
+    const names = Object.keys(SAT_LISTS).filter((name) => name != "dailytle" || GT.settings.BirdWatch.tle.amsat);
     for (let i = 0; i < names.length; i++)
     {
       if (i > 0) await satPause(SAT_REQUEST_GAP);
@@ -405,7 +405,7 @@ async function satSyncRun()
     }
 
     // The user's remote element sets that are to be refreshed every 24 hours. One that fails doesn't fail the pass
-    for (const source of GT.settings.Birdwatch.tle.sources)
+    for (const source of GT.settings.BirdWatch.tle.sources)
     {
       if (source.kind != "remote" || !source.enabled || !source.refresh || Date.now() - source.loaded < SAT_SYNC_INTERVAL - 3600 * 1000) continue;
       satCheckAllowed();

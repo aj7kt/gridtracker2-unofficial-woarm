@@ -7,7 +7,7 @@
 // Settings checkbox: shows or hides the button; its toggle (birdWatchActive) is left as it was
 function changeBirdWatchEnable()
 {
-  GT.settings.Birdwatch.enable = birdWatchEnable.checked;
+  GT.settings.BirdWatch.enable = birdWatchEnable.checked;
   updateBirdWatchViews();
 }
 
@@ -15,22 +15,25 @@ function changeBirdWatchEnable()
 // matter here: the shipped satellite data and the tracking work offline (only the data sync stops, birdWatchSync.js)
 function updateBirdWatchViews()
 {
-  birdWatchEnable.checked = GT.settings.Birdwatch.enable;
-  // The Satellite Tracking button, BirdWatch's own buttons after it, and its row of Settings tabs
-  for (const button of [birdWatchButton, birdWatchAutoButton, birdWatchDopplerButton, birdWatchTimelineButton]) button.style.display = GT.settings.Birdwatch.enable ? "" : "none";
-  birdWatchTabRow.style.display = GT.settings.Birdwatch.enable ? "" : "none";
-  birdWatchImg.style.filter = GT.settings.Birdwatch.active ? "" : "grayscale(1)";
-  birdWatchAutoImg.style.filter = GT.settings.Birdwatch.auto ? "" : "grayscale(1)";
+  birdWatchEnable.checked = GT.settings.BirdWatch.enable;
+  // The Satellite Tracking button and its row of Settings tabs; BirdWatch's own buttons after it only while its tracking is toggled on
+  birdWatchButton.style.display = GT.settings.BirdWatch.enable ? "" : "none";
+  for (const button of [birdWatchAutoButton, birdWatchDopplerButton, birdWatchTimelineButton]) button.style.display = birdWatchPanelShown() ? "" : "none";
+  birdWatchTabRow.style.display = GT.settings.BirdWatch.enable ? "" : "none";
+  birdWatchImg.style.filter = GT.settings.BirdWatch.active ? "" : "grayscale(1)";
+  birdWatchAutoImg.style.filter = GT.settings.BirdWatch.auto ? "" : "grayscale(1)";
   birdWatchDopplerButtonUpdate();
 
   // The SatNOGS data on disk follows BirdWatch being on (birdWatchSync.js)
   birdWatchSyncUpdate();
   birdWatchTleWatchUpdate();
   birdWatchTrackUpdate();
-  if (!GT.settings.Birdwatch.enable)
+  if (!GT.settings.BirdWatch.enable) closeBirdWatchSettings();
+  // Its tracking toggled off (or BirdWatch off): the pass timeline and the Doppler window go with its buttons (opened again from them)
+  if (!birdWatchPanelShown())
   {
-    closeBirdWatchSettings();
     birdWatchTimelineClose();
+    if (GT.birdWatchTxWindowHandle) birdWatchTransmitterWindowOpen(false);
   }
 
   // Show or hide the BirdWatch panel (updateLayout places it), keeping the control panel as it is
@@ -54,7 +57,7 @@ function birdWatchGraylineOn()
 // it may still be collapsed to its breadcrumb
 function birdWatchPanelShown()
 {
-  return GT.settings.Birdwatch.enable && GT.settings.Birdwatch.active;
+  return GT.settings.BirdWatch.enable && GT.settings.BirdWatch.active;
 }
 
 // The panel's BirdWatch button (false) and its breadcrumb (true), like the control panel's GridTracker2 button.
@@ -73,6 +76,7 @@ function showBirdWatchPanel(show)
 function applyBirdWatchLayout()
 {
   const shown = birdWatchPanelShown();
+  birdWatchBoxesInit();
   const collapsed = shown && GT.birdWatchPanelCollapsed == true;
   birdWatchDiv.style.display = (shown && !collapsed) ? "block" : "none";
   birdWatchChevronDiv.style.display = collapsed ? "block" : "none";
@@ -196,7 +200,7 @@ function birdWatchTrackSendTles()
   const worker = GT.birdWatchTrack.worker;
   if (!worker) return;
   worker.postMessage({ type: "tles", list: birdWatchTleList() });
-  worker.postMessage({ type: "track", norad: GT.settings.Birdwatch.tracked });
+  worker.postMessage({ type: "track", norad: GT.settings.BirdWatch.tracked });
   birdWatchPanelRefresh();
 }
 
@@ -256,8 +260,8 @@ function birdWatchWorkerMessage(event)
 // Main button panel: "Toggle Satellite Tracking"; toggling it on opens the panel even if it was collapsed
 function toggleBirdWatch()
 {
-  GT.settings.Birdwatch.active = !GT.settings.Birdwatch.active;
-  if (GT.settings.Birdwatch.active)
+  GT.settings.BirdWatch.active = !GT.settings.BirdWatch.active;
+  if (GT.settings.BirdWatch.active)
   {
     GT.birdWatchPanelCollapsed = false;
   }

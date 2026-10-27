@@ -46,7 +46,7 @@ if (node) env.EMSDK_NODE = node;
 // --debug=<file.wasm>: a build with CW_DEBUG (one channel's levels and key each tick: cw_debug_watch, cw_debug, cw_debug_count) written to
 // that file only, for tuning offline; never to lib/mmd/
 const debugOut = opt("debug", "");
-const exportsList = ["cw_init", "cw_input", "cw_process", "cw_row", "cw_row_bins", "cw_bin_hz", "cw_channels", "cw_events", "cw_event_count", "cw_events_clear", "cw_retune", "cw_revision_text", "cw_set_range", "cw_span", "cw_max_channels", "malloc", "free"]
+const exportsList = ["cw_init", "cw_input", "cw_process", "cw_row", "cw_row_bins", "cw_bin_hz", "cw_channels", "cw_events", "cw_event_count", "cw_events_clear", "cw_retune", "cw_revision_text", "cw_set_decode", "cw_set_range", "cw_set_view", "cw_view", "cw_span", "cw_max_channels", "malloc", "free"]
   .concat(debugOut ? ["cw_debug_watch", "cw_debug", "cw_debug_count"] : []);
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gt-cwwasm-"));
 const built = path.join(tmp, "cwdecoder.wasm");

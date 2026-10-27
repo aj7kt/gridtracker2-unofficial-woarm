@@ -661,6 +661,27 @@ input[type="checkbox"]:hover {
   cursor: pointer;
 }
 
+/* A checkbox and the label right beside it (after it, or before it): both centered on the line, the box not nudged (over the older
+   nudges a pixel up), so it sits on the middle of its label's letters wherever it is */
+input[type="checkbox"]:has(+ label),
+input[type="checkbox"] + label,
+label:has(+ input[type="checkbox"]),
+label + input[type="checkbox"] {
+  vertical-align: middle !important;
+  top: 0 !important;
+}
+
+/* A checkbox alone in its table cell (its label in the next one, or none): the cell's line as high as the box alone, so the row centers
+   the box itself as it centers the label's line; still inline, so the cell's own text-align places it */
+td:has(> input[type="checkbox"]:only-child) {
+  line-height: 0;
+}
+
+td > input[type="checkbox"]:only-child {
+  vertical-align: middle !important;
+  top: 0 !important;
+}
+
 input[type="range"]::-webkit-slider-runnable-track {
   -webkit-appearance: none;
   height: 4px;
@@ -769,23 +790,23 @@ a {
 }
 
 /* The satellite info rows (birdWatchInfo.js): the one under the mouse is shaded like a table's, and a row being dragged shows where it will land */
-#birdWatchInfoPos tr:hover > td {
+.birdWatchInfoPos tr:hover > td {
   box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
 }
 
-#birdWatchInfoPos tr.birdInfoDragging {
+.birdWatchInfoPos tr.birdInfoDragging {
   opacity: 0.4;
 }
 
-#birdWatchInfoPos tr.birdInfoDropBefore > td {
+.birdWatchInfoPos tr.birdInfoDropBefore > td {
   box-shadow: inset 0 2px 0 cyan;
 }
 
-#birdWatchInfoPos tr.birdInfoDropAfter > td {
+.birdWatchInfoPos tr.birdInfoDropAfter > td {
   box-shadow: inset 0 -2px 0 cyan;
 }
 
-#birdWatchInfoPos .birdInfoFeatured > td {
+.birdWatchInfoPos .birdInfoFeatured > td {
   text-align: center;
   white-space: nowrap;
   cursor: help;
@@ -851,13 +872,13 @@ a {
 }
 
 /* AOS, LOS and TCA: the time and the bearing each have a width, right aligned, so the times line up and a bearing of two or three digits moves nothing */
-#birdWatchInfoPos .birdInfoTime {
+.birdWatchInfoPos .birdInfoTime {
   display: inline-block;
   min-width: 76px;
   text-align: right;
 }
 
-#birdWatchInfoPos .birdInfoAz {
+.birdWatchInfoPos .birdInfoAz {
   display: inline-block;
   width: 28px;
   text-align: right;
@@ -904,11 +925,11 @@ a {
 /* The Doppler table (birdWatchDoppler.js): the header stays at the top as the rows scroll */
 /* Borders drawn by the cells themselves (separate, not collapsed): a collapsed border is painted by the table, under the sticky
    header's background (the header's lower edge was lost) and not always again when a cell's text changes (the frequencies, each
-   second). Each cell has its right and lower edge, the table its top and left */
+   second). Each cell has its right and lower edge, the table its left; the header its own top edge (the table's would scroll away from
+   under the header that stays) */
 table.darkTable.birdDopplerTable {
   border-collapse: separate;
   border-spacing: 0;
-  border-top: 1px solid #888;
   border-left: 1px solid #888;
   font-size: 12px;
   white-space: nowrap;
@@ -935,6 +956,28 @@ table.darkTable.birdDopplerTable td {
 .birdDopplerTable th:nth-child(1),
 .birdDopplerTable th:nth-child(2) {
   text-align: left;
+}
+
+/* The header's top edge, inside each of its cells. And each header cell over the one to its right: the table's widths come out in
+   fractions of a pixel, changing as the frequencies do, and a cell's solid background rounded over its neighbour's right edge hid it
+   (the header's lines went and came back) */
+.birdDopplerTable th {
+  box-shadow: inset 0 1px 0 #888;
+}
+.birdDopplerTable th:nth-child(1) {
+  z-index: 6;
+}
+.birdDopplerTable th:nth-child(2) {
+  z-index: 5;
+}
+.birdDopplerTable th:nth-child(3) {
+  z-index: 4;
+}
+.birdDopplerTable th:nth-child(4) {
+  z-index: 3;
+}
+.birdDopplerTable th:nth-child(5) {
+  z-index: 2;
 }
 
 .birdDopplerTable td {
@@ -2199,17 +2242,21 @@ button:focus {
   padding-left: 0;
 }
 
-/* Rig Control's second rig (VFO-B on a rig of its own): its rows under the VFO-B choice, a line down their left */
-.mapGroup table.rigSecondTable {
-  border-left: 2px solid #555;
-  border-spacing: 0;
-  margin: 1px 0 2px 0;
+/* A Rig Control VFO's own name beside its letter, and the X that removes it (shown with its Connect unchecked) */
+.mapGroup .rigVfoTitle input[type="text"] {
+  margin-left: 6px;
+  font-weight: normal;
 }
 
-.mapGroup table.rigSecondTable td.mapRowLabel {
-  padding-left: 8px;
+.mapGroup .rigVfoRemove {
+  margin-left: 8px;
+  color: #ff8080;
+  cursor: pointer;
 }
 
+.mapGroup .rigVfoRemove:hover {
+  color: red;
+}
 /* The Event Viewer (ui/events.js): the panel in the main window (#eventViewerDiv, a panel like Settings) and the gt_events window's list.
    A list draws only the rows in view, one line high or more where the Event column wraps; its columns are as wide as the widest row
    seen (eventsMeasure sets --evTime, --evSource and --evText), and the list as wide as its columns, or the window where it is narrower */
@@ -2345,6 +2392,200 @@ button:focus {
   margin-left: 3px;
   vertical-align: 2px;
   cursor: help;
+}
+
+/* The Multi-Mode Decoder's button while it listens with its window closed, for its FT8 GridTracker instance (mmDecoderBackgroundRender):
+   a green dot in its corner */
+.iconButton.mmdBackground::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #33ff33;
+  box-shadow: 0 0 4px #33ff33;
+  pointer-events: none;
+}
+
+/* BirdWatch settings, Map: a row's colors and ticks (Ring, Fill; Line, Dash, Outline) side by side, evenly spaced and centered on one line */
+.birdWatchMapItems {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* A color in the label column (Ring, Line): right-justified with the labels under it (Transparency, Width) */
+.mapGroup td.mapRowLabel .mapColorItem {
+  justify-content: flex-end;
+}
+
+.birdWatchMapCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.birdWatchMapCheck input[type="checkbox"] {
+  margin: 0;
+}
+
+/* A panel's box being dragged to another place (panelBoxes.js): its place in the panel dimmed, and a copy of it under the mouse */
+.panelBoxDragging {
+  opacity: 0.3;
+}
+
+/* The mouse on a box's top border, where it can be dragged by: a grab hand, over whatever cursor its contents have */
+.panelBoxGrab,
+.panelBoxGrab * {
+  cursor: grab !important;
+}
+
+.panelBoxGhost {
+  position: fixed;
+  z-index: 10000;
+  opacity: 0.75;
+  pointer-events: none;
+  box-sizing: border-box;
+  background-color: #000;
+  cursor: grabbing;
+}
+
+/* BirdWatch's rig box (rig.js, rigLineRender): each side a row of frequency, mode and an icon. Only the frequency's column takes what is
+   left, its digits of one width and right-aligned, so nothing moves as the numbers change */
+.birdWatchRigGrid {
+  display: grid;
+  grid-template-columns: 18px 16px minmax(0, 1fr) 46px 18px;
+  column-gap: 2px;
+  row-gap: 1px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.birdWatchRigFreq {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birdWatchRigMode {
+  text-align: left;
+  color: lightgreen;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birdWatchRigIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  border-radius: 3px;
+  color: #888;
+  cursor: pointer;
+}
+
+.birdWatchRigIcon:hover {
+  background: #444;
+}
+
+.birdWatchRigIcon.active {
+  color: cyan;
+}
+
+/* Re-center on the left (beside both rows with an uplink: rigLineRender sets its rows), the frequencies and modes, Lock VFOs on the right
+   beside both rows */
+.birdWatchRigRecenter {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.birdWatchRigRxFreq {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.birdWatchRigRxMode {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.birdWatchRigTxFreq {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.birdWatchRigTxMode {
+  grid-column: 4;
+  grid-row: 2;
+}
+
+.birdWatchRigRxDot {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.birdWatchRigTxDot {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* A VFO's Connect (rig.js, rigLineRender): a hollow Saturn, right-justified against its frequency; light blue connected and read, orange
+   connecting, red can't be reached, grey off */
+.birdWatchRigDot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: #777;
+  cursor: pointer;
+}
+
+.birdWatchRigDot[data-state="on"] {
+  color: lightblue;
+  filter: drop-shadow(0 0 2px lightblue);
+}
+
+.birdWatchRigDot[data-state="trying"] {
+  color: orange;
+}
+
+.birdWatchRigDot[data-state="error"] {
+  color: red;
+  filter: drop-shadow(0 0 2px red);
+}
+
+.birdWatchRigDot[data-state="none"] {
+  visibility: hidden;
+}
+
+.birdWatchRigLockCell {
+  grid-column: 5;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  flex-direction: column;
+  height: auto;
+}
+
+/* The bracket from each row's middle to the lock: across from the left, then down (or up) to it */
+.birdWatchRigBracket {
+  flex: 1;
+  align-self: flex-start;
+  width: 50%;
+  min-height: 2px;
+  border-right: 1px solid currentColor;
+}
+
+.birdWatchRigBracketTop {
+  margin: 10px 0 1px 0;
+  border-top: 1px solid currentColor;
+}
+
+.birdWatchRigBracketBottom {
+  margin: 1px 0 10px 0;
+  border-bottom: 1px solid currentColor;
 }
 
 /* A box's name in the values' column (Follow Satellite): as bold as the labels, centered on the box */

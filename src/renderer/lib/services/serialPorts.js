@@ -51,12 +51,12 @@ function serialPortSame(a, b)
   return a.portName == b.portName;
 }
 
-// The ports the services other than this one have open (connected on them): the rotor, VFO-A's rig, VFO-B's second rig
+// The ports the services other than this one have open (connected on them): the rotor, each Rig Control VFO's rig
 function serialPortsTaken(purpose)
 {
   const open = [];
   if (purpose != "rotor" && GT.rotor.status == "connected" && rotorProtocolChosen().serial) open.push(GT.settings.rotor.port);
-  for (const R of [GT.rig, GT.rigB])
+  for (const R of Object.values(GT.rigs))
   {
     if (purpose != rigPurpose(R) && R.status == "connected" && rigProtocolChosen(R).serial) open.push(rigSettingsOf(R).port);
   }

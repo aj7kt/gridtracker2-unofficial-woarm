@@ -1,13 +1,5 @@
 # Third party source files
 
-## Moment - time-zone manipulation
-
-- https://momentjs.com/downloads/moment-timezone-with-data.js
-- https://momentjs.com/downloads/moment-with-locales.js
-
-- lib/third-party/moment-timezone-with-data.js
-- lib/third-party/moment-with-locales.js
-
 ## OpenLayers - map display
 
 - https://openlayers.org/

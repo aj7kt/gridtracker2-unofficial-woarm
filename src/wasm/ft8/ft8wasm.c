@@ -14,9 +14,13 @@
 //                         how: empty, or o, a1, a2, a3 as decodeLlr found it)
 //   ft8_set_passes(n):    how many times the period is searched (1 to 4): after each, the signals decoded are taken out of it
 //                         (subtractAudio), so the weaker ones under them can be found
-//   ft8_set_focus(hz):    a frequency to search harder (the viewer's right-click; 0 none)
+//   ft8_set_focus(hz):    a frequency to search harder (the viewer's right-click; 0 none): the signals whose middle is within
+//                         FOCUS_HALF_HZ of it, in one more pass (Normal too: FT4's)
 //   ft8_set_period(p):    the period being decoded (start / 15 s), for the QSO guesses (a3): ft8_note keeps what was decoded
 //   ft8_set_mycall(call): this station's call (written into ft8_mycall_buffer() first), for the a priori guess of a call to it
+//   ft8_set_ft4(on):      FT4 instead of FT8 (the viewer's FT4 mode: a 7.5 s period, always decoded the Normal way)
+//   ft8_set_plain(on):    Normal (the viewer's FT8 Decoder setting): ft8_lib as it comes, as its decode_ft8.c demo decodes, instead of
+//                         Deep (all of what follows): one pass, ft8_lib's candidates and its own reading of each (g_plain)
 //
 // Decoding, taking out what was decoded, and decoding again is WSJT-X's way, with credit and thanks to Joe Taylor, K1JT, and the WSJT
 // development team, whose work it comes from. This is written here for ft8_lib (none of WSJT-X's code is used): a signal decoded is
@@ -52,6 +56,22 @@
 #ifndef MIN_SCORE
 #define MIN_SCORE 7
 #endif
+
+// Normal: ft8_lib as it comes (its demo's lowest sync score, 10), with none of the fine reading, OSD, a priori guesses, combining, taking
+// out and searching again, or focus search below: one pass of ft8_lib's candidates, each read by ft8_lib (ftx_decode_candidate)
+#define PLAIN_MIN_SCORE 10
+static int g_plain = 0;
+// The Depth set (Normal), and FT4 (ft8_set_ft4: always Normal); g_plain is either. The audio searched (ft8_init), kept for setting
+// ft8_lib's monitor up again for the other protocol
+static int g_plainSet = 0;
+static int g_ft4 = 0;
+static float g_fMin = 100.0f, g_fMax = 4000.0f;
+
+void ft8_set_plain(int plain)
+{
+  g_plainSet = plain ? 1 : 0;
+  g_plain = g_plainSet || g_ft4;
+}
 
 static float g_input[SLOT_SAMPLES];
 static char g_output[MAX_DECODED * 128];
@@ -1703,13 +1723,14 @@ static void subtractAudio(const uint8_t* tones, float f0, float t0, int num_samp
 #ifndef SNR_OFFSET
 #define SNR_OFFSET -5.0f // on two recordings: 5 dB under, at every level, within 2 dB of WSJT-X's (one standard deviation)
 #endif
-static float signalSnr(const ftx_waterfall_t* wf, const ftx_candidate_t* cand, const uint8_t* tones, float noise)
+// (count tones: FT8's 79, FT4's 105; a cell is one tone step wide, 1 / the symbol period: FT8 6.25 Hz, FT4 20.8 Hz)
+static float signalSnr(const ftx_waterfall_t* wf, const ftx_candidate_t* cand, const uint8_t* tones, int count, float noise)
 {
   int t0 = cand->time_offset * wf->time_osr + cand->time_sub;
   int f0 = cand->freq_offset * wf->freq_osr + cand->freq_sub;
   double sum = 0.0;
   int n = 0, index;
-  for (int k = 0; k < FT8_NN; k++)
+  for (int k = 0; k < count; k++)
   {
     float p = cellPower(wf, t0 + k * wf->time_osr, f0 + tones[k] * wf->freq_osr, &index);
     if (p < 0.0f) continue;
@@ -1718,18 +1739,34 @@ static float signalSnr(const ftx_waterfall_t* wf, const ftx_candidate_t* cand, c
   }
   float signal = n ? (float)(sum / n) - noise : 0.0f;
   if (signal < noise * 0.001f) signal = noise * 0.001f;
-  float snr = 10.0f * log10f(signal / noise) - 10.0f * log10f(2500.0f / 6.25f) + SNR_OFFSET;
+  float snr = 10.0f * log10f(signal / noise) - 10.0f * log10f(2500.0f * g_mon.symbol_period) + SNR_OFFSET;
   return snr < -30.0f ? -30.0f : snr;
 }
 
 int ft8_init(float f_min, float f_max)
 {
-  monitor_config_t cfg = { .f_min = f_min, .f_max = f_max, .sample_rate = SAMPLE_RATE, .time_osr = 2, .freq_osr = 2, .protocol = FTX_PROTOCOL_FT8 };
+  g_fMin = f_min;
+  g_fMax = f_max;
+  monitor_config_t cfg = { .f_min = f_min, .f_max = f_max, .sample_rate = SAMPLE_RATE, .time_osr = 2, .freq_osr = 2, .protocol = g_ft4 ? FTX_PROTOCOL_FT4 : FTX_PROTOCOL_FT8 };
   if (g_ready) monitor_free(&g_mon);
   monitor_init(&g_mon, &cfg);
   memset(g_calls, 0, sizeof(g_calls));
   apMessage(0, "CQ");
   g_ready = 1;
+  return 1;
+}
+
+// FT4 (the viewer's FT4 mode) or FT8: ft8_lib's monitor set up again for it. FT4 is decoded the Normal way only (ft8_lib as it comes:
+// the Deep reading here is written for FT8's tones and timing), its period 7.5 s
+int ft8_set_ft4(int on)
+{
+  on = on ? 1 : 0;
+  if (on != g_ft4)
+  {
+    g_ft4 = on;
+    if (g_ready) ft8_init(g_fMin, g_fMax);
+  }
+  g_plain = g_plainSet || g_ft4;
   return 1;
 }
 
@@ -1748,12 +1785,16 @@ static bool alreadyGiven(const ftx_message_t* message)
 }
 
 // The frequency right-clicked in the viewer (Hz of audio, 0 none): after the usual passes, the waterfall is searched once more there only,
-// harder (more candidates, a lower sync score); what is found there is taken only as anything else is (decodeCandidate's limits)
+// harder (more candidates, a lower sync score); what is found there is taken only as anything else is (decodeCandidate's limits). There:
+// the signals whose middle is within FOCUS_HALF_HZ of it (the viewer's focus, 50 Hz wide)
 #ifndef FOCUS_CANDIDATES
 #define FOCUS_CANDIDATES 600
 #endif
 #ifndef FOCUS_MIN_SCORE
 #define FOCUS_MIN_SCORE 5
+#endif
+#ifndef FOCUS_HALF_HZ
+#define FOCUS_HALF_HZ 25.0f
 #endif
 static float g_focusHz = 0.0f;
 
@@ -1955,8 +1996,15 @@ static void ft8Waterfall(void)
 {
   monitor_reset(&g_mon);
   for (int pos = 0; pos + g_mon.block_size <= g_numSamples; pos += g_mon.block_size) monitor_process(&g_mon, g_input + pos);
-  // The period's spectrum, for reading a candidate finely when ft8_lib's reading of it fails (and placing a signal to take it out)
-  fineSpectrum(g_numSamples);
+  // The period's spectrum, for reading a candidate finely when ft8_lib's reading of it fails (and placing a signal to take it out); not
+  // for Normal, which does neither
+  if (!g_plain) fineSpectrum(g_numSamples);
+}
+
+// The usual passes (Normal: one)
+static int usualPasses(void)
+{
+  return g_plain ? 1 : g_passes;
 }
 
 int ft8_begin(int num_samples, int more)
@@ -1973,7 +2021,7 @@ int ft8_begin(int num_samples, int more)
   g_out = g_output;
   g_out[0] = 0;
   // The passes, then the focus's
-  return g_passes + (g_focusHz > 0.0f ? 1 : 0);
+  return usualPasses() + (g_focusHz > 0.0f ? 1 : 0);
 }
 
 static float candidateHz(const ftx_candidate_t* cand)
@@ -2131,17 +2179,19 @@ static int candidates8(ftx_candidate_t* out, int room)
 int ft8_pass_candidates(int pass)
 {
   ftx_waterfall_t* wf = &g_mon.wf;
-  if (pass == g_passes)
+  if (pass == usualPasses())
   {
-    // The focus's: only those about it (a signal's lowest tone is up to 50 Hz under where it was clicked)
+    // The focus's: only those whose middle is in it (a candidate's place is its lowest tone; FT8's 8 tones and FT4's 4, a tone step apart)
     int n = ftx_find_candidates(wf, FOCUS_CANDIDATES, g_cands, FOCUS_MIN_SCORE), kept = 0;
+    float half = (g_ft4 ? 4.0f : 8.0f) / g_mon.symbol_period / 2.0f;
     for (int i = 0; i < n; i++)
     {
-      float hz = candidateHz(&g_cands[i]);
-      if (hz >= g_focusHz - 60.0f && hz <= g_focusHz + 15.0f) g_cands[kept++] = g_cands[i];
+      float mid = candidateHz(&g_cands[i]) + half;
+      if (mid >= g_focusHz - FOCUS_HALF_HZ && mid <= g_focusHz + FOCUS_HALF_HZ) g_cands[kept++] = g_cands[i];
     }
     g_numCands = kept;
   }
+  else if (g_plain) g_numCands = ftx_find_candidates(wf, MAX_CANDIDATES, g_cands, PLAIN_MIN_SCORE);
   else
   {
 #if CAND_MODE == 1
@@ -2184,13 +2234,25 @@ int ft8_try(int from, int step)
     if (ft8_time_up()) break;
     const ftx_candidate_t* cand = &g_cands[i];
     ftx_message_t message;
-    int how, differ, fine = 0;
+    int how = 0, differ = 0, fine = 0;
     float fineHz = 0.0f, fineT = 0.0f, sync = 0.0f;
-    // ft8_lib's reading first (not for a candidate only the spectrogram search found: EXTRA_LIB 0; its place is the fine reading's to set)
-    g_depth = LIB_DEPTH;
-    bool ok = (EXTRA_LIB || cand->score > -500) && decodeCandidate(wf, cand, &message, &how, &differ);
-    g_depth = 2;
-    if (!ok)
+    bool ok;
+    if (g_plain)
+    {
+      // Normal: ft8_lib's own reading, and nothing more (where it is as ft8_lib places it, for what ft8_note keeps)
+      ftx_decode_status_t status;
+      ok = ftx_decode_candidate(wf, cand, LDPC_ITERATIONS, &message, &status);
+      fineHz = candidateHz(cand);
+      fineT = candidateT(cand);
+    }
+    else
+    {
+      // ft8_lib's reading first (not for a candidate only the spectrogram search found: EXTRA_LIB 0; its place is the fine reading's to set)
+      g_depth = LIB_DEPTH;
+      ok = (EXTRA_LIB || cand->score > -500) && decodeCandidate(wf, cand, &message, &how, &differ);
+      g_depth = 2;
+    }
+    if (!ok && !g_plain)
     {
       // Read finely about where ft8_lib put it (its time is to half a symbol, its frequency to half a tone step)
       float llr[FTX_LDPC_N];
@@ -2255,8 +2317,9 @@ int ft8_try(int from, int step)
       for (int b = 0; b < 10 && again; b++) again = g_recs[k * REC_FIELDS + b] == message.payload[b];
     }
     if (again) continue;
-    // Where it is to the fine reading's precision, for taking it out of the audio (read now, if ft8_lib's reading decoded it)
-    if (!fine)
+    // Where it is to the fine reading's precision, for taking it out of the audio (read now, if ft8_lib's reading decoded it; Normal takes
+    // nothing out)
+    if (!fine && !g_plain)
     {
       float llr[FTX_LDPC_N];
       fineLikelihoods(candidateHz(cand), candidateT(cand), FINE_RANGE, llr, &sync, &fineHz, &fineT);
@@ -2309,9 +2372,10 @@ int ft8_accept(const float* recs, int n)
     cand.freq_offset = (int16_t)r[REC_CAND + 2];
     cand.freq_sub = (uint8_t)r[REC_CAND + 3];
     cand.score = (int16_t)r[REC_CAND + 4];
-    uint8_t tones[FT8_NN];
-    ft8_encode(message.payload, tones);
-    float snr = signalSnr(wf, &cand, tones, g_heardNoise);
+    uint8_t tones[FT4_NN > FT8_NN ? FT4_NN : FT8_NN];
+    if (g_ft4) ft4_encode(message.payload, tones);
+    else ft8_encode(message.payload, tones);
+    float snr = signalSnr(wf, &cand, tones, g_ft4 ? FT4_NN : FT8_NN, g_heardNoise);
     static const char* tags[] = { "", "o", "a1", "a2", "a3", "a4" };
     int how = (int)r[REC_HOW];
 #ifdef FT8_STATS
@@ -2334,7 +2398,9 @@ int ft8_accept(const float* recs, int n)
 
 int ft8_subtract(const float* recs, int n)
 {
-  // Out of the audio, and the waterfall and the spectrum made again from what is left
+  // Out of the audio, and the waterfall and the spectrum made again from what is left (not in Normal: its focus pass searches the audio
+  // as heard, what it finds again already taken)
+  if (g_plain) return n;
   for (int i = 0; i < n; i++)
   {
     const float* r = &recs[i * REC_FIELDS];
@@ -2351,8 +2417,9 @@ int ft8_subtract(const float* recs, int n)
 // The pass to run after pass (given what it found and how many are planned), or -1 when done
 int ft8_next_pass(int pass, int found, int passes)
 {
+  int usual = usualPasses();
   if (g_takenCount >= MAX_DECODED || pass == passes - 1) return -1;
-  if (found == 0) return pass >= g_passes - 1 || passes == g_passes ? -1 : g_passes;
+  if (found == 0) return passes > usual && pass < usual ? usual : -1;
   return pass + 1;
 }
 

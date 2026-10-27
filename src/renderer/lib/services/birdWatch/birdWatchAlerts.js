@@ -10,14 +10,14 @@ const BIRD_WATCH_ALERT_KEEP_MS = 24 * 3600000;
 
 function birdWatchAlertsUpdate()
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   if (!A.enable) return;
   const T = GT.birdWatchTrack;
   const done = T.alerted || (T.alerted = new Map());
   const now = Date.now();
   for (const [key, when] of done) if (now - when > BIRD_WATCH_ALERT_KEEP_MS) done.delete(key);
 
-  for (const norad of GT.settings.Birdwatch.tracked)
+  for (const norad of GT.settings.BirdWatch.tracked)
   {
     const sat = T.last.get(norad);
     if (!sat || sat.error) continue;
@@ -53,11 +53,11 @@ function birdWatchAlertBuiltIn(kind, minutes = 2)
   return I18N(key).replace("{name}", "{N}").replace("{n}", "{T}").replace("{el}", "{D}").replace("{az}", "{D}");
 }
 
-// An announcement: the user's wording (settings.Birdwatch.alerts soonText / risingText) or, when there is none, the built-in one; its
+// An announcement: the user's wording (settings.BirdWatch.alerts soonText / risingText) or, when there is none, the built-in one; its
 // tokens filled in
 function birdWatchAlertMessage(kind, name, minutes, degrees)
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   const own = String((kind == "rising" ? A.risingText : A.soonText) || "").trim();
   const text = own || birdWatchAlertBuiltIn(kind, minutes);
   return text.split("{N}").join(name).split("{T}").join(minutes === null ? "" : String(minutes)).split("{D}").join(String(degrees));
@@ -66,7 +66,7 @@ function birdWatchAlertMessage(kind, name, minutes, degrees)
 // One announcement, by each way that is turned on
 function birdWatchAlertSend(message)
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   if (A.speech) birdWatchSpeak(message);
   if (A.traffic) addEvent("birdwatch", "<font style='color:cyan'>" + htmlEntities(message) + "</font>");
   if (A.push && !GT.settings.map.offlineMode) birdWatchAlertPushSend("BirdWatch - " + formatCallsign(GT.settings.app.myCall), message);
@@ -107,7 +107,7 @@ function birdWatchAlertPushSend(title, message)
 
 function birdWatchAlertsRender()
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   birdWatchAlertEnable.checked = A.enable;
   birdWatchAlertMinutes.value = A.minutes;
   birdWatchAlertMinutesText.textContent = A.minutes;
@@ -128,7 +128,7 @@ function birdWatchAlertsRender()
 // The rows under Announce Upcoming Passes are only there while it is on (and the rising wording only while that is announced)
 function birdWatchAlertRowsShow()
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   for (const row of birdWatchAlertEnable.closest("table").rows)
   {
     if (row.contains(birdWatchAlertEnable)) continue;
@@ -138,7 +138,7 @@ function birdWatchAlertRowsShow()
 
 function birdWatchAlertsChange()
 {
-  const A = GT.settings.Birdwatch.alerts;
+  const A = GT.settings.BirdWatch.alerts;
   A.enable = birdWatchAlertEnable.checked;
   A.minutes = Number(birdWatchAlertMinutes.value);
   A.minElevation = Number(birdWatchAlertMinEl.value);
@@ -157,8 +157,8 @@ function birdWatchAlertsChange()
 // selected or the first tracked
 function birdWatchAlertTest()
 {
-  const A = GT.settings.Birdwatch.alerts;
-  const norad = GT.birdWatchTrack && GT.birdWatchTrack.selected ? GT.birdWatchTrack.selected : GT.settings.Birdwatch.tracked[0];
+  const A = GT.settings.BirdWatch.alerts;
+  const norad = GT.birdWatchTrack && GT.birdWatchTrack.selected ? GT.birdWatchTrack.selected : GT.settings.BirdWatch.tracked[0];
   const message = birdWatchAlertMessage("soon", norad ? birdWatchAlertName(norad) : "ISS", A.minutes, 45);
   if (A.speech) birdWatchSpeak(message);
   addEvent("birdwatch", "<font style='color:cyan'>" + htmlEntities(message) + "</font>");

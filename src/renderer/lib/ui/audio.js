@@ -168,55 +168,21 @@ function gotAudioDevices(deviceInfos)
   soundCardDiv.appendChild(newSelect);
   soundCardInput.value = GT.settings.app.soundCard;
 
-  gotInputDevices(deviceInfos);
+  // The Multi-Mode Decoder's Input Devices, checked the same way
+  mmDecoderInputsCheck(deviceInfos);
 }
 
-// The Input Device (Settings -> Audio): what the Multi-Mode Decoder listens to, the rig's audio. Kept by its id, and by its name as well, since
-// ids can change (as with the Output Device); one that isn't there is shown as the default, and not changed until the user picks
-function gotInputDevices(deviceInfos)
-{
-  inputCardDiv.innerHTML = "";
-  const select = document.createElement("select");
-  select.id = "inputCardSelect";
-  select.title = I18N("gt.audio.selectInputCard");
-  const found = {};
-  for (const deviceInfo of deviceInfos)
-  {
-    if (deviceInfo.kind != "audioinput") continue;
-    const option = document.createElement("option");
-    option.value = deviceInfo.deviceId;
-    option.text = deviceInfo.label || "Microphone " + (select.length + 1);
-    select.appendChild(option);
-    found[deviceInfo.deviceId] = option.text;
-  }
-  if (!(GT.settings.app.inputCard in found) && GT.settings.app.inputCardName != null)
-  {
-    for (const deviceId in found)
-    {
-      if (found[deviceId] == GT.settings.app.inputCardName)
-      {
-        GT.settings.app.inputCard = deviceId;
-        break;
-      }
-    }
-  }
-  select.oninput = inputCardChanged;
-  inputCardDiv.appendChild(select);
-  select.value = GT.settings.app.inputCard in found ? GT.settings.app.inputCard : "default";
-}
-
-function inputCardChanged()
-{
-  GT.settings.app.inputCard = inputCardSelect.value;
-  GT.settings.app.inputCardName = inputCardSelect.selectedIndex >= 0 ? inputCardSelect.options[inputCardSelect.selectedIndex].text : null;
-  mmDecoderInputChanged();
-}
-
-function audioCardWarn(didSetDefault)
+// input: about the Multi-Mode Decoder's Input Devices. A warning already showing (the Output Device's, or an Input Device's) is kept, the
+// new one under it
+function audioCardWarn(didSetDefault, input = false)
 {
   if (GT.settings.app.warnOnSoundcardsChange)
   {
-    warnSoundcardHtml.innerHTML =  I18N(didSetDefault == false ? "settings.audio.devicesChanged.label" : "settings.audio.deviceDefaultSet.label");
+    const key = input ? (didSetDefault ? "settings.audio.inputDefaultSet.label" : "settings.audio.inputDevicesChanged.label") : (didSetDefault == false ? "settings.audio.devicesChanged.label" : "settings.audio.deviceDefaultSet.label");
+    if (warnSoundcardDiv.style.display != "block") GT.soundcardWarnings = [];
+    const text = I18N(key);
+    if (!GT.soundcardWarnings.includes(text)) GT.soundcardWarnings.push(text);
+    warnSoundcardHtml.innerHTML = GT.soundcardWarnings.join("<br>");
     warnSoundcardDiv.style.display = "block";
   }
 }

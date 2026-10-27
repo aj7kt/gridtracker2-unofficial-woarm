@@ -13,34 +13,92 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - New Santa Tracker: a new button in the button panel will appear on Dec 12th that follows Santa and his reindeer around the world, using amateur radio tracking technology
   - Move the mouse over a stop to see its DXCC entity, and state or province
 - The Kp button now grows smoothly under the mouse, like the other buttons in the button panel
+- Band Activity, the counts and Map View Filters can be rearranged in the control panel, above or below the buttons: drag a box by its top border (the cursor shows a hand there)
+  - Settings, General: Reset Panels puts them back in their usual order; Reset Button Panel is now called Reset Button Order
 
 #### Multi-Mode Decoder
 
 - New Multi-Mode Decoder (Settings, Features, Service): decodes every CW signal in your receiver's passband, or FT8, and shows them in its new window, opened with the Toggle Multi-Mode Decoder button
   - A waterfall of the passband with each signal found marked on it, and a line of decoded text for each signal with its frequency and speed
   - A CQ and the call after it are highlighted
-  - Follows each operator's own speed and weighting, and copes with fading
+  - Settings, on the window's top line: Rig Control (off unless turned on: the decoder has nothing to do with the rigs and shows audio frequencies only), then each decoder's own settings (the Multi-Mode Decoder itself is still turned on in Settings, Features)
+  - Follows each operator's own speed, weighting and spacing (Farnsworth too), and copes with fading
+  - A strong signal is taken out of the audio the others are decoded from, so a weaker one close beside it can be read
   - With Rig Control connected, signals are shown at their frequency on the air
-  - Wide Filter: while decoding, Rig Control opens the rig's filter to its widest so more signals are heard, and puts it back afterwards (an Icom over CI-V, or Hamlib rigctld)
   - The waterfall always runs from low frequencies on the left to high on the right, in LSB and CW-R as well
   - Text already decoded is corrected as the decoder learns more of an operator's timing: the start of a transmission, or a change of speed part way through (corrected text glows for a moment)
-  - Click a signal to tune the rig to it (with Rig Control)
-  - Scan Band: steps the rig through the CW part of the band it is on, a few seconds at each step, until stopped
   - The mouse over a signal's line marks the signal on the waterfall, and the mouse over a signal on the waterfall shades its line
   - Clear: forgets everything decoded and starts again from scratch
-  - Right-click a signal to pin it: its marks stay on the waterfall and its line stays listed
+  - Click a signal to pin it: its marks stay on the waterfall and its line stays listed
   - Drag the [ and ] on the scale to set the lowest and highest audio decoded (hum and noise below a few hundred Hz left out)
   - Bandwidth: decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)
-  - The mouse wheel over the waterfall tunes the rig up or down by its tuning step, 1 kHz at the least (with Rig Control)
+  - A band change, or a frequency picked from the Frequency menu (on the same band too), is marked on the waterfall with a bar, the band and frequency on it, and the waterfall is kept
+  - Whenever the rig is retuned, FT8 doesn't decode a period with audio from both frequencies (only what the new one gave), nor SSTV a picture across the change
+  - VFO (the window's Settings, Decoders): the Rig Control VFO each mode reads and tunes, so an SDR on a VFO of its own can be decoded while the rig's other VFOs are busy
+    - A VFO removed in Settings, Rig Control is taken out of every mode's and BirdWatch's menus at once, and what used it uses None until another is picked
+  - Common Input Device and Common VFO (the window's Settings, Decoders; both on unless turned off): every mode listens to one Input Device and reads one VFO, each picked under its checkbox; turned off, each decoder's own comes back as it was. The common VFO is None until one is picked
+  - SDR++ (Server) (a VFO's connection in Settings, Rig Control; SDR++ started with --server): its device is a VFO of its own, tuned like a rig, its Source, Device and Sample Rate picked from its own menus in the VFO's box (Refresh looks for devices again), and its I/Q in every mode's Input Device menu, as SPY Server's is; the server streams only while a decoder uses it
+  - SDR++ (rigctl) (a VFO's connection in Settings, Rig Control): the SDR++ window's own VFO through its Rigctl Server module, read and tuned like a rig (SDR++ keeps its audio; one client at a time)
+  - SPY Server by Airspy (a VFO's connection in Settings, Rig Control): an Airspy or RTL-SDR shared by SPY Server is a VFO of its own, its frequency read and tuned like a rig's, and its I/Q stream is in every mode's Input Device menu, decoded as the audio above that frequency (USB)
+  - Frequency: shows the rig's frequency and mode, and with Rig Control a menu beside them lists each mode's usual frequencies, CW's QRP calling frequencies, FT8's and SSTV's; picking one sets the rig's frequency (Set Frequency) and its mode (Set Mode: CW's CW, SSTV's the sideband, FT8's USB), each allowed on its own for each mode in the window's Settings, Decoders (both on unless turned off)
+  - SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are
+  - Input Device (the window's Settings, Decoders): the audio decoded (your rig's), picked for each mode on its own; Warning On Change (Settings, Audio) warns of input devices changed or missing as it does for the Output Device
+    - Its levels beside it: hover over them for two sliders and the peak of the audio heard. HW is the device's own recording level (as in your system's sound settings), so a loud rig can be kept from clipping the sound card (on macOS, the default input's only); SW is a gain inside the decoder, each mode's own
   - FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (fewer decodes than WSJT-X: about two in three on a busy band)
     - Built on ft8_lib by Kārlis Goba, YL3JG
+    - Set Mode (the window's Settings, Decoders): picking an FT8 frequency sets the rig's mode, USB (its data mode with the VFO's SSB Data)
+    - Depth (the window's Settings, Decoders): Normal, the default, decodes with ft8_lib as it comes, quickly; Deep adds the three below for more decodes, at more processor time
     - Signals decoded are taken out and each period searched again, finding the weaker ones they covered: the method of WSJT-X, with thanks to Joe Taylor, K1JT, and the WSJT development team
     - A signal the usual way can't decode is tried twice more, as WSJT-X does: by ordered statistics decoding (marked o), and by guessing it is a CQ (a1) or a call to you (a2). Again with thanks to Joe Taylor, K1JT, and the WSJT development team
     - Each period is decoded early, as WSJT-X does, so most messages show about 3 seconds sooner; any new at the period's end are added under them
+    - Enable GridTracker Instance (the window's Settings, Decoders): FT8 decodes go to GridTracker as an instance named MMD, as a WSJT-X instance's do (the Call Roster, the map, alerts), with the window closed too; a green dot on the Toggle Multi-Mode Decoder button shows it is listening in the background. It needs Rig Control reading the FT8 VFO, and MMD can't be answered (it doesn't transmit)
+- FT4 mode (Mode menu): decodes FT4's 7.5 second periods with the FT8 decoder (its Normal depth), with WSJT-X's FT4 dial frequencies in the Frequency menu; Enable GridTracker Instance sends FT4 decodes too
+- FT8 and FT4 focus: click anywhere on the waterfall, or a message, to mark a 50 Hz band in red that is searched harder each period (FT8 at its Deep depth, FT4 always); drag it along the waterfall to move it, and click inside it to let go
+- FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods
+- FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off
+- PSK31 and RTTY modes (Mode menu): every PSK31 signal in the passband (BPSK31), or every RTTY signal (45.45 baud, 170 Hz shift), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise and its text; the Frequency menu has each mode's usual frequencies
+- Olivia mode (Mode menu): an Olivia or Contestia signal decoded, its submode picked on the second line (4/250, 8/250, 8/500, 16/500, 16/1000, 32/1000); click the signal on the waterfall, or let an RSID heard set the submode and where it is; dashed lines on the waterfall show the band decoded, and its text is listed as PSK31's is
+- Follow BirdWatch (the window's Settings, Decoders; off unless turned on, and shown only while BirdWatch is on with its Satellite Tracking toggled on): as BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8, FT4)
+  - While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, greyed out
+- RSID (the window's Settings, Decoders; on unless turned off): in every mode, a transmission whose sender starts it with an RSID (as fldigi, MultiPSK and others can) is named on the waterfall where it starts: Olivia 8/500, MT63-1000L, BPSK31, THOR16 and the rest of RSID's modes
+  - Click an RSID of a mode decoded here (BPSK31, RTTY 45, Packet 1200, Olivia, Contestia) to switch to that mode; its transmission is decoded from its start, and nothing already decoded is cleared
+- SSTV mode (Mode menu): receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robot 36 and 72, and PD 90, 120 and 180, each found by the VIS code that starts it
+  - Each picture is drawn as it comes in, and the newest 12 are kept in a strip beside it: click one to see it large
+  - No need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong, and read there
+  - A sender whose sound card runs a little fast or slow (a slanted picture) is put right
+  - A sender that drifts while sending, or a satellite's Doppler, is followed line by line, so the picture's colors stay true
+  - A sender that fades out or stops part way: the picture ends there and what came is kept, instead of filling with noise
+  - Dashed lines on the waterfall show where a picture's sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found
+  - Save Pictures (the window's Settings, Decoders) saves each as a PNG named by its UTC time, mode and frequency; or right-click a picture to save it, copy it to the clipboard or delete it
+  - Written from the published SSTV mode specifications (JL Barber, N7CXI), with ideas from slowrx by Oona Räisänen, OH2EIQ
+- Packet mode (Mode menu): decodes AX.25 packets, listening for all of these at once: AFSK 1200 (APRS, the ISS's digipeater), FSK 9600 and GMSK 4800 (G3RUH, from a rig's 9600 data audio), and HF packet at 300 baud
+  - Each packet a line, the newest on top: UTC, baud, from, to and its path, and what it says
+  - A packet with one bit wrong, or two side by side, is put right rather than lost
+  - APRS is read: positions (plain, compressed and Mic-E, with the grid, course, speed and altitude), messages, status, objects, items, weather and telemetry; other packets as they are
+  - A packet heard while BirdWatch follows a satellite with the rig is marked with that satellite, and a message to you is highlighted
+  - Frequency menu: HF APRS (10.1476 MHz), the VHF APRS frequencies around the world, and the ISS's digipeater (145.825 MHz)
+- Sat Data mode (Mode menu): satellite telemetry frames, each a line with its type, baud, the satellite BirdWatch follows and a summary (its bytes in the tooltip)
+  - FUNcube BPSK 1200 (AO-73 and its family, from SSB audio): its telemetry read (battery, photocurrent, sequence)
+  - GomSpace AX.100 Modes 5 and 6, the common cubesat framing, at 1200 to 9600 baud (from a rig's flat 9600 data audio)
+  - AMSAT-EA's GENESIS FSK at 800 and 200 bps (HADES-SA, HADES-L and the other HADES satellites, from SSB audio): telemetry, BBS and SSDV packets
+  - SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown grey), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it
+  - With Follow BirdWatch, the transmitter followed picks which of them listen
+- Band Plans (the window's Settings, its own tab): each mode's usual frequencies (CW, FT8, FT4, SSTV, Packet, PSK31, RTTY, JS8, WSPR), which the Frequency menu lists, and the United States amateur band plan (each band's segments by mode and license class, with their notes)
+  - Every row can be edited in place, added or deleted; your edited copy is used from then on, and Restore Shipped goes back to GridTracker's
+- Waterfall Speed (the window's Settings, Decoders): one for every mode
+- How the waterfall is drawn (the window's Settings, Decoders, under Waterfall Speed):
+  - Waterfall Style: Auto Level (as before), WSJT-X (levels as heard, with Gain and Zero sliders), or Crisp (the noise black, with Floor and Range sliders)
+  - Resolution: sharper in time or in frequency; By Mode draws CW, PSK31 and RTTY sharp in time (crisp dots and dashes) and FT8 and FT4 sharp in frequency
+  - Window (Hann or Blackman-Harris), and Sharp Pixels for crisp edges
+  - Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green colour blindness), Prism, Glacier, Phosphor, Moonlight and Paper
+- Test Signals (beside the levels): clears the window, then plays a recording of the mode's signals into the decoder, on its own over a band's noise floor (what the radio hears is silenced while it plays), to see what it decodes, often several stations at once, some starting with an RSID; FT8 and FT4 start on a period's boundary
+  - Every mode has some: CW, FT8, FT4, PSK31 and RTTY with five stations each, Olivia and Contestia, a mix of CW, PSK31, RTTY and Olivia, an SSTV picture, APRS packets, and satellite frames (FUNcube, AX100, and a GENESIS SSDV picture)
+  - What they decode stays in the window: it isn't passed to GridTracker's FT8 instance, and pictures aren't saved by themselves
+- PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts
 
 #### App
 
-- Settings, Audio: Device is now Output Device, and the new Input Device picks what the Multi-Mode Decoder listens to (your rig's audio)
+- Settings, Audio: Device is now Output Device
 
 ### HTML List
 
@@ -54,6 +112,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     </ul>
   </li>
   <li>The Kp button now grows smoothly under the mouse, like the other buttons in the button panel</li>
+  <li>Band Activity, the counts and Map View Filters can be rearranged in the control panel, above or below the buttons: drag a box by its top border (the cursor shows a hand there)
+    <ul>
+      <li>Settings, General: Reset Panels puts them back in their usual order; Reset Button Panel is now called Reset Button Order</li>
+    </ul>
+  </li>
 </ul>
 <h4>Multi-Mode Decoder</h4>
 <ul>
@@ -61,32 +124,118 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     <ul>
       <li>A waterfall of the passband with each signal found marked on it, and a line of decoded text for each signal with its frequency and speed</li>
       <li>A CQ and the call after it are highlighted</li>
-      <li>Follows each operator's own speed and weighting, and copes with fading</li>
+      <li>Settings, on the window's top line: Rig Control (off unless turned on: the decoder has nothing to do with the rigs and shows audio frequencies only), then each decoder's own settings (the Multi-Mode Decoder itself is still turned on in Settings, Features)</li>
+      <li>Follows each operator's own speed, weighting and spacing (Farnsworth too), and copes with fading</li>
+      <li>A strong signal is taken out of the audio the others are decoded from, so a weaker one close beside it can be read</li>
       <li>With Rig Control connected, signals are shown at their frequency on the air</li>
-      <li>Wide Filter: while decoding, Rig Control opens the rig's filter to its widest so more signals are heard, and puts it back afterwards (an Icom over CI-V, or Hamlib rigctld)</li>
       <li>The waterfall always runs from low frequencies on the left to high on the right, in LSB and CW-R as well</li>
       <li>Text already decoded is corrected as the decoder learns more of an operator's timing: the start of a transmission, or a change of speed part way through (corrected text glows for a moment)</li>
-      <li>Click a signal to tune the rig to it (with Rig Control)</li>
-      <li>Scan Band: steps the rig through the CW part of the band it is on, a few seconds at each step, until stopped</li>
       <li>The mouse over a signal's line marks the signal on the waterfall, and the mouse over a signal on the waterfall shades its line</li>
       <li>Clear: forgets everything decoded and starts again from scratch</li>
-      <li>Right-click a signal to pin it: its marks stay on the waterfall and its line stays listed</li>
+      <li>Click a signal to pin it: its marks stay on the waterfall and its line stays listed</li>
       <li>Drag the [ and ] on the scale to set the lowest and highest audio decoded (hum and noise below a few hundred Hz left out)</li>
       <li>Bandwidth: decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)</li>
-      <li>The mouse wheel over the waterfall tunes the rig up or down by its tuning step, 1 kHz at the least (with Rig Control)</li>
+      <li>A band change, or a frequency picked from the Frequency menu (on the same band too), is marked on the waterfall with a bar, the band and frequency on it, and the waterfall is kept</li>
+      <li>Whenever the rig is retuned, FT8 doesn't decode a period with audio from both frequencies (only what the new one gave), nor SSTV a picture across the change</li>
+      <li>VFO (the window's Settings, Decoders): the Rig Control VFO each mode reads and tunes, so an SDR on a VFO of its own can be decoded while the rig's other VFOs are busy
+        <ul>
+          <li>A VFO removed in Settings, Rig Control is taken out of every mode's and BirdWatch's menus at once, and what used it uses None until another is picked</li>
+        </ul>
+      </li>
+      <li>Common Input Device and Common VFO (the window's Settings, Decoders; both on unless turned off): every mode listens to one Input Device and reads one VFO, each picked under its checkbox; turned off, each decoder's own comes back as it was. The common VFO is None until one is picked</li>
+      <li>SDR++ (Server) (a VFO's connection in Settings, Rig Control; SDR++ started with --server): its device is a VFO of its own, tuned like a rig, its Source, Device and Sample Rate picked from its own menus in the VFO's box (Refresh looks for devices again), and its I/Q in every mode's Input Device menu, as SPY Server's is; the server streams only while a decoder uses it</li>
+      <li>SDR++ (rigctl) (a VFO's connection in Settings, Rig Control): the SDR++ window's own VFO through its Rigctl Server module, read and tuned like a rig (SDR++ keeps its audio; one client at a time)</li>
+      <li>SPY Server by Airspy (a VFO's connection in Settings, Rig Control): an Airspy or RTL-SDR shared by SPY Server is a VFO of its own, its frequency read and tuned like a rig's, and its I/Q stream is in every mode's Input Device menu, decoded as the audio above that frequency (USB)</li>
+      <li>Frequency: shows the rig's frequency and mode, and with Rig Control a menu beside them lists each mode's usual frequencies, CW's QRP calling frequencies, FT8's and SSTV's; picking one sets the rig's frequency (Set Frequency) and its mode (Set Mode: CW's CW, SSTV's the sideband, FT8's USB), each allowed on its own for each mode in the window's Settings, Decoders (both on unless turned off)</li>
+      <li>SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are</li>
+      <li>Input Device (the window's Settings, Decoders): the audio decoded (your rig's), picked for each mode on its own; Warning On Change (Settings, Audio) warns of input devices changed or missing as it does for the Output Device
+        <ul>
+          <li>Its levels beside it: hover over them for two sliders and the peak of the audio heard. HW is the device's own recording level (as in your system's sound settings), so a loud rig can be kept from clipping the sound card (on macOS, the default input's only); SW is a gain inside the decoder, each mode's own</li>
+        </ul>
+      </li>
       <li>FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (fewer decodes than WSJT-X: about two in three on a busy band)
         <ul>
           <li>Built on ft8_lib by Kārlis Goba, YL3JG</li>
+          <li>Set Mode (the window's Settings, Decoders): picking an FT8 frequency sets the rig's mode, USB (its data mode with the VFO's SSB Data)</li>
+          <li>Depth (the window's Settings, Decoders): Normal, the default, decodes with ft8_lib as it comes, quickly; Deep adds the three below for more decodes, at more processor time</li>
           <li>Signals decoded are taken out and each period searched again, finding the weaker ones they covered: the method of WSJT-X, with thanks to Joe Taylor, K1JT, and the WSJT development team</li>
           <li>A signal the usual way can't decode is tried twice more, as WSJT-X does: by ordered statistics decoding (marked o), and by guessing it is a CQ (a1) or a call to you (a2). Again with thanks to Joe Taylor, K1JT, and the WSJT development team</li>
           <li>Each period is decoded early, as WSJT-X does, so most messages show about 3 seconds sooner; any new at the period's end are added under them</li>
+          <li>Enable GridTracker Instance (the window's Settings, Decoders): FT8 decodes go to GridTracker as an instance named MMD, as a WSJT-X instance's do (the Call Roster, the map, alerts), with the window closed too; a green dot on the Toggle Multi-Mode Decoder button shows it is listening in the background. It needs Rig Control reading the FT8 VFO, and MMD can't be answered (it doesn't transmit)</li>
         </ul>
       </li>
     </ul>
   </li>
+  <li>FT4 mode (Mode menu): decodes FT4's 7.5 second periods with the FT8 decoder (its Normal depth), with WSJT-X's FT4 dial frequencies in the Frequency menu; Enable GridTracker Instance sends FT4 decodes too</li>
+  <li>FT8 and FT4 focus: click anywhere on the waterfall, or a message, to mark a 50 Hz band in red that is searched harder each period (FT8 at its Deep depth, FT4 always); drag it along the waterfall to move it, and click inside it to let go</li>
+  <li>FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods</li>
+  <li>FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off</li>
+  <li>PSK31 and RTTY modes (Mode menu): every PSK31 signal in the passband (BPSK31), or every RTTY signal (45.45 baud, 170 Hz shift), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise and its text; the Frequency menu has each mode's usual frequencies</li>
+  <li>Olivia mode (Mode menu): an Olivia or Contestia signal decoded, its submode picked on the second line (4/250, 8/250, 8/500, 16/500, 16/1000, 32/1000); click the signal on the waterfall, or let an RSID heard set the submode and where it is; dashed lines on the waterfall show the band decoded, and its text is listed as PSK31's is</li>
+  <li>Follow BirdWatch (the window's Settings, Decoders; off unless turned on, and shown only while BirdWatch is on with its Satellite Tracking toggled on): as BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8, FT4)
+    <ul>
+      <li>While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, greyed out</li>
+    </ul>
+  </li>
+  <li>RSID (the window's Settings, Decoders; on unless turned off): in every mode, a transmission whose sender starts it with an RSID (as fldigi, MultiPSK and others can) is named on the waterfall where it starts: Olivia 8/500, MT63-1000L, BPSK31, THOR16 and the rest of RSID's modes
+    <ul>
+      <li>Click an RSID of a mode decoded here (BPSK31, RTTY 45, Packet 1200, Olivia, Contestia) to switch to that mode; its transmission is decoded from its start, and nothing already decoded is cleared</li>
+    </ul>
+  </li>
+  <li>SSTV mode (Mode menu): receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robot 36 and 72, and PD 90, 120 and 180, each found by the VIS code that starts it
+    <ul>
+      <li>Each picture is drawn as it comes in, and the newest 12 are kept in a strip beside it: click one to see it large</li>
+      <li>No need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong, and read there</li>
+      <li>A sender whose sound card runs a little fast or slow (a slanted picture) is put right</li>
+      <li>A sender that drifts while sending, or a satellite's Doppler, is followed line by line, so the picture's colors stay true</li>
+      <li>A sender that fades out or stops part way: the picture ends there and what came is kept, instead of filling with noise</li>
+      <li>Dashed lines on the waterfall show where a picture's sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found</li>
+      <li>Save Pictures (the window's Settings, Decoders) saves each as a PNG named by its UTC time, mode and frequency; or right-click a picture to save it, copy it to the clipboard or delete it</li>
+      <li>Written from the published SSTV mode specifications (JL Barber, N7CXI), with ideas from slowrx by Oona Räisänen, OH2EIQ</li>
+    </ul>
+  </li>
+  <li>Packet mode (Mode menu): decodes AX.25 packets, listening for all of these at once: AFSK 1200 (APRS, the ISS's digipeater), FSK 9600 and GMSK 4800 (G3RUH, from a rig's 9600 data audio), and HF packet at 300 baud
+    <ul>
+      <li>Each packet a line, the newest on top: UTC, baud, from, to and its path, and what it says</li>
+      <li>A packet with one bit wrong, or two side by side, is put right rather than lost</li>
+      <li>APRS is read: positions (plain, compressed and Mic-E, with the grid, course, speed and altitude), messages, status, objects, items, weather and telemetry; other packets as they are</li>
+      <li>A packet heard while BirdWatch follows a satellite with the rig is marked with that satellite, and a message to you is highlighted</li>
+      <li>Frequency menu: HF APRS (10.1476 MHz), the VHF APRS frequencies around the world, and the ISS's digipeater (145.825 MHz)</li>
+    </ul>
+  </li>
+  <li>Sat Data mode (Mode menu): satellite telemetry frames, each a line with its type, baud, the satellite BirdWatch follows and a summary (its bytes in the tooltip)
+    <ul>
+      <li>FUNcube BPSK 1200 (AO-73 and its family, from SSB audio): its telemetry read (battery, photocurrent, sequence)</li>
+      <li>GomSpace AX.100 Modes 5 and 6, the common cubesat framing, at 1200 to 9600 baud (from a rig's flat 9600 data audio)</li>
+      <li>AMSAT-EA's GENESIS FSK at 800 and 200 bps (HADES-SA, HADES-L and the other HADES satellites, from SSB audio): telemetry, BBS and SSDV packets</li>
+      <li>SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown grey), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it</li>
+      <li>With Follow BirdWatch, the transmitter followed picks which of them listen</li>
+    </ul>
+  </li>
+  <li>Band Plans (the window's Settings, its own tab): each mode's usual frequencies (CW, FT8, FT4, SSTV, Packet, PSK31, RTTY, JS8, WSPR), which the Frequency menu lists, and the United States amateur band plan (each band's segments by mode and license class, with their notes)
+    <ul>
+      <li>Every row can be edited in place, added or deleted; your edited copy is used from then on, and Restore Shipped goes back to GridTracker's</li>
+    </ul>
+  </li>
+  <li>Waterfall Speed (the window's Settings, Decoders): one for every mode</li>
+  <li>How the waterfall is drawn (the window's Settings, Decoders, under Waterfall Speed):
+    <ul>
+      <li>Waterfall Style: Auto Level (as before), WSJT-X (levels as heard, with Gain and Zero sliders), or Crisp (the noise black, with Floor and Range sliders)</li>
+      <li>Resolution: sharper in time or in frequency; By Mode draws CW, PSK31 and RTTY sharp in time (crisp dots and dashes) and FT8 and FT4 sharp in frequency</li>
+      <li>Window (Hann or Blackman-Harris), and Sharp Pixels for crisp edges</li>
+      <li>Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green colour blindness), Prism, Glacier, Phosphor, Moonlight and Paper</li>
+    </ul>
+  </li>
+  <li>Test Signals (beside the levels): clears the window, then plays a recording of the mode's signals into the decoder, on its own over a band's noise floor (what the radio hears is silenced while it plays), to see what it decodes, often several stations at once, some starting with an RSID; FT8 and FT4 start on a period's boundary
+    <ul>
+      <li>Every mode has some: CW, FT8, FT4, PSK31 and RTTY with five stations each, Olivia and Contestia, a mix of CW, PSK31, RTTY and Olivia, an SSTV picture, APRS packets, and satellite frames (FUNcube, AX100, and a GENESIS SSDV picture)</li>
+      <li>What they decode stays in the window: it isn't passed to GridTracker's FT8 instance, and pictures aren't saved by themselves</li>
+    </ul>
+  </li>
+  <li>PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts</li>
 </ul>
 <h4>App</h4>
 <ul>
-  <li>Settings, Audio: Device is now Output Device, and the new Input Device picks what the Multi-Mode Decoder listens to (your rig's audio)</li>
+  <li>Settings, Audio: Device is now Output Device</li>
 </ul>
 ```

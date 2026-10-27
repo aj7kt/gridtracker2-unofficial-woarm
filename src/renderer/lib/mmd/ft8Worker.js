@@ -9,9 +9,11 @@
 // its audio before the next pass, so all stay alike; the messages decoded are the same as one thread decoding alone. ft8.wasm's bytes
 // come from the page. The coordinator's messages, answered in the order sent:
 //   { type: "init", wasm, audio: [fmin, fmax], passes, prefixes }
-//   { type: "decode", start, samples, more, myCall, focus, deadline (Date.now() ms: candidates left untried after it) }  ->  { type: "decoded", start, more, count, text, ms, threads }
+//   { type: "decode", start, samples, more, myCall, focus, deadline (Date.now() ms: candidates left untried after it), plain (Normal: ft8_lib
+//   as it comes, ft8wasm.c's ft8_set_plain), ft4 (FT4 instead of FT8: ft8_set_ft4), shift (the time skew, handed back) }  ->
+//   { type: "decoded", start, more, shift, count, text, ms, threads }
 // A helper's (role "helper"), each answered with { type: "done", id, recs? }:
-//   { type: "init", role: "helper", wasm, audio, passes }, { type: "begin", id, samples, more, myCall, focus },
+//   { type: "init", role: "helper", wasm, audio, passes }, { type: "begin", id, samples, more, myCall, focus, plain, ft4 },
 //   { type: "try", id, pass, from, step }, { type: "subtract", id, recs, count, subtract } (kept for guesses; taken out if subtract),
 //   { type: "failures", id } -> { fails }, { type: "remember", id, fails }
 
@@ -123,6 +125,9 @@ function ft8MyCall(call)
 function ft8Begin(data)
 {
   ft8MyCall(data.myCall || "");
+  // FT4 or FT8 (FT4 always decoded the Normal way), then the Depth
+  X.ft8_set_ft4(data.ft4 ? 1 : 0);
+  X.ft8_set_plain(data.plain ? 1 : 0);
   X.ft8_set_focus(data.focus || 0);
   // The period (15 s since 1970), for guessing a QSO's next message from what was decoded two periods before (ft8_note)
   X.ft8_set_period(Math.round(data.start / 15000));
@@ -144,7 +149,7 @@ async function ft8Decode(data)
   const lap = (what) => { const now = performance.now(); spent[what] += now - mark; mark = now; };
   const passes = ft8Begin(data);
   const all = helpers.length + 1;
-  await Promise.all(helpers.map((helper) => ft8Ask(helper, { type: "begin", start: data.start, samples: data.samples, more: data.more, myCall: data.myCall || "", focus: data.focus || 0 })));
+  await Promise.all(helpers.map((helper) => ft8Ask(helper, { type: "begin", start: data.start, samples: data.samples, more: data.more, myCall: data.myCall || "", focus: data.focus || 0, plain: !!data.plain, ft4: !!data.ft4 })));
   lap("begin");
   for (let pass = 0; pass >= 0;)
   {
@@ -197,8 +202,8 @@ async function ft8Decode(data)
   const bytes = new Uint8Array(X.memory.buffer, X.ft8_output(), 6400);
   let text = "";
   for (let k = 0; bytes[k]; k++) text += String.fromCharCode(bytes[k]);
-  // ms: how long it took, on threads
-  postMessage({ type: "decoded", start: data.start, more: data.more, count: X.ft8_given(), text: text, ms: Math.round(performance.now() - began), threads: all, spent: Object.fromEntries(Object.entries(spent).map(([k, v]) => [k, Math.round(v)])) });
+  // ms: how long it took, on threads; the time skew (mmDecoder.js) handed back as it came
+  postMessage({ type: "decoded", start: data.start, more: data.more, shift: data.shift || 0, count: X.ft8_given(), text: text, ms: Math.round(performance.now() - began), threads: all, spent: Object.fromEntries(Object.entries(spent).map(([k, v]) => [k, Math.round(v)])) });
 }
 
 // This worker's failed readings of the decode just done

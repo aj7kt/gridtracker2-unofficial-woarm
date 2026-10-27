@@ -12,6 +12,42 @@ const BIRD_WATCH_PASS_RETRY_MS = 10 * 60 * 1000;
 const BIRD_WATCH_ICONS = ["sat-01-classic", "sat-02-dish", "sat-03-cubesat", "sat-04-sputnik", "sat-05-station", "sat-06-telescope", "sat-07-flatsat", "sat-08-oscar", "sat-09-yagi", "sat-10-beacon",
   "sat-11-sixu", "sat-12-iridium", "sat-13-wing", "sat-14-cross", "sat-15-drum", "sat-16-weather", "sat-17-comsat", "sat-18-tether", "sat-19-sail", "sat-20-helix"];
 
+// ---- The boxes under the BirdWatch title (#birdWatchBoxes, each with its data-box name), in the order the user dragged them to by their
+// top borders (panelBoxes.js; settings.BirdWatch.boxOrder); the title always stays on top
+
+let birdWatchBoxesReady = false;
+
+// Once, at the first layout: the saved order and dragging, and the info box's minimized state
+function birdWatchBoxesInit()
+{
+  if (birdWatchBoxesReady) return;
+  birdWatchBoxesReady = true;
+  panelBoxesInit(birdWatchBoxes, GT.settings.BirdWatch.boxOrder, (names) => (GT.settings.BirdWatch.boxOrder = names));
+  birdWatchInfoCollapseRender();
+}
+
+// BirdWatch settings, Panel View: Reset Panels puts the boxes back in their first order
+function birdWatchResetPanels()
+{
+  GT.settings.BirdWatch.boxOrder = panelBoxesReset(birdWatchBoxes);
+}
+
+// The info box's - / +: minimized, only the satellite's name shows (like the control panel's Map View Filters)
+function birdWatchInfoCollapseToggle()
+{
+  GT.settings.BirdWatch.infoCollapsed = GT.settings.BirdWatch.infoCollapsed !== true;
+  birdWatchInfoCollapseRender();
+}
+
+function birdWatchInfoCollapseRender()
+{
+  const collapsed = GT.settings.BirdWatch.infoCollapsed === true;
+  birdWatchInfoLong.style.display = collapsed ? "none" : "";
+  birdWatchInfoPos.style.display = collapsed ? "none" : "";
+  birdWatchInfoCollapseImg.src = collapsed ? "img/maximize.png" : "img/minimize.png";
+  birdWatchInfoCollapseImg.title = I18N(collapsed ? "roster.menu.ShowControls" : "roster.menu.HideControls");
+}
+
 // The SatNOGS satellite database entries (satellites.json in Ginternal\sat), read when first needed and again when the
 // file changes
 function birdWatchSatInfo(norad)
@@ -69,6 +105,8 @@ function birdWatchSelect(norad, auto = false)
   // The transmitter followed until now, for Sticky Mode's choice on the new satellite
   const previous = birdWatchStickyPrevious();
   T.selected = norad;
+  // Auto-Track's pick or the user's: followed as Auto-Track's Rig Control says when Auto-Track's, also once the rig connects later
+  T.selectedByAuto = !!(norad && auto);
   // The rig stops following the last satellite's transmitter (birdWatchDoppler.js)
   birdWatchDopplerStopFollow();
   for (const [id, marker] of T.markers) birdWatchStyleMarker(marker, id == norad);
@@ -197,7 +235,7 @@ function birdWatchLineJson(parts)
 // and the circle's line (just under them)
 function birdWatchFootprintStyles()
 {
-  const colors = GT.settings.Birdwatch.colors;
+  const colors = GT.settings.BirdWatch.colors;
   return {
     fill: new ol.style.Style({ zIndex: -2, fill: new ol.style.Fill({ color: birdWatchRgba(colors.footprintFill, 1 - colors.footprintTransparency) }) }),
     line: new ol.style.Style({ zIndex: -1, stroke: new ol.style.Stroke({ color: colors.footprintRing, width: 1 }) })
@@ -256,11 +294,11 @@ function birdWatchFootprintSync()
   const T = GT.birdWatchTrack;
   for (const [norad, sat] of T.last)
   {
-    if (!sat.error && GT.settings.Birdwatch.colors.footprintOn && (norad == T.selected || norad == T.hover)) birdWatchFootprint(sat);
+    if (!sat.error && GT.settings.BirdWatch.colors.footprintOn && (norad == T.selected || norad == T.hover)) birdWatchFootprint(sat);
   }
   for (const [norad, ring] of T.rings)
   {
-    if (!GT.settings.Birdwatch.colors.footprintOn || (norad != T.selected && norad != T.hover))
+    if (!GT.settings.BirdWatch.colors.footprintOn || (norad != T.selected && norad != T.hover))
     {
       GT.layerSources.birdWatch.removeFeature(ring.fill);
       GT.layerSources.birdWatch.removeFeature(ring.line);
@@ -293,7 +331,7 @@ function birdWatchFootprint(sat)
 // The Colors tab
 function birdWatchColorsRender()
 {
-  const colors = GT.settings.Birdwatch.colors;
+  const colors = GT.settings.BirdWatch.colors;
   birdWatchFootprintOn.checked = colors.footprintOn;
   birdWatchFootprintRing.value = colors.footprintRing;
   birdWatchFootprintFill.value = colors.footprintFill;
@@ -312,15 +350,17 @@ function birdWatchColorsRender()
   birdWatchColorsEnable();
 }
 
-// A group switched off greys its options out
+// A row of the Map box switched off greys its options out (the cells and rows marked with its data-opt)
 function birdWatchColorsEnable()
 {
-  const colors = GT.settings.Birdwatch.colors;
-  for (const [id, on] of [["birdWatchFootprintOptions", colors.footprintOn], ["birdWatchPathOptions", colors.pathOn]])
+  const colors = GT.settings.BirdWatch.colors;
+  for (const [key, on] of [["footprint", colors.footprintOn], ["path", colors.pathOn]])
   {
-    const box = document.getElementById(id);
-    box.style.opacity = on ? "1" : "0.45";
-    for (const input of box.querySelectorAll("input")) input.disabled = !on;
+    for (const el of birdWatchGeneralDiv.querySelectorAll("[data-opt='" + key + "']"))
+    {
+      el.style.opacity = on ? "1" : "0.45";
+      for (const input of el.querySelectorAll("input")) input.disabled = !on;
+    }
   }
   // The outline's swatch is only there while the outline is on
   birdWatchPathOutlineSwatch.style.display = colors.pathOutlineOn ? "" : "none";
@@ -328,7 +368,7 @@ function birdWatchColorsEnable()
 
 function birdWatchColorsChange()
 {
-  const colors = GT.settings.Birdwatch.colors;
+  const colors = GT.settings.BirdWatch.colors;
   colors.footprintOn = birdWatchFootprintOn.checked;
   colors.pathOn = birdWatchPathOn.checked;
   colors.pathDashOn = birdWatchPathDashOn.checked;

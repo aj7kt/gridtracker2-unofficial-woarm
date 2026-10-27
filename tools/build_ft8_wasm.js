@@ -43,7 +43,7 @@ if (node) env.EMSDK_NODE = node;
 const exportsList = ["ft8_init", "ft8_input", "ft8_output", "ft8_decode", "ft8_set_passes", "ft8_set_mycall", "ft8_set_focus", "ft8_mycall_buffer", "ft8_begin", "ft8_pass_candidates", "ft8_try", "ft8_records", "ft8_accept",
   "ft8_subtract_records", "ft8_subtract", "ft8_next_pass", "ft8_given", "ft8_set_period", "ft8_note", "ft8_failures",
   "ft8_failure_count", "ft8_remember", "ft8_set_prefixes", "ft8_prefix_buffer", "ft8_set_budget",
-  "ft8_time_up", "malloc", "free"];
+  "ft8_time_up", "ft8_set_plain", "ft8_set_ft4", "malloc", "free"];
 // Test builds (--define=FT8_STATS=1) also export ft8_probe (ft8wasm.c)
 if (process.argv.some((x) => x.startsWith("--define=FT8_STATS"))) exportsList.push("ft8_probe", "ft8_fine_sync", "ft8_sub_stats", "ft8_phase_text", "ft8_tau", "ft8_osd_bp", "ft8_ap_bp");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gt-ft8wasm-"));

@@ -144,6 +144,54 @@ function updateMultiRigViews()
   multiRigCRDiv.style.display = haltTXDiv.style.display = rigs > 1 ? "" : "none";
 }
 
+// ---- An instance's messages, once read: from the WSJT-X listener, and from the Multi-Mode Decoder's own FT8 instance ("MMD",
+// services/mmDecoder.js), whose messages come already read and with no address (remote null: nothing is sent back to it)
+
+// The instance a message came from: added, or marked open again, with where it is
+function wsjtInstanceOpen(instanceId, remote)
+{
+  if (!(instanceId in GT.instances)) {
+    addNewInstance(instanceId);
+    GT.instanceCount++;
+  }
+
+  const instance = GT.instances[instanceId];
+  const wasClosed = instance.open === false;
+
+  instance.open = true;
+  instance.remote = remote;
+
+  if (wasClosed) {
+    updateRosterInstances();
+  }
+  return instance;
+}
+
+// A Status message: kept as the instance's (another Special Operation mode clears the roster)
+function wsjtInstanceStatus(instance, newMessage)
+{
+  if (instance.status && newMessage.SopMode != instance.status.SopMode) GT.callRoster = {};
+  instance.oldStatus = instance.status;
+  instance.status = newMessage;
+  instance.valid = true;
+}
+
+// A message to its handler, once the instance has said its status
+function wsjtInstanceDispatch(instance, newMessage, remote)
+{
+  if (instance.valid && newMessage.type in GT.wsjtHandlers) {
+    newMessage.remote = remote;
+    newMessage.instance = newMessage.Id;
+
+    GT.wsjtHandlers[newMessage.type](newMessage);
+    if (GT.updateLastMsgTimer != null)
+    {
+      nodeTimers.clearTimeout(GT.updateLastMsgTimer);
+    }
+    GT.updateLastMsgTimer = nodeTimers.setTimeout(updateLastMsgTimeDiv, 500, newMessage.Id);
+  }
+}
+
 // ---- Main WSJT-X listener ----
 
 function checkWsjtxListener()
@@ -255,22 +303,7 @@ function updateWsjtxListener(port)
     newMessage.type = r.u32();
     newMessage.Id = r.utf8();
 
-    const instanceId = newMessage.Id;
-
-    if (!(instanceId in GT.instances)) {
-      addNewInstance(instanceId);
-      GT.instanceCount++;
-    }
-
-    const instance = GT.instances[instanceId];
-    const wasClosed = instance.open === false;
-
-    instance.open = true;
-    instance.remote = remote;
-
-    if (wasClosed) {
-      updateRosterInstances();
-    }
+    const instance = wsjtInstanceOpen(newMessage.Id, remote);
 
     switch (newMessage.type) {
       case 1: {
@@ -299,10 +332,7 @@ function updateWsjtxListener(port)
         newMessage.TxMessage = r.remaining() > 0 ? r.utf8() : null;
         newMessage.TxSymbols = r.remaining() > 0 ? r.utf8() : null;
 
-        if (instance.status && newMessage.SopMode != instance.status.SopMode) GT.callRoster = {};
-        instance.oldStatus = instance.status;
-        instance.status = newMessage;
-        instance.valid = true;
+        wsjtInstanceStatus(instance, newMessage);
         break;
       }
 
@@ -407,17 +437,7 @@ function updateWsjtxListener(port)
         return;
     }
 
-    if (instance.valid && newMessage.type in GT.wsjtHandlers) {
-      newMessage.remote = remote;
-      newMessage.instance = instanceId;
-
-      GT.wsjtHandlers[newMessage.type](newMessage);
-      if (GT.updateLastMsgTimer != null)
-      {
-        nodeTimers.clearTimeout(GT.updateLastMsgTimer);
-      }
-      GT.updateLastMsgTimer = nodeTimers.setTimeout(updateLastMsgTimeDiv, 500, newMessage.Id);
-    }
+    wsjtInstanceDispatch(instance, newMessage, remote);
   });
   GT.wsjtUdpServer.bind(port);
   GT.wsjtCurrentPort = port;
@@ -474,7 +494,8 @@ function startForwardListener()
 
     const id = idLen === 0xffffffff ? "" : originalMessage.toString("utf8", offset, offset + idLen);
 
-    if (id in GT.instances) {
+    // Not to an instance with no address (the Multi-Mode Decoder's)
+    if (id in GT.instances && GT.instances[id].remote) {
       wsjtUdpMessage(
         originalMessage,
         originalMessage.length,

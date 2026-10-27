@@ -1374,7 +1374,8 @@ function handleWsjtxNotSupported(newMessage) { }
 
 function initiateQso(thisCall)
 {
-  if (thisCall in GT.callRoster && GT.callRoster[thisCall].message.instance in GT.instances)
+  // Not a call heard by an instance that can't be answered (the Multi-Mode Decoder's: no address, it doesn't transmit)
+  if (thisCall in GT.callRoster && GT.callRoster[thisCall].message.instance in GT.instances && GT.instances[GT.callRoster[thisCall].message.instance].remote)
   {
     if (GT.settings.map.focusRig && GT.activeInstance != GT.callRoster[thisCall].message.instance)
     {

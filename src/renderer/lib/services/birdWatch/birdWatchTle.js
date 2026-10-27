@@ -9,7 +9,7 @@
 // is two lines typed or pasted, checked before the +; Remote
 // shows an address (https:// to start) with its username and password under it, which can be blank and can be changed
 // later. A remote source refreshes every 24 hours unless that's unticked. An http(s):// address is loaded as a web address, an ftp:// one by FTP.
-// Settings: GT.settings.Birdwatch.tle (see defaults.js)
+// Settings: GT.settings.BirdWatch.tle (see defaults.js)
 
 // A changed local file is read once it has been quiet this long (ms): each new change starts the wait again
 // What the kinds are called in a row
@@ -91,7 +91,7 @@ GT.birdWatchTle = {
 
 function birdWatchTleSettings()
 {
-  return GT.settings.Birdwatch.tle;
+  return GT.settings.BirdWatch.tle;
 }
 
 // A source can be turned off (Enable unticked) without being deleted: it is then not watched, not loaded and not refreshed,
@@ -225,7 +225,7 @@ function birdWatchTleRebuild()
   const L = GT.birdWatchTles;
   L.timer = null;
   const map = new Map();
-  if (GT.settings.Birdwatch.enable)
+  if (GT.settings.BirdWatch.enable)
   {
     const amsat = birdWatchAmsatNorads();
     for (const entry of birdWatchTleOrdered())
@@ -314,7 +314,7 @@ function birdWatchTleWatchUpdate()
 {
   const W = GT.birdWatchTle;
   const wanted = new Map();
-  if (GT.settings.Birdwatch.enable)
+  if (GT.settings.BirdWatch.enable)
   {
     for (const source of birdWatchTleSettings().sources)
     {
@@ -362,7 +362,7 @@ function birdWatchTleWatchUpdate()
   }
 
   // The files may have changed while nothing was watching
-  if (GT.settings.Birdwatch.enable)
+  if (GT.settings.BirdWatch.enable)
   {
     for (const source of birdWatchTleSettings().sources) if (source.kind == "local" && birdWatchTleEnabled(source)) birdWatchTleLocalUpdate(source);
   }

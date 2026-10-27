@@ -83,7 +83,7 @@ function processRosterHunting(callRoster, rosterSettings)
     // Special case check for called station
     if (callObj.qrz && !entry.tx)
     {
-      if (instances[callObj.instance].crEnable || GT.instanceCount === 1)
+      if ((instances[callObj.instance] && instances[callObj.instance].crEnable) || GT.instanceCount === 1)
       {
         if ((!(entry.DEcall in CR.ignoredCalls) && !(callObj.dxcc in CR.ignoredDxcc) && !(callObj.grid in CR.ignoredGrid)) ||
            (instanceStatus && instanceStatus.DXcall === entry.DEcall))

@@ -63,7 +63,7 @@ Scripts in [tools/](tools/) (run from the repo root; each file's header has its 
 
 - [build_ft8_wasm.js](tools/build_ft8_wasm.js): rebuilds `src/renderer/lib/mmd/ft8.wasm` (the Multi-Mode Decoder's FT8 mode) from `src/wasm/ft8/` (`ft8wasm.c` plus ft8_lib, MIT, vendored unchanged in `src/wasm/ft8/ft8_lib/`). Same emsdk lookup and dry run as build_cw_wasm.js.
 
-The libraries in `third-party/` (moment, OpenLayers, satellite.js, tle.js, …) are plain global scripts (no bundler at runtime), each starting with `/* eslint-disable */`. Update them from their source rather than by hand; satellite.js and tle.js are rebuilt with the tool above. satellite.js must load before tle.js, since tle.js reads the global `satellite`.
+The libraries in `third-party/` (OpenLayers, satellite.js, tle.js, …) are plain global scripts (no bundler at runtime), each starting with `/* eslint-disable */`. Update them from their source rather than by hand; satellite.js and tle.js are rebuilt with the tool above. satellite.js must load before tle.js, since tle.js reads the global `satellite`.
 Text files in this repo are CRLF with no BOM. Do bulk or scripted edits with a Node script (keep the file's line endings, check anchors match exactly once, dry run first), then check with `eol_check.js`. One-off test scripts go in the session scratchpad, not `tools/`.
 
 ## Gotchas

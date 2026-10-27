@@ -36,7 +36,7 @@ function insertMessageInRoster(newMessage, msgDEcallsign, msgDXcallsign, callObj
     activeCallObj.hash = hash;
 
     const entry = GT.callRoster[hash];
-    
+
     if (!entry) {
         GT.callRoster[hash] = {
             message: newMessage,

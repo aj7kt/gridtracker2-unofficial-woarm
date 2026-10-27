@@ -23,6 +23,7 @@ const { electronApp, optimizer } = require('@electron-toolkit/utils');
 const path = require('path');
 const { join } = require('path');
 const log = require('electron-log');
+const { inputLevel, inputLevelQuit, inputLevelFolder } = require('./inputLevel');
 const isMac = process.platform === 'darwin';
 const disableAutoUpdate = app.commandLine.hasSwitch("disable-auto-updates");
 
@@ -214,6 +215,7 @@ const allowedWindows = {
 const asarResourcesPath = join(__dirname, '../../resources');
 
 const gtInternalPath = join(app.getPath('userData'), 'Ginternal');
+inputLevelFolder(gtInternalPath);
 
 if (!fs.existsSync(gtInternalPath)) {
   fs.mkdirSync(gtInternalPath);
@@ -393,6 +395,11 @@ ipcMain.on('hideWin', (event, what) => {
   }
 });
 
+ipcMain.on('isWinVisible', (event, what) => {
+  const win = allowedWindows[what]?.window;
+  event.returnValue = !!(win && !win.isDestroyed() && win.isVisible());
+});
+
 ipcMain.on('toggleWin', (event, what) => {
   if (allowedWindows[what]?.window) {
     if (allowedWindows[what].window.isVisible()) {
@@ -521,6 +528,9 @@ let serialPortGrantOnly = null;
 ipcMain.on('serialPortWanted', (event, purpose, wanted) => {
   serialPortsWanted[purpose] = wanted;
 });
+
+// An audio input's recording level, as the system sets it (inputLevel.js): the Multi-Mode Decoder's Input Device level
+ipcMain.handle('inputLevel', (event, op, label, isDefault, level) => inputLevel(op, label, isDefault, level));
 
 ipcMain.handle('serialPortGrantOnly', (event, purpose) => {
   serialPortGrantOnly = purpose;
@@ -866,6 +876,10 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   saveWindowPositions();
   app.quit();
+});
+
+app.on('will-quit', () => {
+  inputLevelQuit();
 });
 
 function onChildWindowCloseTimeout(windowName) {
