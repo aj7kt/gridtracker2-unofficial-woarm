@@ -1307,5 +1307,5 @@
 	"settings.general.openEventViewerOnError.hover": "An error (a log upload that failed, ...) opens the Event Viewer where it is set to show",
 	"birdWatch.event.vfoClash": "Setting VFO-B ({up} MHz) moves VFO-A: this rig has no separate VFO for the uplink, so VFO-B is no longer followed",
 	"settings.general.stationElevation.label": "Elevation",
-	"settings.general.stationElevation.hover": "Your station's height above sea level (feet with miles or nautical miles, meters otherwise). BirdWatch reckons where satellites are, their Doppler and when they rise and set from it"
+	"settings.general.stationElevation.hover": "Your station's height above sea level (feet with miles or nautical miles, meters otherwise).\nBirdWatch reckons where satellites are, their Doppler and when they rise and set from it"
 }

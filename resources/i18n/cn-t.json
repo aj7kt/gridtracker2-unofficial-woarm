@@ -1309,5 +1309,5 @@
   "settings.general.openEventViewerOnError.hover": "出現錯誤（日誌上傳失敗等）時，在設定的位置開啟事件檢視器",
   "birdWatch.event.vfoClash": "設定 VFO-B（{up} MHz）會移動 VFO-A：該電台沒有單獨的上行 VFO，已停止跟蹤 VFO-B",
   "settings.general.stationElevation.label": "海拔",
-  "settings.general.stationElevation.hover": "您的電台的海拔高度（使用英里或海里時為英尺，否則為公尺）。BirdWatch 據此計算衛星的位置、都卜勒以及升起和落下的時間"
+  "settings.general.stationElevation.hover": "您的電台的海拔高度（使用英里或海里時為英尺，否則為公尺）。\nBirdWatch 據此計算衛星的位置、都卜勒以及升起和落下的時間"
 }

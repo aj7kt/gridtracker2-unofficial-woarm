@@ -329,8 +329,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </table>
       </div>
       </div>
-      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; between the BirdWatch box and the sky plot's, as wide as the sky plot's. A click opens Settings on Features, where Rig Control is -->
-      <div id="birdWatchRigLine" class="roundBorder" onclick="rotorOpenSettings();" style="display: none; cursor: pointer; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+      <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; between the BirdWatch box and the sky plot's, as wide as the sky plot's. A click opens the Doppler (transmitters) window; a right click Settings on Features, where Rig Control is -->
+      <div id="birdWatchRigLine" class="roundBorder" onclick="birdWatchTransmitterWindowOpen();" oncontextmenu="rotorOpenSettings(); return false;" style="display: none; cursor: pointer; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
       <!-- The sky plot of the selected satellite, in a box of its own like the control panel's Rx Calls box -->
       <div id="birdWatchSkyBox" class="roundBorder" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
     </div>
@@ -1047,7 +1047,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </tr>
             <tr>
               <td class="mapRowLabel"><label data-i18n="settings.general.stationElevation.label" for="stationElevationInput">Elevation</label></td>
-              <td><input id="stationElevationInput" type="text" class="inputTextValue" maxlength="6" size="6" data-i18n="settings.general.stationElevation.hover" title="Your station's height above sea level (feet with miles or nautical miles, meters otherwise). BirdWatch reckons where satellites are, their Doppler and when they rise and set from it" oninput="saveStationElevation(this);" /> <span id="stationElevationUnit">m</span></td>
+              <td><input id="stationElevationInput" type="text" class="inputTextValue" maxlength="6" size="6" data-i18n="settings.general.stationElevation.hover" title="Your station's height above sea level (feet with miles or nautical miles, meters otherwise).&#10;BirdWatch reckons where satellites are, their Doppler and when they rise and set from it" oninput="saveStationElevation(this);" /> <span id="stationElevationUnit">m</span></td>
             </tr>
           </table>
         </div>
