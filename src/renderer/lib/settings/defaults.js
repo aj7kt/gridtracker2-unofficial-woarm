@@ -36,6 +36,7 @@ const validSettings = [
   "pstrotator",
   "rotor",
   "rig",
+  "cwDecoder",
   "HRDLogbookLog",
   "defaultsApplied"
 ];
@@ -215,6 +216,9 @@ const def_settings = {
     sixWideMode: 0,
     soundCard: "default",
     soundCardName: null,
+    // The Input Device (Settings -> Audio, audio.js): what the Multi-Mode Decoder listens to; its name too, as device ids can change
+    inputCard: "default",
+    inputCardName: null,
     soundcards: null,
     warnOnSoundcardsChange: false,
     spotView: 0,
@@ -504,6 +508,12 @@ const def_settings = {
     offsetB: 0,
     second: { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "" }
   },
+  // Multi-Mode Decoder (Settings -> Features -> Service, mmDecoder.js): decodes in its window from the Input Device (key kept as cwDecoder). wideFilter: while it
+  // decodes, Rig Control opens the rig's filter to its widest, and puts it back after. scanDwell: the Multi-Mode Decoder's band scan, the seconds at
+  // each step. span: its Bandwidth, the audio decoded from 0 Hz up (an SDR's can be wide). minHz, maxHz: within it, the audio decoded (Hz;
+  // the Multi-Mode Decoder's [ and ], dragged on its scale; maxHz 0 is the span's top). cwFallSpeed, ft8FallSpeed: each mode's Waterfall
+  // Speed (1 as heard). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out)
+  cwDecoder: { enable: false, wideFilter: true, scanDwell: 10, span: 4000, minHz: 250, maxHz: 0, cwFallSpeed: 1, ft8FallSpeed: 1, fallShare: 0 },
   audio: {
     alertMute: 0,
     speechRate: 1,

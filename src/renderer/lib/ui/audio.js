@@ -167,6 +167,49 @@ function gotAudioDevices(deviceInfos)
   newSelect.oninput = soundCardChangedValue;
   soundCardDiv.appendChild(newSelect);
   soundCardInput.value = GT.settings.app.soundCard;
+
+  gotInputDevices(deviceInfos);
+}
+
+// The Input Device (Settings -> Audio): what the Multi-Mode Decoder listens to, the rig's audio. Kept by its id, and by its name as well, since
+// ids can change (as with the Output Device); one that isn't there is shown as the default, and not changed until the user picks
+function gotInputDevices(deviceInfos)
+{
+  inputCardDiv.innerHTML = "";
+  const select = document.createElement("select");
+  select.id = "inputCardSelect";
+  select.title = I18N("gt.audio.selectInputCard");
+  const found = {};
+  for (const deviceInfo of deviceInfos)
+  {
+    if (deviceInfo.kind != "audioinput") continue;
+    const option = document.createElement("option");
+    option.value = deviceInfo.deviceId;
+    option.text = deviceInfo.label || "Microphone " + (select.length + 1);
+    select.appendChild(option);
+    found[deviceInfo.deviceId] = option.text;
+  }
+  if (!(GT.settings.app.inputCard in found) && GT.settings.app.inputCardName != null)
+  {
+    for (const deviceId in found)
+    {
+      if (found[deviceId] == GT.settings.app.inputCardName)
+      {
+        GT.settings.app.inputCard = deviceId;
+        break;
+      }
+    }
+  }
+  select.oninput = inputCardChanged;
+  inputCardDiv.appendChild(select);
+  select.value = GT.settings.app.inputCard in found ? GT.settings.app.inputCard : "default";
+}
+
+function inputCardChanged()
+{
+  GT.settings.app.inputCard = inputCardSelect.value;
+  GT.settings.app.inputCardName = inputCardSelect.selectedIndex >= 0 ? inputCardSelect.options[inputCardSelect.selectedIndex].text : null;
+  mmDecoderInputChanged();
 }
 
 function audioCardWarn(didSetDefault)

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ModeDoctor</title>
+  <!-- Favicon; the script below fills it in from the inline SVG -->
+  <link rel="icon" type="image/svg+xml" href="" />
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: #111827;
+      color: #e5e7eb;
+      font-family: system-ui, sans-serif;
+    }
+    .sizes {
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+    }
+    .sizes figure {
+      margin: 0;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    button {
+      background: #3fb950;
+      color: #0b1220;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+  </style>
+</head>
+<body>
+
+  <!-- ModeDoctor icon, 512x512 -->
+  <svg id="modedoctor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+       fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <title>ModeDoctor</title>
+
+    <defs>
+      <linearGradient id="mmd-bg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1f2937" />
+        <stop offset="1" stop-color="#0b1220" />
+      </linearGradient>
+
+      <linearGradient id="mmd-steth" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f3f4f6" />
+        <stop offset="1" stop-color="#9ca3af" />
+      </linearGradient>
+
+      <filter id="mmd-glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#mmd-bg)" />
+
+    <g transform="translate(256 256) scale(0.8) translate(-294 -238)">
+      <g stroke="url(#mmd-steth)" stroke-width="24">
+        <path d="M112 48 V176 a64 64 0 0 0 128 0 V48" />
+        <path d="M176 240 V336 a64 64 0 0 0 64 64 h48" />
+      </g>
+
+      <g fill="#f3f4f6">
+        <circle cx="112" cy="40" r="24" />
+        <circle cx="240" cy="40" r="24" />
+      </g>
+
+      <circle cx="336" cy="400" r="48" fill="#374151" stroke="url(#mmd-steth)" stroke-width="20" />
+      <circle cx="336" cy="400" r="26" fill="#3fb950" />
+      <circle cx="326" cy="390" r="8" fill="#ffffff" fill-opacity="0.55" />
+
+      <g stroke="#3fb950" stroke-width="20" filter="url(#mmd-glow)">
+        <path d="M358.78 315.00 A88 88 0 0 1 421.00 377.22" />
+        <path d="M368.09 280.23 A124 124 0 0 1 455.77 367.91" stroke-opacity="0.75" />
+        <path d="M377.41 245.45 A160 160 0 0 1 490.55 358.59" stroke-opacity="0.5" />
+      </g>
+    </g>
+  </svg>
+
+  <!-- Size previews -->
+  <div class="sizes">
+    <figure><img class="preview" width="128" height="128" alt="128" /><figcaption>128</figcaption></figure>
+    <figure><img class="preview" width="64"  height="64"  alt="64"  /><figcaption>64</figcaption></figure>
+    <figure><img class="preview" width="32"  height="32"  alt="32"  /><figcaption>32</figcaption></figure>
+    <figure><img class="preview" width="16"  height="16"  alt="16"  /><figcaption>16</figcaption></figure>
+  </div>
+
+  <button id="download">Download 512 PNG</button>
+
+  <script>
+    // Turn the inline SVG into a Blob URL for the favicon and previews
+    const svgEl = document.getElementById('modedoctor');
+    const xml = new XMLSerializer().serializeToString(svgEl);
+    const svgUrl = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' }));
+
+    document.querySelector('link[rel="icon"]').href = svgUrl;
+    document.querySelectorAll('img.preview').forEach(img => { img.src = svgUrl; });
+
+    // Draw the SVG onto a canvas and download it as a PNG
+    document.getElementById('download').addEventListener('click', () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        canvas.getContext('2d').drawImage(img, 0, 0, 512, 512);
+        canvas.toBlob(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'modedoctor-512.png';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }, 'image/png');
+      };
+      img.src = svgUrl;
+    });
+  </script>
+</body>
+</html>

@@ -1104,3 +1104,82 @@
   <circle cx="373" cy="118" r="46" fill="#ffffff" />
   <circle cx="373" cy="118" r="36" fill="#000000" />
 </svg>
+
+<!-- mm-decoder.png (512x512): the button panel's Toggle Multi-Mode Decoder button: a waterfall with three keyed signals over "CQ" in Morse (-.-. --.-) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background Container, as the Event Viewer's -->
+  <rect x="6" y="6" width="500" height="500" rx="40" fill="#101418" stroke="#1A2229" stroke-width="12"/>
+  <!-- The waterfall -->
+  <rect x="56" y="56" width="400" height="190" rx="16" fill="#0B2236"/>
+  <!-- Three signals keyed down it -->
+  <rect x="136" y="72" width="28" height="44" rx="6" fill="#00D4DB"/>
+  <rect x="136" y="132" width="28" height="14" rx="6" fill="#00D4DB"/>
+  <rect x="136" y="162" width="28" height="44" rx="6" fill="#00D4DB"/>
+  <rect x="136" y="222" width="28" height="14" rx="6" fill="#00D4DB"/>
+  <rect x="242" y="72" width="28" height="14" rx="6" fill="#FFE600"/>
+  <rect x="242" y="102" width="28" height="60" rx="6" fill="#FFE600"/>
+  <rect x="242" y="178" width="28" height="14" rx="6" fill="#FFE600"/>
+  <rect x="242" y="208" width="28" height="28" rx="6" fill="#FFE600"/>
+  <rect x="348" y="72" width="28" height="30" rx="6" fill="#D8DCE3"/>
+  <rect x="348" y="118" width="28" height="14" rx="6" fill="#D8DCE3"/>
+  <rect x="348" y="148" width="28" height="44" rx="6" fill="#D8DCE3"/>
+  <!-- C: dah dit dah dit -->
+  <rect x="84" y="296" width="96" height="40" rx="8" fill="#00D4DB"/>
+  <rect x="204" y="296" width="40" height="40" rx="8" fill="#00D4DB"/>
+  <rect x="268" y="296" width="96" height="40" rx="8" fill="#00D4DB"/>
+  <rect x="388" y="296" width="40" height="40" rx="8" fill="#00D4DB"/>
+  <!-- Q: dah dah dit dah -->
+  <rect x="56" y="384" width="96" height="40" rx="8" fill="#FFE600"/>
+  <rect x="176" y="384" width="96" height="40" rx="8" fill="#FFE600"/>
+  <rect x="296" y="384" width="40" height="40" rx="8" fill="#FFE600"/>
+  <rect x="360" y="384" width="96" height="40" rx="8" fill="#FFE600"/>
+</svg>
+
+
+  <!-- ModeDoctor icon, 512x512 -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+    <defs>
+      <linearGradient id="mmd-bg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1f2937" />
+        <stop offset="1" stop-color="#0b1220" />
+      </linearGradient>
+
+      <linearGradient id="mmd-steth" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f3f4f6" />
+        <stop offset="1" stop-color="#9ca3af" />
+      </linearGradient>
+
+      <filter id="mmd-glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#mmd-bg)" />
+
+    <g transform="translate(256 256) scale(0.8) translate(-294 -238)">
+      <g stroke="url(#mmd-steth)" stroke-width="24">
+        <path d="M112 48 V176 a64 64 0 0 0 128 0 V48" />
+        <path d="M176 240 V336 a64 64 0 0 0 64 64 h48" />
+      </g>
+
+      <g fill="#f3f4f6">
+        <circle cx="112" cy="40" r="24" />
+        <circle cx="240" cy="40" r="24" />
+      </g>
+
+      <circle cx="336" cy="400" r="48" fill="#374151" stroke="url(#mmd-steth)" stroke-width="20" />
+      <circle cx="336" cy="400" r="26" fill="#3fb950" />
+      <circle cx="326" cy="390" r="8" fill="#ffffff" fill-opacity="0.55" />
+
+      <g stroke="#3fb950" stroke-width="20" filter="url(#mmd-glow)">
+        <path d="M358.78 315.00 A88 88 0 0 1 421.00 377.22" />
+        <path d="M368.09 280.23 A124 124 0 0 1 455.77 367.91" stroke-opacity="0.75" />
+        <path d="M377.41 245.45 A160 160 0 0 1 490.55 358.59" stroke-opacity="0.5" />
+      </g>
+    </g>
+  </svg>

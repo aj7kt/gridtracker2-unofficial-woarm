@@ -42,6 +42,10 @@ function rigNewState(key)
     queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
     lastSent: null,     // serial: the frame out last (a Kenwood or Yaesu "?;" refuses it)
     catId: null,        // Kenwood, Yaesu: what the rig answered to ID; ("019", "0570")
+    filterWidth: null,  // CI-V: the IF filter's width as the rig numbers it (1A 03: 0 to 40, 40 the widest), when asked (the Multi-Mode Decoder)
+    cwPitch: null,      // CI-V: the CW pitch in Hz (14 09), when asked (the Multi-Mode Decoder)
+    passband: null,     // rigctld: the mode's passband in Hz ("Passband: 2400", with the mode)
+    tuningStep: null,   // the rig's tuning step in Hz, when asked (the Multi-Mode Decoder's mouse wheel): CI-V 10, rigctld n
     waiting: null       // serial: the timer for the reply to the frame out, after which the next goes anyway
   };
 }
@@ -58,6 +62,8 @@ const RIG_RETRY_MS = 10000;
 const RIG_BAUDS = [4800, 9600, 19200, 38400, 57600, 115200];
 // The Icoms by the CI-V address each comes with (an address can be changed in the rig: the name from the port's device id wins, below)
 const RIG_CIV_MODELS = { 0x94: "IC-7300", 0xa2: "IC-9700", 0xa4: "IC-705", 0x88: "IC-7100", 0x98: "IC-7610", 0x7a: "IC-7600", 0x74: "IC-7700", 0x6a: "IC-7800", 0x8e: "IC-7851", 0x7c: "IC-9100", 0x70: "IC-7000", 0x76: "IC-7200", 0x80: "IC-7410", 0x5e: "IC-718", 0x58: "IC-706MKIIG", 0x60: "IC-910H", 0x66: "IC-746PRO", 0x6e: "IC-756PROIII", 0x64: "IC-756PROII", 0x5c: "IC-756PRO", 0x50: "IC-756", 0x96: "IC-R8600", 0xac: "IC-905" };
+// The CI-V tuning step codes (command 10), in Hz
+const RIG_CIV_STEPS = { 0: 10, 1: 100, 2: 500, 3: 1000, 4: 5000, 5: 6250, 6: 8330, 7: 9000, 8: 10000, 9: 12500, 10: 20000, 11: 25000, 12: 50000, 13: 100000 };
 const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: "RTTY", 0x05: "FM", 0x06: "WFM", 0x07: "CW-R", 0x08: "RTTY-R", 0x17: "DV" };
 
 // A rig's settings: VFO-A's are settings.rig, the second rig's settings.rig.second
@@ -215,6 +221,8 @@ const RIG_PROTOCOLS = {
       else if ((m = /^Model name:\s*(.+)/.exec(line))) R.model = m[1].trim();
       else if ((m = /^Can set CTCSS Tone:\s*(\S)/.exec(line))) R.toneFreq = m[1] == "Y";
       else if ((m = /^Set functions:\s*(.*)/.exec(line))) R.toneFunc = /\bTONE\b/.test(m[1]);
+      else if ((m = /^Passband:\s*(\d+)/.exec(line))) R.passband = Number(m[1]);
+      else if ((m = /^Tuning Step:\s*(\d+)/.exec(line))) R.tuningStep = Number(m[1]) || null;
       else if ((m = /^Mode:\s*(\S+)/.exec(line))) R.mode = m[1];
       else if ((m = /^RPRT\s+(-\d+)/.exec(line))) return "RPRT " + m[1];
       return null;
@@ -285,6 +293,11 @@ const RIG_PROTOCOLS = {
         R.dual = true;
       }
       else if (command == 0x26 && data.length >= 2 && data[0] == 0x01) R.modeB = RIG_CIV_MODES[data[1]] || ("mode " + data[1]);
+      // The Multi-Mode Decoder's: the IF filter's width (1A 03, one BCD byte) and the CW pitch (14 09, 0 to 255 for 300 to 900 Hz, in 5 Hz steps)
+      else if (command == 0x1a && data.length >= 2 && data[0] == 0x03) R.filterWidth = (data[1] >> 4) * 10 + (data[1] & 0x0f);
+      else if (command == 0x14 && data.length >= 3 && data[0] == 0x09) R.cwPitch = Math.round((300 + (rigCivBcdToHz([data[2], data[1]]) * 600) / 255) / 5) * 5;
+      // The tuning step (10, one BCD byte): its code as the IC-7300, 705, 9700 and 7610 have them; 00 is TS off, 10 Hz a step
+      else if (command == 0x10 && data.length == 1) R.tuningStep = RIG_CIV_STEPS[(data[0] >> 4) * 10 + (data[0] & 0x0f)] || null;
       else if (command == 0xfa)
       {
         // NG to 26 01: the rig hasn't it, and isn't asked again
@@ -1077,8 +1090,8 @@ function rigReceive(R, data)
   rigStatusRender(R);
 }
 
-// ---- Tuning: for BirdWatch's Doppler only. The rosters (the Feed Roster's spots too) tune through WSJT-X and the loggers as before, never
-// through Rig Control
+// ---- Tuning: for BirdWatch's Doppler, and the Multi-Mode Decoder (a signal clicked, the band scan: the rx alone). The rosters (the Feed Roster's
+// spots too) tune through WSJT-X and the loggers as before, never through Rig Control
 
 // The rigs set to what is given of { rx, mode, tx, txMode, tone }, rx and tx the satellite's frequencies (each VFO's offset is added
 // to what is sent: rigOffset): rx (Hz) and mode ("USB", "FM", ...) on VFO-A's rig; tx (Hz) on the

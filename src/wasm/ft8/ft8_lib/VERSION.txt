@@ -1,0 +1,2 @@
+ft8_lib by Karlis Goba, MIT License: https://github.com/kgoba/ft8_lib
+commit 9fec6ca39886edbf96f4f5e71edc76da5074e871 (2025-08-24), the files the decoder needs, unchanged (line endings CRLF)

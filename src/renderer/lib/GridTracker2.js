@@ -877,6 +877,8 @@ function postInit()
     rotorInit();
     section = "RigInit";
     rigInit();
+    section = "MmDecoderInit";
+    mmDecoderInit();
     projectionImg.style.filter = GT.settings.map.projection == "AEQD" ? "" : "grayscale(1)";
     section = "MouseTrack";
     displayMouseTrack();

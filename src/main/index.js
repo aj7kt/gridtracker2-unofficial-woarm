@@ -203,6 +203,12 @@ const allowedWindows = {
       icon: join(__dirname, '../renderer/img/roster-icon.png'),
     },
   },
+  gt_mmdecoder: {
+    window: null,
+    honorVisibility: true,
+    options: { x: 80, y: 80, width: 720, height: 420, show: false, zoom: 0 },
+    static: { minWidth: 300, minHeight: 200, icon: join(__dirname, '../renderer/img/mm-decoder.png') },
+  },
 };
 
 const asarResourcesPath = join(__dirname, '../../resources');
@@ -730,6 +736,15 @@ app.whenReady().then(() => {
           window.isVisible(),
         );
 
+      });
+
+      // Shown and hidden: told to the page (the Multi-Mode Decoder listens only while it shows). The Page Visibility API can't say it, as
+      // backgroundThrottling is off
+      window.on('show', () => {
+        if (!window.isDestroyed()) window.webContents.send('windowVisible', true);
+      });
+      window.on('hide', () => {
+        if (!window.isDestroyed()) window.webContents.send('windowVisible', false);
       });
 
       window.on('move', (event) => {

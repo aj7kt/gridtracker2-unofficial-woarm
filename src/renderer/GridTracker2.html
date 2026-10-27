@@ -72,6 +72,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/rotor.js" type="text/javascript"></script>
   <script src="./lib/services/rig.js" type="text/javascript"></script>
   <script src="./lib/services/rigRanges.js" type="text/javascript"></script>
+  <script src="./lib/services/mmDecoder.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
   <script src="./lib/map/tropo.js" type="text/javascript"></script>
@@ -765,6 +766,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="birdWatchTimelineButton" class="iconButton" style="display:none;" onclick="birdWatchTimelineToggle();" data-i18n="birdWatch.timeline.hover" title="Upcoming passes of the tracked satellites">
           <img src="img/sat-timeline.png" class="buttonImg" />
         </div>
+        <!-- Shown while the Multi-Mode Decoder is on (services/mmDecoder.js) -->
+        <div id="mmDecoderButton" onclick="toggleMmDecoder();" class="iconButton" style="display:none;" title="Toggle Multi-Mode Decoder" data-i18n="gt.button.cwViewer.hover">
+          <img id="mmDecoderImg" src="img/mm-decoder.png" class="buttonImg" />
+        </div>
       </div>
     </div>
     <div id="myFlagtip" class="myFlagtipEnd"></div>
@@ -1306,6 +1311,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   </div>
                 </td>
               </tr>
+              <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from Settings -> Audio's Input Device -->
+              <tr>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.hover" title="Decodes the CW or FT8 signals in the receiver's passband, heard on the Input Device (Settings, Audio), and shows them in the Multi-Mode Decoder window" type="checkbox" id="mmDecoderEnable" onclick="mmDecoderEnableChanged();" /> <label data-i18n="cwViewer.title" for="mmDecoderEnable">Multi-Mode Decoder</label></td>
+              </tr>
+              <!-- Its options, shown while it is on: CW's in a box titled CW Decoder, FT8's in one titled FT8 Decoder -->
+              <tr id="mmDecoderBoxTr">
+                <td colspan="2">
+                  <div class="rigVfoBox">
+                    <div class="rigVfoTitle"><span data-i18n="settings.cwDecoder.label">CW Decoder</span></div>
+                    <table>
+                      <tr>
+                        <td class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.wide.hover" title="While the Multi-Mode Decoder is decoding, Rig Control opens the rig's filter to its widest (an Icom over CI-V, or rigctld), so more signals are heard; the filter is put back when it stops" type="checkbox" id="mmDecoderWide" onclick="mmDecoderWideChanged();" /> <label data-i18n="settings.cwDecoder.wide.label" for="mmDecoderWide">Wide Filter</label></td>
+                      </tr>
+                      <tr>
+                        <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.mmDecoder.fallSpeed.label">Waterfall Speed</span></td>
+                        <td><input data-i18n="settings.mmDecoder.fallSpeed.hover" title="How fast the waterfall moves down: 1× as it is heard (about 7 seconds in view); slower holds more time (about a minute at 0.1×), faster gives each moment more room" type="range" min="0.1" max="4" step="0.05" value="1" class="slider" id="cwFallSpeed" oninput="mmDecoderFallSpeedChanged();" /><span id="cwFallSpeedTd" class="mapValue">1×</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="rigVfoBox">
+                    <div class="rigVfoTitle"><span data-i18n="settings.ft8Decoder.label">FT8 Decoder</span></div>
+                    <table>
+                      <tr>
+                        <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.mmDecoder.fallSpeed.label">Waterfall Speed</span></td>
+                        <td><input data-i18n="settings.mmDecoder.fallSpeed.hover" title="How fast the waterfall moves down: 1× as it is heard (about 7 seconds in view); slower holds more time (about a minute at 0.1×), faster gives each moment more room" type="range" min="0.1" max="4" step="0.05" value="1" class="slider" id="ft8FallSpeed" oninput="mmDecoderFallSpeedChanged();" /><span id="ft8FallSpeedTd" class="mapValue">1×</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                </td>
+              </tr>
             </table>
           </div>
         </div>
@@ -1496,8 +1531,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <div class="mapGroupTitle" data-i18n="settings.Audio.label">Audio</div>
           <table>
             <tr>
-              <td class="mapRowLabel" data-i18n="settings.audio.row.device.label">Device</td>
+              <td class="mapRowLabel" data-i18n="settings.audio.row.outputDevice.label">Output Device</td>
               <td><div id="soundCardDiv"></div></td>
+            </tr>
+            <!-- What the decoders listen to (the Multi-Mode Decoder): the rig's audio -->
+            <tr>
+              <td class="mapRowLabel" data-i18n="settings.audio.row.inputDevice.label">Input Device</td>
+              <td><div id="inputCardDiv"></div></td>
             </tr>
             <tr>
               <td class="mapRowLabel" data-i18n="settings.audio.QSOLogEventFile.label">QSO Log Event Notification</td>

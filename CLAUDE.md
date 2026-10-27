@@ -59,6 +59,10 @@ Scripts in [tools/](tools/) (run from the repo root; each file's header has its 
 - [changelog_html.js](tools/changelog_html.js): regenerates CHANGELOG.md's `### HTML List` section from its `### MD Markup Format` section (dry run unless `write`).
 - [build_satellite_libs.js](tools/build_satellite_libs.js): rebuilds `third-party/satellite.js` (satellite.js, global `satellite`) and `third-party/tle.js` (tle.js bundled with esbuild, global `tlejs`) from npm. Pick versions with `--tle=` / `--satellite=`. It's a dry run unless `write`, and it reports whether each file changed. It needs network access, `npm`/`npx` and `tar`, and works in an OS temp folder, so `package.json` and `node_modules` are untouched.
 
+- [build_cw_wasm.js](tools/build_cw_wasm.js): rebuilds `src/renderer/lib/mmd/cwdecoder.wasm` (the CW Decoder's DSP, run in the Multi-Mode Decoder's AudioWorklet) from `src/wasm/cwdecoder/` (`cwdecoder.c` plus the kissFFT files beside it) with Emscripten. Rebuild after any change to the C. Needs emsdk installed and activated (found by `--emsdk=`, else `EMSDK`, else `~/emsdk`). It's a dry run unless `write`. `--debug=<file>` writes a build that logs one channel's levels each tick, for tuning offline (never into `lib/mmd/`).
+
+- [build_ft8_wasm.js](tools/build_ft8_wasm.js): rebuilds `src/renderer/lib/mmd/ft8.wasm` (the Multi-Mode Decoder's FT8 mode) from `src/wasm/ft8/` (`ft8wasm.c` plus ft8_lib, MIT, vendored unchanged in `src/wasm/ft8/ft8_lib/`). Same emsdk lookup and dry run as build_cw_wasm.js.
+
 The libraries in `third-party/` (moment, OpenLayers, satellite.js, tle.js, …) are plain global scripts (no bundler at runtime), each starting with `/* eslint-disable */`. Update them from their source rather than by hand; satellite.js and tle.js are rebuilt with the tool above. satellite.js must load before tle.js, since tle.js reads the global `satellite`.
 Text files in this repo are CRLF with no BOM. Do bulk or scripted edits with a Node script (keep the file's line endings, check anchors match exactly once, dry run first), then check with `eol_check.js`. One-off test scripts go in the session scratchpad, not `tools/`.
 

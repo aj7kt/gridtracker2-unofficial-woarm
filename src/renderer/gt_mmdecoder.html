@@ -1,0 +1,351 @@
+<!--
+    This file is part of GridTracker.
+
+    GridTracker is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3 of the License.
+
+    GridTracker is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with GridTracker.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Multi-Mode Decoder</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="./lib/css/style.css" />
+    <style type="text/css">
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: black;
+      }
+      body {
+        -webkit-appearance: none;
+        -webkit-user-select: none;
+        color: #fff;
+        white-space: nowrap;
+        font-family: Sans-Serif;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+      }
+      /* The rig, the input device, the wide filter and the audio's state */
+      /* Its text, buttons and selector all centred on one line */
+      #cwTop {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 3px 6px;
+        overflow: hidden;
+      }
+      #cwRig {
+        color: cyan;
+        font-weight: bold;
+      }
+      #cwDevice {
+        color: #aaa;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 40px;
+      }
+      #cwWide {
+        color: lightgreen;
+      }
+      #cwScanBox {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cwButton {
+        cursor: pointer;
+        padding: 0 8px;
+        border: 1px solid #888;
+        border-radius: 4px;
+        background-color: #223;
+        color: #fff;
+      }
+      .cwButton:hover {
+        border-color: cyan;
+      }
+      /* Scanning: the button says Stop Scan, lit */
+      #cwScanButton.cwScanning {
+        background-color: #4a3500;
+        border-color: #ffd94a;
+        color: #ffd94a;
+      }
+      #cwDwell,
+      #cwBandwidth,
+      #cwMode {
+        font-size: 11px;
+      }
+      #cwScanInfo {
+        color: #ffd94a;
+      }
+      #cwStatus {
+        margin-left: auto;
+        color: #ccc;
+      }
+      #cwStatus.cwError {
+        color: orange;
+        white-space: normal;
+      }
+      /* The frequency scale with the channels found, over the waterfall */
+      /* The cutoff of the [ or ] under the mouse */
+      #cwRangeTip {
+        display: none;
+        position: absolute;
+        z-index: 5;
+        padding: 0 4px;
+        background-color: #000;
+        border: 1px solid cyan;
+        border-radius: 3px;
+        color: cyan;
+        font-weight: bold;
+        pointer-events: none;
+      }
+      #cwScale {
+        flex: 0 0 auto;
+        width: 100%;
+        height: 20px;
+        display: block;
+      }
+      /* The waterfall, and over it the guard lines of the signal under the mouse (in its row or on the waterfall) */
+      #cwFallBox {
+        flex: 0 0 38%;
+        min-height: 40px;
+        position: relative;
+      }
+      #cwFall {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: auto;
+      }
+      #cwOverlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      /* The bar between the waterfall and the decoded lines: dragged to share the room between them (mmDecoder.js, mmdSplitInit) */
+      #mmdSplit {
+        flex: 0 0 5px;
+        cursor: ns-resize;
+        background-color: #333;
+      }
+      #mmdSplit:hover {
+        background-color: #666;
+      }
+      #cwList,
+      #ft8List {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-top: 1px solid #333;
+      }
+      #cwTable,
+      #ft8Table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .ft8UtcCol {
+        width: 62px;
+      }
+      .ft8DtCol {
+        width: 40px;
+      }
+      .ft8FreqCol {
+        width: 48px;
+      }
+      #ft8Table td {
+        padding: 1px 6px;
+        overflow: hidden;
+        text-align: left;
+        font-family: monospace;
+        font-size: 13px;
+        color: #ddd;
+      }
+      #ft8Table td.ft8Num {
+        color: #aaa;
+      }
+      /* How a message was decoded when not the plain way, as WSJT-X marks its own: o (OSD), a1 (a CQ guessed), a2 (a call to you guessed) */
+      span.ft8How {
+        color: #888;
+      }
+      /* The first row of each period: a line above it */
+      #ft8Table tr.ft8First td {
+        border-top: 1px solid #333;
+      }
+      #ft8Table tr:hover td {
+        box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+      }
+      /* The spacer rows standing in for the lines out of view (virtual scrolling, as the rosters'): one line high each line, not shaded */
+      #ft8Table td {
+        white-space: nowrap;
+      }
+      #ft8Table tr.virtualSpacer td {
+        padding: 0;
+      }
+      #ft8Table tr.virtualSpacer:hover td {
+        box-shadow: none;
+      }
+      #ft8Empty {
+        color: #888;
+        padding: 6px;
+      }
+      #ft8Table th,
+      #cwTable th {
+        position: sticky;
+        top: 0;
+        background-color: #111;
+        color: #aaa;
+        font-weight: normal;
+        text-align: left;
+        padding: 2px 6px;
+      }
+      #cwTable td {
+        padding: 1px 6px;
+        overflow: hidden;
+        text-align: left;
+      }
+      .cwFreqCol {
+        width: 80px;
+      }
+      .cwWpmCol,
+      .cwDbCol {
+        width: 36px;
+      }
+      td.cwFreq {
+        color: cyan;
+        font-family: monospace;
+        font-size: 13px;
+      }
+      td.cwDb,
+      td.cwWpm {
+        color: #aaa;
+        font-family: monospace;
+        font-size: 13px;
+      }
+      td.cwText {
+        font-family: monospace;
+        font-size: 13px;
+        color: #ddd;
+      }
+      /* Text the decoder has just corrected (it read the transmission again with what it learned since), for a moment */
+      td.cwText.cwRevised {
+        color: #9ef;
+        text-shadow: 0 0 4px #39f;
+      }
+      /* A click on a signal's row tunes the rig to it */
+      #cwRows tr[title] {
+        cursor: pointer;
+      }
+      /* The row under the mouse, or of the signal under it on the waterfall: shaded as GT's tables shade theirs (.darkTable) */
+      #cwRows tr:hover td,
+      #cwRows tr.cwLinked td {
+        box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+      }
+      /* The signal the decoder is focused on (a right-click): a light red edge, as its guard lines */
+      #cwRows tr.cwFocused td.cwFreq {
+        box-shadow: inset 3px 0 0 #ff9a9a;
+      }
+      #cwRows tr.cwFocused:hover td.cwFreq,
+      #cwRows tr.cwFocused.cwLinked td.cwFreq {
+        box-shadow: inset 3px 0 0 #ff9a9a, inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+      }
+      /* A signal calling CQ: the row, the CQ and the call after it */
+      tr.cwCqRow {
+        background-color: #12301a;
+      }
+      span.cwCq {
+        color: #000;
+        background-color: #ffd94a;
+        font-weight: bold;
+      }
+      span.cwCall {
+        color: cyan;
+        font-weight: bold;
+      }
+      #cwEmpty {
+        color: #888;
+        padding: 6px;
+      }
+      #cwMeasure {
+        position: absolute;
+        visibility: hidden;
+        font-family: monospace;
+        font-size: 13px;
+      }
+    </style>
+    <script src="./lib/first.js"></script>
+    <script src="./lib/ui/i18n.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmDecoder.js" type="text/javascript"></script>
+    <script>
+      document.oncontextmenu = function (event)
+      {
+        event.preventDefault();
+      };
+    </script>
+  </head>
+  <body id="mainBody" onload="mmdInit();">
+    <div id="cwTop">
+      <span id="cwRig"></span>
+      <span id="cwDevice"></span>
+      <span id="cwWide"></span>
+      <!-- Clear (everything decoded forgotten, the decoder started afresh), then the band scan: its button, the seconds at each step, and
+           the band being scanned (mmDecoder.js) -->
+      <span id="cwScanBox">
+        <select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW, or FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right)"><option value="cw">CW</option><option value="ft8">FT8</option></select>
+        <select id="cwBandwidth" data-i18n="cwViewer.bandwidth.hover" title="The audio decoded, from 0 Hz up: a rig's passband (2.5k to 4k), or more of an SDR's stream (10k up; 44.1k, 48k and 96k are the whole of a stream at that sample rate). Changing it starts the decoder again"></select>
+        <span id="cwClearButton" class="cwButton" onclick="mmdClear();" data-i18n="cwViewer.clear.hover" title="Forgets every signal decoded and starts again from scratch: the rows, the waterfall, and what the decoder has learned">Clear</span>
+        <span id="cwScanButton" class="cwButton" onclick="mmdScanToggle();" data-i18n="cwViewer.scan.hover" title="Steps the rig through the CW part of the band it is on, listening a few seconds at each step, round and round until stopped; turning the dial or clicking a signal stops it too">Scan Band</span>
+        <select id="cwDwell" data-i18n="cwViewer.dwell.hover" title="Seconds to listen at each step of the scan"></select>
+        <span id="cwScanInfo"></span>
+      </span>
+      <span id="cwStatus"></span>
+    </div>
+    <!-- The Hz of the [ or ] under the mouse, or being dragged (mmDecoder.js, mmdRangeTip) -->
+    <div id="cwRangeTip"></div>
+    <canvas id="cwScale" data-i18n="cwViewer.range.hover" title="Drag [ and ] to set the lowest and highest audio decoded: what is outside them (dimmed) isn't"></canvas>
+    <div id="cwFallBox">
+      <canvas id="cwFall"></canvas>
+      <canvas id="cwOverlay" data-i18n="cwViewer.fall.hint.hover" title="Mouse wheel: tunes the rig up or down. Right-click a signal to pin it: its guard lines stay and its line stays listed (right-click it again to let go)"></canvas>
+    </div>
+    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"></div>
+    <div id="cwList">
+      <table id="cwTable">
+        <colgroup><col class="cwFreqCol" /><col class="cwDbCol" /><col class="cwWpmCol" /><col /></colgroup>
+        <thead>
+          <tr><th data-i18n="cwViewer.header.freq">Frequency</th><th data-i18n="cwViewer.header.db.label" title="The signal over the noise, in the decoder's own narrow filter (about 90 Hz): higher than FT8's dB, which are over 2.5 kHz">dB</th><th data-i18n="cwViewer.header.wpm">WPM</th><th data-i18n="cwViewer.header.text">Decoded Text</th></tr>
+        </thead>
+        <tbody id="cwRows"></tbody>
+      </table>
+      <div id="cwEmpty" data-i18n="cwViewer.empty">No CW decoded yet</div>
+    </div>
+    <!-- FT8 mode: each period's messages, the newest period on top (mmDecoder.js, mmdFt8Rows) -->
+    <div id="ft8List" style="display: none;">
+      <table id="ft8Table">
+        <colgroup><col class="ft8UtcCol" /><col class="cwDbCol" /><col class="ft8DtCol" /><col class="ft8FreqCol" /><col /></colgroup>
+        <thead>
+          <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.ft8.header.db.label" title="The signal over the noise in 2500 Hz, as WSJT-X gives it (usually within 2 dB of WSJT-X's)">dB</th><th data-i18n="cwViewer.ft8.header.dt">DT</th><th data-i18n="cwViewer.ft8.header.freq">Freq</th><th data-i18n="cwViewer.ft8.header.message">Message</th></tr>
+        </thead>
+        <tbody id="ft8Rows"></tbody>
+      </table>
+      <div id="ft8Empty" data-i18n="cwViewer.ft8.empty">No FT8 decoded yet: each period is decoded once it has ended</div>
+    </div>
+    <span id="cwMeasure">0000000000</span>
+  </body>
+</html>
