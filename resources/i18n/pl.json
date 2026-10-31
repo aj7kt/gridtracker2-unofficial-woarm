@@ -1652,7 +1652,7 @@
   "cwViewer.packet.heardAt": "Słyszany na {hz} Hz: kliknij, aby tam zablokować packet HF",
   "cwViewer.detect.label": "Wykryj Tryby",
   "cwViewer.detect.hover": "Nasłuchuje wszystkich trybów poza FT8 i FT4 i nazywa każdy znaleziony sygnał: kliknij jeden, na wodospadzie lub na liście, aby go dekodować. Dotychczasowy tryb czeka w tym czasie",
-  "cwViewer.detect.empty": "Nasłuchiwanie sygnałów: każdy jest nazywany, gdy się dekoduje (CW, PSK31, RTTY, Packet i SSTV), a Olivia po wyglądzie",
+  "cwViewer.detect.empty": "Nasłuchiwanie sygnałów: każdy jest nazywany, gdy się dekoduje (CW, PSK31, RTTY, Packet i SSTV), albo po swoim RSID",
   "cwViewer.detect.status": "Wykrywanie trybów: znaleziono {count}",
   "cwViewer.detect.header.mode": "Tryb",
   "cwViewer.detect.header.heard": "Usłyszane",

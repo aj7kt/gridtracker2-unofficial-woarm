@@ -1652,7 +1652,7 @@
   "cwViewer.packet.heardAt": "Ouvido em {hz} Hz: clique para fixar ali o packet HF",
   "cwViewer.detect.label": "Detectar Modos",
   "cwViewer.detect.hover": "Escuta todos os modos daqui exceto FT8 e FT4 e nomeia cada sinal encontrado: clique em um, na cascata ou na lista, para decodificá-lo. O modo em que você estava espera enquanto isso",
-  "cwViewer.detect.empty": "Escutando sinais: cada um é nomeado quando decodifica (CW, PSK31, RTTY, Packet e SSTV), e Olivia pela aparência",
+  "cwViewer.detect.empty": "Escutando sinais: cada um é nomeado quando decodifica (CW, PSK31, RTTY, Packet e SSTV), ou pelo seu RSID",
   "cwViewer.detect.status": "Detectando modos: {count} encontrados",
   "cwViewer.detect.header.mode": "Modo",
   "cwViewer.detect.header.heard": "Ouvido",

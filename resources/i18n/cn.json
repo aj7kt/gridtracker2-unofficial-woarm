@@ -1653,7 +1653,7 @@
   "cwViewer.packet.heardAt": "在 {hz} Hz 收到：点击将 HF 分组锁定在该处",
   "cwViewer.detect.label": "检测模式",
   "cwViewer.detect.hover": "监听除 FT8 和 FT4 以外的所有模式，并为找到的每个信号命名：在瀑布图或列表中点击一个即可解码。原来的模式在此期间暂停",
-  "cwViewer.detect.empty": "正在监听信号：每个信号一经解码即被命名（CW、PSK31、RTTY、Packet 和 SSTV），Olivia 按外观判断",
+  "cwViewer.detect.empty": "正在监听信号：每个信号一经解码即被命名（CW、PSK31、RTTY、Packet 和 SSTV），或按其 RSID 命名",
   "cwViewer.detect.status": "正在检测模式：找到 {count} 个",
   "cwViewer.detect.header.mode": "模式",
   "cwViewer.detect.header.heard": "收到",

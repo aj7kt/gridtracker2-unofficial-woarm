@@ -4,18 +4,18 @@
 
 // Detect Modes (the button beside Test Signals): every mode decoded here but FT8 and FT4 listened for at once, and each signal named once
 // it is known: by its own decoder decoding it (each a copy of its mode's: CW from the worklet's own decoder, PSK31 and RTTY from two
-// keyWorker.js, Packet from packetWorker.js, SSTV from sstvWorker.js), so a name is only given to what really decodes; Olivia (and
-// Contestia) by how it looks on the waterfall: one tone at a time, hopping all across a band 250, 500 or 1000 Hz wide with clean edges
-// (mmdDetectOlivia; named "Olivia?", its own search confirms it). An RSID's label (mmdRsid.js) names its mode as always.
+// keyWorker.js, Packet from packetWorker.js, SSTV from sstvWorker.js), so a name is only given to what really decodes. Olivia and
+// Contestia aren't looked for (their decoder needs the submode, and a search of every one costs too much): an RSID's label (mmdRsid.js)
+// names them, and every mode, as always.
 // The mode it was in waits meanwhile (its decoder hears nothing, its list is hidden): the signals found are listed in its place (mode,
 // frequency, dB, what was heard) and labelled on the waterfall. A click on one (either) decodes it: Detect Modes off, its mode chosen and
-// aimed at it (CW's signal pinned, Packet's HF place locked, Olivia's submode and centre set). Detect Modes off by its button: the mode
+// aimed at it (CW's signal pinned, Packet's HF place locked). Detect Modes off by its button: the mode
 // it was in goes on
 
 // A signal found stays listed this long after it was last heard (ms)
 const DETECT_KEEP_MS = 120000;
 // Two finds of a mode this close (Hz) are the same signal
-const DETECT_SAME_HZ = { cw: 40, psk31: 30, rtty: 60, packet: 150, sstv: 300, olivia: 200 };
+const DETECT_SAME_HZ = { cw: 40, psk31: 30, rtty: 60, packet: 150, sstv: 300 };
 // A click this near a found signal's frequency (Hz) picks it
 const DETECT_PICK_HZ = 80;
 // CW: a signal is named once it has copied this many characters, its speed sane, and a word CW's operators send among them, or the same
@@ -26,22 +26,8 @@ const DETECT_CW_CALL = /\b(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{3,7}\b/g;
 // SSTV: a picture is named once this many of its lines were looked at, at least this share of them with a clear sync pulse
 const DETECT_SSTV_LINES = 12;
 const DETECT_SSTV_SYNCS = 0.75;
-// Olivia by its look: the waterfall's rows of the last DETECT_OLIVIA_SECONDS; a row's peak is a bin at least DETECT_OLIVIA_PEAK (the
-// row's scale: 0 is 5 dB under the noise floor, 255 40 dB over it) and over its neighbours. A bin a peak in over DETECT_OLIVIA_STEADY of
-// the rows is a steady tone (a carrier, CW, an RTTY tone), not Olivia's: a band with one in it isn't Olivia's (RTTY's keying between its
-// tones would look like hopping). In a band of each width: its 8 parts all hit (each at least DETECT_OLIVIA_EVEN of the average), at most
-// DETECT_OLIVIA_OUTSIDE of its hits as many again just outside it, a peak in it in at least DETECT_OLIVIA_BUSY of the rows, and at most
-// DETECT_OLIVIA_PEAKS peaks in it a row (Olivia's tones overlap by half, two at once now and then; voice and a crowd of FT8 have more)
-const DETECT_OLIVIA_SECONDS = 10;
-const DETECT_OLIVIA_PEAK = 70;
-const DETECT_OLIVIA_STEADY = 0.3;
-const DETECT_OLIVIA_EVEN = 0.4;
-const DETECT_OLIVIA_OUTSIDE = 0.15;
-const DETECT_OLIVIA_BUSY = 0.4;
-const DETECT_OLIVIA_PEAKS = 2.5;
-const DETECT_OLIVIA_WIDTHS = [250, 500, 1000];
 // Each mode's label colour (the waterfall's labels, the list's Mode)
-const DETECT_COLORS = { cw: "#ffe066", psk31: "#7dff7d", rtty: "#66e0ff", packet: "#ffa64d", sstv: "#d68cff", olivia: "#dddddd" };
+const DETECT_COLORS = { cw: "#ffe066", psk31: "#7dff7d", rtty: "#66e0ff", packet: "#ffa64d", sstv: "#d68cff" };
 
 const DETECT = {
   on: false,
@@ -54,11 +40,8 @@ const DETECT = {
   channels: { psk: {}, rtty: {} },
   // The signals found: by key, { key, mode, label, hz (audio), snr, text, at, sub (what picking it needs) }
   found: new Map(),
-  // The waterfall's rows lately, each { at, peaks (bins) } (Olivia's look)
-  rows: [],
   // SSTV's pictures begun, by id: { name, shift } (named once their lines show sync pulses)
   sstvPics: {},
-  oliviaAt: 0,
   listKey: ""
 };
 
@@ -83,7 +66,6 @@ function mmdDetectStart()
 {
   DETECT.on = true;
   DETECT.found.clear();
-  DETECT.rows = [];
   DETECT.listKey = "";
   DETECT.channels = { psk: {}, rtty: {} };
   DETECT.sstvPics = {};
@@ -231,7 +213,7 @@ function mmdDetectFound(mode, label, hz, snr, text, sub)
   Object.assign(f, { label, hz, snr: snr != null ? snr : f.snr, text: String(text || "").trim().slice(-60), at: Date.now(), sub });
 }
 
-// ---- Each render (mmdRender, 4 a second): CW's signals looked at, Olivia's look once a second, the list and the waterfall's labels
+// ---- Each render (mmdRender, 4 a second): CW's signals looked at, the list and the waterfall's labels
 function mmdDetectTick()
 {
   if (!DETECT.on) return;
@@ -247,110 +229,9 @@ function mmdDetectTick()
     if (!DETECT_CW_WORDS.test(text) && calls.length == new Set(calls).size) continue;
     mmdDetectFound("cw", "CW " + Math.round(s.wpm) + " WPM", s.freq, s.snr, text, { id: s.id });
   }
-  if (now - DETECT.oliviaAt > 1000)
-  {
-    DETECT.oliviaAt = now;
-    mmdDetectOlivia();
-  }
   for (const [key, f] of DETECT.found) if (now - f.at > DETECT_KEEP_MS) DETECT.found.delete(key);
   mmdDetectRender();
   mmdOverlay();
-}
-
-// A waterfall row (the worklet's, as the waterfall has it): its peaks kept for Olivia's look
-function mmdDetectRow(row)
-{
-  if (!DETECT.on || !row) return;
-  const peaks = [];
-  for (let i = 1; i < row.length - 1; i++) if (row[i] >= DETECT_OLIVIA_PEAK && row[i] >= row[i - 1] && row[i] > row[i + 1]) peaks.push(i);
-  const now = Date.now();
-  DETECT.rows.push({ at: now, peaks });
-  while (DETECT.rows.length && now - DETECT.rows[0].at > DETECT_OLIVIA_SECONDS * 1000) DETECT.rows.shift();
-}
-
-// Olivia by its look (see DETECT_OLIVIA_...): the bands where one tone at a time hops all across them; each named "Olivia?" with its width
-// and its tones' count as seen (the nearest of its submodes'), at its middle. The best ones, not overlapping
-function mmdDetectOlivia()
-{
-  const rows = DETECT.rows;
-  const binHz = DEC.binHz;
-  if (rows.length < 20 || !(binHz > 0) || !(DEC.bins > 0)) return;
-  const bins = DEC.bins;
-  const hits = new Float64Array(bins);
-  for (const r of rows) for (const p of r.peaks) if (p < bins) hits[p]++;
-  // Steady tones aren't Olivia's: their bins (and the next ones) left out
-  const steady = new Uint8Array(bins);
-  for (let i = 0; i < bins; i++) if (hits[i] > DETECT_OLIVIA_STEADY * rows.length) for (let j = Math.max(0, i - 1); j <= Math.min(bins - 1, i + 1); j++) steady[j] = 1;
-  for (let i = 0; i < bins; i++) if (steady[i]) hits[i] = 0;
-  const sum = new Float64Array(bins + 1);
-  const steadySum = new Float64Array(bins + 1);
-  for (let i = 0; i < bins; i++)
-  {
-    sum[i + 1] = sum[i] + hits[i];
-    steadySum[i + 1] = steadySum[i] + steady[i];
-  }
-  const span = (a, b) => sum[Math.max(0, Math.min(bins, b))] - sum[Math.max(0, Math.min(bins, a))];
-  const lo = Math.ceil(mmdMinHz() / binHz), hi = Math.floor(mmdMaxHz() / binHz);
-  const candidates = [];
-  for (const width of DETECT_OLIVIA_WIDTHS)
-  {
-    const wb = Math.round(width / binHz);
-    const part = wb / 8;
-    for (let s = lo; s + wb <= hi; s += Math.max(1, Math.round(part / 2)))
-    {
-      const inside = span(s, s + wb);
-      if (inside < rows.length * 0.3) continue;
-      // A steady tone in it: not Olivia's band
-      if (steadySum[Math.min(bins, s + wb)] - steadySum[Math.max(0, s)] > 0) continue;
-      const mean = inside / 8;
-      let even = true;
-      for (let k = 0; k < 8 && even; k++) if (span(Math.round(s + k * part), Math.round(s + (k + 1) * part)) < DETECT_OLIVIA_EVEN * mean) even = false;
-      if (!even) continue;
-      const outside = span(s - Math.round(wb / 4), s) + span(s + wb, s + wb + Math.round(wb / 4));
-      if (outside > DETECT_OLIVIA_OUTSIDE * inside) continue;
-      // Rows with a peak in it, and how many peaks a row there
-      let busy = 0, peaks = 0;
-      for (const r of rows)
-      {
-        let n = 0;
-        for (const p of r.peaks) if (p >= s && p < s + wb && !steady[p]) n++;
-        if (n)
-        {
-          busy++;
-          peaks += n;
-        }
-      }
-      if (busy < DETECT_OLIVIA_BUSY * rows.length || peaks / busy > DETECT_OLIVIA_PEAKS) continue;
-      candidates.push({ s, wb, width, score: inside });
-    }
-  }
-  candidates.sort((a, b) => b.score - a.score);
-  // Not where a signal is named already by its decoding (an RSID's hopping tones before it, its keying, would look like Olivia's): each
-  // such signal's own width (and a little) left out
-  const taken = [...DETECT.found.values()].filter((f) => f.mode != "olivia").map((f) =>
-  {
-    const half = f.mode == "rtty" ? Number(String(f.label).split("/")[1] || 170) / 2 + 60 : f.mode == "sstv" ? 650 : f.mode == "packet" ? 250 : 60;
-    return [(f.hz - half) / binHz, (f.hz + half) / binHz];
-  });
-  const kept = [];
-  for (const c of candidates) if (taken.some(([a, b]) => c.s < b && a < c.s + c.wb)) c.taken = true;
-  for (const c of candidates) if (!c.taken && !kept.some((k) => c.s < k.s + k.wb && k.s < c.s + c.wb)) kept.push(c);
-  for (const c of kept)
-  {
-    // Its tones: the distinct places its peaks fall (neighbouring bins one place), the nearest count its width's submodes have
-    let places = 0, last = -10;
-    const floor = (span(c.s, c.s + c.wb) / c.wb) * 0.25;
-    for (let i = c.s; i < c.s + c.wb; i++)
-    {
-      if (hits[i] <= floor) continue;
-      if (i - last > 1) places++;
-      last = i;
-    }
-    const counts = OLIVIA_SUBMODES.filter(([mode, , bw]) => mode == "olivia" && bw == c.width).map(([, tones]) => tones);
-    const tones = counts.reduce((best, t) => (Math.abs(t - places) < Math.abs(best - places) ? t : best), counts[0]);
-    const hz = (c.s + c.wb / 2) * binHz;
-    mmdDetectFound("olivia", "Olivia? " + tones + "/" + c.width, hz, null, "", { submode: "olivia " + tones + "/" + c.width });
-  }
 }
 
 // ---- Shown
@@ -419,11 +300,6 @@ function mmdDetectClickAt(hz)
 // A signal picked: its mode chosen (which turns Detect Modes off: mmdModeSet), and aimed at it
 function mmdDetectPick(f)
 {
-  if (f.mode == "olivia")
-  {
-    GT.settings.MMD.oliviaSubmode = f.sub.submode;
-    GT.settings.MMD.oliviaCenter = Math.round(f.hz);
-  }
   cwMode.value = f.mode;
   mmdModeSet(f.mode);
   if (f.mode == "cw") mmdFocus(DEC.signals[f.sub.id] ? f.sub.id : mmdSignalNear(f.hz));
@@ -431,11 +307,6 @@ function mmdDetectPick(f)
   {
     PACKET.lock = null;
     mmdPacketLock(f.sub.hz);
-  }
-  else if (f.mode == "olivia")
-  {
-    mmdOliviaMenu();
-    mmdOliviaRestart();
   }
 }
 

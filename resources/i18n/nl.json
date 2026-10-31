@@ -1652,7 +1652,7 @@
   "cwViewer.packet.heardAt": "Gehoord op {hz} Hz: klik om HF-packet daar vast te zetten",
   "cwViewer.detect.label": "Modi Detecteren",
   "cwViewer.detect.hover": "Luistert naar elke modus hier behalve FT8 en FT4 en benoemt elk gevonden signaal: klik er een aan, in de waterval of in de lijst, om het te decoderen. De modus waarin u was wacht zolang",
-  "cwViewer.detect.empty": "Luisteren naar signalen: elk wordt benoemd zodra het decodeert (CW, PSK31, RTTY, Packet en SSTV), en Olivia aan zijn uiterlijk",
+  "cwViewer.detect.empty": "Luisteren naar signalen: elk wordt benoemd zodra het decodeert (CW, PSK31, RTTY, Packet en SSTV), of aan zijn RSID",
   "cwViewer.detect.status": "Modi detecteren: {count} gevonden",
   "cwViewer.detect.header.mode": "Modus",
   "cwViewer.detect.header.heard": "Gehoord",

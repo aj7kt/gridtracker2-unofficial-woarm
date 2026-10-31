@@ -914,8 +914,6 @@ function mmdMessage(data, generation)
   // Slot Finder reads the row before the waterfall has it (only what was heard since the last retune)
   if (data.seq == DEC.seq) mmdSlotRow(data.row);
   mmdFallRow(data.row, data.view);
-  // Detect Modes: the row's peaks, for Olivia's look
-  mmdDetectRow(data.row);
   const now = Date.now();
   // The channels' table: only from after the last retune, and once Rig Control has read back where the rig was tuned to (until then the
   // audio's frequencies would be put on the old dial)

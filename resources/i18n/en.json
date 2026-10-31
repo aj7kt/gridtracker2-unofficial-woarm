@@ -1652,7 +1652,7 @@
 	"cwViewer.packet.heardAt": "Heard at {hz} Hz: click to lock HF packet there",
 	"cwViewer.detect.label": "Detect Modes",
 	"cwViewer.detect.hover": "Listens for every mode here but FT8 and FT4 and names each signal it finds: click one, on the waterfall or in the list, to decode it. The mode you were in waits meanwhile",
-	"cwViewer.detect.empty": "Listening for signals: each is named once it decodes (CW, PSK31, RTTY, Packet and SSTV), and Olivia by its look",
+	"cwViewer.detect.empty": "Listening for signals: each is named once it decodes (CW, PSK31, RTTY, Packet and SSTV), or by its RSID",
 	"cwViewer.detect.status": "Detecting modes: {count} found",
 	"cwViewer.detect.header.mode": "Mode",
 	"cwViewer.detect.header.heard": "Heard",

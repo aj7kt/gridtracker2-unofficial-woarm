@@ -1652,7 +1652,7 @@
 	"cwViewer.packet.heardAt": "{hz} Hz で受信：クリックで HF パケットをそこに固定",
 	"cwViewer.detect.label": "モード検出",
 	"cwViewer.detect.hover": "FT8 と FT4 以外のすべてのモードを聴き、見つけた信号ごとに名前を付けます：ウォーターフォールかリストでクリックすると解読します。それまでのモードはその間待機します",
-	"cwViewer.detect.empty": "信号を聴いています：解読できた時点で名前が付きます（CW、PSK31、RTTY、Packet、SSTV）。Olivia は見た目で判断します",
+	"cwViewer.detect.empty": "信号を聴いています：解読できた時点で名前が付きます（CW、PSK31、RTTY、Packet、SSTV）。または RSID で判断します",
 	"cwViewer.detect.status": "モード検出中：{count} 件",
 	"cwViewer.detect.header.mode": "モード",
 	"cwViewer.detect.header.heard": "受信内容",
