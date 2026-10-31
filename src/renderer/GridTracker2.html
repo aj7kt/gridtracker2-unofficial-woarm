@@ -1301,6 +1301,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                       <td class="mapRowLabel mapIndent"><label data-for="CivValue" data-i18n="settings.rig.civ.label">CI-V Address</label></td>
                       <td><input data-f="CivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged(this);" /> <span data-f="CivFound" class="mapValue"></span></td>
                     </tr>
+                    <!-- Use Scope If Present: the rig's own band scope in the Multi-Mode Decoder (rig.js, rigScopeSync); in yellow why it can't come -->
+                    <tr data-f="ScopeTr">
+                      <td class="mapRowLabel mapIndent"></td>
+                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="UseScope" data-i18n="settings.rig.scope.hover" title="Shows the radio's own band scope in the Multi-Mode Decoder, if the radio sends it (Icom, over USB)" onclick="rigScopeChanged(this);" /> <label data-for="UseScope" data-i18n="settings.rig.scope.label">Use Scope If Present</label>
+                        <div data-f="ScopeWarn" style="display: none; color: yellow; white-space: normal; max-width: 300px;"></div></td>
+                    </tr>
                     <tr data-f="HostTr">
                       <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
                       <td><input data-f="Host" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged(this);" /> <label data-for="NetPort" data-i18n="settings.rotor.tcpPort.label">TCP Port</label> <input data-f="NetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged(this);" /></td>
@@ -1320,6 +1326,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     <tr data-f="ForceVfoTr">
                       <td class="mapRowLabel mapIndent"></td>
                       <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="ForceVfo" data-i18n="settings.rig.forceVfo.hover" title="Asks rigctld for its VFO mode on Rig Control's own connection, as rigctld --vfo gives, so each VFO is tuned by name. Needed for VFO-B on a radio whose VFOs are Main and Sub (Yaesu FTX-1). Other programs connected to the same rigctld keep its usual mode" onclick="rigSettingsChanged(this);" /> <label data-for="ForceVfo" data-i18n="settings.rig.forceVfo.label">Force VFO Mode</label></td>
+                    </tr>
+                    <!-- How the Multi-Mode Decoder keys this rig to transmit (rig.js, rigPtt); DTR and RTS only on a serial port -->
+                    <tr data-f="PttTr">
+                      <td class="mapRowLabel mapIndent"><label data-for="Ptt" data-i18n="settings.rig.ptt.label">PTT Method</label></td>
+                      <td><select data-f="Ptt" data-i18n="settings.rig.ptt.hover" title="How the Multi-Mode Decoder keys this rig to transmit: CAT (the protocol's PTT command), VOX (the rig's own, from the audio), DTR or RTS (the serial port's line, as the rig's PTT input is set up), or None (it isn't keyed)" onchange="rigPttChanged(this);"></select></td>
                     </tr>
                     <tr data-f="StatusTr">
                       <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>

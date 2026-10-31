@@ -166,8 +166,8 @@ function birdWatchTransmitterTableHtml(norad)
     const upMode = t.uplink_low > 0 && t.uplink_mode && t.uplink_mode != t.mode ? t.uplink_mode : null;
     rows += "<tr data-tx='" + index + "'" + (birdWatchAmateurTransmitter(t) ? "" : " style='opacity:0.6'") + ">" +
       "<td style='color:yellow' title='" + htmlEntities(about) + "'" + partAttrs("name") + ">" + htmlEntities(t.description) + "</td>" +
-      // The downlink's mode, and the uplink's after it where it differs (an inverting transponder: USB / LSB)
-      cell(htmlEntities(downMode + (upMode ? " / " + upMode : "") + (t.baud > 0 ? " " + t.baud : "")), "lightgreen", false,
+      // The downlink's mode, and the uplink's after it where it differs (an inverting transponder: USB / LSB), in the Uplink column's colour
+      cell(htmlEntities(downMode) + (upMode ? " / <span style='color:orange'>" + htmlEntities(upMode) + "</span>" : "") + htmlEntities(t.baud > 0 ? " " + t.baud : ""), "lightgreen", false,
         upMode ? htmlEntities(I18N("birdWatch.doppler.modes.hover").replace("{down}", downMode).replace("{up}", upMode)).replace(/'/g, "&#39;") : null, birdWatchRigMode(t) || birdWatchRigUpMode(t) ? "mode" : null) +
       cell(tuned(tuning.rx, t.downlink_low, t.downlink_high), "cyan", true, original(t.downlink_low, t.downlink_high), t.downlink_low > 0 ? "rx" : null) +
       // The satellite hears the uplink shifted too, so it is sent that much the other way

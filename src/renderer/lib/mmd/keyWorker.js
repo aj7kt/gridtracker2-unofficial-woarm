@@ -2,30 +2,40 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// The Multi-Mode Decoder's keyboard modes: PSK31 (BPSK, varicode) or RTTY (45.45 baud, 170 Hz shift, Baudot), every signal in the
+// The Multi-Mode Decoder's keyboard modes: PSK31 (BPSK, varicode) or RTTY (45.45, 50 or 75 baud, 170, 425 or 850 Hz shift, Baudot), every signal in the
 // passband at once, as the CW decoder lists every CW signal. One mode runs at a time (config's mode).
 //   The audio is first brought down to about 9.6 kHz (a low-pass filter, then every Nth sample kept), which keeps up to 4 kHz.
 //   Four times a second a spectrum (an FFT, averaged over a second or two) finds signals: for PSK31 a hump about 60 Hz wide that isn't a
-//   bare carrier, for RTTY two tones 170 Hz apart; one seen for 0.75 s gets its own demodulator, which first runs over the last 2.5 s
+//   bare carrier, for RTTY two tones 170, 425 or 850 Hz apart; one seen for 0.75 s gets its own demodulator, which first runs over the last 2.5 s
 //   of audio (kept for this), so a signal's first words aren't lost while the spectrum was making up its mind.
 //   PSK31: the carrier found closely first (keyPskCarrier); mixed down, filtered to 500 Hz, a matched filter (a Hann shape 1.5 symbols
 //   long, near the PSK31 pulse's own), a symbol clock found from where the signal's size dips between reversed symbols, each symbol's
 //   phase against the one before (a reversal a 0), an AFC that follows the signal's drift, and varicode (a character ends at two 0s).
 //   A channel's text goes out only while its symbols look like PSK (their phase changes near 0 or 180 degrees, some reversals, a steady
 //   size), so noise, carriers and CW print nothing.
-//   RTTY: mixed down, filtered to 1 kHz, the mark and space tones each filtered over about a bit, their sizes weighed against each
+//   RTTY: mixed down, filtered to 1 kHz (2 kHz at 850 Hz shift), the mark and space tones each filtered over about a bit (at each baud), their sizes weighed against each
 //   other (an ATC: each tone's peak followed, so a faded tone is still read right), then start-stop framing: a start bit (space), five
 //   bits, a stop bit (mark), each bit read over its middle. Both ways round are tried (a reversed signal is one sent with the other
-//   sideband), and the one whose characters frame cleanly is kept. Text goes out only while most characters frame cleanly.
+//   sideband), at each baud, and the one whose characters frame cleanly is kept. Text goes out only while most characters frame cleanly.
 // Characters are held a moment (0.4 to 0.8 s) before they go out, so the noise decoded in the moment after a signal stops, before the
 // squelch shuts, can be taken back. A channel nothing comes from for 15 s is dropped. A channel's id stays the same while it's tracked.
 // In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" }, { type: "config", mode: "psk31" | "rtty", minHz, maxHz }
-// Out: { type: "channels", list: [{ id, freq (Hz: PSK31's carrier, RTTY's centre), snr (dB in the signal's own bandwidth), active }] },
+// Out: { type: "channels", list: [{ id, freq (Hz: PSK31's carrier, RTTY's centre), snr (dB in the signal's own bandwidth), active,
+//      baud and shift (RTTY: as read) }] },
 //      four times a second; { type: "text", id, text }: what a channel decoded since its last one, every 100 ms or so
 
 const KEY_PSK_BAUD = 31.25;
-const KEY_RTTY_BAUD = 45.45;
-const KEY_RTTY_SHIFT = 170;
+// RTTY's bauds and shifts looked for: each signal is found by its shift (its tones' spacing), and read at every baud (the one that frames
+// wins); the ham standard first
+const KEY_RTTY_BAUDS = [45.45, 50, 75];
+const KEY_RTTY_SHIFTS = [170, 425, 850];
+// Two RTTY channels with tones this close (Hz) share one: only one of them is a station (keyTidy; two at 170 Hz shift as always judged)
+const KEY_RTTY_SHARED_HZ = 40;
+// A wider shift's pair sharing a tone with a 170 Hz pair is taken over it when its weaker tone is this many times the other's (keyFindRtty);
+// a channel whose weaker tone is under this share of its stronger one's power is unbalanced: most likely one station's tone and another's
+// spill, not a station (keyTidy)
+const KEY_RTTY_GHOST_RATIO = 2;
+const KEY_RTTY_BALANCE = 0.25;
 // The highest audio frequency kept (Hz), and the rate it's brought down to (about)
 const KEY_TOP_HZ = 4000;
 const KEY_WORK_RATE = 9000;
@@ -66,6 +76,13 @@ const KEY_PSK_HOLD = 24;
 const KEY_RTTY_OPEN = 0.5;
 const KEY_RTTY_CLOSE = 0.3;
 const KEY_RTTY_MARGIN = 0.1;
+// RTTY read at any other baud or shift than the ham standard's (45.45, 170): its squelch opens only at this (each channel tries every
+// baud, and a wider shift's pair can be two stations' tones: more chances for noise or another mode to frame now and then); and where two
+// channels share a tone and frame alike, the standard one is taken by this much
+const KEY_RTTY_OPEN_OTHER = 0.75;
+const KEY_RTTY_STANDARD_EDGE = 0.1;
+// RTTY: a channel open and framing this well keeps only the baud it reads (KeyRtty judge)
+const KEY_RTTY_SETTLED = 0.8;
 // RTTY: seconds a character is held before it goes out
 const KEY_RTTY_HOLD = 0.4;
 // RTTY: back to letters after a space in figures (unshift on space)
@@ -287,7 +304,7 @@ function keyFlush()
 function keyPostChannels()
 {
   const list = keyChannels.filter((c) => c.everActive).sort((a, b) => a.freq - b.freq);
-  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active })) });
+  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active, baud: c.cur ? c.readBaud || c.cur.baud : undefined, shift: c.shift })) });
 }
 
 // ---- The spectrum: an FFT of the last n samples (a Hann window), its power averaged frame to frame, and the noise under it
@@ -466,26 +483,31 @@ function keyTidy()
       const b = keyChannels[j];
       if (drop.has(a) || drop.has(b)) continue;
       const apart = Math.abs(a.freq - b.freq);
-      if (keyMode == "rtty" && Math.abs(apart - KEY_RTTY_SHIFT) < 40)
+      if (keyMode == "rtty" && apart >= 40 && keyRttyShareTone(a, b))
       {
-        // One tone shared: one of them is reading a tone keyed on and off, with another signal's edge or nothing as its other tone (the
-        // ATC copes with that). Both are given a second, their text held back meanwhile; then the one framing worse goes, or if they
-        // frame alike, the weaker
+        // One tone shared (within KEY_RTTY_SHARED_HZ, whatever their shifts): one of them is reading a tone keyed on and off, with another
+        // signal's edge, another signal's tone (a wider shift's pair made of two stations) or nothing as its other tone (the ATC copes with
+        // that). Both are given a second, their text held back meanwhile; then the one framing worse goes, or if they frame alike, the
+        // weaker
         if (keyNow - Math.max(a.born, b.born) < keyFd)
         {
           a.conflict = true;
           b.conflict = true;
           continue;
         }
-        const qa = a.framers[a.chosen].q;
-        const qb = b.framers[b.chosen].q;
-        const loser = Math.abs(qa - qb) > 0.15 ? (qa < qb ? a : b) : a.snr < b.snr ? a : b;
+        // Only one balanced (both its tones alike): the other goes; else the one framing worse (the ham standard given an edge)
+        const qa = a.framer.q + (a.standard() ? KEY_RTTY_STANDARD_EDGE : 0);
+        const qb = b.framer.q + (b.standard() ? KEY_RTTY_STANDARD_EDGE : 0);
+        const fa = a.balance >= KEY_RTTY_BALANCE, fb = b.balance >= KEY_RTTY_BALANCE;
+        const loser = fa != fb ? (fa ? b : a) : Math.abs(qa - qb) > 0.15 ? (qa < qb ? a : b) : a.snr < b.snr ? a : b;
         drop.add(loser);
         lost.add(loser);
         keyBlocked.push({ freq: loser.freq, until: keyNow + KEY_BLOCK_SECONDS * keyFd });
         continue;
       }
       if (apart >= (keyMode == "rtty" ? 40 : 15)) continue;
+      // RTTY at other shifts on the same centre read other tones (one sharing a tone with another was settled above)
+      if (keyMode == "rtty" && a.shift != b.shift) continue;
       const loser = a.everActive != b.everActive ? (a.everActive ? b : a) : a.id > b.id ? a : b;
       drop.add(loser);
       lost.add(loser);
@@ -499,12 +521,23 @@ function keyTidy()
   keyBlocked = keyBlocked.filter((b) => b.until > keyNow);
 }
 
-// Room for one more channel: under the limit, or one still on trial (the oldest) made way for
-function keyRoom(max)
+// Whether two RTTY channels have a tone in common (each tone half its shift either side of its centre)
+function keyRttyShareTone(a, b)
+{
+  for (const ta of [a.freq - a.shift / 2, a.freq + a.shift / 2]) for (const tb of [b.freq - b.shift / 2, b.freq + b.shift / 2]) if (Math.abs(ta - tb) < KEY_RTTY_SHARED_HZ) return true;
+  return false;
+}
+
+// Room for one more channel: under the limit, or one still on trial (the oldest) made way for. RTTY (shift: the new one's): a wider shift's
+// only makes way for another wider shift's on trial (those are more often two stations' tones), and 170 Hz's has those make way first
+function keyRoom(max, shift)
 {
   if (keyChannels.length < max) return true;
+  const wide = (c) => c.shift !== undefined && c.shift != KEY_RTTY_SHIFTS[0];
+  const trial = keyChannels.filter((c) => !c.everActive && (shift === undefined || shift == KEY_RTTY_SHIFTS[0] || wide(c)));
+  const pool = shift == KEY_RTTY_SHIFTS[0] && trial.some(wide) ? trial.filter(wide) : trial;
   let oldest = null;
-  for (const c of keyChannels) if (!c.everActive && (!oldest || c.born < oldest.born)) oldest = c;
+  for (const c of pool) if (!oldest || c.born < oldest.born) oldest = c;
   if (!oldest) return false;
   keyChannels = keyChannels.filter((c) => c != oldest);
   return true;
@@ -517,10 +550,10 @@ function keySteadyCandidates(found)
   const frame = keySpec.frames;
   for (const f of found)
   {
-    let c = keyCandidates.find((k) => Math.abs(k.freq - f.freq) < 10);
+    let c = keyCandidates.find((k) => Math.abs(k.freq - f.freq) < 10 && k.shift === f.shift);
     if (!c)
     {
-      c = { freq: f.freq, frames: 0, seen: 0 };
+      c = { freq: f.freq, shift: f.shift, frames: 0, seen: 0 };
       keyCandidates.push(c);
     }
     c.frames = c.seen == frame - 1 ? c.frames + 1 : 1;
@@ -547,12 +580,13 @@ function keyRsid(freq)
 
 // A new channel at freq, unless one's near it or the place is blocked (or held after an RSID); it runs over the audio kept before going on
 // live
-function keySpawn(freq, near, make, max)
+function keySpawn(freq, near, make, max, shift)
 {
-  for (const c of keyChannels) if (Math.abs(c.freq - freq) < near) return;
+  // (RTTY: only a channel at the same shift is in the way; another shift's that shares a tone is settled by keyTidy)
+  for (const c of keyChannels) if (Math.abs(c.freq - freq) < near && c.shift === shift) return;
   for (const b of keyBlocked) if (Math.abs(b.freq - freq) < 25) return;
   for (const h of keyRsidHolds) if (h.until > keyNow && Math.abs(h.freq - freq) < KEY_RSID_NEAR_HZ) return;
-  if (!keyRoom(max)) return;
+  if (!keyRoom(max, shift)) return;
   const n = Math.min(keyNow, Math.round(KEY_CATCHUP_SECONDS * keyFd));
   const back = new Float32Array(n);
   for (let i = 0; i < n; i++) back[i] = keyHistory[(keyNow - n + i) & keyHistoryMask];
@@ -602,27 +636,63 @@ function keyFindPsk(sp, k0, k1)
   for (const f of keySteadyCandidates(found)) keySpawn(f.freq, 40, (id, freq, back) => new KeyPsk(id, keyPskCarrier(freq, back)), KEY_PSK_MAX);
 }
 
-// RTTY signals: two tones 170 Hz apart, each 3 dB over the noise in 24 Hz, the pair's weaker the strongest for 40 Hz each way; placed
-// midway between the tones' centres
+// RTTY signals: two tones a shift apart (each of KEY_RTTY_SHIFTS), each 3 dB over the noise in 24 Hz, the pair's weaker the strongest for
+// 40 Hz each way; placed midway between the tones' centres. A 170 Hz pair and a wider one sharing a tone are two readings of the same
+// tones: a wider pair made of two 170 Hz stations' tones, or a 170 Hz pair made of a wide station's tone and its keying's spill beside it.
+// The wider one is kept only where it is clearly the stronger (its weaker tone over KEY_RTTY_GHOST_RATIO times the 170 Hz pair's); then
+// the 170 Hz one is left out. A wider pair sharing a tone with a 170 Hz channel whose tones are balanced (a station) is left out too
 function keyFindRtty(sp, k0, k1)
 {
-  const w = Math.max(2, Math.round(12 / sp.binHz));
-  const near = Math.round(40 / sp.binHz);
-  const half = KEY_RTTY_SHIFT / 2 / sp.binHz;
-  const tone = (k) =>
+  const found = [];
+  const strength = keyRttyTones(sp);
+  for (const shift of KEY_RTTY_SHIFTS) keyFindRttyShift(sp, k0, k1, shift, found, strength);
+  const narrow = KEY_RTTY_SHIFTS[0];
+  const tones = (f) => [f.freq - f.shift / 2, f.freq + f.shift / 2];
+  const share = (a, b) => tones(a).some((t) => tones(b).some((u) => Math.abs(t - u) < KEY_RTTY_SHARED_HZ));
+  const left = new Set();
+  for (const w of found)
   {
-    let s = 0;
-    let noise = 0;
-    for (let j = Math.max(1, k - w); j <= Math.min(sp.n / 2 - 1, k + w); j++)
+    if (w.shift == narrow) continue;
+    for (const a of found)
     {
-      s += sp.avg[j];
-      noise += sp.floor[j];
+      if (a.shift != narrow || !share(a, w)) continue;
+      if (w.ratio > KEY_RTTY_GHOST_RATIO * a.ratio) left.add(a);
+      else left.add(w);
     }
-    return noise > 0 ? s / noise : 0;
+    if (keyChannels.some((c) => c.shift == narrow && c.balance >= KEY_RTTY_BALANCE && share(c, w))) left.add(w);
+  }
+  const real = found.filter((f) => !left.has(f));
+  for (const f of keySteadyCandidates(real)) keySpawn(f.freq, 80, (id, freq) => new KeyRtty(id, freq, f.shift), KEY_RTTY_MAX, f.shift);
+}
+
+// The RTTY finder's tone strength at a bin: the spectrum over its noise within 12 Hz each way, from running sums (one pass a spectrum,
+// shared by every shift). A function of the bin
+function keyRttyTones(sp)
+{
+  const w = Math.max(2, Math.round(12 / sp.binHz));
+  const top = sp.n / 2 - 1;
+  const sumS = new Float64Array(top + 2);
+  const sumN = new Float64Array(top + 2);
+  for (let j = 1; j <= top; j++)
+  {
+    sumS[j + 1] = sumS[j] + sp.avg[j];
+    sumN[j + 1] = sumN[j] + sp.floor[j];
+  }
+  return (k) =>
+  {
+    const lo = Math.max(1, k - w), hi = Math.min(top, k + w);
+    if (hi < lo) return 0;
+    const noise = sumN[hi + 1] - sumN[lo];
+    return noise > 0 ? (sumS[hi + 1] - sumS[lo]) / noise : 0;
   };
+}
+
+function keyFindRttyShift(sp, k0, k1, shift, found, tone)
+{
+  const near = Math.round(40 / sp.binHz);
+  const half = shift / 2 / sp.binHz;
   const ratio = new Float64Array(k1 + 1);
   for (let k = k0; k <= k1; k++) ratio[k] = Math.min(tone(Math.round(k + half)), tone(Math.round(k - half)));
-  const found = [];
   for (let k = k0; k <= k1; k++)
   {
     if (ratio[k] < KEY_FIND_RATIO) continue;
@@ -634,12 +704,11 @@ function keyFindRtty(sp, k0, k1)
     const b = tone(Math.round(k - half)) - 1;
     if (Math.max(a, b) > 20 * Math.min(a, b)) continue;
     const f = k * sp.binHz;
-    const up = keyCentroid(sp, f + KEY_RTTY_SHIFT / 2 - 20, f + KEY_RTTY_SHIFT / 2 + 20);
-    const down = keyCentroid(sp, f - KEY_RTTY_SHIFT / 2 - 20, f - KEY_RTTY_SHIFT / 2 + 20);
+    const up = keyCentroid(sp, f + shift / 2 - 20, f + shift / 2 + 20);
+    const down = keyCentroid(sp, f - shift / 2 - 20, f - shift / 2 + 20);
     const freq = up > 0 && down > 0 ? (up + down) / 2 : f;
-    if (freq >= keyMinHz && freq <= keyMaxHz) found.push({ freq, ratio: ratio[k] });
+    if (freq >= keyMinHz && freq <= keyMaxHz) found.push({ freq, ratio: ratio[k], shift });
   }
-  for (const f of keySteadyCandidates(found)) keySpawn(f.freq, 80, (id, freq) => new KeyRtty(id, freq), KEY_RTTY_MAX);
 }
 
 // PSK31's carrier found closely (the spectrum's guess can be several Hz out, past what the AFC pulls in): the audio kept mixed down at the
@@ -975,34 +1044,29 @@ class KeyPsk extends KeyChannel
   }
 }
 
-// ---- An RTTY channel. After the first filter (1 kHz), each tone (85 Hz above and below the channel's centre) mixed to 0 and filtered
-// over about a bit (a Hann shape 1.25 bits long); their sizes weighed against each other (atc), the level that gives (above 0 a mark)
-// read by two framers, one each way round
+// ---- An RTTY channel at one of KEY_RTTY_SHIFTS (its finder's). After the first filter (1 kHz; 2 kHz for the widest shift), each tone
+// (half the shift above and below the channel's centre) mixed to 0; then for each of KEY_RTTY_BAUDS (KeyRttyBaud) the tones filtered over
+// about its bit, their sizes weighed against each other (atc), and the level read by two framers, one each way round. The baud and way
+// round that frame best are the ones read
 class KeyRtty extends KeyChannel
 {
-  constructor(id, freq)
+  constructor(id, freq, shift = KEY_RTTY_SHIFTS[0])
   {
-    super(id, freq, 1000);
-    this.spb = this.rate2 / KEY_RTTY_BAUD;
-    this.h = keyHann(Math.round(KEY_RTTY_FILTER * this.spb));
-    this.hLen = this.h.length;
-    this.buf = [0, 1, 2, 3].map(() => new Float64Array(2 * this.hLen));
-    this.hPos = 0;
+    super(id, freq, shift >= 850 ? 2000 : 1000);
+    this.shift = shift;
     this.tRe = 1;
     this.tIm = 0;
-    const w = (2 * Math.PI * (KEY_RTTY_SHIFT / 2)) / this.rate2;
+    const w = (2 * Math.PI * (shift / 2)) / this.rate2;
     this.tsRe = Math.cos(w);
     this.tsIm = Math.sin(w);
-    this.markPeak = 0;
-    this.spacePeak = 0;
-    this.markFloor = 0;
-    this.spaceFloor = 0;
-    this.scale = 1;
-    // The level's last 1024 samples (over 20 bits), as the framers read back
-    this.v = new Float64Array(1024);
     this.n = 0;
-    this.framers = [new KeyRttyFramer(1), new KeyRttyFramer(-1)];
+    this.bauds = KEY_RTTY_BAUDS.map((baud) => new KeyRttyBaud(this, baud));
+    // The baud read, and its framer read (0: mark the upper tone, 1 reversed); the baud it last decoded at (shown), or null
+    this.cur = this.bauds[0];
     this.chosen = 0;
+    this.readBaud = null;
+    // Its tones' balance (measure): taken as balanced until the spectrum has said
+    this.balance = 1;
     // Characters decoded while open, held a moment (so the noise read before the squelch shuts at a signal's end can be taken back)
     this.held = [];
     this.quick = 0;
@@ -1014,6 +1078,18 @@ class KeyRtty extends KeyChannel
     this.afcSum = 0;
     this.afcWeight = 0;
     this.afcCount = 0;
+  }
+
+  // The framer read (the baud and way round chosen)
+  get framer()
+  {
+    return this.cur.framers[this.chosen];
+  }
+
+  // Read as the ham standard: 45.45 baud, 170 Hz shift (KEY_RTTY_BAUDS' and KEY_RTTY_SHIFTS' first)
+  standard()
+  {
+    return this.cur.baud == KEY_RTTY_BAUDS[0] && this.shift == KEY_RTTY_SHIFTS[0];
   }
 
   sample(zr, zi)
@@ -1028,16 +1104,181 @@ class KeyRtty extends KeyChannel
       this.tRe *= g;
       this.tIm *= g;
     }
-    // Mark (the upper tone) brought down to 0, space up to 0
+    // Mark (the upper tone) brought down to 0, space up to 0; each baud's filters
     const tr = this.tRe;
     const ti = this.tIm;
+    const mRe = zr * tr + zi * ti;
+    const mIm = zi * tr - zr * ti;
+    const sRe = zr * tr - zi * ti;
+    const sIm = zi * tr + zr * ti;
+    for (const b of this.bauds) b.filter(mRe, mIm, sRe, sIm, this.n);
+    const c = this.cur;
+    this.afc(c.mr, c.mi, c.sr, c.si, c.mark, c.space);
+    // The signal's size, quick (a bit) and slow (30 bits): a sudden drop is the signal gone, the squelch shut, and what was held from
+    // after it dropped (0.15 s) taken back
+    const level = Math.max(c.mark, c.space);
+    this.quick += (level - this.quick) / c.spb;
+    this.slow += (level - this.slow) / (c.spb * 30);
+    if (this.active && this.quick < 0.25 * this.slow)
+    {
+      this.active = false;
+      // Opening again takes characters that frame (the noise after it frames now and then)
+      for (const b of this.bauds) for (const f of b.framers) f.q = Math.min(f.q, 0.3);
+      const keep = 0.15 * this.rate2;
+      for (const h of this.held) if (this.n - h.at > keep) this.text += h.ch;
+      this.held.length = 0;
+    }
+    for (const b of this.bauds) for (const f of b.framers) f.step(b, this.n);
+    if (this.held.length) this.release();
+    this.n++;
+  }
+
+  // The AFC: while a tone's clearly on, how fast its phase turns is how far off it is; averaged over a bit, the channel moved a tenth
+  // of it, once its characters frame (so noise doesn't drag it away)
+  afc(mr, mi, sr, si, mark, space)
+  {
+    const c = this.cur;
+    if (mark > 2 * space && mark > 3 * c.markFloor)
+    {
+      const w = mark * mark;
+      this.afcSum += Math.atan2(mi * this.lastMr - mr * this.lastMi, mr * this.lastMr + mi * this.lastMi) * w;
+      this.afcWeight += w;
+    }
+    else if (space > 2 * mark && space > 3 * c.spaceFloor)
+    {
+      const w = space * space;
+      this.afcSum += Math.atan2(si * this.lastSr - sr * this.lastSi, sr * this.lastSr + si * this.lastSi) * w;
+      this.afcWeight += w;
+    }
+    this.lastMr = mr;
+    this.lastMi = mi;
+    this.lastSr = sr;
+    this.lastSi = si;
+    if (++this.afcCount < c.spb) return;
+    this.afcCount = 0;
+    if (this.afcWeight > 0 && this.framer.q > 0.5)
+    {
+      const hz = ((this.afcSum / this.afcWeight) * this.rate2) / (2 * Math.PI);
+      this.setFreq(this.freq + 0.1 * Math.max(-20, Math.min(20, hz)));
+    }
+    this.afcSum = 0;
+    this.afcWeight = 0;
+  }
+
+  // After each character a framer reads: the baud and way round that frame best are kept (a clear lead needed to swap), and the squelch
+  // set by how well it frames
+  judge()
+  {
+    let best = null;
+    for (const b of this.bauds)
+    {
+      for (let i = 0; i < 2; i++)
+      {
+        if (b == this.cur && i == this.chosen) continue;
+        if (!best || b.framers[i].q > best.b.framers[best.i].q) best = { b, i };
+      }
+    }
+    if (best && best.b.framers[best.i].q > this.framer.q + 0.25)
+    {
+      this.cur = best.b;
+      this.chosen = best.i;
+      this.active = false;
+    }
+    const f = this.framer;
+    if (!this.active && f.q > (this.standard() ? KEY_RTTY_OPEN : KEY_RTTY_OPEN_OTHER) && f.fails == 0)
+    {
+      this.active = true;
+      this.everActive = true;
+      for (const ch of f.pending) this.held.push({ ch, at: this.n });
+      f.pending = "";
+    }
+    else if (this.active && (f.q < KEY_RTTY_CLOSE || f.fails >= 3))
+    {
+      // Closed (three characters running that didn't frame is most likely the signal gone): what's held was the noise after it, and
+      // opening again takes characters that frame
+      this.active = false;
+      this.held.length = 0;
+      for (const b of this.bauds) for (const g of b.framers) g.q = Math.min(g.q, 0.3);
+    }
+    if (this.active)
+    {
+      this.wasActive = true;
+      this.readBaud = this.cur.baud;
+      // Clearly read at its baud: the others no longer worked out (a station keeps its baud; one that changed would be found again)
+      if (this.bauds.length > 1 && f.q > KEY_RTTY_SETTLED) this.bauds = [this.cur];
+    }
+    for (const b of this.bauds) for (const g of b.framers) if (g.q < 0.3) g.pending = "";
+  }
+
+  put(framer, ch)
+  {
+    if (this.active && framer == this.framer) this.held.push({ ch, at: this.n });
+    else framer.pending = (framer.pending + ch).slice(-40);
+  }
+
+  // Held characters go out KEY_RTTY_HOLD seconds after they came
+  release()
+  {
+    const hold = KEY_RTTY_HOLD * this.rate2;
+    while (this.held.length && this.n - this.held[0].at > hold) this.text += this.held.shift().ch;
+  }
+
+  // The SNR in the bandwidth of the baud read, from the spectrum: both tones' power within 25 Hz each way over the noise; and the tones'
+  // balance (the weaker's power a share of the stronger's)
+  measure(sp)
+  {
+    const half = this.shift / 2;
+    const a = keyBand(sp, this.freq + half - 25, this.freq + half + 25);
+    const b = keyBand(sp, this.freq - half - 25, this.freq - half + 25);
+    const pa = Math.max(0, a.signal), pb = Math.max(0, b.signal);
+    this.balance = Math.max(pa, pb) > 0 ? Math.min(pa, pb) / Math.max(pa, pb) : 0;
+    const s = a.signal + b.signal;
+    const noise = (a.noise + b.noise) / 2;
+    this.snr = s > 0 && noise > 0 ? Math.max(-30, 10 * Math.log10(s / (noise * (this.cur.baud / sp.binHz)))) : -30;
+  }
+}
+
+// ---- One baud of an RTTY channel: its tones (mixed to 0 by the channel) each filtered over about its bit (a Hann shape 1.25 bits long),
+// their sizes weighed against each other (atc) into the level its two framers read (v). The framers see it as their channel: its
+// judge() and put() are the channel's
+class KeyRttyBaud
+{
+  constructor(channel, baud)
+  {
+    this.channel = channel;
+    this.baud = baud;
+    this.spb = channel.rate2 / baud;
+    this.h = keyHann(Math.round(KEY_RTTY_FILTER * this.spb));
+    this.hLen = this.h.length;
+    this.buf = [0, 1, 2, 3].map(() => new Float64Array(2 * this.hLen));
+    this.hPos = 0;
+    this.markPeak = 0;
+    this.spacePeak = 0;
+    this.markFloor = 0;
+    this.spaceFloor = 0;
+    this.scale = 1;
+    // The level's last 1024 samples (over 20 bits), as the framers read back
+    this.v = new Float64Array(1024);
+    this.framers = [new KeyRttyFramer(1), new KeyRttyFramer(-1)];
+    // The tones as last filtered, and their sizes
+    this.mr = 0;
+    this.mi = 0;
+    this.sr = 0;
+    this.si = 0;
+    this.mark = 0;
+    this.space = 0;
+  }
+
+  // A sample of both tones (mixed to 0), n the channel's count
+  filter(mRe0, mIm0, sRe0, sIm0, n)
+  {
     const L = this.hLen;
     const p = this.hPos;
     const [mRe, mIm, sRe, sIm] = this.buf;
-    mRe[p] = mRe[p + L] = zr * tr + zi * ti;
-    mIm[p] = mIm[p + L] = zi * tr - zr * ti;
-    sRe[p] = sRe[p + L] = zr * tr - zi * ti;
-    sIm[p] = sIm[p + L] = zi * tr + zr * ti;
+    mRe[p] = mRe[p + L] = mRe0;
+    mIm[p] = mIm[p + L] = mIm0;
+    sRe[p] = sRe[p + L] = sRe0;
+    sIm[p] = sIm[p + L] = sIm0;
     this.hPos = p + 1 == L ? 0 : p + 1;
     let mr = 0;
     let mi = 0;
@@ -1051,33 +1292,19 @@ class KeyRtty extends KeyChannel
       sr += h[k] * sRe[q];
       si += h[k] * sIm[q];
     }
-    const mark = Math.sqrt(mr * mr + mi * mi);
-    const space = Math.sqrt(sr * sr + si * si);
-    this.atc(mark, space);
-    this.afc(mr, mi, sr, si, mark, space);
-    // The signal's size, quick (a bit) and slow (30 bits): a sudden drop is the signal gone, the squelch shut, and what was held from
-    // after it dropped (0.15 s) taken back
-    const level = Math.max(mark, space);
-    this.quick += (level - this.quick) / this.spb;
-    this.slow += (level - this.slow) / (this.spb * 30);
-    if (this.active && this.quick < 0.25 * this.slow)
-    {
-      this.active = false;
-      // Opening again takes characters that frame (the noise after it frames now and then)
-      for (const f of this.framers) f.q = Math.min(f.q, 0.3);
-      const keep = 0.15 * this.rate2;
-      for (const h of this.held) if (this.n - h.at > keep) this.text += h.ch;
-      this.held.length = 0;
-    }
-    for (const f of this.framers) f.step(this, this.n);
-    if (this.held.length) this.release();
-    this.n++;
+    this.mr = mr;
+    this.mi = mi;
+    this.sr = sr;
+    this.si = si;
+    this.mark = Math.sqrt(mr * mr + mi * mi);
+    this.space = Math.sqrt(sr * sr + si * si);
+    this.atc(this.mark, this.space, n);
   }
 
   // The ATC: each tone's peak followed (quick up, slow down), and the decision's middle moved by half the peaks' difference, so a tone
   // that has faded (selective fading) is still read right: mark less space, less that. Above 0 a mark. Each tone's floor (quick down,
   // slow up) gives the size of a clean bit
-  atc(mark, space)
+  atc(mark, space, n)
   {
     const spb = this.spb;
     this.markPeak += (mark - this.markPeak) / (mark > this.markPeak ? spb / 4 : spb * 16);
@@ -1086,94 +1313,19 @@ class KeyRtty extends KeyChannel
     this.spaceFloor += (space - this.spaceFloor) / (space < this.spaceFloor ? spb / 4 : spb * 48);
     const a = Math.max(0, this.markPeak - this.markFloor);
     const b = Math.max(0, this.spacePeak - this.spaceFloor);
-    this.v[this.n & 1023] = (mark - space - 0.5 * (this.markPeak - this.spacePeak)) * (a + b) * 0.5;
+    this.v[n & 1023] = (mark - space - 0.5 * (this.markPeak - this.spacePeak)) * (a + b) * 0.5;
     // A clean bit's level, for the framers' margin
     this.scale = Math.max(1e-30, 0.5 * (a * a + b * b));
   }
 
-  // The AFC: while a tone's clearly on, how fast its phase turns is how far off it is; averaged over a bit, the channel moved a tenth
-  // of it, once its characters frame (so noise doesn't drag it away)
-  afc(mr, mi, sr, si, mark, space)
-  {
-    if (mark > 2 * space && mark > 3 * this.markFloor)
-    {
-      const w = mark * mark;
-      this.afcSum += Math.atan2(mi * this.lastMr - mr * this.lastMi, mr * this.lastMr + mi * this.lastMi) * w;
-      this.afcWeight += w;
-    }
-    else if (space > 2 * mark && space > 3 * this.spaceFloor)
-    {
-      const w = space * space;
-      this.afcSum += Math.atan2(si * this.lastSr - sr * this.lastSi, sr * this.lastSr + si * this.lastSi) * w;
-      this.afcWeight += w;
-    }
-    this.lastMr = mr;
-    this.lastMi = mi;
-    this.lastSr = sr;
-    this.lastSi = si;
-    if (++this.afcCount < this.spb) return;
-    this.afcCount = 0;
-    if (this.afcWeight > 0 && this.framers[this.chosen].q > 0.5)
-    {
-      const hz = ((this.afcSum / this.afcWeight) * this.rate2) / (2 * Math.PI);
-      this.setFreq(this.freq + 0.1 * Math.max(-20, Math.min(20, hz)));
-    }
-    this.afcSum = 0;
-    this.afcWeight = 0;
-  }
-
-  // After each character a framer reads: the way round that frames better is kept (a clear lead needed to swap), and the squelch set
-  // by how well it frames
   judge()
   {
-    const other = 1 - this.chosen;
-    if (this.framers[other].q > this.framers[this.chosen].q + 0.25)
-    {
-      this.chosen = other;
-      this.active = false;
-    }
-    const f = this.framers[this.chosen];
-    if (!this.active && f.q > KEY_RTTY_OPEN && f.fails == 0)
-    {
-      this.active = true;
-      this.everActive = true;
-      for (const ch of f.pending) this.held.push({ ch, at: this.n });
-      f.pending = "";
-    }
-    else if (this.active && (f.q < KEY_RTTY_CLOSE || f.fails >= 3))
-    {
-      // Closed (three characters running that didn't frame is most likely the signal gone): what's held was the noise after it, and
-      // opening again takes characters that frame
-      this.active = false;
-      this.held.length = 0;
-      for (const g of this.framers) g.q = Math.min(g.q, 0.3);
-    }
-    if (this.active) this.wasActive = true;
-    for (const g of this.framers) if (g.q < 0.3) g.pending = "";
+    this.channel.judge();
   }
 
   put(framer, ch)
   {
-    if (this.active && framer == this.framers[this.chosen]) this.held.push({ ch, at: this.n });
-    else framer.pending = (framer.pending + ch).slice(-40);
-  }
-
-  // Held characters go out KEY_RTTY_HOLD seconds after they came
-  release()
-  {
-    const hold = KEY_RTTY_HOLD * this.rate2;
-    while (this.held.length && this.n - this.held[0].at > hold) this.text += this.held.shift().ch;
-  }
-
-  // The SNR in RTTY's bandwidth (45.45 Hz), from the spectrum: both tones' power within 25 Hz each way over the noise
-  measure(sp)
-  {
-    const half = KEY_RTTY_SHIFT / 2;
-    const a = keyBand(sp, this.freq + half - 25, this.freq + half + 25);
-    const b = keyBand(sp, this.freq - half - 25, this.freq - half + 25);
-    const s = a.signal + b.signal;
-    const noise = (a.noise + b.noise) / 2;
-    this.snr = s > 0 && noise > 0 ? Math.max(-30, 10 * Math.log10(s / (noise * (KEY_RTTY_BAUD / sp.binHz)))) : -30;
+    this.channel.put(framer, ch);
   }
 }
 

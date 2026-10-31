@@ -140,11 +140,19 @@ function mmdInit()
   DEC.palette = mmdPalette();
   window.addEventListener("resize", mmdResize);
   mmdSplitInit();
-  window.addEventListener("beforeunload", () => mmdStop());
+  window.addEventListener("beforeunload", () =>
+  {
+    // A picture being sent stops, the rig unkeyed at once
+    mmdSstvTxStop("", true);
+    mmdStop();
+    mmdBgOwnStop();
+  });
   // Shown and hidden by the main process: decoding only while it shows (the Input Device is let go while hidden)
   electron.ipcRenderer.on("windowPlaced", (event, visible) => mmdVisible(visible));
   electron.ipcRenderer.on("windowVisible", (event, visible) => mmdVisible(visible));
   nodeTimers.setInterval(mmdRender, 250);
+  // FT8 or FT4 for GridTracker's instance in any mode (mmdFt8Background.js)
+  mmdBgInit();
   // The mouse over a row puts guard lines round its signal on the waterfall; over a signal on the waterfall, its row is shaded as well
   cwRows.addEventListener("mouseover", (event) =>
   {
@@ -176,11 +184,19 @@ function mmdInit()
       return;
     }
     const hz = mmdAudioAt(event.offsetX / cwOverlay.clientWidth);
+    // Detect Modes: a signal found there decoded (its mode chosen)
+    if (mmdDetectClickAt(hz))
+    {
+      event.preventDefault();
+      return;
+    }
     if (!mmdFtx())
     {
       if (DEC.mode == "cw" || mmdKeyMode()) mmdFocus(mmdSignalNear(hz));
       // Olivia: the signal looked for there
       else if (mmdOliviaMode()) mmdOliviaTune(hz);
+      // Packet: HF packet locked on there (or let go, inside the lock)
+      else if (DEC.mode == "packet") mmdPacketLock(hz);
       return;
     }
     if (hz == null) return;
@@ -279,6 +295,10 @@ function mmdInit()
   window.addEventListener("resize", mmdFt8Scrolled);
   // Mode: CW, FT8 or SSTV
   mmdSstvInit();
+  mmdSstvTxInit();
+  mmdScopeInit();
+  mmdPacketInit();
+  mmdDetectInit();
   cwMode.value = MMD_MODES.includes(GT.settings.MMD.viewMode) ? GT.settings.MMD.viewMode : "cw";
   cwMode.onchange = () => mmdModeSet(cwMode.value);
   mmdModeSet(cwMode.value);
@@ -337,22 +357,46 @@ function mmdVisible(visible)
   mmdListen();
 }
 
-// Listening while the window shows; with it closed only for FT8's GridTracker instance (the window's Settings, Decoders, FT8: Enable
-// GridTracker Instance), whose decodes go on to GridTracker. The main window is told whether that instance is wanted
+// Listening while the window shows; with it closed only in the GridTracker instance's mode (the window's Settings, Decoders, FT8 or FT4:
+// Enable GridTracker Instance), whose decodes go on to GridTracker. In any other mode the instance's FT8 (or FT4) is decoded in the
+// background (mmdFt8Background.js). The main window is told whether that instance is wanted
 function mmdListen()
 {
-  const background = GT.settings.MMD.ft8Instance === true && mmdFtx();
+  const background = DEC.mode == mmdInstanceMode();
   const want = GT.settings.MMD.enable && (DEC.shown || background);
   if (want && !DEC.running) mmdStart();
   else if (!want && DEC.running) mmdStop();
   mmdInstanceTell();
 }
 
+// The GridTracker instance's mode: "ft8" or "ft4" (whichever Enable GridTracker Instance is on), null with neither
+function mmdInstanceMode()
+{
+  const S = GT.settings.MMD;
+  return S.ft8Instance === true ? "ft8" : S.ft4Instance === true ? "ft4" : null;
+}
+
+// The window decodes the instance's mode itself: its decodes are the instance's (mmdFt8Decode, mmdFt8Decoded)
+function mmdInstanceMain()
+{
+  return DEC.running && DEC.mode == mmdInstanceMode();
+}
+
+// The background decoder brought in line (it may tap this pipeline), and the main window told
 function mmdInstanceTell()
 {
+  mmdBgSync();
+  mmdInstanceSay();
+}
+
+// The instance's mode, from the window in that mode or the background decoder; "hidden" (the button's green dot) unless the window shows it
+// in that mode
+function mmdInstanceSay()
+{
+  const main = mmdInstanceMain();
   try
   {
-    window.opener.mmDecoderInstanceWanted(DEC.running && mmdFtx() ? DEC.mode : null, !DEC.shown);
+    window.opener.mmDecoderInstanceWanted(main || mmdBgRunning() ? mmdInstanceMode() : null, !(DEC.shown && main));
   }
   catch (e)
   {
@@ -387,9 +431,11 @@ async function mmdInputs()
 {
   const devices = await mmdInputDevices();
   DEC.inputDevices = devices;
+  DEC.outputDevices = await mmdOutputDevices();
   const device = mmdInputFind(devices);
   DEC.input = device || null;
   mmdInputsRender();
+  mmdOutputsRender();
   if (!device) return;
   mmdSwApply();
   mmdLevelAsk();
@@ -417,8 +463,9 @@ function mmdSwDb()
 // The SW gain onto the audio (as the mode or the slider changes), and shown
 function mmdSwApply()
 {
-  // (Silent while a test signal plays or waits for its period: the decoder hears the test alone, mmdTest.js)
-  if (DEC.gainNode) DEC.gainNode.gain.value = TEST.source ? 0 : Math.pow(10, mmdSwDb() / 20);
+  // (Silent while a test signal plays or waits for its period: the decoder hears the test alone, mmdTest.js; and while a picture is
+  // sent, mmdSstvTx.js)
+  if (DEC.gainNode) DEC.gainNode.gain.value = TEST.source || mmdSstvTxActive() ? 0 : Math.pow(10, mmdSwDb() / 20);
   mmdLevelShow(MMD.hw);
 }
 
@@ -436,6 +483,32 @@ async function mmdInputDevices()
   const opener = window.opener;
   const sdrs = typeof opener.rigIqVfos == "function" ? opener.rigIqVfos() : [];
   return devices.concat(sdrs.map((v) => ({ deviceId: "iq:" + v.id, label: I18N("cwViewer.input.iq").replace("{name}", opener.rigIqName(v)).replace("{vfo}", opener.rigVfoLabel(v)), kind: "audioinput", spyVfo: v.id })));
+}
+
+// The modes that transmit (each with an Output Device of its own in Settings, Decoders: the main window's MMD_OUTPUT_MODES)
+const MMD_TX_MODES = ["sstv"];
+
+// The audio outputs there are (enumerateDevices' audiooutput ones)
+async function mmdOutputDevices()
+{
+  return (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind == "audiooutput");
+}
+
+// The Output Device a mode sends to (mmdSstvTx.js), among those there are (DEC.outputDevices): the one picked (the common one or its own,
+// window.opener.mmDecoderOutputFind), else the output on the same sound card as the input heard (the part of the names in brackets: an
+// input "Microphone (USB Audio CODEC)" and an output "Speakers (USB Audio CODEC)"), else null
+function mmdOutputFind(mode)
+{
+  const outputs = DEC.outputDevices || [];
+  const picked = window.opener.mmDecoderOutputFind(mode, outputs);
+  if (picked) return picked;
+  const input = DEC.input ? mmdInputLabel(DEC.input) : "";
+  const card = (label) => (/\(([^()]*)\)/.exec(label) || [])[1];
+  const name = card(input);
+  if (!name) return null;
+  // The device itself before Windows' "Default - " and "Communications - " names for it
+  const same = outputs.filter((d) => card(d.label || "") == name);
+  return same.find((d) => !/^(Default|Communications) - /.test(d.label || "")) || same[0] || null;
 }
 
 // This mode's Input Device as the system knows it: its label, and whether it is the system's default input (a SPY Server's I/Q: none,
@@ -703,6 +776,8 @@ function mmdStop()
 {
   // FT8: what was heard is let go (the periods decoded stay listed)
   if (DEC.ft8) DEC.ft8.total = 0;
+  // The background decoder's too, while it taps this pipeline (mmdFt8Background.js)
+  if (BG.tap && BG.F) BG.F.total = 0;
   // A test signal playing ends with it
   mmdTestStop();
   DEC.generation++;
@@ -805,18 +880,22 @@ function mmdMessage(data, generation)
     DEC.node.port.postMessage({ type: "retune", seq: DEC.seq });
     // The audio to decode, from Settings
     mmdRange();
-    // FT8 mode: the worklet sends the 12 kHz audio
-    if (mmdFtx() || DEC.mode == "sstv") DEC.node.port.postMessage({ type: "ft8", on: true });
-    // Packet, Sat Data, PSK31 and RTTY: the input's own samples (FSK 9600 needs its full rate); every mode with RSID on
-    if (mmdRawMode() || mmdRsidOn()) DEC.node.port.postMessage({ type: "raw", on: true });
-    // CW decoded in CW mode only (the waterfall's rows in every mode)
-    DEC.node.port.postMessage({ type: "decode", on: DEC.mode == "cw" });
+    // FT8 mode: the worklet sends the 12 kHz audio (Detect Modes too, for SSTV)
+    if (mmdFt8StreamWanted() || mmdDetectOn()) DEC.node.port.postMessage({ type: "ft8", on: true });
+    // Packet, Sat Data, PSK31 and RTTY: the input's own samples (FSK 9600 needs its full rate); every mode with RSID on; Detect Modes
+    if (mmdRawMode() || mmdRsidOn() || mmdDetectOn()) DEC.node.port.postMessage({ type: "raw", on: true });
+    // CW decoded in CW mode only (the waterfall's rows in every mode), and while Detect Modes is on
+    DEC.node.port.postMessage({ type: "decode", on: DEC.mode == "cw" || mmdDetectOn() });
     return;
   }
   // The 12 kHz audio (the worklet's FT8 stream): FT8's periods, or SSTV's pictures
   if (data.type == "ft8audio")
   {
-    if (mmdFtx()) mmdFt8Audio(data);
+    // The background decoder's too, when it hears this input (mmdFt8Background.js)
+    if (BG.tap) mmdBgAudio(data, DEC.ctx);
+    // Detect Modes on: its own decoders hear it, the mode's wait
+    if (mmdDetectOn()) mmdDetectAudio12(data);
+    else if (mmdFtx()) mmdFt8Audio(data);
     else if (DEC.mode == "sstv") mmdSstvAudio(data);
     return;
   }
@@ -824,7 +903,8 @@ function mmdMessage(data, generation)
   if (data.type == "rawaudio")
   {
     mmdRsidAudio(data);
-    if (DEC.mode == "packet") mmdPacketAudio(data);
+    if (mmdDetectOn()) mmdDetectRawAudio(data);
+    else if (DEC.mode == "packet") mmdPacketAudio(data);
     else if (DEC.mode == "sat") mmdSatAudio(data);
     else if (mmdKeyMode()) mmdKeyAudio(data);
     else if (mmdOliviaMode()) mmdOliviaAudio(data);
@@ -834,6 +914,8 @@ function mmdMessage(data, generation)
   // Slot Finder reads the row before the waterfall has it (only what was heard since the last retune)
   if (data.seq == DEC.seq) mmdSlotRow(data.row);
   mmdFallRow(data.row, data.view);
+  // Detect Modes: the row's peaks, for Olivia's look
+  mmdDetectRow(data.row);
   const now = Date.now();
   // The channels' table: only from after the last retune, and once Rig Control has read back where the rig was tuned to (until then the
   // audio's frequencies would be put on the old dial)
@@ -956,7 +1038,8 @@ function mmdSplitInit()
 
 function mmdSplitDrag(event)
 {
-  if (event.button != 0) return;
+  // (The SSTV header's Receive / Send tabs are clicked, not dragged)
+  if (event.button != 0 || event.target.closest(".sstvTab")) return;
   event.preventDefault();
   const box = cwFallBox.getBoundingClientRect();
   const grab = event.clientY - box.bottom;
@@ -983,6 +1066,7 @@ function mmdSplitApply()
   cwFallBox.style.flex = share > 0 ? "0 0 " + Math.round(share * window.innerHeight) + "px" : "";
   mmdOverlay();
   mmdSstvDraw();
+  mmdSstvTxDraw();
 }
 
 function mmdResize()
@@ -1389,6 +1473,10 @@ function mmdOverlay()
   mmdRsidDraw(ctx, x, ratio, w, h);
   // Olivia mode: the band its signal is looked for in (mmdOlivia.js)
   mmdOliviaDraw(ctx, x, ratio, w, h);
+  // Packet mode: where HF packet was heard, and the place locked on (mmdPacket.js)
+  mmdPacketDraw(ctx, x, ratio, w, h);
+  // Detect Modes: the signals found, named (mmdDetect.js)
+  mmdDetectDraw(ctx, x, ratio, w, h);
   // FT8 and FT4, Slot Finder: the clearest places to transmit, each shaded in its period's colour (Even + Odd green, Even light blue, Odd
   // cyan) with dashed edges a signal's width apart, its Hz (its lowest tone, as WSJT-X's Tx) and its period in a box at the bottom, each
   // box higher than the one before so they can't cover each other
@@ -1579,6 +1667,10 @@ function mmdRender()
 {
   mmdFollowBirdWatch();
   mmdTop();
+  // The rig's band scope: wanted (or not) of Rig Control, shown or hidden
+  mmdScopeTick();
+  // Detect Modes: its signals found, listed and labelled
+  mmdDetectTick();
   // Slot Finder's places, drawn again when they move
   const slots = mmdFtxSlots();
   if (JSON.stringify(slots) != JSON.stringify(DEC.ftxSlots))
@@ -1814,6 +1906,8 @@ function mmdFocus(id)
 function mmdRange()
 {
   if (DEC.node) DEC.node.port.postMessage({ type: "range", min: mmdMinHz(), max: mmdMaxHz() });
+  // HF packet is looked for between them too
+  mmdPacketHf();
   DEC.dirty = true;
   mmdOverlay();
 }
@@ -1983,6 +2077,8 @@ function mmdModeSet(mode)
   // Another mode: the time skew off (FT8's and FT4's periods differ), and nothing focused, pinned, hovered or dragged in the last carried
   // into it (CW's pinned signal, FT8's or FT4's focus)
   const next = MMD_MODES.includes(mode) ? mode : "cw";
+  // A mode chosen (or a signal Detect Modes found picked) ends Detect Modes
+  if (mmdDetectOn()) mmdDetectStop(next);
   if (DEC.mode != next)
   {
     mmdOffTimeStop();
@@ -2021,6 +2117,12 @@ function mmdModeSet(mode)
   // The last mode's status (FT8's decodes, Packet's frames ...) gone
   if (DEC.running) mmdStatus(I18N("cwViewer.status.listening"));
   cwList.style.display = listed ? "" : "none";
+  // Another mode: the SSTV view back on Receive, and a picture being sent stopped (mmdSstvTx.js)
+  if (!sstv)
+  {
+    if (mmdSstvTxActive()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
+    mmdSstvTxShow(false);
+  }
   satList.style.display = sat ? "" : "none";
   ft8List.style.display = ft8 ? "" : "none";
   sstvView.style.display = sstv ? "" : "none";
@@ -2049,7 +2151,7 @@ function mmdModeSet(mode)
   if (olivia) mmdOliviaReset();
   if (DEC.node)
   {
-    DEC.node.port.postMessage({ type: "ft8", on: ft8 || sstv });
+    DEC.node.port.postMessage({ type: "ft8", on: mmdFt8StreamWanted() });
     DEC.node.port.postMessage({ type: "raw", on: mmdRawMode() || mmdRsidOn() });
     // CW decoded in CW mode only: FT8, SSTV and Packet decode their own audio, so the CW engine makes the waterfall's rows alone (back in
     // CW, carriers are found afresh)
@@ -2062,7 +2164,8 @@ function mmdModeSet(mode)
   mmdTestModeChanged();
   // The waterfall's Resolution By Mode is this mode's (mmdFallView.js)
   mmdFallViewApply();
-  // Into or out of FT8 or FT4: its GridTracker instance follows (and a closed window listens only for it)
+  // Into or out of the GridTracker instance's mode: the instance follows (and a closed window listens only for it), else its background
+  // decoder takes over
   mmdListen();
 }
 
@@ -2098,6 +2201,12 @@ function mmdFollowBirdWatch()
 function mmdRawMode(mode = DEC.mode)
 {
   return mode == "packet" || mode == "sat" || mmdKeyMode(mode) || mmdOliviaMode(mode);
+}
+
+// The worklet's 12 kHz stream: FT8's, FT4's and SSTV's, and the background decoder's while it taps this pipeline (mmdFt8Background.js)
+function mmdFt8StreamWanted()
+{
+  return mmdFtx() || DEC.mode == "sstv" || BG.tap;
 }
 
 // FT8 or FT4 (the same decoder, ft8Worker.js: FT4 decoded the Normal way only), and the period of the one decoded (ms)
@@ -2208,8 +2317,8 @@ function mmdFt8Decode(F, start, heard)
   // The focus is Deep's in FT8, and FT4's (always decoded the Normal way, with one more pass at the focus)
   const focus = !plain || DEC.mode == "ft4" ? DEC.ft8Focus || 0 : 0;
   F.worker.postMessage({ type: "decode", start: start, samples: samples, more: more, myCall: myCall, focus: focus, shift: mmdFtxShift(), deadline: deadline, plain: plain, ft4: DEC.mode == "ft4" }, [samples.buffer]);
-  // GridTracker's instance (if open) says it is decoding
-  window.opener.mmDecoderInstanceDecoding(true);
+  // GridTracker's instance (if open) says it is decoding (in its mode only: in the other the background decoder's is, mmdFt8Background.js)
+  if (mmdInstanceMain()) window.opener.mmDecoderInstanceDecoding(true);
 }
 
 // A period's messages back from the worker (one line each, ft8wasm.c's ft8_decode)
@@ -2240,9 +2349,12 @@ function mmdFt8Decoded(F, data)
     sent.set(message || "", data.start);
     return true;
   });
-  // (A period heard while a test signal played stays in the window: mmdTest.js)
-  if (!mmdTestHeard(data.start, data.start + periodMs)) window.opener.mmDecoderInstanceDecodes(data.start - shift, fresh.map(([snr, dt, freq, message]) => [Number(snr), Number(dt) - FT8_DT_ZERO + shift / 1000, Number(freq), message || ""]));
-  window.opener.mmDecoderInstanceDecoding(false);
+  // (A period heard while a test signal played stays in the window: mmdTest.js. Only the instance's mode's go)
+  if (mmdInstanceMain())
+  {
+    if (!mmdTestHeard(data.start, data.start + periodMs)) window.opener.mmDecoderInstanceDecodes(data.start - shift, fresh.map(([snr, dt, freq, message]) => [Number(snr), Number(dt) - FT8_DT_ZERO + shift / 1000, Number(freq), message || ""]));
+    window.opener.mmDecoderInstanceDecoding(false);
+  }
   const utc = new Date(data.start).toISOString().slice(11, 19);
   // (FT4's the same, the mode's name in it swapped)
   const status = I18N("cwViewer.ft8.status").replace("{count}", F.periodCount).replace("{utc}", utc);

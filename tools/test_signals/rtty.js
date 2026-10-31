@@ -1,5 +1,6 @@
 // RTTY test signals (tools/make_test_signals.js): rtty-5.wav, five RTTY signals at once (45.45 baud, 170 Hz shift), starting a moment
-// apart, two of them after their RSID (RTTY 45, at the signal's centre, midway between its tones). RTTY as sent: Baudot (ITA2, the US
+// apart, two of them after their RSID (RTTY 45, at the signal's centre, midway between its tones); and rtty-variants.wav, four at other
+// bauds and shifts (50 and 75 baud, 425 and 850 Hz), none with an RSID (the decoder finds the shift and the baud). RTTY as sent: Baudot (ITA2, the US
 // figures), each character a start bit (space), five bits (the lowest first, a 1 mark) and 1.5 stop bits (mark); mark the upper tone;
 // the frequency moved smoothly (over 2 ms) and its phase kept running. LTRS and FIGS sent as the text needs them, FIGS again after a
 // space (a receiver goes back to letters at one); CR LF before and after the text. rttySend() is used by mixed.js too. Fictional calls
@@ -48,9 +49,9 @@ function rttyCodes(text)
 
 // The bits sent (1 mark), in half bits: half a second of mark first, then each character (start, five bits, 1.5 stop), a quarter
 // second of mark after
-function rttyHalfBits(text)
+function rttyHalfBits(text, baud = RTTY_BAUD)
 {
-  const lead = Math.round(0.5 * RTTY_BAUD * 2);
+  const lead = Math.round(0.5 * baud * 2);
   const out = new Array(lead).fill(1);
   for (const code of rttyCodes(text))
   {
@@ -62,25 +63,25 @@ function rttyHalfBits(text)
     }
     out.push(1, 1, 1);
   }
-  for (let i = 0; i < Math.round(0.25 * RTTY_BAUD * 2); i++) out.push(1);
+  for (let i = 0; i < Math.round(0.25 * baud * 2); i++) out.push(1);
   return out;
 }
 
-function rttySeconds(text)
+function rttySeconds(text, baud = RTTY_BAUD)
 {
-  return rttyHalfBits(text).length / (2 * RTTY_BAUD);
+  return rttyHalfBits(text, baud).length / (2 * baud);
 }
 
-// Text sent centred on freq (Hz) into s from at (seconds), amp its peak; returns the time it ends
-function rttySend(common, s, freq, text, at, amp)
+// Text sent centred on freq (Hz) into s from at (seconds), amp its peak, at baud with shift (Hz); returns the time it ends
+function rttySend(common, s, freq, text, at, amp, baud = RTTY_BAUD, shift = RTTY_SHIFT)
 {
-  const half = rttyHalfBits(text);
+  const half = rttyHalfBits(text, baud);
   const rate = common.RATE;
   const start = Math.round(at * rate);
-  const n = Math.round((half.length / (2 * RTTY_BAUD)) * rate);
+  const n = Math.round((half.length / (2 * baud)) * rate);
   // The keying, sample by sample (+1 mark), then smoothed over 2 ms
   const key = new Float64Array(n);
-  for (let i = 0; i < n; i++) key[i] = half[Math.min(half.length - 1, Math.floor((i * 2 * RTTY_BAUD) / rate))] ? 1 : -1;
+  for (let i = 0; i < n; i++) key[i] = half[Math.min(half.length - 1, Math.floor((i * 2 * baud) / rate))] ? 1 : -1;
   const w = Math.round(0.002 * rate);
   const ramp = Math.round(0.005 * rate);
   let phase = 0;
@@ -90,7 +91,7 @@ function rttySend(common, s, freq, text, at, amp)
   {
     sum += key[i] - (i >= w ? key[i - w] : key[0]);
     const k = sum / w;
-    phase += (2 * Math.PI * (freq + (k * RTTY_SHIFT) / 2)) / rate;
+    phase += (2 * Math.PI * (freq + (k * shift) / 2)) / rate;
     const edge = Math.min(1, i / ramp, (n - 1 - i) / ramp);
     if (start + i < s.length) s[start + i] += amp * edge * Math.sin(phase);
   }
@@ -104,6 +105,14 @@ const RTTY_SIGNALS = [
   [1450, 1.5, 0.2, false, "CQ TEST DE Q3XYZ Q3XYZ TEST"],
   [1900, 4.5, 0.16, true, "Q3XYZ DE Q4KLM 599 001 001 BK"],
   [2350, 2.0, 0.17, false, "GRIDTRACKER2 TEST SIGNAL DE N0CALL"]
+];
+
+// The variants: [centre Hz, start (s), peak, baud, shift, text]
+const RTTY_VARIANTS = [
+  [600, 0.5, 0.2, 50, 170, "CQ CQ DE Q5FIF Q5FIF 50 BAUD K"],
+  [1250, 1.5, 0.2, 45.45, 425, "Q6WID DE Q6WID 425 HZ SHIFT TEST"],
+  [2100, 1.0, 0.2, 50, 850, "Q7MET WX 850 HZ SHIFT 50 BAUD TEST"],
+  [2950, 2.0, 0.18, 75, 170, "Q8FST DE Q8FST 75 BAUD TEST TEST"]
 ];
 
 // RTTY 45's RSID number
@@ -122,6 +131,11 @@ function build(common)
   // A band's noise floor (heard alone, the Input Device silenced): a quieter one lets a lone tone of a neighbour read as a station
   common.noise(s, 0.04, 31);
   common.normalize(s, 0.7);
+  const vEnd = Math.max(...RTTY_VARIANTS.map(([, at, , baud, , text]) => at + rttySeconds(text, baud)));
+  const v = common.buffer(Math.max(20, Math.ceil(vEnd + 1.5)));
+  for (const [freq, at, amp, baud, shift, text] of RTTY_VARIANTS) rttySend(common, v, freq, text, at, amp, baud, shift);
+  common.noise(v, 0.04, 33);
+  common.normalize(v, 0.7);
   return [{
     file: "rtty-5.wav",
     modes: ["rtty"],
@@ -131,6 +145,14 @@ function build(common)
     description: "Five RTTY signals at once, 45.45 baud 170 Hz shift, centred on " + RTTY_SIGNALS.map(([f]) => f).join(", ") +
       " Hz; those at " + RTTY_SIGNALS.filter((p) => p[3]).map(([f]) => f).join(" and ") + " Hz after their RSID",
     samples: s
+  }, {
+    file: "rtty-variants.wav",
+    modes: ["rtty"],
+    signals: RTTY_VARIANTS.length,
+    rsid: false,
+    sync: null,
+    description: "Four RTTY signals at other bauds and shifts: " + RTTY_VARIANTS.map(([f, , , baud, shift]) => baud + " baud " + shift + " Hz at " + f + " Hz").join(", "),
+    samples: v
   }];
 }
 

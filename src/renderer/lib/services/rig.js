@@ -59,6 +59,7 @@ function rigNewState(key)
     civFilterB: null,   // CI-V: the same for the other VFO (26 01's answer; setTxMode)
     cwPitch: null,      // CI-V: the CW pitch in Hz (14 09), when an answer tells it (nothing asks it now)
     tuningStep: null,   // the rig's tuning step in Hz, when an answer tells it (CI-V 10, rigctld n; nothing asks it now)
+    scope: null,        // CI-V: its band scope as read (rigScopeState), with Use Scope If Present
     waiting: null,      // serial: the timer for the reply to the frame out, after which the next goes anyway
     tuneSeq: 0,         // how many times settings were sent (rigSend); never reset
     readSeq: 0,         // the tuneSeq the last whole poll was asked after: what was read reflects the settings up to it
@@ -91,7 +92,10 @@ const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: 
 // is a rig of its own, and has no other second VFO), its link that one's. A VFO with its Connect unchecked is let go (its settings free
 // to change)
 
-const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false };
+const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false, ptt: "cat", useScope: false };
+// PTT Method (each rig's box): how the Multi-Mode Decoder keys the rig to transmit. none: it isn't keyed; cat: the protocol's PTT
+// command; vox: the rig's own VOX, from the audio; dtr, rts: the serial port's line (a serial rig only)
+const RIG_PTT_METHODS = ["none", "cat", "vox", "dtr", "rts"];
 // VFO-A to VFO-H
 const RIG_VFOS_MAX = 8;
 
@@ -177,6 +181,7 @@ function rigVfosNormalize()
     if (!Number.isFinite(Number(v.offset)) || Math.abs(Number(v.offset)) > RIG_OFFSET_MAX) v.offset = 0;
     // SSB's Data (rigSsbDataChanged): off unless checked
     v.ssbData = v.ssbData === true;
+    if (!RIG_PTT_METHODS.includes(v.ptt)) v.ptt = "cat";
   }
   const owned = new Set();
   for (const v of S.vfos)
@@ -395,6 +400,8 @@ const RIG_PROTOCOLS = {
       return hz > 0 ? "+C " + vfo + Math.round(hz * 10) + "\n+U " + vfo + "TONE 1\n" : "+U " + vfo + "TONE 0\n";
     },
     canTone: (R) => R.toneFreq === true && R.toneFunc === true,
+    // PTT (T), keyed (1) or not (0), on the rig's first VFO in VFO mode
+    setPtt: (on, R) => "+T" + rigNetVfoArg(R) + " " + (on ? 1 : 0) + "\n",
     parse: (line, R) =>
     {
       let m;
@@ -444,7 +451,8 @@ const RIG_PROTOCOLS = {
     setMode: (mode, R, data) => ["rig.set_modeA", "<string>" + (data && ["USB", "LSB"].includes(mode) ? mode + "-D" : mode) + "</string>"],
     setTx: (hz) => ["rig.set_vfoB", "<double>" + Math.round(hz) + "</double>"],
     setTxMode: (mode) => ["rig.set_modeB", "<string>" + mode + "</string>"],
-    splitOn: () => ["rig.set_split", "<int>1</int>"]
+    splitOn: () => ["rig.set_split", "<int>1</int>"],
+    setPtt: (on) => ["rig.set_ptt", "<int>" + (on ? 1 : 0) + "</int>"]
   },
   civ: {
     name: "Icom CI-V",
@@ -478,6 +486,8 @@ const RIG_PROTOCOLS = {
       return [rigCivFrame(rigCivAddress(R), 0x1b, [0x00, bcd(0), bcd(2)]), rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x01])];
     },
     canTone: () => true,
+    // 1C 00: PTT keyed (01) or not (00)
+    setPtt: (on, R) => rigCivFrame(rigCivAddress(R), 0x1c, [0x00, on ? 0x01 : 0x00]),
     // The mode with the filter in use kept (06 mode filter: without one the rig takes the mode's default, FIL2 on the IC-7300; before the
     // filter is read, the mode alone). Data asked for or against: 1A 06 after the mode, data mode on with that filter (01 and it) or off
     // (00 00), as the IC-7300, 705, 9700 and 7610 have it; the two frames sent together
@@ -529,6 +539,10 @@ const RIG_PROTOCOLS = {
       else if (command == 0x14 && data.length >= 3 && data[0] == 0x09) R.cwPitch = Math.round((300 + (rigCivBcdToHz([data[2], data[1]]) * 600) / 255) / 5) * 5;
       // The tuning step (10, one BCD byte): its code as the IC-7300, 705, 9700 and 7610 have them; 00 is TS off, 10 Hz a step
       else if (command == 0x10 && data.length == 1) R.tuningStep = RIG_CIV_STEPS[(data[0] >> 4) * 10 + (data[0] & 0x0f)] || null;
+      // The band scope (27): its sweeps and settings (rigScopeRead)
+      else if (command == 0x27 && data.length >= 1) rigScopeRead(R, data);
+      // NG to the scope's data asked for (27 11 01): the rig won't send it over this port (rigScopeStatus says why)
+      else if (command == 0xfa && R.lastSent && R.lastSent[4] == 0x27 && R.lastSent[5] == 0x11) rigScopeRefused(R);
       else if (command == 0xfa)
       {
         // NG to 26 01, or to 1A 06: the rig hasn't it, and isn't asked again (nor taken as having no second VFO)
@@ -554,6 +568,8 @@ const RIG_PROTOCOLS = {
     modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 9: "RTTY-R" },
     modeSet: (code) => "MD" + code + ";",
     splitOn: () => "FR0;FT1;",
+    // TX; keys the rig (its PTT), RX; unkeys it
+    ptt: { on: "TX;", off: "RX;" },
     // ID; answers ID019; for a TS-2000 (an Elecraft, or an SDR program's "TS-2000" port, says what it emulates). As Hamlib has them
     // (rigs/kenwood/kenwood.c, kenwood_id_string_list): 017 is a TS-570D and what the Elecraft K2, K3 and KX3 say, 020 a TS-480 and
     // what some SDR programs say
@@ -568,6 +584,13 @@ const RIG_PROTOCOLS = {
     modeReply: /^MD0([0-9A-F])$/,
     modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 8: "PKT-L", 9: "RTTY-R", A: "PKT-FM", B: "FM-N", C: "PKT-U", D: "AM-N", E: "C4FM", F: "PKT-FM-N" },
     modeSet: (code) => "MD0" + code + ";",
+    // The second VFO's mode: MD1, the Sub receiver's, on the rigs with two (FTX-1, FTDX101); one that refuses it (the FT-991's MD has the
+    // main receiver alone) isn't asked again
+    modeBAsk: "MD1;",
+    modeBReply: /^MD1([0-9A-F])$/,
+    modeBSet: (code) => "MD1" + code + ";",
+    // TX1; keys the rig over CAT, TX0; unkeys it
+    ptt: { on: "TX1;", off: "TX0;" },
     // Split as Hamlib sets it (rigs/yaesu/newcat.c): ST1 on the rigs that have ST; FT3 (TX on VFO B: these count A and B as 2 and 3) on
     // those that don't; the FT-891 has neither, so its second VFO can't take the uplink. A rig not known yet: ST1
     splitOn: (id) => (["0310", "0570", "0670", "0251", "0252", "0583", "0362", "0462"].includes(id) ? "FT3;" : "ST1;"),
@@ -612,6 +635,8 @@ const RIG_PROTOCOLS = {
       return [new Uint8Array([a, b, a, b, 0x0b]), new Uint8Array([0x4a, 0, 0, 0, 0x0a])];
     },
     canTone: () => true,
+    // 08 keys the rig (its PTT), 88 unkeys it
+    setPtt: (on) => new Uint8Array([0, 0, 0, 0, on ? 0x08 : 0x88]),
     // The answer to 03 once its five bytes are in (anything else, a setting's acknowledgement, is let go)
     receive: (data, R) =>
     {
@@ -651,11 +676,24 @@ function rigCatProtocol(cat)
     serial: true,
     split: /;/,
     caps: () => "ID;",
-    poll: (R) => ["FA;", cat.modeAsk].concat(R.dual === false ? [] : ["FB;"]),
+    // The second VFO's mode too where the CAT has it (modeBAsk), with a VFO on it in use, until refused
+    poll: (R) => ["FA;", cat.modeAsk].concat(R.dual === false ? [] : ["FB;"]).concat(cat.modeBAsk && R.dual === true && R.modeBAsk && rigModeBWanted(R) ? [cat.modeBAsk] : []),
     replies: (data) => typeof data == "string" && /^[A-Z]{2}\d?;$/.test(data),
     setFreq: (value) => "FA" + hz(value) + ";",
     setTx: (value) => "FB" + hz(value) + ";",
+    // The second VFO's mode (BirdWatch's uplink: an inverting transponder's LSB under a USB downlink), where the CAT has it and the rig
+    // hasn't refused it
+    setTxMode: cat.modeBSet
+      ? (mode, R) =>
+        {
+          if (R.modeBAsk === false) return null;
+          const code = Object.keys(cat.modes).find((key) => cat.modes[key] == String(mode).toUpperCase());
+          return code === undefined ? null : cat.modeBSet(code);
+        }
+      : undefined,
     splitOn: (R) => cat.splitOn(R.catId),
+    // PTT, where the CAT has it (ptt: its on and off commands)
+    setPtt: cat.ptt ? (on) => (on ? cat.ptt.on : cat.ptt.off) : undefined,
     // Data: the rig's packet mode where it has one (a Yaesu's PKT-U, PKT-L), else the mode plain
     setMode: (mode, R, data) =>
     {
@@ -680,6 +718,7 @@ function rigCatProtocol(cat)
         }
       }
       else if ((m = cat.modeReply.exec(text))) R.mode = cat.modes[m[1]] || ("mode " + m[1]);
+      else if (cat.modeBReply && (m = cat.modeBReply.exec(text))) R.modeB = cat.modes[m[1]] || ("mode " + m[1]);
       else if ((m = /^ID(\d+)$/.exec(text)))
       {
         R.catId = m[1];
@@ -688,8 +727,10 @@ function rigCatProtocol(cat)
       }
       else if (text == "?")
       {
-        // Refused: the second VFO's question, before it was ever answered, means the rig hasn't one
+        // Refused: the second VFO's question, before it was ever answered, means the rig hasn't one; its mode's (asked or set), that the
+        // CAT has no second VFO's mode (not asked or set again on this connection)
         if (R.lastSent == "FB;" && R.dual === null) R.dual = false;
+        if (cat.modeBAsk && typeof R.lastSent == "string" && R.lastSent.startsWith(cat.modeBAsk.slice(0, 3))) R.modeBAsk = false;
         return "?";
       }
       return null;
@@ -796,7 +837,7 @@ function rigVfoBoxRender(v)
   el("SsbTr").style.display = second ? "none" : "";
   if (second)
   {
-    for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "HostTr", "ForceVfoTr"]) el(name).style.display = "none";
+    for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "ScopeTr", "HostTr", "ForceVfoTr", "PttTr"]) el(name).style.display = "none";
     el("StatusTr").style.display = "";
     el("PortError").style.display = "none";
     rigVfoSecondStatusRender(v);
@@ -882,6 +923,8 @@ function rigSettingsRenderOne(R, on, locked = false)
   rigEl(R, "CivValue").placeholder = I18N("rig.civ.auto");
   rigEl(R, "Host").value = S.host;
   rigEl(R, "ForceVfo").checked = S.forceVfo === true;
+  rigEl(R, "UseScope").checked = S.useScope === true;
+  rigScopeWarnRender(R);
   const protocol = rigProtocolChosen(R);
   rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : protocol.portKey ? S[protocol.portKey] : S.netPort;
   const portName = rigEl(R, "PortName");
@@ -892,8 +935,20 @@ function rigSettingsRenderOne(R, on, locked = false)
   const note = { kenwood: "settings.rig.kenwood.note", yaesu: "settings.rig.yaesu.note", yaesu817: "settings.rig.yaesu817.note" }[S.protocol];
   // A model's name (TS-990, FTX-1) isn't broken at its hyphen
   rigEl(R, "ProtocolNote").innerHTML = note ? htmlEntities(I18N(note)).replace(/([A-Za-z#]+-[A-Za-z0-9]+)/g, "<span style='white-space:nowrap'>$1</span>") : "";
+  // PTT Method: None and VOX always, CAT where the protocol has a PTT command, DTR and RTS on a serial port (a choice the protocol hasn't
+  // shows as None)
+  const pttSelect = rigEl(R, "Ptt");
+  const pttChoices = [["none", I18N("settings.rig.vfo.none.label")]].concat(typeof protocol.setPtt == "function" ? [["cat", "CAT"]] : [], [["vox", "VOX"]], serial ? [["dtr", "DTR"], ["rts", "RTS"]] : []);
+  const pttKey = pttChoices.map(([value, text]) => value + "=" + text).join("|");
+  if (pttSelect.dataset.key != pttKey)
+  {
+    pttSelect.dataset.key = pttKey;
+    pttSelect.innerHTML = "";
+    for (const [value, text] of pttChoices) pttSelect.appendChild(new Option(text, value));
+  }
+  pttSelect.value = pttChoices.some(([value]) => value == S.ptt) ? S.ptt : "none";
   const sdrpp = on && S.protocol == "sdrpp";
-  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", HostTr: on && !serial, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, StatusTr: on };
+  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", ScopeTr: on && S.protocol == "civ", HostTr: on && !serial, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, PttTr: on, StatusTr: on };
   for (const [name, shown] of Object.entries(rows)) rigEl(R, name).style.display = shown ? "" : "none";
   serialLinuxRender(rigEl(R, "LinuxTr"), rigEl(R, "LinuxText"), S.port, on && serial);
   rigStatusRender(R);
@@ -1050,6 +1105,19 @@ function rigSettingsChanged(el)
   }
   rigSettingsRender();
   rigConnect(R);
+}
+
+// PTT Method picked (changed with the rig connected too: it is read as the rig is keyed). The serial line it names dropped, so the rig
+// isn't left keyed by a line asserted before
+function rigPttChanged(el)
+{
+  const v = rigVfoOfEl(el);
+  const R = v ? GT.rigs[v.id] : null;
+  if (!R) return;
+  const S = rigSettingsOf(R);
+  S.ptt = RIG_PTT_METHODS.includes(rigEl(R, "Ptt").value) ? rigEl(R, "Ptt").value : "cat";
+  rigPttLineDrop(R);
+  rigSettingsRender();
 }
 
 function rigChoosePort(el)
@@ -1339,6 +1407,7 @@ async function rigConnect(R, retry = false)
   R.toneFreq = R.toneFunc = null;
   R.toneOn = false;
   R.ranges = R.rangeSection = null;
+  R.scope = rigScopeState();
   if (!rigWanted(R))
   {
     rigSetStatus(R, "off");
@@ -1408,6 +1477,8 @@ async function rigOpenSerial(R, generation)
   }
   R.link = port;
   R.writer = port.writable.getWriter();
+  // The line PTT Method names dropped (the port may open with it asserted), so the rig isn't keyed by connecting
+  rigPttLineDrop(R);
   port.addEventListener("disconnect", () =>
   {
     if (generation == R.generation) rigFail(R, "disconnected");
@@ -1586,6 +1657,7 @@ function rigPoll(R)
   const seq = R.tuneSeq;
   for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask, seq);
   if (R.writer) rigWrite(R, { readMark: seq });
+  rigScopeSync(R);
 }
 
 // A poll now, besides the regular ones (after a setting: what the rig made of it)
@@ -1780,8 +1852,9 @@ function rigReceive(R, data)
       R.bytes = R.bytes.slice(end + 1);
       if (frame.length < 6 || frame[1] != 0xfe) continue;
       R.protocol.parse(frame, R);
-      // From the rig (not our own frame echoed): the command out is answered, the next can go
-      if (frame[3] != 0xe0) rigReplied(R);
+      // From the rig (not our own frame echoed): the command out is answered, the next can go. Not by the band scope's sweeps (27 00):
+      // they come by themselves, many a second, and answer nothing
+      if (frame[3] != 0xe0 && !(frame[4] == 0x27 && frame[5] == 0x00)) rigReplied(R);
     }
     rigStatusRender(R);
     return;
@@ -1911,4 +1984,283 @@ function rigTuneCanTone()
   if (!rigTuneCanTx()) return false;
   const U = rigVfoLink(rigRoleVfo("tx"));
   return typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
+}
+
+// ---- The band scope (Use Scope If Present, a CI-V rig's box): an Icom's own spectrum scope (the IC-7300, 705, 9700, 7610 ...), shown in
+// the Multi-Mode Decoder (mmdScope.js). Its data is asked for (27 11 01) only while the decoder's window wants it (rigScopeWant, renewed
+// as it draws) and stopped (27 11 00) once it doesn't; the rig's own scope (27 10) is never turned on or off here. Each sweep comes as
+// frames of 27 00, numbered (11 over USB): the first its settings (Center or Fixed mode, the center and the span either side or the
+// edges, and whether it is out of range), the rest its trace, 475 points from 0 to 160. The rig sends it only over its USB port, with
+// its CI-V USB Port unlinked from [REMOTE] (else it refuses: NG), and it needs RIG_SCOPE_BAUD to keep up (a sweep is about 600 bytes,
+// a few a second)
+const RIG_SCOPE_BAUD = 115200;
+// The spans the rig has (Hz either side of the center: 27 15), narrowest first
+const RIG_SCOPE_SPANS = [2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000];
+// The decoder's window asking for it this long ago (ms) no longer wants it (it closed); a sweep this old is gone (ms)
+const RIG_SCOPE_WANT_MS = 3000;
+const RIG_SCOPE_STALE_MS = 3000;
+// The VFO whose rig's scope the decoder's window wants: { id, at (when it last said so) }, or null
+GT.rigScopeWant = null;
+
+// A connection's scope, as read: on (27 11 as last sent: true, false, or null not yet), radioOn (27 10 as last read: the rig's own scope
+// shown), refused (NG to 27 11 01), mode (27 14: 0 Center, 1 Fixed, 2 SCROLL-C, 3 SCROLL-F), span (Hz either side, Center modes), the
+// sweep being put together (building) and the newest whole one (sweep: { low, high, center, outOfRange, points, at, seq })
+function rigScopeState()
+{
+  return { on: null, radioOn: null, refused: false, mode: null, span: null, building: null, sweep: null, seq: 0, askedOnAt: 0 };
+}
+
+// From the decoder's window as it draws: the VFO (id) whose rig's scope it shows, or null for none
+function rigScopeWant(vfoId)
+{
+  GT.rigScopeWant = vfoId ? { id: vfoId, at: Date.now() } : null;
+  for (const R of Object.values(GT.rigs)) rigScopeSync(R);
+}
+
+// Whether a rig's scope data is wanted now: Use Scope If Present on, a CI-V rig connected fast enough that hasn't refused it, and the
+// decoder's window showing it lately
+function rigScopeWanted(R)
+{
+  const S = rigSettingsOf(R);
+  const want = GT.rigScopeWant;
+  if (S.useScope !== true || S.protocol != "civ" || R.status != "connected" || !R.scope || R.scope.refused) return false;
+  if (Number(S.baud) < RIG_SCOPE_BAUD || !want || Date.now() - want.at > RIG_SCOPE_WANT_MS) return false;
+  return rigVfoLink(rigVfoById(want.id)) === R;
+}
+
+// Its data asked for or stopped as wanted (each poll, and as the decoder's window says); asked for: the rig's own scope (on or off), its
+// mode and its span read with it, and its own scope read again each poll while no sweep comes (it may be turned on at the rig). A rig with
+// Use Scope If Present whose stream isn't known (a connection's first) has it stopped once, so one left on doesn't run unread
+function rigScopeSync(R)
+{
+  if (!R.scope || R.status != "connected" || !R.protocol || !R.protocol.binary || R.protocol !== RIG_PROTOCOLS.civ) return;
+  const C = R.scope;
+  const address = rigCivAddress(R);
+  if (rigScopeWanted(R))
+  {
+    if (C.on !== true)
+    {
+      C.on = true;
+      C.askedOnAt = Date.now();
+      for (const frame of [rigCivFrame(address, 0x27, [0x10]), rigCivFrame(address, 0x27, [0x11, 0x01]), rigCivFrame(address, 0x27, [0x14, 0x00]), rigCivFrame(address, 0x27, [0x15, 0x00])]) rigWrite(R, frame);
+    }
+    else if (!(C.sweep && Date.now() - C.sweep.at < RIG_SCOPE_STALE_MS) && Date.now() - C.askedOnAt > RIG_SCOPE_STALE_MS) rigWrite(R, rigCivFrame(address, 0x27, [0x10]));
+    return;
+  }
+  if (C.on === true || (C.on === null && rigSettingsOf(R).useScope === true))
+  {
+    C.on = false;
+    C.building = C.sweep = null;
+    rigWrite(R, rigCivFrame(address, 0x27, [0x11, 0x00]));
+  }
+}
+
+// An answer or a sweep's frame (27, data from its subcommand on)
+function rigScopeRead(R, data)
+{
+  const C = R.scope;
+  if (!C) return;
+  const sub = data[0];
+  if (sub == 0x10 && data.length >= 2)
+  {
+    const radioOn = data[1] == 0x01;
+    if (radioOn !== C.radioOn)
+    {
+      C.radioOn = radioOn;
+      rigScopeWarnRender(R);
+    }
+  }
+  else if (sub == 0x14 && data.length >= 3) C.mode = data[2];
+  else if (sub == 0x15 && data.length >= 7) C.span = rigCivBcdToHz(data.slice(2, 7));
+  // A sweep's frame: 00 (the main scope), its number and how many there are (BCD), then the first's settings or the others' trace
+  else if (sub == 0x00 && data.length >= 4 && C.on === true) rigScopeFrame(R, C, data);
+}
+
+function rigScopeFrame(R, C, data)
+{
+  const bcd = (b) => (b >> 4) * 10 + (b & 0x0f);
+  const number = bcd(data[2]);
+  const count = bcd(data[3]);
+  if (number == 1)
+  {
+    C.building = null;
+    // Its mode, two frequencies (the center and the span either side, in the Center modes; the low and high edges, in the Fixed modes:
+    // five BCD bytes each, the lowest digits first) and whether it is out of range
+    if (data.length < 16) return;
+    const mode = data[4];
+    const a = rigCivBcdToHz(data.slice(5, 10));
+    const b = rigCivBcdToHz(data.slice(10, 15));
+    const center = mode == 0x00 || mode == 0x02;
+    C.mode = mode;
+    if (center) C.span = b;
+    C.building = { low: center ? a - b : a, high: center ? a + b : b, center: center, outOfRange: data[15] == 0x01, points: [], next: 2 };
+    // Out of range: no trace comes
+    if (count <= 1 || C.building.outOfRange) rigScopeDone(R, C);
+    return;
+  }
+  const B = C.building;
+  // One missed: this sweep is let go, the next one taken whole
+  if (!B || number != B.next)
+  {
+    C.building = null;
+    return;
+  }
+  for (let i = 4; i < data.length; i++) B.points.push(data[i]);
+  B.next++;
+  if (number >= count) rigScopeDone(R, C);
+}
+
+// A whole sweep: kept, and given to the decoder's window
+function rigScopeDone(R, C)
+{
+  const B = C.building;
+  C.building = null;
+  C.sweep = { low: B.low, high: B.high, center: B.center, outOfRange: B.outOfRange, points: Uint8Array.from(B.points), at: Date.now(), seq: ++C.seq };
+  if (C.radioOn !== true)
+  {
+    C.radioOn = true;
+    rigScopeWarnRender(R);
+  }
+  if (!GT.mmDecoderInitialized || !GT.mmDecoderHandle) return;
+  try
+  {
+    const w = GT.mmDecoderHandle.window;
+    if (typeof w.mmdScopeSweep == "function") w.mmdScopeSweep(C.sweep);
+  }
+  catch (e)
+  {
+    // The window is closing
+  }
+}
+
+// NG to 27 11 01: not asked again on this connection (Use Scope If Present turned off and on asks again)
+function rigScopeRefused(R)
+{
+  if (!R.scope) return;
+  R.scope.refused = true;
+  R.scope.on = false;
+  rigScopeWarnRender(R);
+}
+
+// The scope of a VFO's rig (an id), for the decoder's window: null without Use Scope If Present (or not a CI-V rig); else { state: "ok"
+// (sweeps coming), "waiting", "noRig" (not connected), "slow" (under RIG_SCOPE_BAUD), "refused", "radioOff" (the rig's own scope off),
+// sweep (the newest), span (Hz either side), center (a Center mode: its span can be changed), spans }
+function rigScopeStatus(vfoId)
+{
+  const R = rigVfoLink(rigVfoById(vfoId));
+  if (!R) return null;
+  const S = rigSettingsOf(R);
+  if (S.protocol != "civ" || S.useScope !== true) return null;
+  const C = R.scope;
+  const fresh = !!(C && C.sweep && Date.now() - C.sweep.at < RIG_SCOPE_STALE_MS);
+  let state = "waiting";
+  if (R.status != "connected") state = "noRig";
+  else if (Number(S.baud) < RIG_SCOPE_BAUD) state = "slow";
+  else if (C && C.refused) state = "refused";
+  else if (fresh) state = "ok";
+  else if (C && C.radioOn === false) state = "radioOff";
+  return { state: state, sweep: fresh ? C.sweep : null, span: C ? C.span : null, center: !C || C.mode === null || C.mode == 0x00 || C.mode == 0x02, spans: RIG_SCOPE_SPANS };
+}
+
+// The span either side made the next narrower (step -1) or wider (+1) of RIG_SCOPE_SPANS (27 15 00), on the rig of a VFO (an id), in a
+// Center mode, going round past either end (the widest's next wider is the narrowest); read back after. The span asked for, or null
+function rigScopeSpanStep(vfoId, step)
+{
+  const R = rigVfoLink(rigVfoById(vfoId));
+  if (!R || !R.scope || R.status != "connected" || R.protocol !== RIG_PROTOCOLS.civ) return null;
+  const C = R.scope;
+  if (C.span === null || !(C.mode === null || C.mode == 0x00 || C.mode == 0x02)) return null;
+  // The nearest of the spans to the one read, then the next one along
+  let at = 0;
+  RIG_SCOPE_SPANS.forEach((span, i) => { if (Math.abs(span - C.span) < Math.abs(RIG_SCOPE_SPANS[at] - C.span)) at = i; });
+  const count = RIG_SCOPE_SPANS.length;
+  const span = RIG_SCOPE_SPANS[(((at + step) % count) + count) % count];
+  if (span == C.span) return null;
+  const address = rigCivAddress(R);
+  rigWrite(R, rigCivFrame(address, 0x27, [0x15, 0x00, ...rigCivHzToBcd(span)]));
+  rigWrite(R, rigCivFrame(address, 0x27, [0x15, 0x00]));
+  C.span = span;
+  return span;
+}
+
+// Use Scope If Present (a CI-V rig's box) checked or not: asked for again (a refusal forgotten)
+function rigScopeChanged(el)
+{
+  const v = rigVfoOfEl(el);
+  const R = v ? GT.rigs[v.id] : null;
+  if (!R) return;
+  rigSettingsOf(R).useScope = rigEl(R, "UseScope").checked;
+  if (R.scope) R.scope.refused = false;
+  rigScopeSync(R);
+  rigScopeWarnRender(R);
+}
+
+// Under Use Scope If Present (in yellow), why its scope can't come: too slow a baud rate, refused by the rig, the rig's own scope off
+function rigScopeWarnRender(R)
+{
+  const el = rigEl(R, "ScopeWarn");
+  if (!el) return;
+  const S = rigSettingsOf(R);
+  let key = "";
+  if (S.useScope === true && S.protocol == "civ")
+  {
+    if (Number(S.baud) < RIG_SCOPE_BAUD) key = "rig.scope.slow";
+    else if (R.scope && R.scope.refused) key = "rig.scope.refused";
+    else if (R.scope && R.scope.radioOn === false) key = "rig.scope.radioOff";
+  }
+  const text = key ? I18N(key) : "";
+  if (el.textContent != text) el.textContent = text;
+  el.style.display = text ? "" : "none";
+}
+
+// ---- PTT (the Multi-Mode Decoder's Send Picture): the rig of a VFO (its id) keyed or unkeyed by its PTT Method (the rig's box; a second
+// VFO's is its rig's): CAT (the protocol's PTT command; an SDR server hasn't one), DTR or RTS (the serial port's line), VOX (nothing sent:
+// the audio keys the rig), None (it can't be keyed). Only this and the decoder's transmit key a rig; nothing else in GridTracker does
+
+// A VFO's rig's PTT Method ("none", "cat", "vox", "dtr", "rts"), "none" without a rig
+function rigPttMethod(vfoId)
+{
+  const owner = rigVfoOwner(rigVfoById(vfoId));
+  return owner && RIG_PTT_METHODS.includes(owner.ptt) ? owner.ptt : "none";
+}
+
+// Whether the VFO's rig can be keyed its way: VOX with the VFO in use; the others with the rig connected and able (CAT: the protocol's
+// command; DTR, RTS: a serial port)
+function rigCanPtt(vfoId)
+{
+  const v = rigVfoById(vfoId);
+  if (!v || !rigVfoOn(v)) return false;
+  const method = rigPttMethod(vfoId);
+  if (method == "vox") return true;
+  const R = rigVfoLink(v);
+  if (method == "none" || !R || R.status != "connected" || !R.protocol) return false;
+  if (method == "cat") return typeof R.protocol.setPtt == "function";
+  return !!(R.link && typeof R.link.setSignals == "function");
+}
+
+// Keyed (on true) or unkeyed; true when done (VOX: nothing to do, true)
+function rigPtt(vfoId, on)
+{
+  if (!rigCanPtt(vfoId)) return false;
+  const method = rigPttMethod(vfoId);
+  if (method == "vox") return true;
+  const R = rigVfoLink(rigVfoById(vfoId));
+  if (method == "cat") return rigSend(R, [R.protocol.setPtt(!!on, R)]);
+  rigPttLine(R, method, !!on);
+  return true;
+}
+
+// The serial port's DTR or RTS line set (Web Serial's setSignals; its promise let be: a port gone away says so elsewhere)
+function rigPttLine(R, method, on)
+{
+  if (!R.link || typeof R.link.setSignals != "function") return;
+  const signals = method == "dtr" ? { dataTerminalReady: on } : { requestToSend: on };
+  R.link.setSignals(signals).catch(() => {});
+}
+
+// The line the rig's PTT Method names dropped (as the port opens, and as the method is picked)
+function rigPttLineDrop(R)
+{
+  const method = rigSettingsOf(R).ptt;
+  if (method == "dtr" || method == "rts") rigPttLine(R, method, false);
 }

@@ -86,16 +86,16 @@
         text-align: left;
         min-height: 0;
       }
-      /* The decoders' boxes straight in the tab: the group around them (kept for its styles) drawn as nothing */
-      #mmdModesTab .mapGroups {
+      /* The General and Decoders tabs' rows and boxes straight in the tab: the group around them (kept for its styles) drawn as nothing */
+      #mmdGeneralTab .mapGroups, #mmdModesTab .mapGroups {
         padding: 0;
       }
-      #mmdModesTab .mapGroup {
+      #mmdGeneralTab .mapGroup, #mmdModesTab .mapGroup {
         border: none;
         padding: 0;
         background-color: transparent;
       }
-      #mmdModesTab .mapGroup .rigVfoBox {
+      #mmdGeneralTab .mapGroup .rigVfoBox, #mmdModesTab .mapGroup .rigVfoBox {
         margin-left: 0;
       }
       /* Band Plans (mmdBands.js): its tables of inputs, compact */
@@ -272,6 +272,54 @@
         font-weight: bold;
         pointer-events: none;
       }
+      /* The rig's band scope (mmdScope.js): its canvas filling it, the span's buttons in its top corners, why none comes over it */
+      #mmdScope {
+        flex: 0 0 110px;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid #333;
+      }
+      #mmdScopeCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: crosshair;
+      }
+      .mmdScopeButton {
+        position: absolute;
+        top: 0;
+        padding: 0 7px;
+        line-height: 14px;
+      }
+      #mmdScopeNarrow {
+        left: 2px;
+      }
+      #mmdScopeWider {
+        right: 2px;
+      }
+      .mmdScopeButton.mmdScopeOff {
+        opacity: 0.35;
+        cursor: default;
+      }
+      #mmdScopeSpanText {
+        position: absolute;
+        left: 30px;
+        top: 0;
+        line-height: 16px;
+        color: #ccc;
+        pointer-events: none;
+      }
+      #mmdScopeWarn {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        text-align: center;
+        white-space: normal;
+        text-shadow: 0 0 3px black;
+        pointer-events: none;
+      }
       #cwScale {
         flex: 0 0 auto;
         width: 100%;
@@ -326,6 +374,7 @@
       #cwList,
       #ft8List,
       #packetList,
+      #detectList,
       #cwList,
       #ft8List,
       #satList {
@@ -336,6 +385,7 @@
       #cwTable,
       #ft8Table,
       #packetTable,
+      #detectTable,
       #cwTable,
       #ft8Table,
       #satTable {
@@ -409,6 +459,7 @@
       }
       #ft8Empty,
       #packetEmpty,
+      #detectEmpty,
       #satEmpty {
         color: #888;
         padding: 6px;
@@ -420,6 +471,22 @@
       .packetBaudCol {
         width: 44px;
       }
+      /* Detect Modes' list (mmdDetect.js): a click on a line decodes it */
+      .detectModeCol {
+        width: 150px;
+      }
+      .detectFreqCol {
+        width: 110px;
+      }
+      .detectDbCol {
+        width: 40px;
+      }
+      #detectTable tbody tr {
+        cursor: pointer;
+      }
+      #detectTable td:first-child {
+        font-weight: bold;
+      }
       .packetCallCol {
         width: 90px;
       }
@@ -427,6 +494,7 @@
         width: 30%;
       }
       #packetTable td,
+      #detectTable td,
       #satTable td {
         padding: 1px 6px;
         overflow: hidden;
@@ -438,6 +506,7 @@
         color: #ddd;
       }
       #packetTable td.ft8Num,
+      #detectTable td.ft8Num,
       #satTable td.ft8Num {
         color: #aaa;
       }
@@ -458,11 +527,13 @@
         background-color: #3a2a00;
       }
       #packetTable tr:hover td,
+      #detectTable tr:hover td,
       #satTable tr:hover td {
         box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
       }
       #ft8Table th,
       #packetTable th,
+      #detectTable th,
       #cwTable th,
       #ft8Table th,
       #satTable th,
@@ -587,6 +658,199 @@
       .sstvThumbShown {
         border-color: cyan;
       }
+      /* SSTV's Send tab (mmdSstvTx.js): the tabs on the header, the form on the left, the picture as it will be sent filling the right,
+         its status under it */
+      .sstvTabs {
+        display: inline-flex;
+        gap: 4px;
+        margin-right: 10px;
+      }
+      .sstvTab {
+        cursor: pointer;
+        padding: 0 8px;
+        border: 1px solid #555;
+        border-radius: 4px;
+        color: #aaa;
+      }
+      .sstvTab:hover {
+        border-color: cyan;
+      }
+      .sstvTabOn {
+        background-color: #223;
+        color: #fff;
+        border-color: #888;
+      }
+      /* A text line's place (mmdSstvTx.js): 3 by 3 cells standing for the picture's places, the one picked lit */
+      .sstvTxPlace {
+        display: inline-grid;
+        grid-template-columns: repeat(5, 4px);
+        grid-auto-rows: 3px;
+        gap: 1px;
+        padding: 1px;
+        border: 1px solid #555;
+        border-radius: 2px;
+        vertical-align: middle;
+      }
+      .sstvTxPlace span {
+        background-color: #3a3a3a;
+        cursor: pointer;
+      }
+      .sstvTxPlace span:hover {
+        background-color: #888;
+      }
+      .sstvTxPlace span.sstvTxPlaceOn {
+        background-color: cyan;
+      }
+      /* Its zoom box: the places over the picture as it will be sent, opened beside the small grid hovered */
+      #sstvTxPlaceZoom {
+        position: fixed;
+        z-index: 50;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 2px;
+        padding: 2px;
+        border: 1px solid #888;
+        border-radius: 3px;
+        background-color: #000;
+        background-size: 100% 100%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      }
+      #sstvTxPlaceZoom span {
+        background-color: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(0, 0, 0, 0.6);
+        cursor: pointer;
+      }
+      #sstvTxPlaceZoom span:hover {
+        background-color: rgba(255, 255, 255, 0.45);
+      }
+      #sstvTxPlaceZoom span.sstvTxPlaceOn {
+        background-color: rgba(0, 255, 255, 0.6);
+      }
+      /* Text or Time Stamp turned off (its title's checkbox): the rest of it grayed and not taken */
+      .sstvTxGroupOff > :not(.mapGroupTitle) {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      /* The settings and the picture side by side, centred together both ways: no space left between or under them */
+      #sstvSendBody {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 4px;
+        overflow: hidden;
+      }
+      #sstvTxForm {
+        flex: 0 0 auto;
+        width: 340px;
+        box-sizing: border-box;
+        max-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      /* Its boxes as Settings -> Map's (.mapGroup), stacked in one column, each as wide as the widest */
+      #sstvTxForm.mapGroups {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+        max-width: none;
+        margin: 0;
+        padding: 0 2px 0 0;
+        gap: 4px;
+      }
+      /* Room to spare beside the picture (mmdSstvTxLayout): the boxes in two columns, Picture and Text, then Time Stamp and Transmit */
+      #sstvTxForm.mapGroups.sstvTxTwoCol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+        width: 684px;
+      }
+      /* One grid for all four boxes: a fixed label column (right-aligned, as Settings -> Map's), the values from one line */
+      #sstvTxForm .mapGroup table {
+        width: 100%;
+        table-layout: fixed;
+      }
+      #sstvTxForm td {
+        height: 22px;
+        padding: 1px 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #sstvTxForm td.mapRowLabel {
+        width: 92px;
+      }
+      #sstvTxForm td.mapChecksCell {
+        font-size: 12px;
+        font-weight: bold;
+      }
+      #sstvTxForm td.mapChecksCell label {
+        vertical-align: middle;
+        margin-right: 10px;
+      }
+      /* The controls one size, each centred on its row */
+      #sstvTxForm select,
+      #sstvTxForm input,
+      #sstvTxForm .cwButton {
+        vertical-align: middle;
+      }
+      #sstvTxForm select {
+        width: 132px;
+      }
+      #sstvTxForm input[type="range"] {
+        width: 132px;
+      }
+      #sstvTxForm input.sstvTxHalf[type="range"] {
+        width: 56px;
+      }
+      #sstvTxForm input[type="color"] {
+        width: 40px;
+        height: 18px;
+        padding: 0;
+        border: 1px solid #888;
+        cursor: pointer;
+      }
+      #sstvTxForm input[type="text"] {
+        width: 200px;
+        box-sizing: border-box;
+      }
+      #sstvTxForm .mapValue {
+        min-width: 0;
+        margin-left: 4px;
+      }
+      /* A second control on a row: a small gap before it */
+      #sstvTxForm .sstvTxGap {
+        margin-left: 6px;
+      }
+      #sstvTxForm td {
+        padding: 1px 3px;
+        white-space: nowrap;
+      }
+      #sstvTxForm input[type="text"] {
+        width: 180px;
+      }
+      #sstvTxRight {
+        flex: 0 0 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      /* Its size the picture's as shown (mmdSstvTxLayout) */
+      #sstvTxPreview {
+        flex: 0 0 auto;
+        display: block;
+        background-color: black;
+        border: 1px solid #333;
+      }
+      #sstvTxStatus {
+        flex: 0 0 auto;
+        padding: 2px 4px;
+        color: #aaa;
+      }
       #cwMeasure {
         position: absolute;
         visibility: hidden;
@@ -597,7 +861,10 @@
     <script src="./lib/first.js"></script>
     <script src="./lib/ui/i18n.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmDecoder.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdFt8Background.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSstv.js" type="text/javascript"></script>
+    <script src="./lib/mmd/sstvEncoder.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdSstvTx.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdPacket.js" type="text/javascript"></script>
     <script src="./lib/mmd/ssdv.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSat.js" type="text/javascript"></script>
@@ -605,6 +872,8 @@
     <script src="./lib/mmd/mmdRsid.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdOlivia.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdTest.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdScope.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdDetect.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdBands.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdFallView.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSettings.js" type="text/javascript"></script>
@@ -623,6 +892,7 @@
       <span id="cwLevelButton" class="cwButton" style="display: none;" data-i18n="cwViewer.levels.hover" title="The audio's levels: SW, a gain inside the decoder for this mode; HW, the Input Device's own recording level. Hover here to set them"></span>
       <!-- Test Signals (mmdTest.js): the mode's recordings played into the decoder; while one plays, it stops it -->
       <span id="cwTestButton" class="cwButton" style="display: none;" onclick="mmdTestClick();" data-i18n="cwViewer.test.hover" title="Plays a recording of this mode's signals into the decoder, often several at once, to see what it decodes. What it decodes stays in this window"></span>
+      <span id="cwDetectButton" class="cwButton" onclick="mmdDetectToggle();" data-i18n="cwViewer.detect.hover" title="Listens for every mode here but FT8 and FT4 and names each signal it finds: click one, on the waterfall or in the list, to decode it. The mode you were in waits meanwhile"><span data-i18n="cwViewer.detect.label">Detect Modes</span></span>
       <span id="cwStatus"></span>
     </div>
     <!-- What is decoded: the mode, the bandwidth, and the mode's usual frequencies (shown with Rig Control connected, mmdFreqsShow) -->
@@ -637,22 +907,23 @@
       <!-- Olivia: the submode decoded (mmdOlivia.js); a click on the waterfall sets where its signal is, an RSID heard sets both -->
       <span id="cwOliviaBox" class="cwPick" style="display: none;"><select id="cwOliviaSub" data-i18n="cwViewer.olivia.hover" title="The Olivia or Contestia submode decoded (tones / bandwidth). Click the signal on the waterfall; an RSID heard sets both" onchange="mmdOliviaPicked();"></select></span>
     </div>
-    <!-- Its settings (mmdSettings.js), opened by Settings on the top line as the Call Roster's are: Decoders, Rig Control (whether the
-         decoder may send the rig anything) on top, then each decoder's own, the same rows in each: its Input Device, Waterfall Speed and its VFO, then what it
-         may send the rig, shown with Rig Control on, then its own -->
+    <!-- Its settings (mmdSettings.js), opened by Settings on the top line as the Call Roster's are: General (the waterfall, Rig Control, what
+         every decoder shares), Decoders (each decoder's own) and Band Plans (mmdBands.js) -->
     <div id="mmdSettings">
       <div class="settingstab">
-        <button id="mmdModesTabButton" class="settingsTablinks active" onclick="mmdSettingsTab('modes');" data-i18n="cwViewer.settings.modes.label">Decoders</button>
+        <button id="mmdGeneralTabButton" class="settingsTablinks active" onclick="mmdSettingsTab('general');" data-i18n="cwViewer.settings.general.label">General</button>
+        <button id="mmdModesTabButton" class="settingsTablinks" onclick="mmdSettingsTab('modes');" data-i18n="cwViewer.settings.modes.label">Decoders</button>
         <button id="mmdBandsTabButton" class="settingsTablinks" onclick="mmdSettingsTab('bands');" data-i18n="settings.bands.tab.label">Band Plans</button>
         <button class="Xbutton" onclick="mmdSettingsShow(false);">X</button>
       </div>
-      <div id="mmdModesTab" class="settingsTabcontent">
+      <!-- General: the waterfall (its speed and how it is drawn), Rig Control (whether the decoder may send the rig anything), Follow
+           BirdWatch, RSID, Common Input Device and Common VFO (each with its menu: on, each decoder's own is hidden and kept) -->
+      <div id="mmdGeneralTab" class="settingsTabcontent">
         <div class="mapGroups">
           <div class="mapGroup">
-            <!-- The waterfall's speed, every decoder's -->
             <div class="mmdRigControl mmdFallRow"><span data-i18n="settings.mmDecoder.fallSpeed.label">Waterfall Speed</span> <input data-i18n="settings.mmDecoder.fallSpeed.hover" title="How fast the waterfall moves down: 1× as it is heard (about 7 seconds in view); slower holds more time (about a minute at 0.1×), faster gives each moment more room" type="range" min="0.1" max="4" step="0.05" value="1" class="slider" id="mmdFallSpeedValue" oninput="mmdSetFallSpeed();" /><span id="mmdFallSpeedTd" class="mapValue">1×</span></div>
             <!-- How the waterfall is drawn (mmdFallView.js): its Style (with its own sliders), Resolution and Window, Sharp Pixels -->
-            <div class="mmdRigControl"><span data-i18n="settings.mmDecoder.fallStyle.label">Waterfall Style</span> <select id="mmdFallStyleSelect" data-i18n="settings.mmDecoder.fallStyle.hover" title="How the levels are coloured" onchange="mmdFallViewSet();"><option value="auto" data-i18n="settings.mmDecoder.fallStyle.auto">Auto Level</option><option value="wsjtx">WSJT-X</option><option value="crisp" data-i18n="settings.mmDecoder.fallStyle.crisp">Crisp</option></select> <span data-i18n="settings.mmDecoder.fallPalette.label">Palette</span> <select id="mmdFallPaletteSelect" data-i18n="settings.mmDecoder.fallPalette.hover" title="The waterfall's colours" onchange="mmdFallViewSet();"><option value="classic" data-i18n="settings.mmDecoder.fallPalette.classic">Classic</option><option value="ember" data-i18n="settings.mmDecoder.fallPalette.ember">Ember</option><option value="twilight" data-i18n="settings.mmDecoder.fallPalette.twilight">Twilight</option><option value="neon" data-i18n="settings.mmDecoder.fallPalette.neon">Neon</option><option value="aurora" data-i18n="settings.mmDecoder.fallPalette.aurora">Aurora</option><option value="clearsight" data-i18n="settings.mmDecoder.fallPalette.clearsight">Clear Sight</option><option value="prism" data-i18n="settings.mmDecoder.fallPalette.prism">Prism</option><option value="glacier" data-i18n="settings.mmDecoder.fallPalette.glacier">Glacier</option><option value="phosphor" data-i18n="settings.mmDecoder.fallPalette.phosphor">Phosphor</option><option value="moonlight" data-i18n="settings.mmDecoder.fallPalette.moonlight">Moonlight</option><option value="paper" data-i18n="settings.mmDecoder.fallPalette.paper">Paper</option></select></div>
+            <div class="mmdRigControl"><span data-i18n="settings.mmDecoder.fallStyle.label">Waterfall Style</span> <select id="mmdFallStyleSelect" data-i18n="settings.mmDecoder.fallStyle.hover" title="How the levels are colored" onchange="mmdFallViewSet();"><option value="auto" data-i18n="settings.mmDecoder.fallStyle.auto">Auto Level</option><option value="wsjtx">WSJT-X</option><option value="crisp" data-i18n="settings.mmDecoder.fallStyle.crisp">Crisp</option></select> <span data-i18n="settings.mmDecoder.fallPalette.label">Palette</span> <select id="mmdFallPaletteSelect" data-i18n="settings.mmDecoder.fallPalette.hover" title="The waterfall's colors" onchange="mmdFallViewSet();"><option value="classic" data-i18n="settings.mmDecoder.fallPalette.classic">Classic</option><option value="ember" data-i18n="settings.mmDecoder.fallPalette.ember">Ember</option><option value="twilight" data-i18n="settings.mmDecoder.fallPalette.twilight">Twilight</option><option value="neon" data-i18n="settings.mmDecoder.fallPalette.neon">Neon</option><option value="aurora" data-i18n="settings.mmDecoder.fallPalette.aurora">Aurora</option><option value="clearsight" data-i18n="settings.mmDecoder.fallPalette.clearsight">Clear Sight</option><option value="prism" data-i18n="settings.mmDecoder.fallPalette.prism">Prism</option><option value="glacier" data-i18n="settings.mmDecoder.fallPalette.glacier">Glacier</option><option value="phosphor" data-i18n="settings.mmDecoder.fallPalette.phosphor">Phosphor</option><option value="moonlight" data-i18n="settings.mmDecoder.fallPalette.moonlight">Moonlight</option><option value="paper" data-i18n="settings.mmDecoder.fallPalette.paper">Paper</option></select></div>
             <div id="mmdFallWsjtxRow" class="mmdCommonRow mmdFallSliders"><span data-i18n="settings.mmDecoder.fallGain.label">Gain</span> <input data-i18n="settings.mmDecoder.fallGain.hover" title="Contrast: higher, fewer dB from black to white" type="range" min="-50" max="50" step="1" value="0" class="slider" id="mmdFallGainValue" oninput="mmdFallViewSet();" /><span id="mmdFallGainTd" class="mapValue">0</span> <span data-i18n="settings.mmDecoder.fallZero.label">Zero</span> <input data-i18n="settings.mmDecoder.fallZero.hover" title="The level drawn black" type="range" min="-50" max="50" step="1" value="0" class="slider" id="mmdFallZeroValue" oninput="mmdFallViewSet();" /><span id="mmdFallZeroTd" class="mapValue">0</span></div>
             <div id="mmdFallCrispRow" class="mmdCommonRow mmdFallSliders"><span data-i18n="settings.mmDecoder.fallFloor.label">Floor</span> <input data-i18n="settings.mmDecoder.fallFloor.hover" title="dB over the noise still drawn black" type="range" min="0" max="20" step="0.5" value="3" class="slider" id="mmdFallFloorValue" oninput="mmdFallViewSet();" /><span id="mmdFallFloorTd" class="mapValue">3 dB</span> <span data-i18n="settings.mmDecoder.fallRange.label">Range</span> <input data-i18n="settings.mmDecoder.fallRange.hover" title="dB from black to white" type="range" min="10" max="60" step="1" value="30" class="slider" id="mmdFallRangeValue" oninput="mmdFallViewSet();" /><span id="mmdFallRangeTd" class="mapValue">30 dB</span></div>
             <div class="mmdRigControl"><span data-i18n="settings.mmDecoder.fallRes.label">Resolution</span> <select id="mmdFallResSelect" data-i18n="settings.mmDecoder.fallRes.hover" title="Sharper in time or in frequency" onchange="mmdFallViewSet();"><option value="mode" data-i18n="settings.mmDecoder.fallRes.mode">By Mode</option><option value="quarter" data-i18n="settings.mmDecoder.fallRes.quarter">Sharpest Time</option><option value="half" data-i18n="settings.mmDecoder.fallRes.half">Sharp Time</option><option value="same" data-i18n="settings.mmDecoder.fallRes.same">Balanced</option><option value="twice" data-i18n="settings.mmDecoder.fallRes.twice">Sharp Frequency</option></select> <span data-i18n="settings.mmDecoder.fallWindow.label">Window</span> <select id="mmdFallWindowSelect" data-i18n="settings.mmDecoder.fallWindow.hover" title="Blackman-Harris: a darker floor beside strong signals" onchange="mmdFallViewSet();"><option value="hann">Hann</option><option value="blackman">Blackman-Harris</option></select></div>
@@ -662,8 +933,20 @@
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.rsid.hover" title="Names the mode of a transmission on the waterfall when its sender starts it with an RSID" type="checkbox" id="mmdRsidValue" onclick="mmdSetRsid();" /> <label data-i18n="settings.mmDecoder.rsid.label" for="mmdRsidValue">RSID</label></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.commonInput.hover" title="One Input Device for every decoder; off, each decoder uses its own" type="checkbox" id="mmdCommonInputValue" onclick="mmdSetCommonInput();" /> <label data-i18n="settings.mmDecoder.commonInput.label" for="mmdCommonInputValue">Common Input Device</label></div>
             <div id="mmdCommonInputRow" class="mmdCommonRow"><select id="commonInputSelect" class="mmdInputSelect" data-i18n="settings.mmDecoder.commonInputSelect.hover" title="The audio every decoder listens to" onchange="mmdSetInput('common');"></select></div>
+            <!-- The modes that transmit (SSTV's Send Picture): the Output Device they send to, the common one or each its own (mmdOutputsRender) -->
+            <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.commonOutput.hover" title="One Output Device for every mode that transmits; off, each uses its own" type="checkbox" id="mmdCommonOutputValue" onclick="mmdSetCommonOutput();" /> <label data-i18n="settings.mmDecoder.commonOutput.label" for="mmdCommonOutputValue">Common Output Device</label></div>
+            <div id="mmdCommonOutputRow" class="mmdCommonRow"><select id="commonOutputSelect" class="mmdInputSelect" data-i18n="settings.mmDecoder.commonOutputSelect.hover" title="The audio output every transmitting mode sends to (the rig's audio input)" onchange="mmdSetOutput('common');"></select></div>
             <div class="mmdRigControl mmdRigRow"><input data-i18n="settings.mmDecoder.commonVfo.hover" title="One VFO for every decoder; off, each decoder uses its own" type="checkbox" id="mmdCommonVfoValue" onclick="mmdSetCommonVfo();" /> <label data-i18n="settings.mmDecoder.commonVfo.label" for="mmdCommonVfoValue">Common VFO</label></div>
             <div id="mmdCommonVfoRow" class="mmdCommonRow mmdRigRow"><select id="commonVfoSelect" data-i18n="settings.mmDecoder.commonVfoSelect.hover" title="The Rig Control VFO every decoder reads and, with Rig Control, tunes" onchange="mmdSetVfo('common');"></select></div>
+          </div>
+        </div>
+      </div>
+      <!-- Decoders: each decoder's own settings, the same rows in each: its Input Device and its VFO (shown with their common ones off), then
+           what it may send the rig, shown with Rig Control on, then its own -->
+      <div id="mmdModesTab" class="settingsTabcontent" style="display: none;">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <!-- The waterfall's speed, every decoder's -->
             <div class="rigVfoBox">
               <div class="rigVfoTitle"><span data-i18n="settings.cwDecoder.label">CW</span></div>
               <table>
@@ -695,6 +978,13 @@
                 <tr class="mmdRigRow">
                   <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="ft4SetFreqValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="ft4SetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="ft4SetModeValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="ft4SetModeValue">Set Mode</label></td>
                 </tr>
+                <!-- Its decodes to GridTracker as the instance MMD, as FT8's (one of the two: checking one unchecks the other) -->
+                <tr>
+                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft4InstanceValue" data-i18n="settings.ft4Decoder.instance.hover" title="FT4's decodes go to GridTracker as a WSJT-X instance named MMD would (the Call Roster, the map, alerts), and FT4 is decoded on with this window closed or in another mode (FT8's instance turns off). Needs Rig Control reading the FT4 VFO's dial; MMD can't be answered (it doesn't transmit)" onclick="mmdSetInstance('ft4');" /> <label for="ft4InstanceValue" data-i18n="settings.ft8Decoder.instance.label">Enable GridTracker Instance</label></td>
+                </tr>
+                <tr id="ft4InstanceNoteTr">
+                  <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft4Decoder.instance.note.label">Waiting for Rig Control to read the FT4 VFO's dial</td>
+                </tr>
               </table>
             </div>
             <div class="rigVfoBox">
@@ -720,10 +1010,10 @@
                     </select>
                   </td>
                 </tr>
-                <!-- Its decodes to GridTracker as an instance named MMD (services/mmDecoder.js), listening on with this window closed; the note
+                <!-- Its decodes to GridTracker as an instance named MMD (services/mmDecoder.js), listening on with this window closed or in another mode (mmdFt8Background.js), one of FT8's and FT4's; the note
                      while it can't (Rig Control isn't reading the FT8 VFO's dial, so a decode's band isn't known) -->
                 <tr>
-                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.hover" title="FT8's decodes go to GridTracker as a WSJT-X instance named MMD would (the Call Roster, the map, alerts), and FT8 is decoded on with this window closed. Needs Rig Control reading the FT8 VFO's dial; MMD can't be answered (it doesn't transmit)" onclick="mmdSetFt8Instance();" /> <label for="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.label">Enable GridTracker Instance</label></td>
+                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.hover" title="FT8's decodes go to GridTracker as a WSJT-X instance named MMD would (the Call Roster, the map, alerts), and FT8 is decoded on with this window closed or in another mode (FT4's instance turns off). Needs Rig Control reading the FT8 VFO's dial; MMD can't be answered (it doesn't transmit)" onclick="mmdSetInstance('ft8');" /> <label for="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.label">Enable GridTracker Instance</label></td>
                 </tr>
                 <tr id="ft8InstanceNoteTr">
                   <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft8Decoder.instance.note.label">Waiting for Rig Control to read the FT8 VFO's dial</td>
@@ -811,6 +1101,10 @@
                   <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="sstvInputSelect">Input Device</label></td>
                   <td><select id="sstvInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('sstv');"></select></td>
                 </tr>
+                <tr class="mmdOutputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.outputDevice.label" for="sstvOutputSelect">Output Device</label></td>
+                  <td><select id="sstvOutputSelect" class="mmdInputSelect" data-i18n="cwViewer.output.hover" title="The audio output this mode sends to (the rig's audio input): each mode keeps its own" onchange="mmdSetOutput('sstv');"></select></td>
+                </tr>
                 <tr class="mmdRigRow mmdVfoRow">
                   <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="sstvVfoSelect">VFO</label></td>
                   <td><select id="sstvVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads (the frequency shown, and the signals' frequencies on the air) and, with Rig Control, tunes" onchange="mmdSetVfo('sstv');"></select></td>
@@ -884,6 +1178,13 @@
       </div>
       <div id="cwPeakText"></div>
     </div>
+    <!-- The rig's band scope (mmdScope.js): shown while the decoder's VFO's rig has Use Scope If Present (Rig Control) -->
+    <div id="mmdScope" style="display: none;">
+      <canvas id="mmdScopeCanvas" data-i18n="cwViewer.scope.tune.hover" title="The radio's band scope: click to tune there"></canvas>
+      <span id="mmdScopeNarrow" class="cwButton mmdScopeButton">&minus;</span><span id="mmdScopeSpanText"></span>
+      <span id="mmdScopeWider" class="cwButton mmdScopeButton">+</span>
+      <div id="mmdScopeWarn" style="display: none;"></div>
+    </div>
     <!-- The Hz of the [ or ] under the mouse, or being dragged (mmDecoder.js, mmdRangeTip) -->
     <div id="cwRangeTip"></div>
     <canvas id="cwScale" data-i18n="cwViewer.range.hover" title="Drag [ and ] to set the lowest and highest audio decoded: what is outside them (dimmed) isn't"></canvas>
@@ -922,7 +1223,18 @@
         </thead>
         <tbody id="packetRows"></tbody>
       </table>
-      <div id="packetEmpty" data-i18n="cwViewer.packet.empty">No packets decoded yet: AFSK 1200 (APRS), FSK 9600 and HF 300 baud are all listened for</div>
+      <div id="packetEmpty" data-i18n="cwViewer.packet.empty">No packets decoded yet: AFSK 1200 (APRS), FSK 9600 and HF 300 baud are all listened for. Click the waterfall to lock HF packet on one place</div>
+    </div>
+    <!-- Detect Modes: each signal found and named, by frequency, in the mode's place while it is on (mmdDetect.js) -->
+    <div id="detectList" style="display: none;">
+      <table id="detectTable">
+        <colgroup><col class="detectModeCol" /><col class="detectFreqCol" /><col class="detectDbCol" /><col /></colgroup>
+        <thead>
+          <tr><th data-i18n="cwViewer.detect.header.mode">Mode</th><th data-i18n="cwViewer.header.freq">Frequency</th><th data-i18n="cwViewer.header.db.label">dB</th><th data-i18n="cwViewer.detect.header.heard">Heard</th></tr>
+        </thead>
+        <tbody id="detectRows"></tbody>
+      </table>
+      <div id="detectEmpty" data-i18n="cwViewer.detect.empty">Listening for signals: each is named once it decodes (CW, PSK31, RTTY, Packet and SSTV), and Olivia by its look</div>
     </div>
     <!-- Sat Data mode: each satellite frame decoded, the newest on top (mmdSat.js): its bytes as hex in the summary's tooltip -->
     <div id="satList" style="display: none;">
@@ -937,12 +1249,123 @@
       </table>
       <div id="satEmpty" data-i18n="cwViewer.sat.empty">No frames decoded yet: FUNcube BPSK 1200, AX.100 and GENESIS FSK are listened for</div>
     </div>
-    <!-- SSTV mode: the picture shown large, the newest few beside it; the header is what is dragged (mmdSstv.js) -->
+    <!-- SSTV mode: Receive, the picture shown large, the newest few beside it (mmdSstv.js); Send, the picture built from the form and shown as
+         it will be sent (mmdSstvTx.js). The header carries the tabs and is what is dragged -->
     <div id="sstvView" style="display: none;">
-      <div id="sstvHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="sstvHeadText"></span></div>
+      <div id="sstvHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span class="sstvTabs"><span id="sstvRxTab" class="sstvTab sstvTabOn" onclick="mmdSstvTab('receive');" data-i18n="cwViewer.sstv.receive.label">Receive</span><span id="sstvTxTab" class="sstvTab" onclick="mmdSstvTab('send');" data-i18n="sstvTx.send.label">Send</span></span><span id="sstvHeadText"></span></div>
       <div id="sstvBody">
         <canvas id="sstvPicture" data-i18n="cwViewer.sstv.picture.hover" title="Click a picture on the right to see it here, and click here to go back to the newest. Right-click a picture to save it"></canvas>
         <div id="sstvStrip"></div>
+      </div>
+      <div id="sstvSendBody" style="display: none;">
+        <div id="sstvTxForm" class="mapGroups">
+          <!-- Picture: the mode, the background (Refresh takes it again), its fill color, the image file, the logo's or image's size and place -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="sstvTx.group.picture">Picture</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxMode" data-i18n="cwViewer.mode.label">Mode</label></td>
+                <td><select id="sstvTxMode"></select></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxBack" data-i18n="sstvTx.background.label">Background</label></td>
+                <td><select id="sstvTxBack" style="width: 120px;"><option value="logo" data-i18n="sstvTx.background.logo">GridTracker Logo</option><option value="map" data-i18n="sstvTx.background.map">Map</option><option value="waterfall" data-i18n="sstvTx.background.waterfall">Waterfall</option><option value="color" data-i18n="sstvTx.background.color">Color</option><option value="image" data-i18n="sstvTx.background.image">Image File</option></select> <span class="cwButton sstvTxGap" onclick="mmdSstvTxRefresh();" data-i18n="sstvTx.refresh.hover" title="Takes the background again (the map as it is now, the image file read again) and builds the picture again"><span data-i18n="sstvTx.refresh.label">Refresh</span></span></td>
+              </tr>
+              <tr id="sstvTxImageRow">
+                <td class="mapRowLabel"><span data-i18n="sstvTx.background.image">Image File</span></td>
+                <td><span class="cwButton" onclick="mmdSstvTxChooseImage();" data-i18n="sstvTx.choose.label">Choose Image…</span> <span id="sstvTxImageName" class="mapValue"></span></td>
+              </tr>
+              <!-- The color: the whole picture, or what shows round a logo or image smaller than it -->
+              <tr id="sstvTxColorRow">
+                <td class="mapRowLabel"><label for="sstvTxColor" data-i18n="sstvTx.background.color">Color</label></td>
+                <td><input type="color" id="sstvTxColor" value="#1a2a5a" /></td>
+              </tr>
+              <tr id="sstvTxZoomRow">
+                <td class="mapRowLabel"><label for="sstvTxZoom" data-i18n="sstvTx.zoom.label">Zoom</label></td>
+                <td><input type="range" data-i18n="sstvTx.zoom.hover" title="Double-click for 1x" id="sstvTxZoom" min="0.25" max="4" step="0.05" value="1" class="slider" /><span id="sstvTxZoomTd" class="mapValue">1.00×</span></td>
+              </tr>
+              <tr id="sstvTxPlaceRow">
+                <td class="mapRowLabel"><span data-i18n="sstvTx.position.label">Position</span></td>
+                <td>X <input type="range" data-i18n="sstvTx.place.hover" title="Double-click to center" id="sstvTxImgX" class="slider sstvTxHalf" min="-100" max="100" step="1" value="0" /> Y <input type="range" data-i18n="sstvTx.place.hover" title="Double-click to center" id="sstvTxImgY" class="slider sstvTxHalf" min="-100" max="100" step="1" value="0" /></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Text: its font, then your call and grid (as GridTracker writes calls) and a line of your own, each with its own color, size and place
+               (lines in the same place stacked: call, grid, text) -->
+          <div class="mapGroup" id="sstvTxTextGroup">
+            <div class="mapGroupTitle" style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sstvTxTextShow" style="margin: 0;" data-i18n="sstvTx.textShow.hover" title="Puts the text on the picture" /><label for="sstvTxTextShow" data-i18n="sstvTx.group.text">Text</label></div>
+            <table>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxTextFont" data-i18n="sstvTx.font.label">Font</label></td>
+                <td><select id="sstvTxTextFont"></select></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><input type="checkbox" id="sstvTxCall" /> <label for="sstvTxCall" data-i18n="sstvTx.call.label">Your Call</label></td>
+                <td><input type="color" id="sstvTxCallColor" value="#ffff00" /> <select id="sstvTxCallSize" class="sstvTxGap" style="width: 80px;"><option value="small" data-i18n="sstvTx.size.small">Small</option><option value="medium" data-i18n="sstvTx.size.medium">Medium</option><option value="large" data-i18n="sstvTx.size.large">Large</option><option value="xlarge" data-i18n="sstvTx.size.xlarge">Extra Large</option></select> <span id="sstvTxCallPos" class="sstvTxPlace sstvTxGap"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><input type="checkbox" id="sstvTxGrid" /> <label for="sstvTxGrid" data-i18n="sstvTx.grid.label">Your Grid</label></td>
+                <td><input type="color" id="sstvTxGridColor" value="#ffff00" /> <select id="sstvTxGridSize" class="sstvTxGap" style="width: 80px;"><option value="small" data-i18n="sstvTx.size.small">Small</option><option value="medium" data-i18n="sstvTx.size.medium">Medium</option><option value="large" data-i18n="sstvTx.size.large">Large</option><option value="xlarge" data-i18n="sstvTx.size.xlarge">Extra Large</option></select> <span id="sstvTxGridPos" class="sstvTxPlace sstvTxGap"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><input type="checkbox" id="sstvTxTextOn" data-i18n="sstvTx.textOn.hover" title="Puts your line of text on the picture" /> <label for="sstvTxTextOn" data-i18n="sstvTx.text.label">Text</label></td>
+                <td><input type="text" id="sstvTxText" maxlength="40" /></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"></td>
+                <td><input type="color" id="sstvTxTextColor" value="#ffff00" /> <select id="sstvTxTextSize" class="sstvTxGap" style="width: 80px;"><option value="small" data-i18n="sstvTx.size.small">Small</option><option value="medium" data-i18n="sstvTx.size.medium">Medium</option><option value="large" data-i18n="sstvTx.size.large">Large</option><option value="xlarge" data-i18n="sstvTx.size.xlarge">Extra Large</option></select> <span id="sstvTxTextPos" class="sstvTxPlace sstvTxGap"></span></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Time Stamp: the UTC time (and date) it is sent, in a corner, in a box or outlined -->
+          <div class="mapGroup" id="sstvTxStampGroup">
+            <div class="mapGroupTitle" style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sstvTxStampShow" style="margin: 0;" data-i18n="sstvTx.stampShow.hover" title="Puts the time stamp on the picture" /><label for="sstvTxStampShow" data-i18n="sstvTx.group.stamp">Time Stamp</label></div>
+            <table>
+              <tr>
+                <td class="mapRowLabel"><span data-i18n="sstvTx.utc.label">UTC</span></td>
+                  <td class="mapChecksCell"><input type="checkbox" id="sstvTxStampDate" data-i18n="sstvTx.date.hover" title="Stamps the picture with the UTC date it is sent" /> <label for="sstvTxStampDate" data-i18n="sstvTx.date.label">Date</label> <input type="checkbox" id="sstvTxStampTime" data-i18n="sstvTx.stamp.hover" title="Stamps the picture with the UTC time it is sent" /> <label for="sstvTxStampTime" data-i18n="sstvTx.time.label">Time</label></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxStampFont" data-i18n="sstvTx.font.label">Font</label></td>
+                <td><select id="sstvTxStampFont"></select></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxStampPos" data-i18n="sstvTx.corner.label">Corner</label></td>
+                <td><select id="sstvTxStampPos"><option value="topLeft" data-i18n="sstvTx.stamp.topLeft">Top Left</option><option value="topRight" data-i18n="sstvTx.stamp.topRight">Top Right</option><option value="bottomLeft" data-i18n="sstvTx.stamp.bottomLeft">Bottom Left</option><option value="bottomRight" data-i18n="sstvTx.stamp.bottomRight">Bottom Right</option></select> <input type="color" id="sstvTxStampColor" class="sstvTxGap" value="#ffffff" /></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxStampBox" data-i18n="sstvTx.stamp.box.label">Box</label></td>
+                <td><select id="sstvTxStampBox"><option value="none" data-i18n="settings.rig.vfo.none.label">None</option><option value="color" data-i18n="sstvTx.background.color">Color</option></select> <input type="color" id="sstvTxStampBoxColor" class="sstvTxGap" value="#000000" /></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Transmit: how the rig is keyed (its PTT Method), the Level (moved as it plays), where the audio goes, Send, Stop and Tune -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="sstvTx.group.transmit">Transmit</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel"><span data-i18n="sstvTx.ptt.label">PTT</span></td>
+                <td><span id="sstvTxPttText" class="mapValue" data-i18n="sstvTx.ptt.hover" title="How the rig is keyed: the SSTV VFO's rig's PTT Method (Rig Control's settings in the main window). VOX sends a leader tone first"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="sstvTxLevel" data-i18n="sstvTx.level.label">Level</label></td>
+                <td><input type="range" id="sstvTxLevel" min="-45" max="0" step="0.5" value="-6" class="slider" data-i18n="sstvTx.level.hover" title="The audio's level into the rig: set it so the rig's ALC barely moves" /> <span id="sstvTxLevelTd" class="mapValue">-6.0 dB</span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><span data-i18n="settings.audio.row.outputDevice.label">Output Device</span></td>
+                <td><span id="sstvTxOutputText" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"></td>
+                  <td><span id="sstvTxSimulateButton" class="cwButton" onclick="mmdSstvTxSimulate();" data-i18n="sstvTx.simulate.hover" title="Plays the picture into the decoder as if it were received, to see how it comes out: nothing is keyed or sent"><span data-i18n="sstvTx.simulate.label">Simulate Rx</span></span> <span id="sstvTxSendButton" class="cwButton" onclick="mmdSstvTxSend();" data-i18n="sstvTx.send.hover" title="Keys the rig and sends the picture"><span data-i18n="sstvTx.send.label">Send</span></span> <span id="sstvTxStopButton" class="cwButton" style="display: none;" onclick="mmdSstvTxStop();"><span data-i18n="cwViewer.stop.label">Stop</span></span> &nbsp; <input type="checkbox" id="sstvTxTune" onclick="mmdSstvTxTune();" data-i18n="sstvTx.tune.hover" title="Sends a steady 1900 Hz tone at the Level, for 30 s at most or until unchecked: set the rig's drive and ALC by it" /> <label for="sstvTxTune" data-i18n="sstvTx.tune.label">Tune</label></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div id="sstvTxRight">
+          <canvas id="sstvTxPreview" data-i18n="sstvTx.preview.hover" title="The picture as it will be sent"></canvas>
+          <div id="sstvTxStatus"></div>
+        </div>
       </div>
     </div>
     <span id="cwMeasure">0000000000</span>

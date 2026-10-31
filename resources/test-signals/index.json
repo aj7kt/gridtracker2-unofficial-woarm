@@ -156,6 +156,19 @@
       "source": "generated"
     },
     {
+      "file": "rtty-variants.wav",
+      "module": "rtty",
+      "name": "RTTY 50/75 Baud, 425/850 Hz",
+      "modes": [
+        "rtty"
+      ],
+      "signals": 4,
+      "rsid": false,
+      "sync": null,
+      "description": "Four RTTY signals at other bauds and shifts: 50 baud 170 Hz at 600 Hz, 45.45 baud 425 Hz at 1250 Hz, 50 baud 850 Hz at 2100 Hz, 75 baud 170 Hz at 2950 Hz",
+      "source": "generated"
+    },
+    {
       "file": "sat-genesis-ssdv.wav",
       "module": "sat",
       "name": "GENESIS SSDV",

@@ -13,7 +13,8 @@
 //      { type: "rows", id, from, count, rgba }            rows from .. from + count - 1 (Uint8ClampedArray, width * count * 4)
 //      { type: "redraw", id, count, rgba }                its first count rows again (the line rate measured better)
 //      { type: "done", id, count, complete, rgba }        the picture as finally read, count rows (complete: all of them)
-//      { type: "status", state ("idle" or "receiving"), snr (dB), id, line, lines }  twice a second
+//      { type: "status", state ("idle" or "receiving"), snr (dB), id, line, lines, measured, syncs }  twice a second (measured: the lines
+//      whose sync pulse was looked for, syncs: those where it was found clearly)
 
 const SSTV_RATE = 12000;
 // A frequency is read every SSTV_STEP samples: 6000 a second
@@ -48,15 +49,8 @@ const SSTV_SHIFT_MAX = 1000;
 const SSTV_TONE_TOL = 70;
 // The line rate is measured within this share of what the mode says (sound cards are rarely 0.2% off)
 const SSTV_RATE_TOL = 0.006;
-// The signal gone: lines in a row with no sync pulse heard, with the signal to noise ratio under SSTV_LOST_SNR; or the sync pulses'
-// clearness (sstvSyncEnd: 1 a clean pulse) averaged over the last SSTV_LOST_WINDOW lines under SSTV_LOST_CLEAR. Noise alone averages
-// about 0.45 (a chance pulse found in it now and then); a weak sender whose picture is mostly speckle still about 0.8. The picture is read
-// on to its last line all the same (a faded signal that comes back still gives the rest of it); one that never came back is cut where it
-// faded (sstvFinish)
-const SSTV_LOST_LINES = 20;
-const SSTV_LOST_SNR = -3;
-const SSTV_LOST_WINDOW = 24;
-const SSTV_LOST_CLEAR = 0.6;
+// A picture is read on to its last line whatever the signal does (a faded signal that comes back still gives the rest of it), and
+// every line drawn is kept: nothing shown is cut away, noise or not
 
 // ---- The modes (N7CXI's table): each one's VIS code, name, size, the time of a line (s; a PD line holds two rows), where its sync pulse
 // ends (s from the line's start), and its channels: where each starts in the line and how long it is (s), and what it carries
@@ -281,7 +275,7 @@ function sstvFeed(samples)
   {
     S.statusAt = now;
     const pic = S.pic;
-    S.out({ type: "status", state: pic ? "receiving" : "idle", snr: Math.round(S.snr), id: pic ? pic.id : 0, line: pic ? pic.rendered : 0, lines: pic ? sstvLines(pic.mode) : 0 });
+    S.out({ type: "status", state: pic ? "receiving" : "idle", snr: Math.round(S.snr), id: pic ? pic.id : 0, line: pic ? pic.rendered : 0, lines: pic ? sstvLines(pic.mode) : 0, measured: pic ? pic.measured : 0, syncs: pic ? pic.points.length : 0 });
   }
 }
 
@@ -416,8 +410,6 @@ function sstvStart(mode, at, shift)
     rendered: 0,      // the lines drawn
     drawnAt: [],      // the start each drawn line was read from (to tell when a better rate moves them)
     redrawnAt: 0,
-    lost: 0,
-    fadedAt: null,    // the lines drawn when the signal faded, while it stays gone (sstvLinesIn)
     rgba: new Uint8ClampedArray(mode.width * mode.height * 4),
     chroma: null      // Robot 36: the even line's R-Y, for the odd line after it
   };
@@ -648,23 +640,12 @@ function sstvLinesIn()
     {
       pic.points.push([pic.measured, at, clear]);
       sstvFit(pic);
-      pic.lost = 0;
       // The sender's tones followed from this pulse's (a measurement far off is noise, not a drift)
       const tone = sstvSyncTone(pic, at);
       if (tone !== null && Math.abs(tone - pic.shift) < SSTV_FOLLOW_MAX) pic.shift += (tone - pic.shift) * SSTV_FOLLOW_GAIN;
     }
-    else pic.lost++;
-    // The last SSTV_LOST_WINDOW lines' pulses' clearness
-    const recent = pic.recent || (pic.recent = []);
-    recent.push(Math.max(0, clear));
-    if (recent.length > SSTV_LOST_WINDOW) recent.shift();
     pic.lineShift[pic.measured] = pic.shift;
     pic.measured++;
-    const faded = recent.length >= SSTV_LOST_WINDOW && recent.reduce((a, v) => a + v, 0) / recent.length < SSTV_LOST_CLEAR;
-    const gone = (pic.lost >= SSTV_LOST_LINES && S.snr < SSTV_LOST_SNR) || faded;
-    // The lines drawn when it faded (where it is cut if it never comes back); back again, nothing is cut
-    if (gone && pic.fadedAt === null) pic.fadedAt = pic.rendered;
-    else if (!gone && recent.length >= SSTV_LOST_WINDOW && pic.lost == 0) pic.fadedAt = null;
   }
   let from = -1, to = -1;
   while (pic.rendered < pic.measured && sstvLineStart(pic, pic.rendered) + pic.period + margin <= S.est)
@@ -702,18 +683,12 @@ function sstvRedraw(pic, lines)
   for (let y = 0; y < lines; y++) sstvRender(pic, y);
 }
 
-// The picture as finally read: the line rate from all its sync pulses, every line drawn again with it; cut where the signal faded if it
-// didn't come back
+// The picture as finally read: the line rate from all its sync pulses, every line drawn again with it (all of them kept)
 function sstvFinish(complete)
 {
   const pic = S.pic;
   S.pic = null;
   if (!pic) return;
-  if (pic.fadedAt !== null && pic.fadedAt < pic.rendered)
-  {
-    pic.rendered = pic.fadedAt;
-    complete = false;
-  }
   if (pic.rendered > 0)
   {
     sstvFit(pic);

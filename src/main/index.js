@@ -432,6 +432,19 @@ ipcMain.on('capturePageToClipboard', (event, what) => {
   }
 });
 
+// A window's picture (all of it, or the part rect gives: { x, y, width, height } in its own pixels) as a PNG data URL, "" when it can't be
+// taken (the Multi-Mode Decoder's Send Picture: the map as the main window shows it)
+ipcMain.handle('captureWindowImage', async (event, what, rect) => {
+  const win = allowedWindows[what]?.window;
+  if (!win) return "";
+  try {
+    const image = await (rect ? win.capturePage(rect) : win.capturePage());
+    return image.isEmpty() ? "" : image.toDataURL();
+  } catch (e) {
+    return "";
+  }
+});
+
 ipcMain.on('setAlwaysOnTop', (event, what, value) => {
   if (allowedWindows[what]?.window) {
     allowedWindows[what].window.setAlwaysOnTop(value);

@@ -538,7 +538,8 @@ const def_settings = {
   // { cw: { minHz, maxHz } }, a mode with none starting with the last one's). fallSpeed: the Waterfall
   // Speed, every mode's (1 as heard; set at startup from the mode shown's own, from before). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
   // ft8Depth: the FT8 Decoder's Depth, "normal" (ft8_lib as it comes) or "deep" (ft8wasm.c's passes, fine reading, guesses ...).
-  // ft8Instance: Enable GridTracker Instance, FT8's decodes to GridTracker as an instance named MMD, with the window closed too (off).
+  // ft8Instance, ft4Instance: Enable GridTracker Instance, FT8's (or FT4's: one of the two) decodes to GridTracker as an instance named MMD, with the window
+  // closed or in another mode too (both off).
   // PSK31 and RTTY: their Set Frequency and Set Mode (USB).
   // Olivia: oliviaSubmode ("olivia 8/500", "contestia 16/500" ...: its menu), oliviaCenter (audio Hz: where its signal is).
   // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
@@ -558,7 +559,7 @@ const def_settings = {
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO)
-  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8Instance: false, ft4SetFreq: true, ft4SetMode: true, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
+  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8Instance: false, ft4SetFreq: true, ft4SetMode: true, ft4Instance: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
   audio: {
     alertMute: 0,
     speechRate: 1,

@@ -1,7 +1,7 @@
 // Packet test signals (tools/make_test_signals.js): AX.25 UI frames carrying APRS, one after another. AFSK 1200 (Bell 202: 1200 Hz mark,
 // 2200 Hz space, VHF APRS) with five different packets: a position with its symbol and a comment (via WIDE1-1,WIDE2-1), a status passed
 // on by a digipeater, a message to another station, a weather report and an object. And HF packet's 300 baud (1600 and 1800 Hz, HF APRS)
-// with three, one after another (the decoder listens there only). Written from the AX.25 2.2 and APRS 1.01 specifications: flags, the
+// with three, one after another. Written from the AX.25 2.2 and APRS 1.01 specifications: flags, the
 // addresses (six letters shifted up a bit, the SSID byte, the last one's lowest bit set; a digipeater that has passed it on its H bit),
 // control 0x03, PID 0xF0, the information, the FCS (CRC-16 CCITT, least significant bit first), bit stuffing, NRZI (a 0 changes the
 // tone). Fictional calls (Q-prefixed: no country has them)

@@ -46,8 +46,10 @@ function mmDecoderInit()
   }
   delete GT.settings.MMD.ssbData;
   delete GT.settings.MMD.ft8Data;
-  // FT8's decodes to GridTracker as an instance, "MMD" (mmDecoderInstanceTick): off unless turned on
+  // FT8's or FT4's decodes to GridTracker as an instance, "MMD" (mmDecoderInstanceTick): off unless turned on, and one of the two at most
   if (typeof GT.settings.MMD.ft8Instance != "boolean") GT.settings.MMD.ft8Instance = false;
+  if (typeof GT.settings.MMD.ft4Instance != "boolean") GT.settings.MMD.ft4Instance = false;
+  if (GT.settings.MMD.ft8Instance) GT.settings.MMD.ft4Instance = false;
   if (!GT.settings.MMD.vfos || typeof GT.settings.MMD.vfos != "object") GT.settings.MMD.vfos = {};
   // Common VFO, new: None until one is picked (no rig read or tuned before the user says which)
   const vfos = GT.settings.MMD.vfos;
@@ -69,7 +71,24 @@ function mmDecoderEnableChanged()
 {
   GT.settings.MMD.enable = mmDecoderEnable.checked;
   mmDecoderRender();
-  // Off: the window is hidden and stops its audio, even with its FT8 instance on (and puts the filter back)
+  // On with its FT8 or FT4 instance on: the window loaded (hidden) if it isn't yet, or told, so that mode is decoded for the instance whatever
+  // the window shows (as at startup)
+  if (GT.settings.MMD.enable && mmDecoderInstanceMode())
+  {
+    if (GT.mmDecoderHandle == null) mmDecoderOpen(false);
+    else if (GT.mmDecoderInitialized)
+    {
+      try
+      {
+        GT.mmDecoderHandle.window.mmdListen();
+      }
+      catch (e)
+      {
+        // Not loaded: it listens as it loads
+      }
+    }
+  }
+  // Off: the window is hidden and stops its audio, even with its instance on (and puts the filter back)
   if (!GT.settings.MMD.enable && GT.mmDecoderInitialized)
   {
     electron.ipcRenderer.send("hideWin", "gt_mmdecoder");
@@ -155,6 +174,52 @@ function mmDecoderInputFindOwn(key, inputs)
 function mmDecoderInputSet(mode, id, name)
 {
   if (MMD_INPUT_MODES.includes(mode) || mode == "common") mmDecoderInputs()[mode] = { id: String(id), name: name || null };
+}
+
+// ---- Output Devices (the modes that transmit: SSTV's Send Picture), as the Input Devices: Common Output Device (the window's Settings,
+// General; on unless turned off) is the one every such mode sends to (MMD.outputs.common), each mode's own (MMD.outputs.sstv) kept for
+// when it is off. { id, name }; none picked ("" or missing): the output on the same sound card as the input heard (the window's
+// mmdOutputFind)
+
+const MMD_OUTPUT_MODES = ["sstv"];
+
+function mmDecoderOutputs()
+{
+  const S = GT.settings.MMD;
+  if (!S.outputs || typeof S.outputs != "object") S.outputs = {};
+  if (typeof S.commonOutput != "boolean") S.commonOutput = true;
+  return S.outputs;
+}
+
+// Where a mode's output is: "common", or the mode
+function mmDecoderOutputKey(mode)
+{
+  mmDecoderOutputs();
+  return GT.settings.MMD.commonOutput !== false ? "common" : mode;
+}
+
+// The one picked under key ("common" or a mode) among the audio outputs there are: by its id, else by its name (its id then taken), else
+// null (none picked, or the one picked not there)
+function mmDecoderOutputFindOwn(key, outputs)
+{
+  const pick = mmDecoderOutputs()[key];
+  if (!pick || !pick.id) return null;
+  const byId = outputs.find((d) => d.deviceId == pick.id);
+  if (byId) return byId;
+  const byName = pick.name ? outputs.find((d) => d.label == pick.name) : null;
+  if (byName) pick.id = byName.deviceId;
+  return byName || null;
+}
+
+function mmDecoderOutputFind(mode, outputs)
+{
+  return mmDecoderOutputFindOwn(mmDecoderOutputKey(mode), outputs);
+}
+
+// Picked in the window's menu: a mode's own, or the common one ("common"); id "" is none picked (the input's sound card)
+function mmDecoderOutputSet(mode, id, name)
+{
+  if (MMD_OUTPUT_MODES.includes(mode) || mode == "common") mmDecoderOutputs()[mode] = { id: String(id || ""), name: id ? name || null : null };
 }
 
 // A mode's SW level (the window's levels): a gain inside the decoder, in dB, kept here (MMD.swGain, by mode)
@@ -356,26 +421,34 @@ function mmDecoderAirHz(audioHz)
   }
 }
 
-// ---- The FT8 decoder as a GridTracker instance, "MMD" (the window's Settings, Decoders, FT8: Enable GridTracker Instance): its decodes
-// go to GridTracker as a WSJT-X instance's would (the Call Roster, the map, alerts), already read (wsjtInstanceOpen, wsjtInstanceStatus
-// and wsjtInstanceDispatch in wsjtxUdp.js). Only while the decoder listens in FT8 mode (on with its window closed, then) and Rig
-// Control reads the FT8 VFO's dial: without it a decode's band isn't known. It has no address, so nothing is sent back to it (it can't
-// be answered). A Status as it starts, when the dial, mode, call or grid changes, around each period's decode and every 15 s; a Close
-// once it has stopped for a few seconds (not for a moment: the input started again)
+// ---- The FT8 (or FT4) decoder as a GridTracker instance, "MMD" (the window's Settings, Decoders, FT8 or FT4: Enable GridTracker Instance,
+// one of the two): its decodes go to GridTracker as a WSJT-X instance's would (the Call Roster, the map, alerts), already read
+// (wsjtInstanceOpen, wsjtInstanceStatus and wsjtInstanceDispatch in wsjtxUdp.js). Only while that mode is listened to (the window in that
+// mode, else by its background decoder, mmdFt8Background.js: whatever the window shows, and with it closed) and Rig Control reads that
+// mode's VFO's dial: without it a decode's band isn't known. It has no address, so nothing is sent back to it (it can't be answered). A
+// Status as it starts, when the dial, mode, call or grid changes, around each period's decode and every 15 s; a Close once it has stopped
+// for a few seconds (not for a moment: the input started again)
 
 const MMD_INSTANCE_ID = "MMD";
 const MMD_INSTANCE_HEARTBEAT_MS = 15000;
 const MMD_INSTANCE_CLOSE_MS = 3000;
-// wanted: the window listens in FT8 or FT4 mode with the setting on (mode: which); hidden: its window closed (the button shows it listens);
-// live: the instance is open; decoding: a period is being decoded (Status' Decoding)
+// wanted: the window listens to the instance's mode with its setting on (mode: "ft8" or "ft4"); hidden: not shown in the window in that
+// mode (the button shows it listens); live: the instance is open; decoding: a period is being decoded (Status' Decoding)
 GT.mmdInstance = { wanted: false, mode: "ft8", hidden: false, live: false, unwantedAt: 0, sentAt: 0, key: "", decoding: false };
+
+// The instance's mode: "ft8" or "ft4" (whichever Enable GridTracker Instance is on), null with neither
+function mmDecoderInstanceMode()
+{
+  const S = GT.settings.MMD;
+  return S.ft8Instance === true ? "ft8" : S.ft4Instance === true ? "ft4" : null;
+}
 
 // From the window, as it starts or stops listening, changes mode or shows and hides: on, the mode listened to ("ft8" or "ft4"), else null
 function mmDecoderInstanceWanted(on, hidden)
 {
   const I = GT.mmdInstance;
-  const wanted = !!on && GT.settings.MMD.ft8Instance === true;
-  if (wanted) I.mode = on == "ft4" ? "ft4" : "ft8";
+  const wanted = (on == "ft8" || on == "ft4") && GT.settings.MMD[on + "Instance"] === true;
+  if (wanted) I.mode = on;
   if (I.wanted && !wanted) I.unwantedAt = Date.now();
   I.wanted = wanted;
   I.hidden = !!hidden;

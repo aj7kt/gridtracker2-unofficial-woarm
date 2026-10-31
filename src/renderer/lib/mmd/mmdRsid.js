@@ -79,6 +79,8 @@ function mmdRsidMessage(m)
   mmdOliviaRsid(m.name, m.freq);
   // In PSK31 and RTTY mode, the finder leaves the place alone a moment, so the RSID's tones don't hide the signal after it (keyWorker.js)
   if (mmdKeyMode() && KEY.worker) KEY.worker.postMessage({ type: "rsid", freq: m.freq });
+  // Detect Modes' own PSK31 and RTTY decoders the same (mmdDetect.js)
+  mmdDetectRsid(m.freq);
   // Its last tone is in the rows still queued for the waterfall, not on it yet: placed above the top by them
   const marks = DEC.rsidMarks || (DEC.rsidMarks = []);
   marks.push({ age: -(DEC.fallQueue || []).length, freq: m.freq, name: m.name, at: Date.now(), box: null });

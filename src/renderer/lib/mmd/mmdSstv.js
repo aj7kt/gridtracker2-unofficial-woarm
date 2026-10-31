@@ -6,9 +6,8 @@
 // the pictures. Here each one is drawn as it comes in, the newest few are kept in a strip beside it (a click shows one large, a click on
 // the large one goes back to the newest), and they are saved: each as it ends with Settings' Save Pictures, or any one with a right-click
 
-// Pictures kept in the strip, and the share of its rows a picture cut short needs to be saved
+// Pictures kept in the strip
 const SSTV_KEEP = 12;
-const SSTV_SAVE_SHARE = 0.5;
 
 const SSTV = {
   worker: null,
@@ -16,7 +15,8 @@ const SSTV = {
   live: null,   // the one coming in
   viewing: null, // the one shown large (a click on the strip); null: the newest
   status: { state: "idle", snr: -20, line: 0, lines: 0 },
-  drawQueued: false
+  drawQueued: false,
+  tab: "receive" // the view's tab: "receive" (the pictures) or "send" (Send Picture, mmdSstvTx.js)
 };
 
 function mmdSstvInit()
@@ -97,26 +97,20 @@ function mmdSstvMessage(m)
     ctx.putImageData(new ImageData(m.rgba, pic.width, m.count), 0, m.from);
     pic.rows = Math.max(pic.rows, m.from + m.count);
   }
+  // Drawn again (a better line rate): over the rows it had; every row ever shown stays shown
   else if ((m.type == "redraw" || m.type == "done") && m.count > 0)
   {
     ctx.putImageData(new ImageData(m.rgba, pic.width, m.count), 0, 0);
-    pic.rows = m.count;
-  }
-  // Done: the rows below where it was cut (a signal that faded and didn't come back) blanked again
-  if (m.type == "done")
-  {
-    pic.rows = m.count;
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, m.count, pic.width, pic.height - m.count);
+    pic.rows = Math.max(pic.rows, m.count);
   }
   if (m.type == "done")
   {
     pic.complete = m.complete;
     if (SSTV.live == pic) SSTV.live = null;
-    // Too little of it to keep: off the strip
+    // Nothing of it ever drawn: off the strip
     if (pic.rows == 0) SSTV.pictures = SSTV.pictures.filter((p) => p != pic);
-    // (Not a test signal's: mmdTest.js)
-    else if (GT.settings.MMD.sstvSave && (pic.complete || pic.rows >= pic.height * SSTV_SAVE_SHARE) && !mmdTestHeard(pic.at, Date.now())) mmdSstvSave(pic, null);
+    // Saved however much of it came (not a test signal's: mmdTest.js)
+    else if (GT.settings.MMD.sstvSave && !mmdTestHeard(pic.at, Date.now())) mmdSstvSave(pic, null);
     mmdSstvStrip();
     mmdSstvHead();
   }

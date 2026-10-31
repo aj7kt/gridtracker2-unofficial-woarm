@@ -3,12 +3,13 @@
 // See LICENSE for more information.
 
 // The Multi-Mode Decoder's PSK31 and RTTY modes (the Mode menu): the input's own samples (the worklet's raw stream) go to keyWorker.js,
-// which finds every signal of the mode in the passband (PSK31's carriers, RTTY's 170 Hz tone pairs at 45.45 baud) and decodes each on
-// its own. Here each is a signal of CW's list (DEC.signals: its line, its marks on the waterfall, hovered and pinned as CW's), its text
-// added as it comes; the WPM column shows the mode's baud
+// which finds every signal of the mode in the passband (PSK31's carriers; RTTY's tone pairs 170, 425 or 850 Hz apart, at 45.45, 50 or 75
+// baud) and decodes each on its own. Here each is a signal of CW's list (DEC.signals: its line, its marks on the waterfall, hovered and
+// pinned as CW's), its text added as it comes; the WPM column shows its baud (RTTY's as read, PSK31's its own)
 
 // Its signals' ids, apart from CW's (the worklet's, small numbers)
 const KEY_ID_BASE = 100000;
+// The baud shown where the worker doesn't say one (PSK31's; RTTY's until it has read one)
 const KEY_BAUD = { psk31: 31, rtty: 45 };
 
 const KEY = {
@@ -71,7 +72,7 @@ function mmdKeyMessage(m)
       signal.freq = c.freq;
       signal.air = window.opener.mmDecoderAirHz(c.freq);
       signal.snr = c.snr;
-      signal.wpm = KEY_BAUD[DEC.mode];
+      signal.wpm = c.baud > 0 ? Math.floor(c.baud) : KEY_BAUD[DEC.mode];
       signal.alive = c.active !== false;
     }
     for (const id in DEC.signals) if (Number(id) >= KEY_ID_BASE && !seen[id]) DEC.signals[id].alive = false;

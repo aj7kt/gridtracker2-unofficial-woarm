@@ -112,12 +112,15 @@ function mmdBandsChanged()
 
 function mmdSettingsTab(name)
 {
-  const bands = name == "bands";
-  mmdModesTab.style.display = bands ? "none" : "";
-  mmdBandsTab.style.display = bands ? "" : "none";
-  mmdModesTabButton.classList.toggle("active", !bands);
-  mmdBandsTabButton.classList.toggle("active", bands);
-  if (bands) mmdBandsRender();
+  // General (shown at first), Decoders, Band Plans: mmdGeneralTab and mmdGeneralTabButton ...
+  for (const tab of ["general", "modes", "bands"])
+  {
+    const on = tab == name;
+    const id = "mmd" + tab[0].toUpperCase() + tab.slice(1) + "Tab";
+    window[id].style.display = on ? "" : "none";
+    window[id + "Button"].classList.toggle("active", on);
+  }
+  if (name == "bands") mmdBandsRender();
 }
 
 // The Band Plans tab: the frequencies (by mode), then a plan's segments; each cell edited in place

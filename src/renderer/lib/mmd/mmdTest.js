@@ -116,6 +116,17 @@ async function mmdTestPlay(t)
   }
   // Stopped or started again meanwhile
   if (DEC.ctx != ctx || DEC.node != node || TEST.source) return;
+  mmdTestStart(t, buffer, true);
+}
+
+// A signal (t: { file, sync, olivia } as index.json's; buffer: at the decoder's context's rate) played into the decoder as a test signal
+// is, everything decoded before cleared first when clear is true (SSTV's Simulate Rx keeps the pictures received). False when the decoder
+// isn't listening
+function mmdTestStart(t, buffer, clear)
+{
+  mmdTestStop();
+  const ctx = DEC.ctx, node = DEC.node;
+  if (!ctx || !node) return false;
   // Olivia: your submode and centre kept, put back when it ends (an RSID in it, or the recording's own, moves them meanwhile)
   if (mmdOliviaMode())
   {
@@ -138,7 +149,7 @@ async function mmdTestPlay(t)
     if (delay < 500) delay += period;
   }
   // Everything decoded before it cleared (as Clear does), so what's listed is the test's
-  mmdClear();
+  if (clear) mmdClear();
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   const gain = ctx.createGain();
@@ -164,6 +175,7 @@ async function mmdTestPlay(t)
   clearInterval(TEST.timer);
   TEST.timer = setInterval(mmdTestRender, 500);
   mmdTestRender();
+  return true;
 }
 
 // Stopped (the button, another mode without it, the decoder stopping): what was heard of it still kept in the window a while

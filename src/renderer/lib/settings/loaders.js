@@ -316,10 +316,11 @@ function startupButtonsAndInputs()
     if (GT.settings.app.myGrid.length > 0)
     {
       homeQTHInput.value = GT.settings.app.myGrid.substr(0, 6);
-      if (ValidateGridsquare(homeQTHInput, null)) 
+      if (ValidateGridsquare(homeQTHInput, null))
       {
-        setCenterGridsquare();
+        // The QTH first (on AEQD it makes the projection anew, centred on home), then the view as it was saved, on top of it
         saveCenterGridsquare();
+        setCenterGridsquare();
       }
     }
     ValidateCallsign(alertValueInput, null);

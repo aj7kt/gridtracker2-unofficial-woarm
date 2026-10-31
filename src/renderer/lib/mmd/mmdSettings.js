@@ -3,11 +3,11 @@
 // See LICENSE for more information.
 
 // The Multi-Mode Decoder's Settings panel (gt_mmdecoder.html, #mmdSettings), opened by Settings on its top line as the Call Roster's
-// are. Decoders: Rig Control on top (whether the decoder may send the rig anything at all), Follow BirdWatch, RSID, Common Input Device
-// and Common VFO (each with its menu: on, each decoder's own is hidden and kept), then each decoder's own settings,
-// the same rows in each (its Input Device, Waterfall Speed and VFO; what it may send the rig, shown with Rig Control on: Set Frequency and Set Mode, each
-// on its own; then its own: FT8's Depth, SSTV's Save Pictures and folder), all in GT.settings.MMD,
-// read as used
+// are. General (the tab shown at first): the waterfall's speed and how it is drawn, Rig Control (whether the decoder may send the rig
+// anything at all), Follow BirdWatch, RSID, Common Input Device and Common VFO (each with its menu: on, each decoder's own is hidden and
+// kept). Decoders: each decoder's own settings, the same rows in each (its Input Device and VFO; what it may send the rig, shown with Rig
+// Control on: Set Frequency and Set Mode, each on its own; then its own: FT8's Depth, FT8's and FT4's Enable GridTracker Instance, one of
+// the two; SSTV's Save Pictures and folder). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
 
 function mmdSettingsShow(show)
 {
@@ -37,6 +37,12 @@ function mmdSettingsRender()
   mmdCommonInputValue.checked = commonInput;
   mmdCommonInputRow.style.display = commonInput ? "" : "none";
   for (const row of document.querySelectorAll(".mmdInputRow")) row.style.display = commonInput ? "none" : "";
+  // Common Output Device (the modes that transmit) the same
+  window.opener.mmDecoderOutputs();
+  const commonOutput = S.commonOutput !== false;
+  mmdCommonOutputValue.checked = commonOutput;
+  mmdCommonOutputRow.style.display = commonOutput ? "" : "none";
+  for (const row of document.querySelectorAll(".mmdOutputRow")) row.style.display = commonOutput ? "none" : "";
   // What each mode may send the rig: only with Rig Control on. Common VFO the same (its menu under it, each decoder's own VFO hidden
   // while it is on)
   const commonVfo = S.commonVfo !== false;
@@ -52,8 +58,10 @@ function mmdSettingsRender()
   mmdFallViewRender();
   mmdVfosRender();
   mmdInputsRender();
+  mmdOutputsRender();
   ft8DepthSelect.value = S.ft8Depth;
   ft8InstanceValue.checked = S.ft8Instance === true;
+  ft4InstanceValue.checked = S.ft4Instance === true;
   mmdInstanceNoteRender();
   ft8SetModeValue.checked = S.ft8SetMode;
   ft4SetModeValue.checked = S.ft4SetMode === true;
@@ -164,6 +172,40 @@ function mmdSetInput(mode)
   });
 }
 
+// Each transmitting mode's Output Device menu, and Common Output Device's: Same Sound Card As Input (none picked: the output on the input's
+// sound card, mmdOutputFind), then the audio outputs there are (DEC.outputDevices, read by mmdInputs); its own pick
+function mmdOutputsRender()
+{
+  const devices = DEC.outputDevices || [];
+  for (const mode of MMD_TX_MODES.concat("common"))
+  {
+    const select = window[mode + "OutputSelect"];
+    if (!select) continue;
+    select.length = 0;
+    select.add(new Option(I18N("settings.mmDecoder.output.auto"), ""));
+    for (const d of devices) select.add(new Option(mmdInputLabel(d), d.deviceId));
+    const device = window.opener.mmDecoderOutputFindOwn(mode, devices);
+    select.value = device ? device.deviceId : "";
+  }
+  if (typeof mmdSstvTxOutputRender == "function") mmdSstvTxOutputRender();
+}
+
+// An Output Device picked (a mode's own, or the common one)
+function mmdSetOutput(mode)
+{
+  const select = window[mode + "OutputSelect"];
+  const option = select.options[select.selectedIndex];
+  window.opener.mmDecoderOutputSet(mode, select.value, option ? option.text : null);
+  mmdOutputsRender();
+}
+
+// Common Output Device on or off
+function mmdSetCommonOutput()
+{
+  GT.settings.MMD.commonOutput = mmdCommonOutputValue.checked;
+  mmdSettingsRender();
+}
+
 // Common Input Device on or off: the decoder goes to the input it now hears (the common one, or the mode's own)
 function mmdSetCommonInput()
 {
@@ -204,19 +246,25 @@ function mmdSetFt8Depth()
   GT.settings.MMD.ft8Depth = ft8DepthSelect.value == "deep" ? "deep" : "normal";
 }
 
-// FT8's GridTracker instance ("MMD"): on, FT8 is listened to with the window closed too and its decodes go to GridTracker (mmdListen)
-function mmdSetFt8Instance()
+// FT8's or FT4's GridTracker instance ("MMD"; mode "ft8" or "ft4"): on, that mode is listened to with the window closed or in another mode
+// too (mmdListen, mmdFt8Background.js) and its decodes go to GridTracker. One of the two: checking one unchecks the other
+function mmdSetInstance(mode)
 {
-  GT.settings.MMD.ft8Instance = ft8InstanceValue.checked;
+  const S = GT.settings.MMD;
+  S[mode + "Instance"] = window[mode + "InstanceValue"].checked;
+  if (S[mode + "Instance"]) S[(mode == "ft8" ? "ft4" : "ft8") + "Instance"] = false;
+  mmdSettingsRender();
   mmdListen();
-  mmdInstanceNoteRender();
 }
 
-// Its note, while it is on but its decodes can't go yet: Rig Control isn't reading the FT8 VFO's dial
+// Each one's note, while it is on but its decodes can't go yet: Rig Control isn't reading that mode's VFO's dial
 function mmdInstanceNoteRender()
 {
-  const waiting = GT.settings.MMD.ft8Instance === true && !(window.opener.mmDecoderVfoRead(mmdFtx() ? DEC.mode : "ft8").up);
-  ft8InstanceNoteTr.style.display = waiting ? "" : "none";
+  for (const mode of ["ft8", "ft4"])
+  {
+    const waiting = GT.settings.MMD[mode + "Instance"] === true && !(window.opener.mmDecoderVfoRead(mode).up);
+    window[mode + "InstanceNoteTr"].style.display = waiting ? "" : "none";
+  }
 }
 
 

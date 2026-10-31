@@ -3,7 +3,14 @@
 // See LICENSE for more information.
 
 // The Multi-Mode Decoder's Packet mode (mmdPacket.js): AX.25 frames from the input's audio at its own rate, four ways at once (HF
-// packet's 300 baud is AFSK 1200's way with its own tones, 1600 and 1800 Hz; GMSK 4800 FSK 9600's at half the speed).
+// packet's 300 baud is AFSK 1200's way with its own tones, a pair 200 Hz apart; GMSK 4800 FSK 9600's at half the speed).
+//   HF 300 baud: an HF station's tones land wherever its sideband and dial put them, so they are looked for all across the audio decoded
+//   (between [ and ]), from the audio taken down to about PACKET_HF_RATE: each tone on a grid PACKET_HF_STEP Hz apart measured once (mixed
+//   down, summed in blocks of PACKET_HF_BLOCK samples, those summed over a bit), and every pair of them PACKET_HF_SHIFT apart sliced as
+//   AFSK 1200's are (packetHfBank). A strong frame decodes on many pairs round its own; where it was heard is the middle of the one of them
+//   hearing the most (both its tones on the signal: packetHfFound). Locked on a place (a click on the waterfall), only frames heard within
+//   PACKET_HF_LOCK_HALF of it go out,
+//   and the pairs there are sliced more ways (PACKET_SPACE_GAINS).
 //   AFSK 1200 (Bell 202: 1200 Hz mark, 2200 Hz space; APRS on 144.390 MHz, the ISS's digipeater): each tone's strength over a bit
 //   (mixed down and summed over one bit's samples), then mark less space, weighed several ways (an FM rig's de-emphasis leaves 2200 Hz
 //   weaker, a transmitter's pre-emphasis stronger), each weighing with its own clock, as Direwolf's slicers: one catches what another misses.
@@ -12,11 +19,32 @@
 // Each bit stream: a clock recovered from its transitions (a phase nudged toward them), NRZI, HDLC (flags, bit stuffing, aborts), the
 // frame's CRC (CCITT, as X.25) checked. A good frame is read: its addresses, and for APRS its position, message, status ... A frame two
 // demodulators both decode goes out once
-// In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" }
-// Out: { type: "frame", baud, src, dst, path, info, aprs }
+// In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" }, { type: "hf", min, max, lock } (the audio decoded, Hz, and
+//      the place locked on, Hz, or null)
+// Out: { type: "frame", baud, src, dst, path, info, aprs, hz (300 baud: where it was heard) }
 
 const PACKET_MARK = 1200;
 const PACKET_SPACE = 2200;
+// HF 300 baud: its tones' shift, the grid the tones are measured on (a pair a quarter of its shift off still decodes), the rate the audio
+// is taken down to, the samples summed into a block (the slicers run a block at a time: 10 blocks a bit), a frame heard within this of a
+// place locked on (the signal's middle on it, give or take its grid step and a little: the guard lines either side, mmdPacket.js
+// PACKET_LOCK_HALF, show the signal's whole width), and how many audio chunks a frame waits for the other pairs that decode it (each chunk
+// a tenth of a second)
+const PACKET_HF_SHIFT = 200;
+const PACKET_HF_STEP = 50;
+const PACKET_HF_RATE = 12000;
+const PACKET_HF_BLOCK = 4;
+const PACKET_HF_LOCK_HALF = 100;
+const PACKET_HF_WAIT_CHUNKS = 2;
+// A pair's strength (its tones' together) followed over about this long (s): the frame's, as it ends
+const PACKET_HF_ENERGY_S = 0.3;
+// HF's slicers: mark less space at these weighings (an SSB rig's tones come through alike: fewer than VHF FM needs); near a lock, all of
+// PACKET_SPACE_GAINS
+const PACKET_HF_GAINS = [0.7, 1, 1.4];
+// AFSK 1200 through SSB: its tones looked for up to this far (Hz) either way of 1200 and 2200, on a grid this far apart (a pair about a
+// quarter of the grid's step off still decodes a weak signal: packetSsbBank)
+const PACKET_SSB_SPREAD = 600;
+const PACKET_SSB_STEP = 100;
 // Frame length in bytes, the CRC's two included: the shortest with two addresses and a control byte, the longest AX.25 allows
 const PACKET_MIN_BYTES = 17;
 const PACKET_MAX_BYTES = 340;
@@ -25,6 +53,15 @@ const PACKET_DEDUPE_MS = 3000;
 
 let packetRate = 48000;
 let packetDemods = [];
+// HF 300 baud: the audio decoded and the place locked on (as last told), the audio taken down (packetHf), and its demodulators
+let packetHfRange = { min: 300, max: 3000, lock: null };
+let packetHf = null;
+// AFSK 1200 through SSB: its bank (packetSsbBank)
+let packetSsb = null;
+// HF frames waiting for the other pairs that decode them: by their bytes, { frame, hz, energy (the strongest pair's so far), chunk }; and
+// the audio chunks taken in
+const packetHfPending = new Map();
+let packetChunk = 0;
 const packetRecent = new Map();
 
 self.onmessage = (event) =>
@@ -32,22 +69,180 @@ self.onmessage = (event) =>
   const m = event.data;
   if (m.type == "init") packetInit(m.rate);
   else if (m.type == "reset") packetInit(packetRate);
+  else if (m.type == "hf")
+  {
+    packetHfRange = { min: Number(m.min) || 0, max: Number(m.max) || 0, lock: m.lock > 0 ? Number(m.lock) : null };
+    packetHf = packetHfBank(packetRate);
+  }
   else if (m.type == "audio")
   {
     if (packetDemods.length == 0) packetInit(packetRate);
     const x = m.samples;
     for (const d of packetDemods) d.run(x);
+    packetHf.run(x);
+    packetSsb.run(x);
+    packetChunk++;
+    packetHfFlush();
   }
 };
 
 function packetInit(rate)
 {
   packetRate = rate > 0 ? rate : 48000;
-  // AFSK 1200 (VHF), and HF packet's 300 baud (1600 and 1800 Hz: HF APRS on 10.1476 MHz)
-  packetDemods = [packetAfsk(packetRate), packetAfsk(packetRate, 300, 1600, 1800)];
+  // AFSK 1200 (VHF)
+  packetDemods = [packetAfsk(packetRate)];
   // G3RUH at 9600 and 4800 (cubesats' GMSK), each needing over twice its baud rate in samples
   for (const baud of [9600, 4800]) if (packetRate >= baud * 2) packetDemods.push(packetFsk(packetRate, baud));
+  // HF packet's 300 baud, looked for across the audio decoded (or where it is locked on); AFSK 1200 a little off, through SSB
+  packetHf = packetHfBank(packetRate);
+  packetSsb = packetSsbBank(packetRate);
+  packetHfPending.clear();
   packetRecent.clear();
+}
+
+// HF 300 baud's bank: its tones on a grid between [ and ] (clear of the edges), each pair where it is heard (packetHfFound), and locked on
+// a place, its pairs there sliced more ways
+function packetHfBank(rate)
+{
+  const down = Math.max(1, Math.floor(rate / PACKET_HF_RATE));
+  const R = packetHfRange;
+  const nyquist = rate / down / 2;
+  return packetToneBank(rate, {
+    baud: 300, shift: PACKET_HF_SHIFT, step: PACKET_HF_STEP, block: PACKET_HF_BLOCK,
+    low: Math.max(R.min, 100), high: Math.min(R.max > 0 ? R.max : nyquist, nyquist - 100), skip: null, report: true,
+    gains: (middle) => (R.lock && Math.abs(middle - R.lock) <= PACKET_HF_STEP ? PACKET_SPACE_GAINS : PACKET_HF_GAINS)
+  });
+}
+
+// AFSK 1200 heard through an SSB receiver (a satellite's packet, a rig a little off): its tones up to PACKET_SSB_SPREAD either way of
+// 1200 and 2200 Hz, on a grid PACKET_SSB_STEP apart; the exact pair left to the full rate demodulator (packetAfsk). Its frames go out as
+// any other's
+function packetSsbBank(rate)
+{
+  return packetToneBank(rate, {
+    baud: 1200, shift: PACKET_SPACE - PACKET_MARK, step: PACKET_SSB_STEP, block: 1,
+    low: PACKET_MARK - PACKET_SSB_SPREAD, high: PACKET_SPACE + PACKET_SSB_SPREAD, skip: (PACKET_MARK + PACKET_SPACE) / 2, report: false,
+    gains: () => PACKET_HF_GAINS
+  });
+}
+
+// ---- A bank of AFSK demodulators on a grid of tones: the audio taken down to about PACKET_HF_RATE (two running sums, every down-th kept),
+// then each tone of the grid (o.step apart, from o.low to o.high) mixed down and summed in blocks of o.block samples; a tone's strength the
+// size of its last bit's blocks summed. Each pair of tones o.shift apart (its middle where its frames are heard, but o.skip; its energy
+// their strength together, followed) sliced at each of its gains (o.gains(middle)), a block at a time, its own clock and HDLC at o.baud.
+// o.report: its frames say where they were heard (HF 300 baud), else they go out as any other demodulator's
+function packetToneBank(rate, o)
+{
+  const down = Math.max(1, Math.floor(rate / PACKET_HF_RATE));
+  const hfRate = rate / down;
+  const blockRate = hfRate / o.block;
+  const perBit = Math.max(2, Math.round(blockRate / o.baud));
+  const half = o.shift / 2;
+  const freqs = [];
+  for (let hz = Math.ceil(o.low / o.step) * o.step; hz <= o.high; hz += o.step) freqs.push(hz);
+  const tones = freqs.map((hz) => ({ c: Math.cos((2 * Math.PI * hz) / hfRate), s: Math.sin((2 * Math.PI * hz) / hfRate), re: 1, im: 0, ai: 0, aq: 0, bi: new Float32Array(perBit), bq: new Float32Array(perBit), si: 0, sq: 0, size: 0 }));
+  const apart = Math.round(o.shift / o.step);
+  const follow = 1 / (blockRate * PACKET_HF_ENERGY_S);
+  const pairs = [];
+  for (let k = 0; k + apart < tones.length; k++)
+  {
+    const middle = freqs[k] + half;
+    if (o.skip !== null && Math.abs(middle - o.skip) < o.step / 2) continue;
+    const pair = { lo: tones[k], hi: tones[k + apart], middle, energy: 0, report: o.report, slicers: [] };
+    pair.slicers = o.gains(middle).map((gain) => ({ gain, clock: packetClock(o.baud, blockRate, packetHdlc((bits, length) => packetFrameOut(bits, length, o.baud, pair))) }));
+    pairs.push(pair);
+  }
+  const a = new Float32Array(down), b = new Float32Array(down);
+  let sa = 0, sb = 0, at = 0, phase = 0, inBlock = 0, slot = 0, turns = 0;
+  return {
+    run(x)
+    {
+      for (let j = 0; j < x.length; j++)
+      {
+        sa += x[j] - a[at];
+        a[at] = x[j];
+        const va = sa / down;
+        sb += va - b[at];
+        b[at] = va;
+        at = at + 1 >= down ? 0 : at + 1;
+        if (++phase < down) continue;
+        phase = 0;
+        // A sample at the bank's rate: each tone mixed down into its block
+        const v = sb / down;
+        for (const t of tones)
+        {
+          const re = t.re * t.c - t.im * t.s;
+          t.im = t.re * t.s + t.im * t.c;
+          t.re = re;
+          t.ai += v * t.re;
+          t.aq += v * t.im;
+        }
+        if (++inBlock < o.block) continue;
+        inBlock = 0;
+        // A block: each tone's last bit summed, its size; each pair sliced
+        for (const t of tones)
+        {
+          t.si += t.ai - t.bi[slot];
+          t.sq += t.aq - t.bq[slot];
+          t.bi[slot] = t.ai;
+          t.bq[slot] = t.aq;
+          t.ai = t.aq = 0;
+          t.size = Math.sqrt(t.si * t.si + t.sq * t.sq);
+        }
+        slot = slot + 1 >= perBit ? 0 : slot + 1;
+        for (const p of pairs)
+        {
+          p.energy += (p.lo.size + p.hi.size - p.energy) * follow;
+          for (const sl of p.slicers) sl.clock(p.lo.size - sl.gain * p.hi.size);
+        }
+        // The oscillators kept at unit size, and the running sums summed again (rounding would let them drift)
+        if (++turns >= 1024)
+        {
+          turns = 0;
+          for (const t of tones)
+          {
+            const g = 1 / Math.sqrt(t.re * t.re + t.im * t.im);
+            t.re *= g;
+            t.im *= g;
+            t.si = t.bi.reduce((s, w) => s + w, 0);
+            t.sq = t.bq.reduce((s, w) => s + w, 0);
+          }
+        }
+      }
+    }
+  };
+}
+
+// An HF frame decoded on a pair: kept a moment for the other pairs that decode it too (key: its bytes), heard at the strongest one's middle
+function packetHfFound(key, frame, pair)
+{
+  if (packetRecent.has(key)) return;
+  const p = packetHfPending.get(key);
+  if (p)
+  {
+    if (pair.energy > p.energy)
+    {
+      p.energy = pair.energy;
+      p.hz = pair.middle;
+    }
+    return;
+  }
+  packetHfPending.set(key, { frame, hz: pair.middle, energy: pair.energy, chunk: packetChunk });
+}
+
+// The HF frames whose wait is over; with a lock, only those heard within its guards go out
+function packetHfFlush()
+{
+  for (const [key, p] of packetHfPending)
+  {
+    if (packetChunk - p.chunk < PACKET_HF_WAIT_CHUNKS) continue;
+    packetHfPending.delete(key);
+    const hz = p.hz;
+    if (packetHfRange.lock && Math.abs(hz - packetHfRange.lock) > PACKET_HF_LOCK_HALF) continue;
+    packetRecent.set(key, Date.now());
+    p.frame.hz = hz;
+    self.postMessage(Object.assign({ type: "frame" }, p.frame));
+  }
 }
 
 // ---- A bit clock: a phase from -0.5 to 0.5 a bit, each bit read where it wraps (the bit's middle); a change of level (a transition,
@@ -174,8 +369,9 @@ function packetFix(bytes, length, error)
   return false;
 }
 
-// The bits, least significant first, as bytes; the frame kept when its CRC (the last two bytes) is right, or once put right (packetFix)
-function packetFrameOut(bits, length, baud)
+// The bits, least significant first, as bytes; the frame kept when its CRC (the last two bytes) is right, or once put right (packetFix).
+// pair: the HF 300 baud pair that decoded it (packetHfBank), or null
+function packetFrameOut(bits, length, baud, pair = null)
 {
   const bytes = new Uint8Array(length);
   for (let i = 0; i < length; i++)
@@ -200,9 +396,16 @@ function packetFrameOut(bits, length, baud)
   const now = Date.now();
   for (const [k, at] of packetRecent) if (now - at > PACKET_DEDUPE_MS) packetRecent.delete(k);
   if (packetRecent.has(key)) return;
-  packetRecent.set(key, now);
   frame.baud = baud;
+  frame.hz = null;
   frame.aprs = frame.ui ? packetAprs(frame) : null;
+  // HF 300 baud: out once the other pairs that decode it are in (packetHfFlush); a bank's frame that doesn't say where goes out as any
+  if (pair && pair.report)
+  {
+    packetHfFound(key, frame, pair);
+    return;
+  }
+  packetRecent.set(key, now);
   self.postMessage(Object.assign({ type: "frame" }, frame));
 }
 
