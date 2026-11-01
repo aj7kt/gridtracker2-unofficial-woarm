@@ -144,7 +144,7 @@ function updateMultiRigViews()
   multiRigCRDiv.style.display = haltTXDiv.style.display = rigs > 1 ? "" : "none";
 }
 
-// ---- An instance's messages, once read: from the WSJT-X listener, and from the Multi-Mode Decoder's own FT8 instance ("MMD",
+// ---- An instance's messages, once read: from the WSJT-X listener, and from the Multi-Mode Decoder's own instance ("MMD",
 // services/mmDecoder.js), whose messages come already read and with no address (remote null: nothing is sent back to it)
 
 // The instance a message came from: added, or marked open again, with where it is

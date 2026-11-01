@@ -29,7 +29,7 @@ const MMD_PALETTES = {
   paper: ["#ffffff", "#c8c8c8", "#787878", "#282828", "#000000"]
 };
 // By Mode: the Resolution each mode is drawn at (0 a quarter, 1 half, 2 the same, 3 twice the FFT)
-const FALL_VIEW_MODE_SCALE = { cw: 1, psk31: 1, rtty: 1, ft8: 3, ft4: 3 };
+const FALL_VIEW_MODE_SCALE = { cw: 1, psk31: 1, rtty: 1, mfsk: 1, thor: 1, navtex: 1, hell: 1, ft8: 3, ft4: 3 };
 const FALL_VIEW_SCALES = { quarter: 0, half: 1, same: 2, twice: 3 };
 
 function mmdFallView()

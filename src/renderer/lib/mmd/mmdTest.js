@@ -263,6 +263,8 @@ function mmdTestDone()
   clearInterval(TEST.timer);
   TEST.timer = null;
   mmdTestRender();
+  // SSTV Send's Simulate Rx back from Abort (mmdSstvTx.js)
+  mmdSstvTxButtons();
 }
 
 // The mode changed: one playing goes on only where it's one of this mode's

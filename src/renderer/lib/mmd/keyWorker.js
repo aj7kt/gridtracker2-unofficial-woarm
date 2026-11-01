@@ -2,8 +2,9 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// The Multi-Mode Decoder's keyboard modes: PSK31 (BPSK, varicode) or RTTY (45.45, 50 or 75 baud, 170, 425 or 850 Hz shift, Baudot), every signal in the
-// passband at once, as the CW decoder lists every CW signal. One mode runs at a time (config's mode).
+// The Multi-Mode Decoder's keyboard modes: PSK31 (BPSK, varicode), PSK63, PSK125 or QPSK31 (PSK31 and its QPSK mode are Peter Martinez
+// G3PLX's), or RTTY (45.45, 50 or 75 baud, 170, 425 or 850 Hz shift, Baudot), every signal in the passband at once, as the CW decoder
+// lists every CW signal. One mode runs at a time (config's mode).
 //   The audio is first brought down to about 9.6 kHz (a low-pass filter, then every Nth sample kept), which keeps up to 4 kHz.
 //   Four times a second a spectrum (an FFT, averaged over a second or two) finds signals: for PSK31 a hump about 60 Hz wide that isn't a
 //   bare carrier, for RTTY two tones 170, 425 or 850 Hz apart; one seen for 0.75 s gets its own demodulator, which first runs over the last 2.5 s
@@ -13,18 +14,35 @@
 //   phase against the one before (a reversal a 0), an AFC that follows the signal's drift, and varicode (a character ends at two 0s).
 //   A channel's text goes out only while its symbols look like PSK (their phase changes near 0 or 180 degrees, some reversals, a steady
 //   size), so noise, carriers and CW print nothing.
+//   PSK63 and PSK125 are PSK31 sent two and four times as fast: all of the above scaled with the baud (the hump looked for, the filters,
+//   the clock, the carrier's search, the squelch's time in symbols); their squelch also wants the signal at the mode's baud (KeyPsk
+//   ownBaud(): PSK125 read as PSK63, or PSK31 as PSK125, or FSK's tones, can look like BPSK).
+//   QPSK31, as G3PLX describes it: the varicode's bits through a convolutional code (rate 1/2, constraint length 5, generator polynomials
+//   0x19 and 0x17), each pair of code bits a phase change of 0, 90, 180 or 270 degrees (00 180, so its idle is reversals as BPSK's is).
+//   Each symbol's phase change is weighed against all four and a Viterbi decoder (KeyViterbi) finds the bits most likely sent, 20
+//   symbols late. Both ways round are decoded (the other sideband turns +90 degrees into -90) and the one fitting the code better read.
+//   Its squelch also wants that one to fit clearly better (noise, and BPSK with no 90 degree turns, fit both alike), so a BPSK signal
+//   prints nothing in QPSK31 (and a QPSK one nothing in BPSK, its phase changes far from 0 and 180 degrees as often as not).
 //   RTTY: mixed down, filtered to 1 kHz (2 kHz at 850 Hz shift), the mark and space tones each filtered over about a bit (at each baud), their sizes weighed against each
 //   other (an ATC: each tone's peak followed, so a faded tone is still read right), then start-stop framing: a start bit (space), five
 //   bits, a stop bit (mark), each bit read over its middle. Both ways round are tried (a reversed signal is one sent with the other
 //   sideband), at each baud, and the one whose characters frame cleanly is kept. Text goes out only while most characters frame cleanly.
 // Characters are held a moment (0.4 to 0.8 s) before they go out, so the noise decoded in the moment after a signal stops, before the
 // squelch shuts, can be taken back. A channel nothing comes from for 15 s is dropped. A channel's id stays the same while it's tracked.
-// In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" }, { type: "config", mode: "psk31" | "rtty", minHz, maxHz }
-// Out: { type: "channels", list: [{ id, freq (Hz: PSK31's carrier, RTTY's centre), snr (dB in the signal's own bandwidth), active,
-//      baud and shift (RTTY: as read) }] },
+// In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" },
+//      { type: "config", mode: "psk31" | "psk63" | "psk125" | "qpsk31" | "rtty", minHz, maxHz }
+// Out: { type: "channels", list: [{ id, freq (Hz: PSK's carrier, RTTY's centre), snr (dB in the signal's own bandwidth), active,
+//      baud and shift (RTTY: as read), baud and qpsk (PSK: its mode's) }] },
 //      four times a second; { type: "text", id, text }: what a channel decoded since its last one, every 100 ms or so
 
 const KEY_PSK_BAUD = 31.25;
+// PSK's modes: each one's baud, and QPSK or BPSK. PSK31's figures here are scaled by a mode's baud over PSK31's (keyPskScale)
+const KEY_PSK_MODES = {
+  psk31: { baud: 31.25, qpsk: false },
+  psk63: { baud: 62.5, qpsk: false },
+  psk125: { baud: 125, qpsk: false },
+  qpsk31: { baud: 31.25, qpsk: true }
+};
 // RTTY's bauds and shifts looked for: each signal is found by its shift (its tones' spacing), and read at every baud (the one that frames
 // wins); the ham standard first
 const KEY_RTTY_BAUDS = [45.45, 50, 75];
@@ -69,8 +87,34 @@ const KEY_PSK_CLOSE = 0.2;
 const KEY_PSK_REVERSALS = 0.1;
 // PSK31: and its size is steady from symbol to symbol, this much (symbol()): a carrier keyed on and off, CW or one RTTY tone, isn't
 const KEY_PSK_STEADY = 0.8;
+// PSK63 and PSK125: the squelch opens only while the signal is at the mode's baud (KeyPsk ownBaud()): halfway between symbols near
+// halfway between them, this close (halfway(): PSK125 read as PSK63 has a symbol of its own there, and its symbols taken two at a time
+// still look like BPSK); its reversals' size halfway under this share of their symbols' (FSK's tones read as PSK turn without dipping);
+// and under this share of its power within a quarter of the baud of the carrier (PSK31 read as PSK63 is half as wide)
+const KEY_PSK_SHAPE = 0.6;
+const KEY_PSK_DIP = 0.5;
+const KEY_PSK_INNER = 0.82;
 // PSK31: symbols a character is held before it goes out
 const KEY_PSK_HOLD = 24;
+// QPSK31: its squelch's quality figures, as PSK31's (cos 4θ is lower than BPSK's cos 2θ for the same noise, and the Viterbi decoder
+// reads through more of it): opens over the first, closes under the second, or when the fast one's under the third
+const KEY_QPSK_OPEN = 0.15;
+const KEY_QPSK_CLOSE = 0.08;
+const KEY_QPSK_FAST_CLOSE = -0.2;
+// QPSK31: and it opens only while the way round read fits the code this much better than the other (KeyPsk lead(): noise, and BPSK,
+// fit both alike)
+const KEY_QPSK_LEAD = 0.05;
+// QPSK31: the signal taken as gone when its size drops under this share of its usual (PSK31's 0.08: QPSK is read at lower SNRs, where
+// the noise left is less of a drop)
+const KEY_QPSK_GONE = 0.15;
+// QPSK31: the carrier search's filter, in symbols (keyPskCarrier; PSK31's 0.6): the fourth power suffers more from the noise let through
+const KEY_QPSK_PROBE = 1;
+// QPSK31: symbols the Viterbi decoder gives a bit late (four times the code's constraint length: by then the paths have merged)
+const KEY_QPSK_DEPTH = 20;
+// QPSK31's code: its generator polynomials over the encoder's last five bits (the newest the lowest); each of those 32 values to the pair
+// of bits sent (the first polynomial's times 2 plus the second's), each pair a phase change: 00 180 degrees, 01 -90, 10 none, 11 +90
+const KEY_QPSK_POLYS = [0x19, 0x17];
+const KEY_QPSK_OUT = Array.from({ length: 32 }, (_, r) => (keyParity(r & KEY_QPSK_POLYS[0]) << 1) | keyParity(r & KEY_QPSK_POLYS[1]));
 // RTTY: the squelch opens when this share of characters (averaged) frame cleanly, closes under the second; a clean one has each bit
 // at least this far (of a clean bit's size) from the middle
 const KEY_RTTY_OPEN = 0.5;
@@ -120,6 +164,8 @@ const KEY_FIGURES = ["", "3", "\n", "-", " ", "", "8", "7", "", "$", "4", "'", "
 
 let keyRate = 48000;
 let keyMode = "psk31";
+// PSK's mode (KEY_PSK_MODES): its baud, QPSK or not
+let keyPsk = KEY_PSK_MODES.psk31;
 let keyMinHz = 200;
 let keyMaxHz = 3000;
 // The rate the work's done at, the highest frequency kept, and the stage bringing the audio down to it
@@ -181,7 +227,7 @@ function keyInit(rate)
 // The mode and range: another mode starts over; a narrower range drops the channels outside it
 function keyConfig(m)
 {
-  const mode = m.mode == "rtty" ? "rtty" : "psk31";
+  const mode = m.mode == "rtty" ? "rtty" : Object.hasOwn(KEY_PSK_MODES, m.mode) ? m.mode : "psk31";
   const min = Number(m.minHz);
   const max = Number(m.maxHz);
   keyMinHz = Number.isFinite(min) ? Math.max(50, Math.min(min, KEY_TOP_HZ - 100)) : 200;
@@ -189,6 +235,7 @@ function keyConfig(m)
   if (mode != keyMode)
   {
     keyMode = mode;
+    keyPsk = KEY_PSK_MODES[mode] || KEY_PSK_MODES.psk31;
     keyFlush();
     keyChannels = [];
     keyBlocked = [];
@@ -270,6 +317,20 @@ function keyHann(n)
   return t.map((v) => v / sum);
 }
 
+// A number's parity: 1 if it has an odd number of 1 bits
+function keyParity(v)
+{
+  let p = 0;
+  for (; v; v >>= 1) p ^= v & 1;
+  return p;
+}
+
+// PSK's mode's baud over PSK31's: what PSK31's widths and spacings are scaled by
+function keyPskScale()
+{
+  return keyPsk.baud / KEY_PSK_BAUD;
+}
+
 // ---- Each block of audio: brought down, kept, run through every channel; the spectrum four times a second, the text ten
 function keyAudio(samples)
 {
@@ -304,7 +365,7 @@ function keyFlush()
 function keyPostChannels()
 {
   const list = keyChannels.filter((c) => c.everActive).sort((a, b) => a.freq - b.freq);
-  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active, baud: c.cur ? c.readBaud || c.cur.baud : undefined, shift: c.shift })) });
+  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active, baud: c.cur ? c.readBaud || c.cur.baud : c.baud, shift: c.shift, qpsk: c.qpsk })) });
 }
 
 // ---- The spectrum: an FFT of the last n samples (a Hann window), its power averaged frame to frame, and the noise under it
@@ -505,7 +566,7 @@ function keyTidy()
         keyBlocked.push({ freq: loser.freq, until: keyNow + KEY_BLOCK_SECONDS * keyFd });
         continue;
       }
-      if (apart >= (keyMode == "rtty" ? 40 : 15)) continue;
+      if (apart >= (keyMode == "rtty" ? 40 : 15 * keyPskScale())) continue;
       // RTTY at other shifts on the same centre read other tones (one sharing a tone with another was settled above)
       if (keyMode == "rtty" && a.shift != b.shift) continue;
       const loser = a.everActive != b.everActive ? (a.everActive ? b : a) : a.id > b.id ? a : b;
@@ -543,14 +604,14 @@ function keyRoom(max, shift)
   return true;
 }
 
-// The signals found this frame matched to those found before (within 10 Hz); those seen in KEY_FIND_FRAMES frames running come back,
+// The signals found this frame matched to those found before (within near Hz); those seen in KEY_FIND_FRAMES frames running come back,
 // the strongest first. A signal just started has its demodulator's 2.5 s of audio kept mostly before it, so it's left a moment
-function keySteadyCandidates(found)
+function keySteadyCandidates(found, near = 10)
 {
   const frame = keySpec.frames;
   for (const f of found)
   {
-    let c = keyCandidates.find((k) => Math.abs(k.freq - f.freq) < 10 && k.shift === f.shift);
+    let c = keyCandidates.find((k) => Math.abs(k.freq - f.freq) < near && k.shift === f.shift);
     if (!c)
     {
       c = { freq: f.freq, shift: f.shift, frames: 0, seen: 0 };
@@ -595,12 +656,13 @@ function keySpawn(freq, near, make, max, shift)
   keyChannels.push(c);
 }
 
-// PSK31 signals: a band 40 Hz wide 3 dB over the noise, the strongest for 40 Hz each way; not a bare carrier (most of its power within
-// a few Hz); placed where its power's centred
+// PSK signals: a band 40 Hz wide 3 dB over the noise, the strongest for 40 Hz each way; not a bare carrier (most of its power within
+// a few Hz); placed where its power's centred. (PSK31's widths; scaled with the baud)
 function keyFindPsk(sp, k0, k1)
 {
-  const w = Math.max(2, Math.round(20 / sp.binHz));
-  const near = Math.round(40 / sp.binHz);
+  const scale = keyPskScale();
+  const w = Math.max(2, Math.round((20 * scale) / sp.binHz));
+  const near = Math.round((40 * scale) / sp.binHz);
   const narrow = 1 + Math.round(2 / sp.binHz);
   const ratio = new Float64Array(k1 + 1);
   for (let k = k0; k <= k1; k++)
@@ -630,10 +692,10 @@ function keyFindPsk(sp, k0, k1)
       if (Math.abs(j - k) <= narrow) inner += p;
     }
     if (inner > 0.6 * all) continue;
-    const freq = keyCentroid(sp, (k - 0.5) * sp.binHz - 40, (k + 0.5) * sp.binHz + 40);
+    const freq = keyCentroid(sp, (k - 0.5) * sp.binHz - 40 * scale, (k + 0.5) * sp.binHz + 40 * scale);
     if (freq >= keyMinHz && freq <= keyMaxHz) found.push({ freq, ratio: ratio[k] });
   }
-  for (const f of keySteadyCandidates(found)) keySpawn(f.freq, 40, (id, freq, back) => new KeyPsk(id, keyPskCarrier(freq, back)), KEY_PSK_MAX);
+  for (const f of keySteadyCandidates(found, 10 * scale)) keySpawn(f.freq, 40 * scale, (id, freq, back) => new KeyPsk(id, keyPskCarrier(freq, back)), KEY_PSK_MAX);
 }
 
 // RTTY signals: two tones a shift apart (each of KEY_RTTY_SHIFTS), each 3 dB over the noise in 24 Hz, the pair's weaker the strongest for
@@ -716,14 +778,18 @@ function keyFindRttyShift(sp, k0, k1, shift, found, tone)
 // signal's two sides alike), squared (BPSK squared is a steady tone at twice its offset, the phase reversals gone), and that tone found
 // (a DFT over offsets up to 20 Hz each way, every 0.1 Hz: an idling signal is two tones 15.6 Hz either side of its carrier, and the
 // guess may have landed on one). The matched filter isn't used here: with the carrier off, it passes one side of an idling signal more
-// than the other, and the square's tone would be found half a symbol rate away. The guess stands if the tone isn't clear of the rest
+// than the other, and the square's tone would be found half a symbol rate away. The guess stands if the tone isn't clear of the rest.
+// PSK63 and PSK125: the offsets searched, and their steps, scaled with the baud. QPSK31: raised to the fourth power, not squared (QPSK
+// squared still turns 180 degrees; to the fourth it's a steady tone at four times its offset)
 function keyPskCarrier(freq, back)
 {
   const probe = new KeyPsk(0, freq);
   probe.capture = [];
   probe.run(back);
   const y = probe.capture;
-  const h = keyHann(Math.max(2, Math.round((0.6 * probe.rate2) / KEY_PSK_BAUD)));
+  const scale = probe.baud / KEY_PSK_BAUD;
+  const power = probe.qpsk ? 4 : 2;
+  const h = keyHann(Math.max(2, Math.round(((probe.qpsk ? KEY_QPSK_PROBE : 0.6) * probe.rate2) / probe.baud)));
   // The first tenth of a second (the filters filling) left out
   const from = Math.round(probe.rate2 * 0.1);
   const count = y.length / 2 - from - h.length;
@@ -741,14 +807,24 @@ function keyPskCarrier(freq, back)
     }
     zr[i] = re * re - im * im;
     zi[i] = 2 * re * im;
+    if (power == 4)
+    {
+      // Squared again, then brought back to the size squared (its phase four times the signal's; the size to the fourth would let
+      // the noise's peaks count too much)
+      const a = zr[i];
+      const b = zi[i];
+      const g = a != 0 || b != 0 ? 1 / Math.sqrt(a * a + b * b) : 0;
+      zr[i] = (a * a - b * b) * g;
+      zi[i] = 2 * a * b * g;
+    }
   }
   let best = 0;
   let bestPower = 0;
   let total = 0;
   let tries = 0;
-  for (let off = -20; off <= 20.001; off += 0.1)
+  for (let off = -20 * scale; off <= 20 * scale + 0.001; off += 0.1 * scale)
   {
-    const w = (-2 * Math.PI * 2 * off) / probe.rate2;
+    const w = (-2 * Math.PI * power * off) / probe.rate2;
     const c = Math.cos(w);
     const s = Math.sin(w);
     let oRe = 1;
@@ -855,21 +931,33 @@ class KeyChannel
   }
 }
 
-// ---- A PSK31 channel. After the first filter (500 Hz), the matched filter (a Hann shape 1.5 symbols long: PSK31's pulse is the same
+// ---- A PSK channel, in keyPsk's mode when it was made (PSK31's figures here, scaled with the baud; QPSK31's additions in symbol()).
+// After the first filter (500 Hz), the matched filter (a Hann shape 1.5 symbols long: PSK31's pulse is the same
 // shape two symbols long, and a little shorter smears less from one symbol into the next), then the symbol clock: the filtered signal's size, averaged at 16 points through a symbol, peaks at the symbol's middle (it dips where a
 // reversal crosses zero); the clock is pulled toward that peak, and its rate follows a sender's clock that's off
 class KeyPsk extends KeyChannel
 {
   constructor(id, freq)
   {
-    super(id, freq, 500);
-    const sps = this.rate2 / KEY_PSK_BAUD;
+    super(id, freq, 500 * (keyPsk.baud / KEY_PSK_BAUD));
+    this.baud = keyPsk.baud;
+    this.qpsk = keyPsk.qpsk;
+    const sps = this.rate2 / this.baud;
     this.h = keyHann(Math.round(1.5 * sps));
     this.hLen = this.h.length;
     this.mRe = new Float64Array(2 * this.hLen);
     this.mIm = new Float64Array(2 * this.hLen);
     this.mPos = 0;
-    this.baseStep = KEY_PSK_BAUD / this.rate2;
+    this.baseStep = this.baud / this.rate2;
+    // PSK63 and PSK125: the filtered signal halfway between symbols, and how far it is (averaged) from halfway between them (halfway())
+    this.halfRe = 0;
+    this.halfIm = 0;
+    this.shape = 1;
+    // ... a reversal's size halfway (halfway()), and the share of its spectrum's power within a quarter of the baud (measure(); taken
+    // now too, for the audio kept that a new channel runs over first)
+    this.dip = 1;
+    this.inner = 1;
+    if (this.baud > KEY_PSK_BAUD && keySpec) this.measure(keySpec);
     this.rateAdjust = 0;
     this.phase = 0;
     this.profile = new Float64Array(16);
@@ -891,6 +979,16 @@ class KeyPsk extends KeyChannel
     this.slow = 0;
     this.envelope = 0;
     this.envelopePower = 0;
+    if (this.qpsk)
+    {
+      // QPSK: a Viterbi decoder each way round (the other sideband turns +90 degrees into -90), and the one read
+      this.viterbis = [new KeyViterbi(), new KeyViterbi()];
+      this.sense = 0;
+      // The fast quality over the last KEY_QPSK_DEPTH symbols (judging what's decoded that late), and the symbol the squelch opened at
+      this.fastBack = new Float64Array(KEY_QPSK_DEPTH);
+      this.fastThen = 0;
+      this.openedAt = 0;
+    }
   }
 
   sample(zr, zi)
@@ -919,6 +1017,13 @@ class KeyPsk extends KeyChannel
     const before = this.phase;
     const step = this.baseStep * (1 - this.rateAdjust);
     this.phase += step;
+    if (this.baud > KEY_PSK_BAUD && before < 0.5 && this.phase >= 0.5)
+    {
+      // Halfway between symbols (PSK63 and PSK125: halfway())
+      const f = (0.5 - before) / step;
+      this.halfRe = this.lastRe + f * (yr - this.lastRe);
+      this.halfIm = this.lastIm + f * (yi - this.lastIm);
+    }
     if (this.phase >= 1)
     {
       this.phase -= 1;
@@ -949,24 +1054,41 @@ class KeyPsk extends KeyChannel
   }
 
   // A symbol: its phase against the last one's (near 0 a 1, near 180 degrees a 0); how far off those it is, its quality; the AFC
-  // turned by it; the squelch; the bit into varicode
+  // turned by it; the squelch; the bit into varicode. QPSK: its quality how near the phase change is to any of 0, 90, 180 and 270
+  // degrees (cos 4θ), the AFC's error from the nearest, and the bit the Viterbi decoder gives (KEY_QPSK_DEPTH symbols late; none before
+  // its first)
   symbol(sr, si)
   {
+    if (this.baud > KEY_PSK_BAUD) this.halfway(sr, si);
     const dr = sr * this.symRe + si * this.symIm;
     const di = si * this.symRe - sr * this.symIm;
     this.symRe = sr;
     this.symIm = si;
     const power = dr * dr + di * di;
     if (!(power > 0)) return;
-    const c2 = (dr * dr - di * di) / power;
+    let c2 = (dr * dr - di * di) / power;
+    let bit = dr > 0 ? 1 : 0;
+    let err = Math.atan2(di, dr);
+    if (this.qpsk)
+    {
+      c2 = 2 * c2 * c2 - 1;
+      err -= (Math.PI / 2) * Math.round(err / (Math.PI / 2));
+      bit = this.decode(dr, di, power);
+    }
+    else if (err > Math.PI / 2) err -= Math.PI;
+    else if (err < -Math.PI / 2) err += Math.PI;
     this.quality += (c2 - this.quality) / 48;
     this.fast += (c2 - this.fast) / 10;
-    const bit = dr > 0 ? 1 : 0;
-    this.reversals += (1 - bit - this.reversals) / 64;
-    let err = Math.atan2(di, dr);
-    if (err > Math.PI / 2) err -= Math.PI;
-    else if (err < -Math.PI / 2) err += Math.PI;
-    if (this.fast > 0) this.setFreq(this.freq + (0.05 * this.fast * err * KEY_PSK_BAUD) / (2 * Math.PI));
+    if (this.qpsk)
+    {
+      // The fast quality KEY_QPSK_DEPTH symbols back: as it was when the bits now decoded were sent
+      const i = this.symbols % KEY_QPSK_DEPTH;
+      this.fastThen = this.fastBack[i];
+      this.fastBack[i] = this.fast;
+    }
+    // (QPSK: the symbols turned about 180 degrees)
+    this.reversals += ((this.qpsk ? (-dr > Math.abs(di) ? 1 : 0) : 1 - bit) - this.reversals) / 64;
+    if (this.fast > 0) this.setFreq(this.freq + (0.05 * this.fast * err * this.baud) / (2 * Math.PI));
     // The symbols' size, quick and slow: a sudden drop is the signal gone
     const size = sr * sr + si * si;
     this.quick += (size - this.quick) / 4;
@@ -976,20 +1098,27 @@ class KeyPsk extends KeyChannel
     this.envelope += (Math.sqrt(size) - this.envelope) / 32;
     this.envelopePower += (size - this.envelopePower) / 32;
     const steady = this.envelopePower > 0 ? (this.envelope * this.envelope) / this.envelopePower : 0;
-    if (!this.active && this.quality > KEY_PSK_OPEN && this.fast > 0.15 && this.reversals > KEY_PSK_REVERSALS && steady > KEY_PSK_STEADY)
+    // (QPSK's figures its own: KEY_QPSK_OPEN and on)
+    const open = this.qpsk ? KEY_QPSK_OPEN : KEY_PSK_OPEN;
+    const close = this.qpsk ? KEY_QPSK_CLOSE : KEY_PSK_CLOSE;
+    const fastClose = this.qpsk ? KEY_QPSK_FAST_CLOSE : -0.05;
+    const drop = this.qpsk ? KEY_QPSK_GONE : 0.08;
+    if (!this.active && this.quality > open && this.fast > open / 2 && this.reversals > KEY_PSK_REVERSALS && steady > KEY_PSK_STEADY &&
+      (!this.qpsk || this.lead() > KEY_QPSK_LEAD) && (this.baud == KEY_PSK_BAUD || this.ownBaud()))
     {
       // Open: what came just before it (while it was opening) goes out too
       this.active = true;
       this.everActive = true;
       for (const p of this.pending) if (p.fast > 0.5) this.hold(p.ch);
       this.pending = [];
+      if (this.qpsk) this.openedAt = this.symbols;
     }
-    else if (this.active && (this.quality < KEY_PSK_CLOSE || this.fast < -0.05 || this.quick < 0.08 * this.slow || steady < KEY_PSK_STEADY - 0.1))
+    else if (this.active && (this.quality < close || this.fast < fastClose || this.quick < drop * this.slow || steady < KEY_PSK_STEADY - 0.1))
     {
       // Closed: what's still held was most likely the noise after the signal ended. A drop in size is seen within about 10 symbols, so
       // then what came before that is kept
       this.active = false;
-      const gone = this.quick < 0.08 * this.slow;
+      const gone = this.quick < drop * this.slow;
       const keep = gone ? 12 : KEY_PSK_HOLD;
       for (const h of this.held) if (this.symbols - h.at > keep) this.text += h.ch;
       this.held.length = 0;
@@ -1001,6 +1130,7 @@ class KeyPsk extends KeyChannel
     // Held characters go out KEY_PSK_HOLD symbols after they came
     this.symbols++;
     while (this.held.length && this.symbols - this.held[0].at > KEY_PSK_HOLD) this.text += this.held.shift().ch;
+    if (bit < 0) return;
     this.reg = ((this.reg << 1) | bit) & 0x3fff;
     this.len++;
     if ((this.reg & 3) == 0)
@@ -1022,25 +1152,140 @@ class KeyPsk extends KeyChannel
     if (ascii >= 32 && ascii < 127) ch = String.fromCharCode(ascii);
     else if (ascii == 10) ch = "\n";
     if (!ch) return;
-    if (this.active) this.hold(ch);
-    else
+    // (QPSK: its bits were sent KEY_QPSK_DEPTH symbols ago, and judged by the symbols then: those sent before the squelch opened go out
+    // if those symbols were good enough to open it; the squelch opens a little after its first characters, once the way round is clear)
+    const fast = this.qpsk ? this.fastThen : this.fast;
+    if (this.active && (!this.qpsk || fast > KEY_QPSK_OPEN || this.symbols - KEY_QPSK_DEPTH >= this.openedAt)) this.hold(ch);
+    else if (!this.active)
     {
       // Kept with how PSK-like the symbols were then: the noise before a signal starts decodes too
-      this.pending.push({ ch, fast: this.fast });
+      this.pending.push({ ch, fast });
       if (this.pending.length > 40) this.pending.shift();
     }
   }
 
+  // (QPSK: timed by the symbol its bits were sent in, KEY_QPSK_DEPTH before it was decoded)
   hold(ch)
   {
-    this.held.push({ ch, at: this.symbols });
+    this.held.push({ ch, at: this.symbols - (this.qpsk ? KEY_QPSK_DEPTH : 0) });
   }
 
-  // The SNR in PSK31's bandwidth (31.25 Hz), from the spectrum: the power within 25 Hz each way over the noise
+  // QPSK: the phase change (over the symbols' usual size, so a faded symbol counts less) weighed against each pair of code bits' turn,
+  // into both ways round's Viterbi decoders; the bit from the one fitting the code better (a clear lead needed to swap)
+  decode(dr, di, power)
+  {
+    const g = this.slow > 0 ? 1 / this.slow : 1 / Math.sqrt(power);
+    const x = dr * g;
+    const y = di * g;
+    const a = this.viterbis[0].step(-x, -y, x, y);
+    const b = this.viterbis[1].step(-x, y, x, -y);
+    if (this.viterbis[1 - this.sense].fit > this.viterbis[this.sense].fit + 0.1)
+    {
+      // (what was decoded the other way round, waiting for the squelch, most likely wasn't right)
+      this.sense = 1 - this.sense;
+      this.pending = [];
+    }
+    return this.sense == 0 ? a : b;
+  }
+
+  // PSK63 and PSK125: PSK's size and phase move from one symbol to the next along a raised cosine, so halfway between two symbols the
+  // signal is near halfway between them (0 between a reversal's two, the same between two alike). How far it is from that (over the two
+  // symbols' size), averaged
+  halfway(sr, si)
+  {
+    const er = this.halfRe - (sr + this.symRe) / 2;
+    const ei = this.halfIm - (si + this.symIm) / 2;
+    const size = (sr * sr + si * si + this.symRe * this.symRe + this.symIm * this.symIm) / 2;
+    if (!(size > 0)) return;
+    this.shape += ((er * er + ei * ei) / size - this.shape) / 32;
+    // A reversal's size halfway (over its symbols' size), averaged: near 0 for PSK; a tone turning half a cycle a symbol (FSK's tones
+    // read as PSK) doesn't dip
+    if (sr * this.symRe + si * this.symIm < 0) this.dip += ((this.halfRe * this.halfRe + this.halfIm * this.halfIm) / size - this.dip) / 16;
+  }
+
+  // PSK63 and PSK125: the signal is at this baud (not twice it, nor half it, nor FSK): halfway between symbols halfway between them, its
+  // reversals dipping, its spectrum not narrower than the baud's (measure())
+  ownBaud()
+  {
+    return this.shape < KEY_PSK_SHAPE && this.dip < KEY_PSK_DIP && this.inner < KEY_PSK_INNER;
+  }
+
+  // QPSK: how much better the way round read fits the code than the other, as a share of both (near 0 for noise, and for BPSK, which
+  // has no 90 degree turns to tell the two apart)
+  lead()
+  {
+    const a = this.viterbis[this.sense].fit;
+    const b = this.viterbis[1 - this.sense].fit;
+    return a + b > 0 ? (a - b) / (a + b) : 0;
+  }
+
+  // The SNR in the signal's bandwidth (its baud: 31.25 Hz for PSK31), from the spectrum: the power within 25 Hz each way (PSK31's,
+  // scaled with the baud) over the noise
   measure(sp)
   {
-    const b = keyBand(sp, this.freq - 25, this.freq + 25);
-    this.snr = b.signal > 0 && b.noise > 0 ? Math.max(-30, 10 * Math.log10(b.signal / (b.noise * (KEY_PSK_BAUD / sp.binHz)))) : -30;
+    const reach = 25 * (this.baud / KEY_PSK_BAUD);
+    const b = keyBand(sp, this.freq - reach, this.freq + reach);
+    this.snr = b.signal > 0 && b.noise > 0 ? Math.max(-30, 10 * Math.log10(b.signal / (b.noise * (this.baud / sp.binHz)))) : -30;
+    if (this.baud > KEY_PSK_BAUD)
+    {
+      // PSK63 and PSK125: the power within a quarter of the baud of the carrier, a share of that within the baud (a signal at half the
+      // baud or less has most of its power near the carrier)
+      const all = keyBand(sp, this.freq - this.baud, this.freq + this.baud).signal;
+      this.inner = all > 0 ? keyBand(sp, this.freq - this.baud / 4, this.freq + this.baud / 4).signal / all : 1;
+    }
+  }
+}
+
+// ---- QPSK31's Viterbi decoder: 16 states (the encoder's last four bits), each with the best path into it so far (its metric, and its
+// bits, the newest lowest). Each symbol, both ways into every state are weighed (the path's metric and how well the phase change fits
+// the pair of bits that step sends) and the better kept. The bit given is the best path's KEY_QPSK_DEPTH symbols back. fit: how well
+// the best path fits the phase changes, averaged (near 1 a clean signal, less for noise or a signal read the wrong way round)
+class KeyViterbi
+{
+  constructor()
+  {
+    this.metric = new Float64Array(16);
+    this.paths = new Int32Array(16);
+    this.nextMetric = new Float64Array(16);
+    this.nextPaths = new Int32Array(16);
+    this.weights = new Float64Array(4);
+    this.count = 0;
+    this.fit = 0;
+  }
+
+  // A symbol: each pair of bits' weight (00, 01, 10, 11); the bit decided, or -1 before the first
+  step(w0, w1, w2, w3)
+  {
+    const w = this.weights;
+    w[0] = w0;
+    w[1] = w1;
+    w[2] = w2;
+    w[3] = w3;
+    let best = -Infinity;
+    let bestState = 0;
+    for (let s = 0; s < 16; s++)
+    {
+      // Into state s (the bit s & 1 just in) from (s >> 1) or (s >> 1) + 8: the encoder's five bits s or s + 16
+      const a = s >> 1;
+      const va = this.metric[a] + w[KEY_QPSK_OUT[s]];
+      const vb = this.metric[a | 8] + w[KEY_QPSK_OUT[s | 16]];
+      const from = va >= vb ? a : a | 8;
+      const v = va >= vb ? va : vb;
+      this.nextMetric[s] = v;
+      this.nextPaths[s] = ((this.paths[from] << 1) | (s & 1)) & 0xffffff;
+      if (v > best)
+      {
+        best = v;
+        bestState = s;
+      }
+    }
+    // Kept near 0: the best path's metric taken off every one (so the best's gain this step is best)
+    for (let s = 0; s < 16; s++) this.nextMetric[s] -= best;
+    [this.metric, this.nextMetric] = [this.nextMetric, this.metric];
+    [this.paths, this.nextPaths] = [this.nextPaths, this.paths];
+    this.fit += (best - this.fit) / 32;
+    if (++this.count < KEY_QPSK_DEPTH) return -1;
+    return (this.paths[bestState] >> (KEY_QPSK_DEPTH - 1)) & 1;
   }
 }
 

@@ -6,8 +6,7 @@
 // are. General (the tab shown at first): the waterfall's speed and how it is drawn, Rig Control (whether the decoder may send the rig
 // anything at all), Follow BirdWatch, RSID, Common Input Device and Common VFO (each with its menu: on, each decoder's own is hidden and
 // kept). Decoders: each decoder's own settings, the same rows in each (its Input Device and VFO; what it may send the rig, shown with Rig
-// Control on: Set Frequency and Set Mode, each on its own; then its own: FT8's Depth, FT8's and FT4's Enable GridTracker Instance, one of
-// the two; SSTV's Save Pictures and folder). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
+// Control on: Set Frequency and Set Mode, each on its own; then its own: FT8's Depth, FT8's and FT4's Send Decodes To Call Roster; SSTV's Save Pictures and folder). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
 
 function mmdSettingsShow(show)
 {
@@ -60,8 +59,8 @@ function mmdSettingsRender()
   mmdInputsRender();
   mmdOutputsRender();
   ft8DepthSelect.value = S.ft8Depth;
-  ft8InstanceValue.checked = S.ft8Instance === true;
-  ft4InstanceValue.checked = S.ft4Instance === true;
+  ft8SendDecodesValue.checked = S.ft8SendDecodes === true;
+  ft4SendDecodesValue.checked = S.ft4SendDecodes === true;
   mmdInstanceNoteRender();
   ft8SetModeValue.checked = S.ft8SetMode;
   ft4SetModeValue.checked = S.ft4SetMode === true;
@@ -70,7 +69,14 @@ function mmdSettingsRender()
   packetSetModeValue.checked = S.packetSetMode === true;
   psk31SetModeValue.checked = S.psk31SetMode === true;
   rttySetModeValue.checked = S.rttySetMode === true;
+  mfskSetModeValue.checked = S.mfskSetMode === true;
+  thorSetModeValue.checked = S.thorSetMode === true;
+  navtexSetModeValue.checked = S.navtexSetMode === true;
+  hellSetModeValue.checked = S.hellSetMode === true;
+  wefaxSetModeValue.checked = S.wefaxSetMode === true;
+  wsprSetModeValue.checked = S.wsprSetMode === true;
   sstvSaveValue.checked = S.sstvSave === true;
+  navtexSaveValue.checked = S.navtexSave === true;
   sstvFolderTr.style.display = S.sstvSave === true ? "" : "none";
   sstvFolderText.textContent = window.opener.mmDecoderSstvFolder();
 }
@@ -246,15 +252,12 @@ function mmdSetFt8Depth()
   GT.settings.MMD.ft8Depth = ft8DepthSelect.value == "deep" ? "deep" : "normal";
 }
 
-// FT8's or FT4's GridTracker instance ("MMD"; mode "ft8" or "ft4"): on, that mode is listened to with the window closed or in another mode
-// too (mmdListen, mmdFt8Background.js) and its decodes go to GridTracker. One of the two: checking one unchecks the other
-function mmdSetInstance(mode)
+// FT8's or FT4's Send Decodes To Call Roster (mode "ft8" or "ft4"): on, in that mode its decodes go into the Call Roster too, not only
+// the map (GridTracker's instance "MMD", services/mmDecoder.js)
+function mmdSetSendDecodes(mode)
 {
-  const S = GT.settings.MMD;
-  S[mode + "Instance"] = window[mode + "InstanceValue"].checked;
-  if (S[mode + "Instance"]) S[(mode == "ft8" ? "ft4" : "ft8") + "Instance"] = false;
+  GT.settings.MMD[mode + "SendDecodes"] = window[mode + "SendDecodesValue"].checked;
   mmdSettingsRender();
-  mmdListen();
 }
 
 // Each one's note, while it is on but its decodes can't go yet: Rig Control isn't reading that mode's VFO's dial
@@ -262,7 +265,7 @@ function mmdInstanceNoteRender()
 {
   for (const mode of ["ft8", "ft4"])
   {
-    const waiting = GT.settings.MMD[mode + "Instance"] === true && !(window.opener.mmDecoderVfoRead(mode).up);
+    const waiting = GT.settings.MMD[mode + "SendDecodes"] === true && !(window.opener.mmDecoderVfoRead(mode).up);
     window[mode + "InstanceNoteTr"].style.display = waiting ? "" : "none";
   }
 }
@@ -272,6 +275,13 @@ function mmdInstanceNoteRender()
 function mmdSetSstvSave()
 {
   GT.settings.MMD.sstvSave = sstvSaveValue.checked;
+  mmdSettingsRender();
+}
+
+// NAVTEX's Save Messages: each complete message saved as text as it comes (mmdNavtex.js)
+function mmdSetNavtexSave()
+{
+  GT.settings.MMD.navtexSave = navtexSaveValue.checked;
   mmdSettingsRender();
 }
 

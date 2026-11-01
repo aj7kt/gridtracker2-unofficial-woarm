@@ -44,7 +44,8 @@ function handleInstanceStatus(newMessage)
     scheduleParksRedraw();
   }
   
-  if (GT.callRosterWindowInitialized)
+  // (Not the Multi-Mode Decoder's instance while the roster doesn't see it: services/mmDecoder.js)
+  if (GT.callRosterWindowInitialized && GT.instances[newMessage.instance].hideFromRoster !== true)
   {
     try
     {
@@ -982,7 +983,8 @@ function finalWsjtxDecode(newMessage, useReformedMessage = false, reformedMessag
 
       didCustomAlert = processCustomAlertMessage(decodeWords, theMessage.substr(0, 30).trim(), callsign.band, callsign.mode);
 
-      insertMessageInRoster(newMessage, msgDEcallsign, msgDXcallsign, callsign, hash);
+      // (Not the Multi-Mode Decoder's instance with its Send Decodes To Call Roster off: the map only, services/mmDecoder.js)
+      if (GT.instances[newMessage.instance].noRoster !== true) insertMessageInRoster(newMessage, msgDEcallsign, msgDXcallsign, callsign, hash);
 
       // A decode that matched a custom alert is an event (the Event Viewer)
       if (didCustomAlert == true) addEvent("decode", htmlEntities(theMessage) + " 🚩");

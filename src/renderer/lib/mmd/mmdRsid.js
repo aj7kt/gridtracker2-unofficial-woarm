@@ -77,8 +77,8 @@ function mmdRsidMessage(m)
   if (m.type != "rsid" || m.code == RSID_EOT || !mmdRsidOn()) return;
   // In Olivia mode, an Olivia or Contestia RSID sets the submode and where its signal is looked for (mmdOlivia.js)
   mmdOliviaRsid(m.name, m.freq);
-  // In PSK31 and RTTY mode, the finder leaves the place alone a moment, so the RSID's tones don't hide the signal after it (keyWorker.js)
-  if (mmdKeyMode() && KEY.worker) KEY.worker.postMessage({ type: "rsid", freq: m.freq });
+  // In the keyboard modes, the finder leaves the place alone a moment, so the RSID's tones don't hide the signal after it (mmdKey.js)
+  if (mmdKeyMode()) mmdKeyRsid(m.freq);
   // Detect Modes' own PSK31 and RTTY decoders the same (mmdDetect.js)
   mmdDetectRsid(m.freq);
   // Its last tone is in the rows still queued for the waterfall, not on it yet: placed above the top by them
@@ -90,8 +90,9 @@ function mmdRsidMessage(m)
 // The Mode menu's mode for an RSID's mode name (one decoded here), else null
 function mmdRsidModeOf(name)
 {
-  if (name == "BPSK31") return "psk31";
-  if (name == "RTTY 45") return "rtty";
+  const key = mmdKeyRsidMode(name);
+  if (key) return key[0];
+  if (name == "Feld Hell") return "hell";
   if (name == "Packet 1200") return "packet";
   const m = /^(Olivia|Contestia) (\d+)\/(\d+)$/.exec(name);
   if (m && OLIVIA_SUBMODES.some(([mode, tones, bandwidth]) => mode == m[1].toLowerCase() && tones == m[2] && bandwidth == m[3])) return "olivia";
@@ -124,24 +125,30 @@ function mmdRsidPick(mark)
     GT.settings.MMD.oliviaSubmode = m[1].toLowerCase() + " " + m[2] + "/" + m[3];
     GT.settings.MMD.oliviaCenter = Math.round(mark.freq);
   }
-  if (DEC.mode == mode && !olivia) return;
+  // A keyboard mode's submode (PSK63, MFSK32, THOR 16 ...): picked with it
+  const key = mmdKeyRsidMode(mark.name);
+  const sub = key && key[1] && KEY_MODES[mode].subs ? key[1] : null;
+  if (sub && DEC.mode != mode) GT.settings.MMD[KEY_MODES[mode].setting] = sub;
+  if (DEC.mode == mode && !olivia && !(sub && mmdKeySub()[0] != sub)) return;
   // (Taken before the mode changes: a restart lets the audio kept go)
   const from = mark.at - RSID_BACK_MS;
   const chunks = (RSID.kept || []).filter((chunk) => chunk.at >= from);
   cwMode.value = mode;
   if (DEC.mode != mode) mmdModeSet(mode);
+  else if (sub) mmdKeySubSet(sub);
   else
   {
     mmdOliviaMenu();
     mmdOliviaRestart();
     mmdOliviaReset();
   }
-  // PSK31 and RTTY: the RSID's own tones aren't taken for a signal (keyWorker.js)
+  // The keyboard modes: the RSID's own tones aren't taken for a signal (mmdKey.js)
   if (chunks.length && mmdKeyMode(mode)) mmdKeyLoad(chunks[0].rate).postMessage({ type: "rsid", freq: mark.freq });
   for (const chunk of chunks)
   {
     const data = { rate: chunk.rate, samples: chunk.samples.slice() };
     if (mode == "packet") mmdPacketAudio(data);
+    else if (mode == "hell") mmdHellAudio(data);
     else if (olivia) mmdOliviaAudio(data);
     else mmdKeyAudio(data);
   }

@@ -31,6 +31,7 @@ const SCOPE = {
   sweep: null,   // the newest sweep shown
   fall: null,    // the waterfall: a canvas a row a sweep (as wide as the sweeps' points), the newest row on top
   fallKey: "",   // the span the waterfall's rows were drawn for (another one: it starts again)
+  fallLow: 0,    // the low edge (Hz) the waterfall's columns stand for (a retune slides them: mmdScopeFallRow)
   floor: null,   // the noise floor the colors start at, followed from sweep to sweep (null: taken afresh from the next one)
   hoverX: null,  // the mouse across the strip (CSS pixels), or null
   drawQueued: false
@@ -123,7 +124,9 @@ function mmdScopeSweep(sweep)
   mmdScopeDraw();
 }
 
-// The waterfall a row lower, this sweep's row on top: each point over the noise floor, a share of SCOPE_FALL_RANGE up the decoder's palette
+// The waterfall a row lower, this sweep's row on top: each point over the noise floor, a share of SCOPE_FALL_RANGE up the decoder's palette.
+// Another span starts it afresh; the same span somewhere else (the rig retuned) slides what it had across by whole points, so each signal
+// stays at its frequency (what slid out is gone, the side uncovered black; smaller moves add up until they make a point)
 function mmdScopeFallRow(sweep)
 {
   const n = sweep.points.length;
@@ -137,7 +140,23 @@ function mmdScopeFallRow(sweep)
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, n, SCOPE_FALL_ROWS);
     SCOPE.fallKey = key;
+    SCOPE.fallLow = sweep.low;
     SCOPE.floor = null;
+  }
+  const pointHz = (sweep.high - sweep.low) / n;
+  // Whole points only (truncated, not rounded: a retune left half a point off would otherwise slide it back and forth a point each sweep)
+  const dx = pointHz > 0 ? Math.trunc((sweep.low - SCOPE.fallLow) / pointHz) : 0;
+  if (dx)
+  {
+    const ctx = SCOPE.fall.getContext("2d");
+    const copy = document.createElement("canvas");
+    copy.width = n;
+    copy.height = SCOPE_FALL_ROWS;
+    if (Math.abs(dx) < n) copy.getContext("2d").drawImage(SCOPE.fall, 0, 0);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, n, SCOPE_FALL_ROWS);
+    if (Math.abs(dx) < n) ctx.drawImage(copy, -dx, 0);
+    SCOPE.fallLow += dx * pointHz;
   }
   const sorted = Array.from(sweep.points).sort((a, b) => a - b);
   const floor = sorted[Math.floor((sorted.length - 1) * SCOPE_FLOOR_SHARE)];

@@ -56,6 +56,64 @@
         padding: 0 6px 3px;
         overflow: hidden;
       }
+      /* NAVTEX mode's messages: each a block, its header (station, subject, number; when, where, how cleanly) over its text as sent */
+      #navtexList {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 2px 6px;
+        text-align: left;
+      }
+      .navtexBlock {
+        border-bottom: 1px solid #333;
+        padding: 4px 0;
+      }
+      .navtexBlockLive {
+        background-color: #111a22;
+      }
+      .navtexHead {
+        color: #aaa;
+        white-space: normal;
+      }
+      .navtexId {
+        color: #fff;
+        font-weight: bold;
+      }
+      .navtexSubject {
+        color: #8cf;
+      }
+      .navtexLive {
+        color: #fc6;
+      }
+      .navtexGood {
+        color: #8f8;
+      }
+      .navtexFair {
+        color: #ff0;
+      }
+      .navtexBad {
+        color: #f88;
+      }
+      .navtexText {
+        margin: 2px 0 0 0;
+        font-family: monospace;
+        white-space: pre-wrap;
+        color: #ddd;
+      }
+      #navtexEmpty {
+        color: #888;
+        text-align: center;
+        padding: 6px;
+      }
+      /* A row of its own under the second line (the submode menus, WEFAX's controls), laid out as it is */
+      .cwBarRow {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 6px 3px;
+        overflow: hidden;
+      }
       .cwPick {
         display: inline-flex;
         align-items: center;
@@ -103,11 +161,6 @@
         padding: 4px 2px;
         color: orange;
       }
-      .mmdBandsInfo {
-        padding: 2px 4px;
-        color: #ccc;
-        white-space: normal;
-      }
       .mmdBandsTable th {
         text-align: left;
         font-weight: normal;
@@ -134,6 +187,11 @@
         font-weight: bold;
         padding: 2px 0 3px 2px;
       }
+      /* A line between groups of General's rows (the waterfall's, then the rest) */
+      .mmdSettingsSep {
+        border-top: 1px solid #555;
+        margin: 4px 0;
+      }
       /* Common Input Device's and Common VFO's menus, each alone in a row of its own indented under its checkbox */
       .mmdCommonRow {
         text-align: left;
@@ -158,6 +216,10 @@
       .cwButton.cwTestOn {
         border-color: #fa0;
         color: #fc6;
+      }
+      /* The Frequency menu: WEFAX's and NAVTEX's name their stations, which would widen it past the line */
+      #cwFreqs {
+        max-width: 220px;
       }
       #cwBandwidth,
       #cwFreqs,
@@ -359,17 +421,28 @@
       /* The line between the waterfall and the decoded lines; the lines' header row is dragged to share the room between them
          (mmDecoder.js, mmdSplitInit) */
       #mmdSplit {
-        flex: 0 0 1px;
-        background-color: #333;
-      }
-      #cwTable thead,
-      #ft8Table thead,
-      #packetTable thead,
-      #cwTable thead,
-      #ft8Table thead,
-      #satTable thead {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1px 6px;
+        border-top: 1px solid #333;
+        border-bottom: 1px solid #333;
+        background-color: #111;
+        /* 2 pt over the window's 9 pt (12 px: SSTV's Receive and Send) */
+        font-size: 11pt;
+        overflow: hidden;
         cursor: ns-resize;
         user-select: none;
+        position: relative;
+      }
+      /* FT8's, FT4's and WSPR's place in their period, at the divider's right: monospace, its spaces kept, so it doesn't move */
+      #cwPeriodText {
+        position: absolute;
+        right: 8px;
+        font-family: monospace;
+        white-space: pre;
+        color: #aaa;
       }
       #cwList,
       #ft8List,
@@ -377,7 +450,8 @@
       #detectList,
       #cwList,
       #ft8List,
-      #satList {
+      #satList,
+      #wsprList {
         flex: 1 1 auto;
         overflow-y: auto;
         overflow-x: hidden;
@@ -388,10 +462,21 @@
       #detectTable,
       #cwTable,
       #ft8Table,
-      #satTable {
+      #satTable,
+      #wsprTable {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
+      }
+      .wsprFreqCol {
+        width: 100px;
+      }
+      /* DT (to -1.0), Drift and dBm */
+      .wsprDtCol {
+        width: 50px;
+      }
+      .wsprGridCol {
+        width: 64px;
       }
       .ft8UtcCol {
         width: 62px;
@@ -460,7 +545,8 @@
       #ft8Empty,
       #packetEmpty,
       #detectEmpty,
-      #satEmpty {
+      #satEmpty,
+      #wsprEmpty {
         color: #888;
         padding: 6px;
       }
@@ -495,7 +581,8 @@
       }
       #packetTable td,
       #detectTable td,
-      #satTable td {
+      #satTable td,
+      #wsprTable td {
         padding: 1px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -507,11 +594,13 @@
       }
       #packetTable td.ft8Num,
       #detectTable td.ft8Num,
-      #satTable td.ft8Num {
+      #satTable td.ft8Num,
+      #wsprTable td.ft8Num {
         color: #aaa;
       }
       #packetTable td.packetCall,
-      #satTable td.packetCall {
+      #satTable td.packetCall,
+      #wsprTable td.packetCall {
         color: yellow;
       }
       #packetTable td.packetPath,
@@ -528,7 +617,8 @@
       }
       #packetTable tr:hover td,
       #detectTable tr:hover td,
-      #satTable tr:hover td {
+      #satTable tr:hover td,
+      #wsprTable tr:hover td {
         box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
       }
       #ft8Table th,
@@ -537,6 +627,7 @@
       #cwTable th,
       #ft8Table th,
       #satTable th,
+      #wsprTable th,
       #cwTable th {
         position: sticky;
         top: 0;
@@ -624,8 +715,26 @@
         color: #aaa;
         overflow: hidden;
         text-overflow: ellipsis;
-        cursor: ns-resize;
         user-select: none;
+      }
+      /* Feld-Hell mode: its tape fills the room the lists have */
+      #hellView {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+      }
+      #hellTape {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        background-color: black;
+      }
+      .cwHellTrim {
+        display: inline-block;
+        min-width: 4em;
+        text-align: center;
+        cursor: pointer;
       }
       #sstvBody {
         flex: 1 1 auto;
@@ -798,6 +907,29 @@
       #sstvTxForm .cwButton {
         vertical-align: middle;
       }
+      /* Send's buttons keep their places and sizes whatever they show (nothing moves from under the pointer): each holds all its labels
+         in one grid cell, the ones not shown hidden but still taking their room. Red while it runs, greyed while another one does */
+      .sstvTxAction {
+        display: inline-grid;
+        text-align: center;
+      }
+      .sstvTxAction > span {
+        grid-area: 1 / 1;
+      }
+      .sstvTxAction > span.sstvTxHidden {
+        visibility: hidden;
+      }
+      .cwButton.sstvTxOn {
+        background-color: #b00;
+        border-color: #f66;
+      }
+      .cwButton.sstvTxBusy {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .cwButton.sstvTxBusy:hover {
+        border-color: #888;
+      }
       #sstvTxForm select {
         width: 132px;
       }
@@ -861,7 +993,6 @@
     <script src="./lib/first.js"></script>
     <script src="./lib/ui/i18n.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmDecoder.js" type="text/javascript"></script>
-    <script src="./lib/mmd/mmdFt8Background.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSstv.js" type="text/javascript"></script>
     <script src="./lib/mmd/sstvEncoder.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSstvTx.js" type="text/javascript"></script>
@@ -869,11 +1000,15 @@
     <script src="./lib/mmd/ssdv.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSat.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdKey.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdHell.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdWefaxAuto.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdNavtex.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdRsid.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdOlivia.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdTest.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdScope.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdDetect.js" type="text/javascript"></script>
+    <script src="./lib/mmd/mmdWspr.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdBands.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdFallView.js" type="text/javascript"></script>
     <script src="./lib/mmd/mmdSettings.js" type="text/javascript"></script>
@@ -892,20 +1027,30 @@
       <span id="cwLevelButton" class="cwButton" style="display: none;" data-i18n="cwViewer.levels.hover" title="The audio's levels: SW, a gain inside the decoder for this mode; HW, the Input Device's own recording level. Hover here to set them"></span>
       <!-- Test Signals (mmdTest.js): the mode's recordings played into the decoder; while one plays, it stops it -->
       <span id="cwTestButton" class="cwButton" style="display: none;" onclick="mmdTestClick();" data-i18n="cwViewer.test.hover" title="Plays a recording of this mode's signals into the decoder, often several at once, to see what it decodes. What it decodes stays in this window"></span>
-      <span id="cwDetectButton" class="cwButton" onclick="mmdDetectToggle();" data-i18n="cwViewer.detect.hover" title="Listens for every mode here but FT8 and FT4 and names each signal it finds: click one, on the waterfall or in the list, to decode it. The mode you were in waits meanwhile"><span data-i18n="cwViewer.detect.label">Detect Modes</span></span>
+      <span id="cwDetectButton" class="cwButton" onclick="mmdDetectToggle();" data-i18n="cwViewer.detect.hover" title="Listens for every mode here and names each signal it finds: click one, on the waterfall or in the list, to decode it. The mode you were in waits meanwhile"><span data-i18n="cwViewer.detect.label">Detect Modes</span></span>
       <span id="cwStatus"></span>
     </div>
-    <!-- What is decoded: the mode, the bandwidth, and the mode's usual frequencies (shown with Rig Control connected, mmdFreqsShow) -->
+    <!-- What is decoded: the mode and the mode's usual frequencies (its Bandwidth is in Settings, General) (shown with Rig Control connected, mmdFreqsShow) -->
     <div id="cwBar">
-      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="ft4">FT4</option><option value="ft8">FT8</option><option value="olivia">Olivia</option><option value="packet" data-i18n="settings.packetDecoder.label">Packet</option><option value="psk31">PSK31</option><option value="rtty">RTTY</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option></select></span>
-      <span class="cwPick"><label for="cwBandwidth" data-i18n="cwViewer.bandwidth.label">Bandwidth</label><select id="cwBandwidth" data-i18n="cwViewer.bandwidth.hover" title="The audio decoded, from 0 Hz up: a rig's passband (2.5k to 4k), or more of an SDR's stream (10k up; 44.1k, 48k and 96k are the whole of a stream at that sample rate). Changing it starts the decoder again"></select></span>
-      <span id="cwFreqsBox" class="cwPick"><span id="cwFreqText"></span><select id="cwFreqs" style="display: none;" data-i18n="cwViewer.freqs.hover" title="The usual frequencies for this mode: pick one to set the rig to it, its frequency and its mode as this mode allows (Settings: Rig Control, then Decoders)"></select></span>
-      <!-- The waterfall's UTC lines, every so often (not in FT8 and FT4, which have their period lines: mmdModeSet) -->
-      <span id="cwUtcBox" class="cwPick"><label for="cwUtc" data-i18n="cwViewer.utc.label">UTC</label><select id="cwUtc" data-i18n="cwViewer.utc.hover" title="Lines across the waterfall on the UTC clock, each with its time"><option value="0" data-i18n="cwViewer.utc.off">Off</option><option value="10">10s</option><option value="30">30s</option><option value="60">1m</option></select></span>
+      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="thor">DominoEX / THOR</option><option value="hell">Feld-Hell</option><option value="ft4">FT4</option><option value="ft8">FT8</option><option value="mfsk">MFSK</option><option value="navtex">NAVTEX</option><option value="olivia">Olivia</option><option value="packet" data-i18n="settings.packetDecoder.label">Packet</option><option value="psk31">PSK</option><option value="rtty">RTTY</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wefax">WEFAX</option><option value="wspr">WSPR</option></select></span>
+      <span id="cwFreqsBox" class="cwPick"><select id="cwFreqs" style="display: none;" data-i18n="cwViewer.freqs.hover" title="The usual frequencies for this mode: pick one to set the rig to it, its frequency and its mode as this mode allows (Settings: Rig Control, then Decoders)"></select></span>
+      <!-- The waterfall's UTC lines, every so often (not in FT8, FT4 and WSPR, which have their period lines: mmdModeSet) -->
+      <span id="cwUtcBox" class="cwPick"><label for="cwUtc" data-i18n="cwViewer.utc.label">UTC</label><select id="cwUtc" data-i18n="cwViewer.utc.hover" title="Lines across the waterfall on the UTC clock, each with its time"><option value="0" data-i18n="cwViewer.utc.off">Off</option><option value="10">10s</option><option value="15">15s</option><option value="30">30s</option><option value="60">1m</option></select></span>
       <!-- FT8 and FT4: Slot Finder, each mode's own (mmdFtxSlots), in the UTC menu's place -->
       <span id="cwSlotBox" class="cwPick"><input type="checkbox" id="cwSlot" data-i18n="settings.ft8Decoder.slotFinder.hover" title="Marks the clearest frequency to transmit on in the even and odd periods" onclick="mmdSetSlotFinder();" /><label for="cwSlot" data-i18n="settings.ft8Decoder.slotFinder.label">Slot Finder</label></span>
+    </div>
+    <!-- The submode menus, on a row of their own under the second line (shown while one is: mmdModeSet) -->
+    <div id="cwSubBar" class="cwBarRow" style="display: none;">
+      <!-- Feld-Hell: its submode and Trim (mmdHell.js) -->
+      <span id="cwHellBox" class="cwPick" style="display: none;"><select id="cwHellSub" data-i18n="cwViewer.hell.sub.hover" title="The Hellschreiber speed read: Feld-Hell, or its faster forms X5 and X9. Click a signal on the waterfall to read it; click inside its band to go back to finding the strongest" onchange="mmdHellPicked();"></select> <span data-i18n="cwViewer.hell.trim.label">Trim</span> <span class="cwButton" onclick="mmdHellTrimStep(-1);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">−</span><span id="cwHellTrimValue" class="cwHellTrim" onclick="mmdHellTrimStep(0);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">0</span><span class="cwButton" onclick="mmdHellTrimStep(1);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">+</span></span>
+      <!-- PSK, MFSK and DominoEX / THOR: the submode decoded (mmdKey.js); every signal of it in the passband is found -->
+      <span id="cwKeyBox" class="cwPick" style="display: none;"><select id="cwKeySub" data-i18n="cwViewer.key.hover" title="The submode decoded: every signal of it in the passband is found and decoded. An RSID heard and clicked sets it" onchange="mmdKeyPicked();"></select></span>
       <!-- Olivia: the submode decoded (mmdOlivia.js); a click on the waterfall sets where its signal is, an RSID heard sets both -->
       <span id="cwOliviaBox" class="cwPick" style="display: none;"><select id="cwOliviaSub" data-i18n="cwViewer.olivia.hover" title="The Olivia or Contestia submode decoded (tones / bandwidth). Click the signal on the waterfall; an RSID heard sets both" onchange="mmdOliviaPicked();"></select></span>
+    </div>
+    <!-- WEFAX: its line rate, index of cooperation, Start Now and Stop, on a row of their own (shown in its mode, mmdModeSet) -->
+    <div id="cwWefaxBar" class="cwBarRow" style="display: none;">
+      <span id="cwWefaxBox" class="cwPick"><label for="cwWefaxLpm" data-i18n="cwViewer.wefax.lpm.label">LPM</label><select id="cwWefaxLpm" data-i18n="cwViewer.wefax.lpm.hover" title="Lines a minute: Auto finds it from the chart's phasing lines; most stations send 120" onchange="mmdWefaxPicked();"></select> <label for="cwWefaxIoc" data-i18n="cwViewer.wefax.ioc.label">IOC</label><select id="cwWefaxIoc" data-i18n="cwViewer.wefax.ioc.hover" title="Index of cooperation, the chart's width: Auto finds it from the start tone; most stations send 576" onchange="mmdWefaxPicked();"></select> <span data-i18n="cwViewer.hell.trim.label">Trim</span> <span class="cwButton" onclick="mmdWefaxTrimStep(-1);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">−</span><span id="cwWefaxTrimValue" class="cwHellTrim" onclick="mmdWefaxTrimStep(0);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">0</span><span class="cwButton" onclick="mmdWefaxTrimStep(1);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">+</span> <span class="cwButton" onclick="mmdWefaxStartNow();" data-i18n="cwViewer.wefax.startNow.hover" title="Starts a chart now, without waiting for its start tone: for a chart already being sent"><span data-i18n="cwViewer.wefax.startNow.label">Start Now</span></span> <span class="cwButton" onclick="mmdWefaxStop();" data-i18n="cwViewer.wefax.stop.hover" title="Ends the chart being received here"><span data-i18n="cwViewer.wefax.stop.label">Stop</span></span> <input type="checkbox" id="cwWefaxAuto" onclick="mmdWefaxAutoToggle();" data-i18n="cwViewer.wefax.auto.hover" title="Tunes the rig to each station's next chart by the published schedules, one chart after another. Tuning the rig by hand turns it off" /><label for="cwWefaxAuto" data-i18n="cwViewer.wefax.auto.label">Auto-Tune</label> <span id="cwWefaxAutoText"></span></span>
     </div>
     <!-- Its settings (mmdSettings.js), opened by Settings on the top line as the Call Roster's are: General (the waterfall, Rig Control, what
          every decoder shares), Decoders (each decoder's own) and Band Plans (mmdBands.js) -->
@@ -928,6 +1073,9 @@
             <div id="mmdFallCrispRow" class="mmdCommonRow mmdFallSliders"><span data-i18n="settings.mmDecoder.fallFloor.label">Floor</span> <input data-i18n="settings.mmDecoder.fallFloor.hover" title="dB over the noise still drawn black" type="range" min="0" max="20" step="0.5" value="3" class="slider" id="mmdFallFloorValue" oninput="mmdFallViewSet();" /><span id="mmdFallFloorTd" class="mapValue">3 dB</span> <span data-i18n="settings.mmDecoder.fallRange.label">Range</span> <input data-i18n="settings.mmDecoder.fallRange.hover" title="dB from black to white" type="range" min="10" max="60" step="1" value="30" class="slider" id="mmdFallRangeValue" oninput="mmdFallViewSet();" /><span id="mmdFallRangeTd" class="mapValue">30 dB</span></div>
             <div class="mmdRigControl"><span data-i18n="settings.mmDecoder.fallRes.label">Resolution</span> <select id="mmdFallResSelect" data-i18n="settings.mmDecoder.fallRes.hover" title="Sharper in time or in frequency" onchange="mmdFallViewSet();"><option value="mode" data-i18n="settings.mmDecoder.fallRes.mode">By Mode</option><option value="quarter" data-i18n="settings.mmDecoder.fallRes.quarter">Sharpest Time</option><option value="half" data-i18n="settings.mmDecoder.fallRes.half">Sharp Time</option><option value="same" data-i18n="settings.mmDecoder.fallRes.same">Balanced</option><option value="twice" data-i18n="settings.mmDecoder.fallRes.twice">Sharp Frequency</option></select> <span data-i18n="settings.mmDecoder.fallWindow.label">Window</span> <select id="mmdFallWindowSelect" data-i18n="settings.mmDecoder.fallWindow.hover" title="Blackman-Harris: a darker floor beside strong signals" onchange="mmdFallViewSet();"><option value="hann">Hann</option><option value="blackman">Blackman-Harris</option></select></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.fallSharp.hover" title="Each frequency drawn as a sharp block" type="checkbox" id="mmdFallSharpValue" onclick="mmdFallViewSet();" /> <label data-i18n="settings.mmDecoder.fallSharp.label" for="mmdFallSharpValue">Sharp Pixels</label></div>
+            <div class="mmdSettingsSep"></div>
+            <!-- Bandwidth: the span decoded (mmDecoder.js fills it; a change starts the decoder again) -->
+            <div class="mmdRigControl"><label for="cwBandwidth" data-i18n="cwViewer.bandwidth.label">Bandwidth</label> <select id="cwBandwidth" data-i18n="cwViewer.bandwidth.hover" title="The audio decoded, from 0 Hz up: a rig's passband (2.5k to 4k), or more of an SDR's stream (10k up; 44.1k, 48k and 96k are the whole of a stream at that sample rate). Changing it starts the decoder again"></select></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.rigControl.hover" title="Lets the Multi-Mode Decoder read each mode's VFO and send the rig what each mode allows (its frequency, its mode); off, it has nothing to do with the rigs and shows audio frequencies only" type="checkbox" id="mmdRigControlValue" onclick="mmdSetRigControl();" /> <label data-i18n="settings.rig.label" for="mmdRigControlValue">Rig Control</label></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.followBirdWatch.hover" title="As BirdWatch follows a satellite transmitter, the decoder switches to its mode" type="checkbox" id="mmdFollowBirdWatchValue" onclick="mmdSetFollowBirdWatch();" /> <label data-i18n="settings.mmDecoder.followBirdWatch.label" for="mmdFollowBirdWatchValue">Follow BirdWatch</label></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.rsid.hover" title="Names the mode of a transmission on the waterfall when its sender starts it with an RSID" type="checkbox" id="mmdRsidValue" onclick="mmdSetRsid();" /> <label data-i18n="settings.mmDecoder.rsid.label" for="mmdRsidValue">RSID</label></div>
@@ -963,6 +1111,38 @@
                 </tr>
               </table>
             </div>
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span data-i18n="settings.thorDecoder.label">DominoEX / THOR</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="thorInputSelect">Input Device</label></td>
+                  <td><select id="thorInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('thor');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="thorVfoSelect">VFO</label></td>
+                  <td><select id="thorVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('thor');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="thorSetFreqValue" onclick="mmdSetRigSend('thor');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="thorSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="thorSetModeValue" onclick="mmdSetRigSend('thor');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="thorSetModeValue">Set Mode</label></td>
+                </tr>
+              </table>
+            </div>
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span data-i18n="settings.hellDecoder.label">Feld-Hell</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="hellInputSelect">Input Device</label></td>
+                  <td><select id="hellInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('hell');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="hellVfoSelect">VFO</label></td>
+                  <td><select id="hellVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('hell');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="hellSetFreqValue" onclick="mmdSetRigSend('hell');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="hellSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="hellSetModeValue" onclick="mmdSetRigSend('hell');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="hellSetModeValue">Set Mode</label></td>
+                </tr>
+              </table>
+            </div>
             <!-- FT4: the FT8 decoder's (7.5 s periods, decoded the Normal way); its Set Mode's USB or Data is FT8's -->
             <div class="rigVfoBox">
               <div class="rigVfoTitle"><span data-i18n="settings.ft4Decoder.label">FT4</span></div>
@@ -978,9 +1158,9 @@
                 <tr class="mmdRigRow">
                   <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="ft4SetFreqValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="ft4SetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="ft4SetModeValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="ft4SetModeValue">Set Mode</label></td>
                 </tr>
-                <!-- Its decodes to GridTracker as the instance MMD, as FT8's (one of the two: checking one unchecks the other) -->
+                <!-- Its decodes to GridTracker through the instance MMD, as FT8's -->
                 <tr>
-                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft4InstanceValue" data-i18n="settings.ft4Decoder.instance.hover" title="FT4's decodes go to GridTracker as a WSJT-X instance named MMD would (the Call Roster, the map, alerts), and FT4 is decoded on with this window closed or in another mode (FT8's instance turns off). Needs Rig Control reading the FT4 VFO's dial; MMD can't be answered (it doesn't transmit)" onclick="mmdSetInstance('ft4');" /> <label for="ft4InstanceValue" data-i18n="settings.ft8Decoder.instance.label">Enable GridTracker Instance</label></td>
+                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft4SendDecodesValue" data-i18n="settings.ft4Decoder.sendDecodes.hover" title="FT4 decodes go to the Call Roster as well as the map" onclick="mmdSetSendDecodes('ft4');" /> <label for="ft4SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
                 </tr>
                 <tr id="ft4InstanceNoteTr">
                   <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft4Decoder.instance.note.label">Waiting for Rig Control to read the FT4 VFO's dial</td>
@@ -1010,13 +1190,48 @@
                     </select>
                   </td>
                 </tr>
-                <!-- Its decodes to GridTracker as an instance named MMD (services/mmDecoder.js), listening on with this window closed or in another mode (mmdFt8Background.js), one of FT8's and FT4's; the note
+                <!-- Its decodes into the Call Roster too, not only the map (the instance MMD, services/mmDecoder.js); the note
                      while it can't (Rig Control isn't reading the FT8 VFO's dial, so a decode's band isn't known) -->
                 <tr>
-                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.hover" title="FT8's decodes go to GridTracker as a WSJT-X instance named MMD would (the Call Roster, the map, alerts), and FT8 is decoded on with this window closed or in another mode (FT4's instance turns off). Needs Rig Control reading the FT8 VFO's dial; MMD can't be answered (it doesn't transmit)" onclick="mmdSetInstance('ft8');" /> <label for="ft8InstanceValue" data-i18n="settings.ft8Decoder.instance.label">Enable GridTracker Instance</label></td>
+                  <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.hover" title="FT8 decodes go to the Call Roster as well as the map" onclick="mmdSetSendDecodes('ft8');" /> <label for="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
                 </tr>
                 <tr id="ft8InstanceNoteTr">
                   <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft8Decoder.instance.note.label">Waiting for Rig Control to read the FT8 VFO's dial</td>
+                </tr>
+              </table>
+            </div>
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span data-i18n="settings.mfskDecoder.label">MFSK</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="mfskInputSelect">Input Device</label></td>
+                  <td><select id="mfskInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('mfsk');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="mfskVfoSelect">VFO</label></td>
+                  <td><select id="mfskVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('mfsk');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="mfskSetFreqValue" onclick="mmdSetRigSend('mfsk');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="mfskSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="mfskSetModeValue" onclick="mmdSetRigSend('mfsk');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="mfskSetModeValue">Set Mode</label></td>
+                </tr>
+              </table>
+            </div>
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span data-i18n="settings.navtexDecoder.label">NAVTEX</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="navtexInputSelect">Input Device</label></td>
+                  <td><select id="navtexInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('navtex');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="navtexVfoSelect">VFO</label></td>
+                  <td><select id="navtexVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('navtex');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="navtexSetFreqValue" onclick="mmdSetRigSend('navtex');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="navtexSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="navtexSetModeValue" onclick="mmdSetRigSend('navtex');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="navtexSetModeValue">Set Mode</label></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="navtexSaveValue" data-i18n="settings.navtexDecoder.save.hover" title="Each complete message is saved as a text file in NAVTEX Messages, beside GridTracker's own folders, named by its UTC time, station, subject and number" onclick="mmdSetNavtexSave();" /> <label for="navtexSaveValue" data-i18n="settings.navtexDecoder.save.label">Save Messages</label></td>
                 </tr>
               </table>
             </div>
@@ -1122,10 +1337,43 @@
                 </tr>
               </table>
             </div>
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span data-i18n="settings.wefaxDecoder.label">WEFAX</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="wefaxInputSelect">Input Device</label></td>
+                  <td><select id="wefaxInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('wefax');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="wefaxVfoSelect">VFO</label></td>
+                  <td><select id="wefaxVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('wefax');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="wefaxSetFreqValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="wefaxSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="wefaxSetModeValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="wefaxSetModeValue">Set Mode</label></td>
+                </tr>
+              </table>
+            </div>
+            <!-- WSPR (mmdWspr.js): its Set Mode's USB or Data is FT8's -->
+            <div class="rigVfoBox">
+              <div class="rigVfoTitle"><span>WSPR</span></div>
+              <table>
+                <tr class="mmdInputRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="wsprInputSelect">Input Device</label></td>
+                  <td><select id="wsprInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('wspr');"></select></td>
+                </tr>
+                <tr class="mmdRigRow mmdVfoRow">
+                  <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="wsprVfoSelect">VFO</label></td>
+                  <td><select id="wsprVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('wspr');"></select></td>
+                </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="wsprSetFreqValue" onclick="mmdSetRigSend('wspr');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="wsprSetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="wsprSetModeValue" onclick="mmdSetRigSend('wspr');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="wsprSetModeValue">Set Mode</label></td>
+                </tr>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Band Plans (mmdBands.js): each mode's usual frequencies (the Frequency menu's) and each entity's licence segments, edited in
+      <!-- Band Plans (mmdBands.js): each mode's usual frequencies (the Frequency menu's), edited in
            place; an edit saves the whole file in Ginternal, Restore Shipped goes back to the one GridTracker ships -->
       <div id="mmdBandsTab" class="settingsTabcontent" style="display: none;">
         <div class="mmdBandsHead">
@@ -1140,19 +1388,6 @@
             <tbody class="mmdBandsForm"><tr><td><input type="text" id="mmdBandsNewMode" style="width: 70px;" /></td><td><input type="text" id="mmdBandsNewBand" style="width: 50px;" /></td><td><input type="text" id="mmdBandsNewFreq" style="width: 90px;" /></td><td><select id="mmdBandsNewRig"><option value="USB">USB</option><option value="LSB">LSB</option><option value="CW">CW</option><option value="FM">FM</option><option value="AM">AM</option></select></td><td><input type="text" id="mmdBandsNewNote" style="width: 160px;" /></td><td><span class="cwButton" onclick="mmdBandsAddFreq();" data-i18n="settings.bands.addFreq.hover" title="Adds the frequency entered on this row"><span data-i18n="settings.bands.add.label">Add</span></span></td></tr></tbody>
             <tbody id="mmdBandsFreqRows"></tbody>
           </table>
-        </div>
-        <div class="rigVfoBox">
-          <div class="rigVfoTitle"><span data-i18n="settings.bands.plan.label">Band Plan</span> <select id="mmdBandsPlanSelect" data-i18n="settings.bands.plan.hover" title="The band plan shown" onchange="mmdBandsPickPlan();"></select></div>
-          <div id="mmdBandsPlanBox">
-            <div class="mmdBandsInfo"><span data-i18n="settings.bands.entities.label">Entities</span>: <span id="mmdBandsDxcc"></span></div>
-            <div class="mmdBandsInfo"><span data-i18n="settings.bands.classes.label">Classes</span>: <span id="mmdBandsClasses"></span></div>
-            <table class="mmdBandsTable">
-              <thead><tr><th data-i18n="settings.bands.band.label">Band</th><th data-i18n="settings.bands.fromMhz.label">From (MHz)</th><th data-i18n="settings.bands.toMhz.label">To (MHz)</th><th data-i18n="settings.bands.modes.label">Modes</th><th data-i18n="settings.bands.classes.label">Classes</th><th data-i18n="settings.bands.note.label">Note</th><th></th></tr></thead>
-              <!-- A new one entered here, then Add -->
-              <tbody class="mmdBandsForm"><tr><td><input type="text" id="mmdBandsNewSegBand" style="width: 50px;" /></td><td><input type="text" id="mmdBandsNewFrom" style="width: 90px;" /></td><td><input type="text" id="mmdBandsNewTo" style="width: 90px;" /></td><td><input type="text" id="mmdBandsNewModes" style="width: 120px;" /></td><td><input type="text" id="mmdBandsNewClasses" style="width: 70px;" /></td><td><input type="text" id="mmdBandsNewSegNote" style="width: 220px;" /></td><td><span class="cwButton" onclick="mmdBandsAddSegment();" data-i18n="settings.bands.addSegment.hover" title="Adds the segment entered on this row to the band plan shown"><span data-i18n="settings.bands.add.label">Add</span></span></td></tr></tbody>
-              <tbody id="mmdBandsSegRows"></tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>
@@ -1192,11 +1427,12 @@
       <canvas id="cwFall"></canvas>
       <canvas id="cwOverlay"></canvas>
     </div>
-    <div id="mmdSplit"></div>
+    <!-- The divider: the rig's frequency, band and mode (mmdFreqsShow), centered; dragged up or down to size the waterfall -->
+    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="cwFreqText"></span><span id="cwPeriodText"></span></div>
     <div id="cwList">
       <table id="cwTable">
         <colgroup><col class="cwFreqCol" /><col class="cwDbCol" /><col class="cwWpmCol" /><col /></colgroup>
-        <thead id="cwHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room">
+        <thead id="cwHead">
           <tr><th data-i18n="cwViewer.header.freq">Frequency</th><th data-i18n="cwViewer.header.db.label" title="The signal over the noise, in the decoder's own narrow filter (about 90 Hz): higher than FT8's dB, which are over 2.5 kHz">dB</th><th id="cwWpmHead" data-i18n="cwViewer.header.wpm">WPM</th><th data-i18n="cwViewer.header.text">Decoded Text</th></tr>
         </thead>
         <tbody id="cwRows"></tbody>
@@ -1207,7 +1443,7 @@
     <div id="ft8List" style="display: none;">
       <table id="ft8Table">
         <colgroup><col class="ft8UtcCol" /><col class="cwDbCol" /><col class="ft8DtCol" /><col class="ft8FreqCol" /><col /></colgroup>
-        <thead id="ft8Head" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room">
+        <thead id="ft8Head">
           <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.ft8.header.db.label" title="The signal over the noise in 2500 Hz, as WSJT-X gives it (usually within 2 dB of WSJT-X's)">dB</th><th data-i18n="cwViewer.ft8.header.dt">DT</th><th data-i18n="cwViewer.ft8.header.freq">Freq</th><th data-i18n="cwViewer.ft8.header.message">Message</th></tr>
         </thead>
         <tbody id="ft8Rows"></tbody>
@@ -1218,12 +1454,17 @@
     <div id="packetList" style="display: none;">
       <table id="packetTable">
         <colgroup><col class="packetUtcCol" /><col class="packetBaudCol" /><col class="packetCallCol" /><col class="packetPathCol" /><col /></colgroup>
-        <thead id="packetHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room">
+        <thead id="packetHead">
           <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.packet.header.baud">Baud</th><th data-i18n="cwViewer.packet.header.from">From</th><th data-i18n="cwViewer.packet.header.to">To / Path</th><th data-i18n="cwViewer.ft8.header.message">Message</th></tr>
         </thead>
         <tbody id="packetRows"></tbody>
       </table>
       <div id="packetEmpty" data-i18n="cwViewer.packet.empty">No packets decoded yet: AFSK 1200 (APRS), FSK 9600 and HF 300 baud are all listened for. Click the waterfall to lock HF packet on one place</div>
+    </div>
+    <!-- NAVTEX mode: each message a block, the newest on top, a station mid-message in a Receiving block above them (mmdNavtex.js) -->
+    <div id="navtexList" style="display: none;">
+      <div id="navtexRows" data-i18n="cwViewer.navtex.list.hover" title="Right-click a message to copy it, save it or delete it"></div>
+      <div id="navtexEmpty" data-i18n="cwViewer.navtex.empty">No NAVTEX messages yet: each station sends in its own 10 minute slot every 4 hours</div>
     </div>
     <!-- Detect Modes: each signal found and named, by frequency, in the mode's place while it is on (mmdDetect.js) -->
     <div id="detectList" style="display: none;">
@@ -1234,7 +1475,7 @@
         </thead>
         <tbody id="detectRows"></tbody>
       </table>
-      <div id="detectEmpty" data-i18n="cwViewer.detect.empty">Listening for signals: each is named once it decodes (CW, PSK31, RTTY, Packet and SSTV), or by its RSID</div>
+      <div id="detectEmpty" data-i18n="cwViewer.detect.empty">Listening for signals: each is named once it decodes (CW, PSK, RTTY, MFSK, DominoEX, THOR, Packet, SSTV, FT8 and FT4), or by its RSID</div>
     </div>
     <!-- Sat Data mode: each satellite frame decoded, the newest on top (mmdSat.js): its bytes as hex in the summary's tooltip -->
     <div id="satList" style="display: none;">
@@ -1242,17 +1483,30 @@
       <div id="satPictures" style="display: none;"></div>
       <table id="satTable">
         <colgroup><col class="packetUtcCol" /><col class="packetCallCol" /><col class="packetBaudCol" /><col class="packetCallCol" /><col /></colgroup>
-        <thead id="satHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room">
+        <thead id="satHead">
           <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.sat.header.kind">Type</th><th data-i18n="cwViewer.packet.header.baud">Baud</th><th data-i18n="cwViewer.sat.header.sat">Satellite</th><th data-i18n="cwViewer.sat.header.frame">Frame</th></tr>
         </thead>
         <tbody id="satRows"></tbody>
       </table>
       <div id="satEmpty" data-i18n="cwViewer.sat.empty">No frames decoded yet: FUNcube BPSK 1200, AX.100 and GENESIS FSK are listened for</div>
     </div>
+    <!-- WSPR mode: each 2 minute period's stations, the newest first (mmdWspr.js) -->
+    <div id="wsprList" style="display: none;">
+      <table id="wsprTable">
+        <colgroup><col class="ft8UtcCol" /><col class="cwDbCol" /><col class="wsprDtCol" /><col class="wsprFreqCol" /><col class="wsprDtCol" /><col class="packetCallCol" /><col class="wsprGridCol" /><col class="wsprDtCol" /><col /></colgroup>
+        <thead id="wsprHead">
+          <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.ft8.header.db.label">dB</th><th data-i18n="cwViewer.ft8.header.dt">DT</th><th data-i18n="cwViewer.header.freq">Frequency</th><th data-i18n="cwViewer.wspr.header.drift">Drift</th><th data-i18n="cwViewer.wspr.header.call">Call</th><th data-i18n="cwViewer.wspr.header.grid">Grid</th><th data-i18n="cwViewer.wspr.header.dbm">dBm</th><th><span data-i18n="cwViewer.wspr.header.distance">Distance</span> <span id="wsprDistUnit"></span></th></tr>
+        </thead>
+        <tbody id="wsprRows"></tbody>
+      </table>
+      <div id="wsprEmpty" data-i18n="cwViewer.wspr.empty">No WSPR decoded yet: each 2 minute period is decoded once it has ended</div>
+    </div>
     <!-- SSTV mode: Receive, the picture shown large, the newest few beside it (mmdSstv.js); Send, the picture built from the form and shown as
-         it will be sent (mmdSstvTx.js). The header carries the tabs and is what is dragged -->
+         it will be sent (mmdSstvTx.js). The header carries the tabs -->
+    <!-- Feld-Hell mode: the tape its columns are printed on, line after line, the newest at the bottom (mmdHell.js) -->
+    <div id="hellView" style="display: none;"><canvas id="hellTape" data-i18n="cwViewer.hell.tape.hover" title="The Hell signal printed as it is heard, each line twice: read whichever copy is straight"></canvas></div>
     <div id="sstvView" style="display: none;">
-      <div id="sstvHead" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span class="sstvTabs"><span id="sstvRxTab" class="sstvTab sstvTabOn" onclick="mmdSstvTab('receive');" data-i18n="cwViewer.sstv.receive.label">Receive</span><span id="sstvTxTab" class="sstvTab" onclick="mmdSstvTab('send');" data-i18n="sstvTx.send.label">Send</span></span><span id="sstvHeadText"></span></div>
+      <div id="sstvHead"><span class="sstvTabs"><span id="sstvRxTab" class="sstvTab sstvTabOn" onclick="mmdSstvTab('receive');" data-i18n="cwViewer.sstv.receive.label">Receive</span><span id="sstvTxTab" class="sstvTab" onclick="mmdSstvTab('send');" data-i18n="sstvTx.send.label">Send</span></span><span id="sstvHeadText"></span></div>
       <div id="sstvBody">
         <canvas id="sstvPicture" data-i18n="cwViewer.sstv.picture.hover" title="Click a picture on the right to see it here, and click here to go back to the newest. Right-click a picture to save it"></canvas>
         <div id="sstvStrip"></div>
@@ -1357,7 +1611,7 @@
               </tr>
               <tr>
                 <td class="mapRowLabel"></td>
-                  <td><span id="sstvTxSimulateButton" class="cwButton" onclick="mmdSstvTxSimulate();" data-i18n="sstvTx.simulate.hover" title="Plays the picture into the decoder as if it were received, to see how it comes out: nothing is keyed or sent"><span data-i18n="sstvTx.simulate.label">Simulate Rx</span></span> <span id="sstvTxSendButton" class="cwButton" onclick="mmdSstvTxSend();" data-i18n="sstvTx.send.hover" title="Keys the rig and sends the picture"><span data-i18n="sstvTx.send.label">Send</span></span> <span id="sstvTxStopButton" class="cwButton" style="display: none;" onclick="mmdSstvTxStop();"><span data-i18n="cwViewer.stop.label">Stop</span></span> &nbsp; <input type="checkbox" id="sstvTxTune" onclick="mmdSstvTxTune();" data-i18n="sstvTx.tune.hover" title="Sends a steady 1900 Hz tone at the Level, for 30 s at most or until unchecked: set the rig's drive and ALC by it" /> <label for="sstvTxTune" data-i18n="sstvTx.tune.label">Tune</label></td>
+                  <td><span id="sstvTxSimulateButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSimulateClick();" data-i18n="sstvTx.simulate.hover" title="Plays the picture into the decoder as if it were received, to see how it comes out: nothing is keyed or sent"><span id="sstvTxSimulateLabel" data-i18n="sstvTx.simulate.label">Simulate Rx</span><span id="sstvTxAbortLabel" class="sstvTxHidden" data-i18n="sstvTx.abort.label">Abort</span></span> <span id="sstvTxSendButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSendClick();" data-i18n="sstvTx.send.hover" title="Keys the rig and sends the picture"><span data-i18n="sstvTx.send.label">Send</span></span> <span id="sstvTxTuneButton" class="cwButton sstvTxAction" onclick="mmdSstvTxTuneClick();" data-i18n="sstvTx.tuneButton.hover" title="Sends a steady 1900 Hz tone at the Level, for 30 s at most or until clicked again: set the rig's drive and ALC by it"><span data-i18n="sstvTx.tune.label">Tune</span></span></td>
               </tr>
             </table>
           </div>

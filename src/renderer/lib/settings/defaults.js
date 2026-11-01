@@ -538,16 +538,20 @@ const def_settings = {
   // { cw: { minHz, maxHz } }, a mode with none starting with the last one's). fallSpeed: the Waterfall
   // Speed, every mode's (1 as heard; set at startup from the mode shown's own, from before). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
   // ft8Depth: the FT8 Decoder's Depth, "normal" (ft8_lib as it comes) or "deep" (ft8wasm.c's passes, fine reading, guesses ...).
-  // ft8Instance, ft4Instance: Enable GridTracker Instance, FT8's (or FT4's: one of the two) decodes to GridTracker as an instance named MMD, with the window
-  // closed or in another mode too (both off).
-  // PSK31 and RTTY: their Set Frequency and Set Mode (USB).
+  // ft8SendDecodes, ft4SendDecodes: Send Decodes To Call Roster, FT8's (or FT4's) decodes into the Call Roster too, not only the map,
+  // through GridTracker's instance MMD (open while the decoder is on, in the window's Mode) (both off).
+  // PSK31, RTTY, MFSK and DominoEX / THOR (thor): their Set Frequency and Set Mode (USB). pskSubmode ("psk31", "psk63", "psk125",
+  // "qpsk31"), mfskSubmode ("mfsk16", "mfsk32"), thorSubmode ("dominoex 11", "thor 16", "dominoex all" ...): their submode menus. NAVTEX (navtex), Feld-Hell (hell) and WEFAX (wefax): their Set Frequency and Set
+  // Mode (USB); hellSubmode ("feld", "x5", "x9"), hellTrim (ppm: the print's slant), wefaxLpm and wefaxIoc ("auto" or a number).
+  // navtexSave: NAVTEX's Save Messages, each complete message as a text file in NAVTEX Messages (off).
   // Olivia: oliviaSubmode ("olivia 8/500", "contestia 16/500" ...: its menu), oliviaCenter (audio Hz: where its signal is).
   // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
-  // UTC clock every 10, 30 or 60 s (0 none) in every mode but FT8 and FT4. ft8SlotFinder, ft4SlotFinder: the clearest places to
+  // UTC clock every 10, 15, 30 or 60 s (0 none) in every mode but FT8 and FT4. ft8SlotFinder, ft4SlotFinder: the clearest places to
   // transmit marked on the waterfall (off unless turned on). rsid: the RSIDs heard in every mode named on the waterfall (on). commonInput, commonVfo:
   // every mode on the one Input Device (inputs.common) and the one VFO (vfos.common: None until picked), each mode's own kept for when
   // they're off (on).
-  // viewMode: the mode the window decodes (its Mode menu): "cw", "ft8", "ft4", "sstv" or "packet". FT4's own: ft4SetFreq, ft4SetMode (its mode
+  // viewMode: the mode the window decodes (its Mode menu): "cw", "ft8", "ft4", "sstv", "packet" ...; the instance MMD's mode too, with the
+  // window closed. FT4's own: ft4SetFreq, ft4SetMode (its mode
   // USB). USB or LSB is set as the rig's data mode when the VFO's SSB Data is checked (Rigs.vfos[].ssbData).
   // rigControl (the window's Settings, Decoders): whether the decoder may send the rig anything at all; then for each mode, a frequency
   // picked in the window's Frequency menu: ft8SetFreq, cwSetFreq, sstvSetFreq, packetSetFreq tune the rig there, ft8SetMode, cwSetMode,
@@ -559,7 +563,7 @@ const def_settings = {
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO)
-  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8Instance: false, ft4SetFreq: true, ft4SetMode: true, ft4Instance: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
+  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
   audio: {
     alertMute: 0,
     speechRate: 1,

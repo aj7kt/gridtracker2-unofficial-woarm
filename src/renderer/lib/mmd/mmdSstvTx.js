@@ -412,14 +412,58 @@ function mmdSstvTxOutputRender()
   sstvTxOutputText.style.color = device ? "" : "orange";
 }
 
+// Simulate Rx, Send and Tune, always in their places: the one running red (Send while the picture is built too; Simulate Rx says
+// Abort), a click on it stops it; the others greyed meanwhile, and a click on one does nothing
 function mmdSstvTxButtons()
 {
-  const sending = !!TX.source;
-  sstvTxSendButton.style.display = sending ? "none" : "";
-  sstvTxSimulateButton.style.display = sending ? "none" : "";
-  sstvTxStopButton.style.display = sending ? "" : "none";
-  sstvTxTune.checked = sending && TX.kind == "tune";
-  sstvTxTune.disabled = sending && TX.kind != "tune";
+  const tuning = !!TX.source && TX.kind == "tune";
+  const sending = !tuning && (!!TX.source || (TX.sending && !TX.simulating));
+  const simulating = TX.simulating || mmdSstvTxSimulating();
+  const set = (button, on, busy) =>
+  {
+    button.classList.toggle("sstvTxOn", on);
+    button.classList.toggle("sstvTxBusy", busy);
+  };
+  set(sstvTxSendButton, sending, tuning || simulating);
+  set(sstvTxTuneButton, tuning, sending || simulating);
+  set(sstvTxSimulateButton, simulating, sending || tuning);
+  sstvTxSimulateLabel.classList.toggle("sstvTxHidden", simulating);
+  sstvTxAbortLabel.classList.toggle("sstvTxHidden", !simulating);
+}
+
+// Simulate Rx's picture playing into the decoder (mmdTestStart)
+function mmdSstvTxSimulating()
+{
+  return !!TEST.source && TEST.file == "sstv-simulate";
+}
+
+// Send: the picture sent, or (red: sending, or being built for it) stopped
+function mmdSstvTxSendClick()
+{
+  if (sstvTxSendButton.classList.contains("sstvTxBusy")) return;
+  if (sstvTxSendButton.classList.contains("sstvTxOn")) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
+  else mmdSstvTxSend();
+}
+
+// Tune: the tone sent, or (red) stopped
+function mmdSstvTxTuneClick()
+{
+  if (sstvTxTuneButton.classList.contains("sstvTxBusy")) return;
+  if (sstvTxTuneButton.classList.contains("sstvTxOn")) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
+  else mmdSstvTxTune();
+}
+
+// Simulate Rx: the picture played into the decoder, or (Abort) stopped
+function mmdSstvTxSimulateClick()
+{
+  if (sstvTxSimulateButton.classList.contains("sstvTxBusy")) return;
+  if (sstvTxSimulateButton.classList.contains("sstvTxOn"))
+  {
+    TX.simulating = false;
+    mmdTestStop();
+    mmdSstvTxButtons();
+  }
+  else mmdSstvTxSimulate();
 }
 
 // ---- The picture: a background, then the text over it, at the mode's size (TX.built); shown in the panel to fit its place
@@ -722,12 +766,15 @@ async function mmdSstvTxSend()
   if (!mmdSstvTxReady() || TX.sending) return;
   // (The Map refresh waits, so this build is the one kept)
   TX.sending = true;
+  mmdSstvTxButtons();
   mmdSstvTxStatus(I18N("sstvTx.status.building"));
   // Built again as it is sent (the time stamp's time the current one), and shown as sent
   const picture = await mmdSstvTxBuild();
   if (picture) mmdSstvTxDraw();
-  if (!picture || TX.source)
+  // (Stopped while it was built: TX.sending let go, nothing sent)
+  if (!picture || TX.source || !TX.sending)
   {
+    if (!TX.sending) return;
     TX.sending = false;
     mmdSstvTxStatus(picture ? "" : I18N("sstvTx.status.failed") + " " + I18N("sstvTx.status.building"), !picture);
     return;
@@ -742,6 +789,7 @@ async function mmdSstvTxSend()
     return audio;
   }, (seconds) => I18N("sstvTx.status.sent").replace("{mode}", mode.name).replace("{seconds}", Math.round(seconds)));
   TX.sending = false;
+  mmdSstvTxButtons();
 }
 
 // Simulate Rx: the picture built and encoded as Send would, played into the decoder's own input as a test signal is (mmdTestStart: the
@@ -761,10 +809,21 @@ async function mmdSstvTxSimulate()
   const T = mmdSstvTxSettings();
   const mode = sstvTxModeByName(T.mode);
   TX.sending = true;
+  TX.simulating = true;
+  mmdSstvTxButtons();
   mmdSstvTxStatus(I18N("sstvTx.status.building"));
   const picture = await mmdSstvTxBuild();
   if (picture) mmdSstvTxDraw();
   TX.sending = false;
+  // (Aborted while it was built: nothing played)
+  const aborted = !TX.simulating;
+  TX.simulating = false;
+  mmdSstvTxButtons();
+  if (aborted)
+  {
+    mmdSstvTxStatus("");
+    return;
+  }
   const ctx = DEC.ctx;
   if (!picture || !ctx || !DEC.node || TX.source)
   {
@@ -780,26 +839,18 @@ async function mmdSstvTxSimulate()
     mmdSstvTxStatus(I18N("sstvTx.status.notListening"), true);
     return;
   }
+  mmdSstvTxButtons();
   // (The window's status too: "Building the picture" is over)
   mmdSstvTxStatus("");
   mmdStatus("");
   mmdSstvTab("receive");
 }
 
-// Tune (its checkbox): a steady full-scale tone at the Level (as WSJT-X's Tune: its tone held, less its Pwr slider), for SSTV_TX_TUNE_S at
-// most or until unchecked, to set the rig's drive by
+// Tune (its button): a steady full-scale tone at the Level (as WSJT-X's Tune: its tone held, less its Pwr slider), for SSTV_TX_TUNE_S at
+// most or until clicked again, to set the rig's drive by
 function mmdSstvTxTune()
 {
-  if (!sstvTxTune.checked)
-  {
-    if (TX.source && TX.kind == "tune") mmdSstvTxStop(I18N("sstvTx.status.stopped"));
-    return;
-  }
-  if (TX.source || TX.sending || !mmdSstvTxReady())
-  {
-    sstvTxTune.checked = false;
-    return;
-  }
+  if (TX.source || TX.sending || !mmdSstvTxReady()) return;
   mmdSstvTxStart("tune", (rate, amp) =>
   {
     const samples = sstvTxRender({ hz: [SSTV_TX_TUNE_HZ], len: [SSTV_TX_TUNE_S] }, rate, amp).samples;

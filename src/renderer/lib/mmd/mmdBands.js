@@ -2,20 +2,21 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Band plans (resources/data/bands.json, its schema beside it): each entity's licence segments (bandplans) and each mode's usual
-// frequencies (frequencies: the Frequency menu's, mmdBandFreqs). Viewed and edited in the window's Settings, Band Plans tab: an edit
-// saves the whole file as bands.json in Ginternal, read from then on instead of the shipped one, until Restore Shipped deletes it
+// Band plans (resources/data/bands.json, its schema beside it): each mode's usual frequencies (frequencies: the Frequency menu's,
+// mmdBandFreqs). Viewed and edited in the window's Settings, Band Plans tab: an edit saves the whole file as bands.json in Ginternal,
+// read from then on instead of the shipped one, until Restore Shipped deletes it
 
 const BANDS = {
-  data: null,      // the file read: { bandplans: [...], frequencies: [...] }
+  data: null,      // the file read: { frequencies: [...] }
   edited: false,   // read from Ginternal (edited here)
   version: 0,      // counts the changes (the Frequency menu is filled again)
-  plan: 0,         // the plan shown in the tab (its index)
   mode: ""         // the frequencies shown ("": every mode's)
 };
 // The Mode menu's modes as the file names them
-const BANDS_MODE_NAMES = { cw: "CW", ft8: "FT8", ft4: "FT4", sstv: "SSTV", packet: "Packet", psk31: "PSK31", rtty: "RTTY", olivia: "Olivia", sat: "Sat Data" };
+const BANDS_MODE_NAMES = { cw: "CW", ft8: "FT8", ft4: "FT4", sstv: "SSTV", packet: "Packet", psk31: "PSK31", rtty: "RTTY", mfsk: "MFSK", thor: "DominoEX", navtex: "NAVTEX", hell: "Feld-Hell", wefax: "WEFAX", olivia: "Olivia", sat: "Sat Data", wspr: "WSPR" };
 const BANDS_RIG_MODES = ["USB", "LSB", "CW", "FM", "AM"];
+// The modes whose Frequency menu names each frequency's station (its note): broadcasts, many stations
+const BANDS_NOTE_MODES = ["wefax", "navtex"];
 
 function mmdBandsShippedFile()
 {
@@ -36,7 +37,8 @@ function mmdBands()
     try
     {
       const data = JSON.parse(fs.readFileSync(file, "utf8"));
-      if (!Array.isArray(data.bandplans)) data.bandplans = [];
+      // (An edited copy from when the file had band plans: they go with its next save)
+      delete data.bandplans;
       if (!Array.isArray(data.frequencies)) data.frequencies = [];
       return data;
     }
@@ -47,16 +49,16 @@ function mmdBands()
   };
   const edited = fs.existsSync(mmdBandsEditedFile()) ? read(mmdBandsEditedFile()) : null;
   BANDS.edited = !!edited;
-  BANDS.data = edited || read(mmdBandsShippedFile()) || { bandplans: [], frequencies: [] };
+  BANDS.data = edited || read(mmdBandsShippedFile()) || { frequencies: [] };
   return BANDS.data;
 }
 
-// A mode's usual frequencies, lowest first: [[Hz, rig mode], ...] (none: null)
+// A mode's usual frequencies, lowest first: [[Hz, rig mode, note], ...] (none: null)
 function mmdBandFreqs(mode)
 {
   const name = BANDS_MODE_NAMES[mode];
   // (The file's in MHz)
-  const list = mmdBands().frequencies.filter((f) => f.mode == name && f.freq > 0).sort((a, b) => a.freq - b.freq).map((f) => [Math.round(f.freq * 1e6), f.rigMode || "USB"]);
+  const list = mmdBands().frequencies.filter((f) => f.mode == name && f.freq > 0).sort((a, b) => a.freq - b.freq).map((f) => [Math.round(f.freq * 1e6), f.rigMode || "USB", f.note || ""]);
   return list.length ? list : null;
 }
 
@@ -97,7 +99,6 @@ function mmdBandsRestore()
     // None there
   }
   BANDS.data = null;
-  BANDS.plan = 0;
   mmdBandsChanged();
 }
 
@@ -123,7 +124,7 @@ function mmdSettingsTab(name)
   if (name == "bands") mmdBandsRender();
 }
 
-// The Band Plans tab: the frequencies (by mode), then a plan's segments; each cell edited in place
+// The Band Plans tab: the frequencies (by mode), each cell edited in place
 function mmdBandsRender()
 {
   if (mmdBandsTab.style.display == "none") return;
@@ -147,7 +148,7 @@ function mmdBandsRender()
     el.onchange = () => (el.title = el.value);
   }
   // Their frequencies typed as floats (set up once)
-  if (!mmdBandsNewFreq.inputMode) for (const el of [mmdBandsNewFreq, mmdBandsNewFrom, mmdBandsNewTo]) mmdBandsDecimal(el);
+  if (!mmdBandsNewFreq.inputMode) mmdBandsDecimal(mmdBandsNewFreq);
   const freqs = data.frequencies.map((f, i) => [f, i]).filter(([f]) => !BANDS.mode || f.mode == BANDS.mode).sort((a, b) => (a[0].mode > b[0].mode ? 1 : a[0].mode < b[0].mode ? -1 : a[0].freq - b[0].freq));
   mmdBandsFreqRows.innerHTML = "";
   for (const [f, i] of freqs)
@@ -168,29 +169,6 @@ function mmdBandsRender()
     mmdBandsCell(row, f.note || "", "text", 160, (v) => (v.trim() ? (f.note = v.trim()) : delete f.note));
     mmdBandsDelete(row, () => data.frequencies.splice(i, 1));
   }
-
-  // The plans: the menu, then the plan's segments
-  BANDS.plan = Math.min(BANDS.plan, Math.max(0, data.bandplans.length - 1));
-  mmdBandsPlanSelect.length = 0;
-  data.bandplans.forEach((p, i) => mmdBandsPlanSelect.add(new Option(p.name || "-", i)));
-  mmdBandsPlanSelect.value = String(BANDS.plan);
-  const plan = data.bandplans[BANDS.plan];
-  mmdBandsPlanBox.style.display = plan ? "" : "none";
-  mmdBandsSegRows.innerHTML = "";
-  if (!plan) return;
-  mmdBandsClasses.textContent = (plan.classes || []).map((c) => Object.entries(c).map(([k, v]) => k + " " + v).join("")).join(", ");
-  mmdBandsDxcc.textContent = (plan.dxcc || []).map((d) => ((GT.dxccInfo || {})[d] || {}).name || d).join(", ");
-  plan.bands.forEach((b, i) =>
-  {
-    const row = mmdBandsSegRows.insertRow();
-    mmdBandsCell(row, b.band, "text", 50, (v) => (b.band = v.trim()));
-    mmdBandsCell(row, b.freq[0], "number", 90, (v) => (Number(v) > 0 ? (b.freq[0] = mmdBandsMhz(v)) : false));
-    mmdBandsCell(row, b.freq[1], "number", 90, (v) => (Number(v) > 0 ? (b.freq[1] = mmdBandsMhz(v)) : false));
-    mmdBandsCell(row, (b.modes || []).join(", "), "text", 120, (v) => (b.modes = mmdBandsList(v)));
-    mmdBandsCell(row, (b.classes || []).join(", "), "text", 70, (v) => (b.classes = mmdBandsList(v)));
-    mmdBandsCell(row, b.note || "", "text", 220, (v) => (v.trim() ? (b.note = v.trim()) : delete b.note));
-    mmdBandsDelete(row, () => plan.bands.splice(i, 1));
-  });
 }
 
 // A frequency typed (MHz), kept to the Hz
@@ -215,11 +193,6 @@ function mmdBandsDecimal(input)
     const v = input.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
     if (v != input.value) input.value = v;
   });
-}
-
-function mmdBandsList(v)
-{
-  return v.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 // A cell edited in place: saved as it is changed (set returns false for a value it won't take: put back)
@@ -272,14 +245,8 @@ function mmdBandsPickMode()
   mmdBandsRender();
 }
 
-function mmdBandsPickPlan()
-{
-  BANDS.plan = Number(mmdBandsPlanSelect.value) || 0;
-  mmdBandsRender();
-}
-
-// The entry row at the top of each table: Add takes what's entered there (a frequency needs its mode and MHz, a segment its edges; a
-// band left empty is the frequency's), then it's emptied for the next. A field it won't take is marked red
+// The entry row at the top of the table: Add takes what's entered there (a frequency needs its mode and MHz; a band left empty is the
+// frequency's), then it's emptied for the next. A field it won't take is marked red
 function mmdBandsAddFreq()
 {
   const mode = mmdBandsNewMode.value.trim();
@@ -291,21 +258,6 @@ function mmdBandsAddFreq()
   // Its mode shown, so it's in view
   BANDS.mode = mode;
   for (const el of [mmdBandsNewBand, mmdBandsNewFreq, mmdBandsNewNote]) el.value = "";
-  mmdBandsSave();
-}
-
-function mmdBandsAddSegment()
-{
-  const plan = mmdBands().bandplans[BANDS.plan];
-  if (!plan) return;
-  const from = Number(mmdBandsNewFrom.value), to = Number(mmdBandsNewTo.value);
-  if (!mmdBandsCheck([[mmdBandsNewFrom, from > 0], [mmdBandsNewTo, to >= from && to > 0]])) return;
-  const b = { band: mmdBandsNewSegBand.value.trim() || mmdBandOf(from * 1e6) || "", modes: mmdBandsList(mmdBandsNewModes.value), freq: [mmdBandsMhz(from), mmdBandsMhz(to)], classes: mmdBandsList(mmdBandsNewClasses.value) };
-  if (mmdBandsNewSegNote.value.trim()) b.note = mmdBandsNewSegNote.value.trim();
-  // In its place by frequency, among its plan's
-  const at = plan.bands.findIndex((s) => s.freq[0] > b.freq[0]);
-  plan.bands.splice(at < 0 ? plan.bands.length : at, 0, b);
-  for (const el of [mmdBandsNewSegBand, mmdBandsNewFrom, mmdBandsNewTo, mmdBandsNewModes, mmdBandsNewClasses, mmdBandsNewSegNote]) el.value = "";
   mmdBandsSave();
 }
 

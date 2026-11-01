@@ -25,7 +25,7 @@ function mmDecoderInit()
     const was = Number(GT.settings.MMD[(GT.settings.MMD.viewMode || "cw") + "FallSpeed"]);
     GT.settings.MMD.fallSpeed = was > 0 ? was : 1;
   }
-  for (const mode of ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "olivia"]) delete GT.settings.MMD[mode + "FallSpeed"];
+  for (const mode of ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia"]) delete GT.settings.MMD[mode + "FallSpeed"];
   if (!["normal", "deep"].includes(GT.settings.MMD.ft8Depth)) GT.settings.MMD.ft8Depth = "normal";
   // FT8's and FT4's time skew, from when it was kept as a setting (it's kept for the session only now: the window's DEC.skewKept)
   delete GT.settings.MMD.ft8Skew;
@@ -33,7 +33,7 @@ function mmDecoderInit()
   // Nothing is sent to the rig unless Rig Control (the window's Settings, Decoders) is turned on; each mode's Set Frequency and Set Mode
   // (Decoders) are on unless turned off
   if (typeof GT.settings.MMD.rigControl != "boolean") GT.settings.MMD.rigControl = false;
-  for (const key of ["ft8SetMode", "ft4SetMode", "cwSetMode", "sstvSetMode", "packetSetMode", "psk31SetMode", "rttySetMode", "ft8SetFreq", "ft4SetFreq", "cwSetFreq", "sstvSetFreq", "packetSetFreq", "psk31SetFreq", "rttySetFreq"])
+  for (const key of ["ft8SetMode", "ft4SetMode", "cwSetMode", "sstvSetMode", "packetSetMode", "psk31SetMode", "rttySetMode", "mfskSetMode", "thorSetMode", "navtexSetMode", "hellSetMode", "wefaxSetMode", "wsprSetMode", "ft8SetFreq", "ft4SetFreq", "cwSetFreq", "sstvSetFreq", "packetSetFreq", "psk31SetFreq", "rttySetFreq", "mfskSetFreq", "thorSetFreq", "navtexSetFreq", "hellSetFreq", "wefaxSetFreq", "wsprSetFreq"])
   {
     if (typeof GT.settings.MMD[key] != "boolean") GT.settings.MMD[key] = true;
   }
@@ -46,10 +46,9 @@ function mmDecoderInit()
   }
   delete GT.settings.MMD.ssbData;
   delete GT.settings.MMD.ft8Data;
-  // FT8's or FT4's decodes to GridTracker as an instance, "MMD" (mmDecoderInstanceTick): off unless turned on, and one of the two at most
-  if (typeof GT.settings.MMD.ft8Instance != "boolean") GT.settings.MMD.ft8Instance = false;
-  if (typeof GT.settings.MMD.ft4Instance != "boolean") GT.settings.MMD.ft4Instance = false;
-  if (GT.settings.MMD.ft8Instance) GT.settings.MMD.ft4Instance = false;
+  // FT8's and FT4's Send Decodes To Call Roster (through the instance "MMD", mmDecoderInstanceDecodes): off unless turned on
+  if (typeof GT.settings.MMD.ft8SendDecodes != "boolean") GT.settings.MMD.ft8SendDecodes = false;
+  if (typeof GT.settings.MMD.ft4SendDecodes != "boolean") GT.settings.MMD.ft4SendDecodes = false;
   if (!GT.settings.MMD.vfos || typeof GT.settings.MMD.vfos != "object") GT.settings.MMD.vfos = {};
   // Common VFO, new: None until one is picked (no rig read or tuned before the user says which)
   const vfos = GT.settings.MMD.vfos;
@@ -71,9 +70,8 @@ function mmDecoderEnableChanged()
 {
   GT.settings.MMD.enable = mmDecoderEnable.checked;
   mmDecoderRender();
-  // On with its FT8 or FT4 instance on: the window loaded (hidden) if it isn't yet, or told, so that mode is decoded for the instance whatever
-  // the window shows (as at startup)
-  if (GT.settings.MMD.enable && mmDecoderInstanceMode())
+  // On: the window loaded (hidden) if it isn't yet, as at startup, or told, so FT8 or FT4 is listened to with it closed
+  if (GT.settings.MMD.enable)
   {
     if (GT.mmDecoderHandle == null) mmDecoderOpen(false);
     else if (GT.mmDecoderInitialized)
@@ -88,7 +86,8 @@ function mmDecoderEnableChanged()
       }
     }
   }
-  // Off: the window is hidden and stops its audio, even with its instance on (and puts the filter back)
+  // Off: the window is hidden and stops its audio, even in FT8 or FT4 (and puts the filter back); the instance
+  // closes (mmDecoderInstanceTick)
   if (!GT.settings.MMD.enable && GT.mmDecoderInitialized)
   {
     electron.ipcRenderer.send("hideWin", "gt_mmdecoder");
@@ -115,7 +114,7 @@ function mmDecoderSstvFolder()
 // name (ids can change), as the Output Device is. inputCards: the audio inputs last seen ({ id: name }), so a change is warned of as the
 // Output Device's are (Settings -> Audio, Warning On Change)
 
-const MMD_INPUT_MODES = ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "olivia"];
+const MMD_INPUT_MODES = ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia", "wspr"];
 
 function mmDecoderInputs()
 {
@@ -125,8 +124,10 @@ function mmDecoderInputs()
   if (!S.inputs.packet && S.inputs.ft8) S.inputs.packet = Object.assign({}, S.inputs.ft8);
   // FT4, new: on FT8's input (the same rig audio); Sat Data on Packet's (a satellite's data audio), PSK31 and RTTY on CW's (the HF rig's)
   if (!S.inputs.ft4 && S.inputs.ft8) S.inputs.ft4 = Object.assign({}, S.inputs.ft8);
+  // WSPR, new: on FT8's input too
+  if (!S.inputs.wspr && S.inputs.ft8) S.inputs.wspr = Object.assign({}, S.inputs.ft8);
   if (!S.inputs.sat && S.inputs.packet) S.inputs.sat = Object.assign({}, S.inputs.packet);
-  for (const mode of ["psk31", "rtty", "olivia"]) if (!S.inputs[mode] && S.inputs.cw) S.inputs[mode] = Object.assign({}, S.inputs.cw);
+  for (const mode of ["psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia"]) if (!S.inputs[mode] && S.inputs.cw) S.inputs[mode] = Object.assign({}, S.inputs.cw);
   // The one Input Device of before (Settings -> Audio): each mode starts on it. A mode with none picked hears the first in the list
   // (the window's mmdInputFind)
   for (const mode of MMD_INPUT_MODES)
@@ -421,37 +422,52 @@ function mmDecoderAirHz(audioHz)
   }
 }
 
-// ---- The FT8 (or FT4) decoder as a GridTracker instance, "MMD" (the window's Settings, Decoders, FT8 or FT4: Enable GridTracker Instance,
-// one of the two): its decodes go to GridTracker as a WSJT-X instance's would (the Call Roster, the map, alerts), already read
-// (wsjtInstanceOpen, wsjtInstanceStatus and wsjtInstanceDispatch in wsjtxUdp.js). Only while that mode is listened to (the window in that
-// mode, else by its background decoder, mmdFt8Background.js: whatever the window shows, and with it closed) and Rig Control reads that
-// mode's VFO's dial: without it a decode's band isn't known. It has no address, so nothing is sent back to it (it can't be answered). A
-// Status as it starts, when the dial, mode, call or grid changes, around each period's decode and every 15 s; a Close once it has stopped
-// for a few seconds (not for a moment: the input started again)
+// ---- The Multi-Mode Decoder as a GridTracker instance, "MMD": open while the decoder is on (Settings -> Features -> Service), its window
+// shown or not, in the window's Mode (the last one picked, kept across restarts: MMD.viewMode) as data/modes.json names it
+// (mmDecoderInstanceModeName), on that mode's VFO's dial as Rig Control reads it (none read: 0, band "OOB"). FT8's and FT4's
+// decodes go to GridTracker as a WSJT-X instance's would (the Call Roster, the map, alerts) with that mode's Send Decodes To Call Roster
+// on (the window's Settings, Decoders), already read (wsjtInstanceOpen, wsjtInstanceStatus and wsjtInstanceDispatch in wsjtxUdp.js). It
+// has no address, so nothing is sent back to it (it can't be answered). A Status as it starts, when the dial, mode, call or grid changes,
+// around each period's decode and every 15 s; a Close when it stops
 
 const MMD_INSTANCE_ID = "MMD";
 const MMD_INSTANCE_HEARTBEAT_MS = 15000;
-const MMD_INSTANCE_CLOSE_MS = 3000;
-// wanted: the window listens to the instance's mode with its setting on (mode: "ft8" or "ft4"); hidden: not shown in the window in that
-// mode (the button shows it listens); live: the instance is open; decoding: a period is being decoded (Status' Decoding)
-GT.mmdInstance = { wanted: false, mode: "ft8", hidden: false, live: false, unwantedAt: 0, sentAt: 0, key: "", decoding: false };
+// live: the instance is open, in mode (its data/modes.json name); hidden: the window listens while it isn't shown (the button's green
+// dot); decoding: a period is being decoded (Status' Decoding)
+GT.mmdInstance = { live: false, mode: "", hidden: false, sentAt: 0, key: "", decoding: false };
 
-// The instance's mode: "ft8" or "ft4" (whichever Enable GridTracker Instance is on), null with neither
-function mmDecoderInstanceMode()
+// Each Multi-Mode Decoder mode's names, from its submode's own to its parent mode's: the first in data/modes.json is the instance's mode.
+// S: the decoder's settings (the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...)
+const MMD_INSTANCE_MODES = {
+  cw: () => ["CW"],
+  ft8: () => ["FT8"],
+  ft4: () => ["FT4"],
+  sstv: () => ["SSTV"],
+  wefax: () => ["WEFAX", "FAX"],
+  hell: (S) => (S.hellSubmode == "x5" || S.hellSubmode == "x9" ? ["HELL" + S.hellSubmode] : []).concat("HELL"),
+  packet: () => ["PKT"],
+  // Sat Data (FUNcube BPSK, AX.100, GENESIS): no mode of its own in modes.json
+  sat: () => ["DATA"],
+  psk31: (S) => [S.pskSubmode, "PSK"],
+  rtty: () => ["RTTY"],
+  mfsk: (S) => [S.mfskSubmode, "MFSK"],
+  thor: (S) => [String(S.thorSubmode).replace(" ", ""), String(S.thorSubmode).split(" ")[0]],
+  navtex: () => ["NAVTEX", "TOR"],
+  olivia: (S) => [S.oliviaSubmode, String(S.oliviaSubmode).split(" ")[0]],
+  wspr: () => ["WSPR"]
+};
+
+// The instance's mode: the window's Mode (and its submode) as data/modes.json names it; null for one it has no name for
+function mmDecoderInstanceModeName(mode = GT.settings.MMD.viewMode)
 {
-  const S = GT.settings.MMD;
-  return S.ft8Instance === true ? "ft8" : S.ft4Instance === true ? "ft4" : null;
+  const names = Object.hasOwn(MMD_INSTANCE_MODES, mode) ? MMD_INSTANCE_MODES[mode](GT.settings.MMD) : [];
+  return names.map((name) => String(name || "").toUpperCase()).find((name) => GT.modes && Object.hasOwn(GT.modes, name)) || null;
 }
 
-// From the window, as it starts or stops listening, changes mode or shows and hides: on, the mode listened to ("ft8" or "ft4"), else null
-function mmDecoderInstanceWanted(on, hidden)
+// From the window, as it starts or stops listening, or shows and hides: whether it listens while it isn't shown
+function mmDecoderInstanceHidden(hidden)
 {
-  const I = GT.mmdInstance;
-  const wanted = (on == "ft8" || on == "ft4") && GT.settings.MMD[on + "Instance"] === true;
-  if (wanted) I.mode = on;
-  if (I.wanted && !wanted) I.unwantedAt = Date.now();
-  I.wanted = wanted;
-  I.hidden = !!hidden;
+  GT.mmdInstance.hidden = !!hidden;
   mmDecoderInstanceTick();
 }
 
@@ -459,16 +475,28 @@ function mmDecoderInstanceWanted(on, hidden)
 function mmDecoderInstanceTick()
 {
   const I = GT.mmdInstance;
-  const read = I.wanted ? mmDecoderVfoRead(I.mode) : null;
-  if (!read || !read.up)
+  const S = GT.settings.MMD;
+  const mode = S.enable === true ? mmDecoderInstanceModeName() : null;
+  if (!mode)
   {
-    if (I.live && (I.wanted || Date.now() - I.unwantedAt >= MMD_INSTANCE_CLOSE_MS)) mmDecoderInstanceClose();
+    mmDecoderInstanceClose();
     mmDecoderBackgroundRender();
     return;
   }
-  const key = I.mode + "|" + Math.round(read.freq) + "|" + read.mode + "|" + mmDecoderInstanceCall() + "|" + mmDecoderInstanceGrid();
-  if (!I.live || key != I.key || Date.now() - I.sentAt >= MMD_INSTANCE_HEARTBEAT_MS) mmDecoderInstanceStatus(read, key);
+  const read = mmDecoderInstanceRead();
+  const key = mode + "|" + Math.round(read.freq) + "|" + read.mode + "|" + mmDecoderInstanceCall() + "|" + mmDecoderInstanceGrid();
+  if (!I.live || key != I.key || Date.now() - I.sentAt >= MMD_INSTANCE_HEARTBEAT_MS) mmDecoderInstanceStatus(read, mode, key);
+  // Into the Call Roster only in FT8 or FT4 with its Send Decodes To Call Roster on; seen by it at all only with one of them on
+  mmDecoderInstanceRoster(S[S.viewMode + "SendDecodes"] === true);
+  mmDecoderInstanceRosterSeen();
   mmDecoderBackgroundRender();
+}
+
+// The instance's dial: the window's Mode's VFO as Rig Control reads it; no VFO, or its frequency not known, 0 (its band "OOB")
+function mmDecoderInstanceRead()
+{
+  const read = mmDecoderVfoRead(GT.settings.MMD.viewMode);
+  return read.up && read.freq > 0 ? read : { freq: 0, mode: "" };
 }
 
 function mmDecoderInstanceCall()
@@ -481,23 +509,25 @@ function mmDecoderInstanceGrid()
   return String(GT.settings.app.myRawGrid || GT.settings.app.myGrid || "").trim();
 }
 
-// A Status: the mode's VFO's dial, FT8 or FT4, your call and grid, nothing transmitted
-function mmDecoderInstanceStatus(read, key)
+// A Status: the mode's VFO's dial, the mode (its data/modes.json name), your call and grid, nothing transmitted
+function mmDecoderInstanceStatus(read, mode, key)
 {
   const I = GT.mmdInstance;
   const freq = Math.round(read.freq);
   const message = {
     magic_key: 0xadbccbda, schema_number: 2, type: 1, Id: MMD_INSTANCE_ID,
-    Frequency: freq, Band: formatBand(freq / 1000000), MO: I.mode == "ft4" ? "FT4" : "FT8", DXcall: "", Report: "", TxMode: I.mode == "ft4" ? "FT4" : "FT8",
+    Frequency: freq, Band: formatBand(freq / 1000000), MO: mode, DXcall: "", Report: "", TxMode: mode,
     TxEnabled: 0, Transmitting: 0, Decoding: I.decoding ? 1 : 0, RxDF: 0, TxDF: 0,
     DEcall: mmDecoderInstanceCall(), DEgrid: mmDecoderInstanceGrid(), DXgrid: "", TxWatchdog: 0, Submode: "", Fastmode: 0,
     SopMode: 0, FreqTol: -1, TRP: -1, ConfName: MMD_INSTANCE_ID, TxMessage: "", TxSymbols: ""
   };
   const instance = wsjtInstanceOpen(MMD_INSTANCE_ID, null);
+  mmDecoderInstanceRosterSeen();
   wsjtInstanceStatus(instance, message);
   wsjtInstanceDispatch(instance, message, null);
-  if (!I.live) addEvent("app", "<font style='color:lightgreen'>" + htmlEntities(I18N("mmd.instance.event.started").replace("{freq}", formatDialFreq(freq))) + "</font>");
+  if (!I.live) addEvent("app", "<font style='color:lightgreen'>" + htmlEntities(I18N("mmd.instance.event.started").replace("{mode}", mode).replace("{freq}", formatDialFreq(freq))) + "</font>");
   I.live = true;
+  I.mode = mode;
   I.sentAt = Date.now();
   I.key = key || "";
 }
@@ -508,18 +538,21 @@ function mmDecoderInstanceDecoding(on)
   const I = GT.mmdInstance;
   I.decoding = !!on;
   if (!I.live) return;
-  const read = mmDecoderVfoRead(I.mode);
-  if (read.up) mmDecoderInstanceStatus(read, I.key);
+  mmDecoderInstanceStatus(mmDecoderInstanceRead(), I.mode, I.key);
 }
 
-// From the window: a period's messages (start: the period's start, ms UTC; each line [dB, DT, audio Hz, message]), as Decodes
-function mmDecoderInstanceDecodes(start, lines)
+// From the window: a period's messages in FT8 or FT4 (mode; start: the period's start, ms UTC; each line [dB, DT, audio Hz, message]), as
+// Decodes (the map, alerts), in the instance's mode only; into the Call Roster too with that mode's Send Decodes To Call Roster on
+// (wsjtx.js: the instance's noRoster)
+function mmDecoderInstanceDecodes(mode, start, lines)
 {
   const I = GT.mmdInstance;
-  if (!I.live || !(MMD_INSTANCE_ID in GT.instances)) return;
+  const S = GT.settings.MMD;
+  if (!I.live || !(MMD_INSTANCE_ID in GT.instances) || mode != S.viewMode || !(mode == "ft8" || mode == "ft4")) return;
   const instance = GT.instances[MMD_INSTANCE_ID];
   const status = instance.status;
   if (!status) return;
+  mmDecoderInstanceRoster(S[mode + "SendDecodes"] === true);
   for (const line of lines)
   {
     const text = String(line[3] || "").trim();
@@ -527,11 +560,79 @@ function mmDecoderInstanceDecodes(start, lines)
     const message = {
       magic_key: 0xadbccbda, schema_number: 2, type: 2, Id: MMD_INSTANCE_ID,
       NW: 1, TM: Number(start) % 86400000, SR: Math.round(Number(line[0]) || 0), DT: Math.round((Number(line[1]) || 0) * 10) / 10,
-      DF: Math.round(Number(line[2]) || 0), MO: I.mode == "ft4" ? "+" : "~", Msg: text, LC: 0, OA: 0,
+      DF: Math.round(Number(line[2]) || 0), MO: mode == "ft4" ? "+" : "~", Msg: text, LC: 0, OA: 0,
       OF: status.Frequency, OC: status.DEcall, OG: status.DEgrid, OM: status.MO, OB: status.Band, SP: status.SopMode
     };
     wsjtInstanceDispatch(instance, message, null);
   }
+}
+
+// The distance from your location to a grid's center, in the distance unit of Settings (rounded), and that unit ("km", "mi" ...); the
+// window's WSPR list. A grid that isn't one: null
+function mmDecoderGridDistance(grid)
+{
+  const unit = String(distanceUnit.value || "KM");
+  if (!/^[A-R]{2}[0-9]{2}([A-X]{2})?$/i.test(String(grid || ""))) return { distance: null, unit: unit.toLowerCase() };
+  const LL = squareToCenter(grid);
+  return { distance: Math.round(MyCircle.distance(GT.myLat, GT.myLon, LL.a, LL.o) * MyCircle.validateRadius(unit)), unit: unit.toLowerCase() };
+}
+
+// From the window: a WSPR period's stations (start: the period's start, ms UTC; each { snr, dt, freq (audio Hz), air (Hz on the air, or
+// null), drift, call, grid, power }), as WSJT-X's WSPR decodes (the map; wsjtx.js, handleWsjtxWSPR). A hashed call (<...>) isn't known:
+// not sent. Only in the instance's mode
+function mmDecoderInstanceWspr(start, list)
+{
+  const I = GT.mmdInstance;
+  if (!I.live || !(MMD_INSTANCE_ID in GT.instances) || GT.settings.MMD.viewMode != "wspr") return;
+  const instance = GT.instances[MMD_INSTANCE_ID];
+  const status = instance.status;
+  if (!status) return;
+  for (const d of list)
+  {
+    if (!d.call || d.call.startsWith("<")) continue;
+    const message = {
+      magic_key: 0xadbccbda, schema_number: 2, type: 10, Id: MMD_INSTANCE_ID,
+      NW: 1, TM: Number(start) % 86400000, SR: Math.round(Number(d.snr) || 0), DT: Number(d.dt) || 0, Frequency: d.air > 0 ? Math.round(d.air) : 0,
+      Drift: Math.round(Number(d.drift) || 0), Callsign: d.call, Grid: d.grid || "", Power: Number(d.power) || 0, OA: 0,
+      OF: status.Frequency, OC: status.DEcall, OG: status.DEgrid, OM: status.MO, OB: status.Band
+    };
+    wsjtInstanceDispatch(instance, message, null);
+  }
+}
+
+// The Call Roster sees the instance (its instance selector, its count, its RX / Decode indicator: wsjtx.js) only while FT8's or FT4's
+// Send Decodes To Call Roster is on. instanceCount counts the instances that can be in the roster (wsjtInstanceOpen counts each new one,
+// handleClosed takes one off for canRoster's): kept so as this changes
+function mmDecoderInstanceRosterSeen()
+{
+  const instance = GT.instances[MMD_INSTANCE_ID];
+  if (!instance) return;
+  const S = GT.settings.MMD;
+  const seen = S.ft8SendDecodes === true || S.ft4SendDecodes === true;
+  instance.hideFromRoster = !seen;
+  if (instance.canRoster === seen) return;
+  instance.canRoster = seen;
+  GT.instanceCount += seen ? 1 : -1;
+  updateRosterInstances();
+}
+
+// The instance's decodes into the Call Roster (on) or the map only: turned off, the calls it put there go
+function mmDecoderInstanceRoster(on)
+{
+  const instance = GT.instances[MMD_INSTANCE_ID];
+  if (!instance || instance.noRoster === !on) return;
+  instance.noRoster = !on;
+  if (on) return;
+  let removed = false;
+  for (const hash in GT.callRoster)
+  {
+    if (GT.callRoster[hash].callObj.instance == MMD_INSTANCE_ID)
+    {
+      delete GT.callRoster[hash];
+      removed = true;
+    }
+  }
+  if (removed) goProcessRoster();
 }
 
 // The instance closed (as a WSJT-X that quits: it is let go)
@@ -550,7 +651,7 @@ function mmDecoderInstanceClose()
   addEvent("app", "<font style='color:white'>" + htmlEntities(I18N("mmd.instance.event.stopped")) + "</font>");
 }
 
-// The Toggle Multi-Mode Decoder button while the instance is open with the window closed: a green dot on it, and its tooltip says so
+// The Toggle Multi-Mode Decoder button while the instance is open and the window listens closed: a green dot on it, and its tooltip says so
 function mmDecoderBackgroundRender()
 {
   const I = GT.mmdInstance;

@@ -37,7 +37,7 @@ const CW_SAME_SIGNAL_HZ = 40;
 // The Frequency menu (Rig Control connected): each mode's usual frequencies, from the band plans' (mmdBands.js, mmdBandFreqs); a mode
 // with none shows no menu
 // The modes there are (the Mode menu)
-const MMD_MODES = ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "olivia"];
+const MMD_MODES = ["cw", "ft8", "ft4", "sstv", "wefax", "hell", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "olivia", "wspr"];
 // After the viewer tunes the rig, how long it waits for Rig Control to read the new frequency back (ms)
 const CW_TUNE_SETTLE_MS = 2500;
 // The rig read back within this of what BirdWatch's Doppler last sent VFO-A (Hz on the air; the rig may round it): its move, not a
@@ -53,7 +53,7 @@ const FT8_PERIOD_MS = 15000;
 // FT4's period (the same decoder: mmdFtx)
 const FT4_PERIOD_MS = 7500;
 // The other modes' waterfall: a line on the UTC clock every so often (s: the window's UTC menu, 0 none; mmdPeriodRow)
-const MMD_UTC_STEPS = [0, 10, 30, 60];
+const MMD_UTC_STEPS = [0, 10, 15, 30, 60];
 // FT4's decode, as it is the Normal way only, is given this long at most (ms)
 const FT4_BUDGET_MS = 4000;
 const FT8_LATE_MS = 500;
@@ -119,8 +119,8 @@ const DEC = {
   hoverRow: null, // the signal whose row is under the mouse (its id): guard lines on the waterfall
   hoverFall: null, // the signal under the mouse on the waterfall: its row shaded, and guard lines
   focus: null,    // the signal pinned (a right-click): its guard lines kept, its row always listed
-  mode: "cw",     // what is decoded: "cw", "ft8", "ft4", "sstv", "packet", "sat" (Sat Data), "psk31", "rtty" or "olivia" (the Mode menu)
-  shown: false,   // the window is showing (mmdVisible): listening, and the waterfall drawn; hidden, only FT8 with its instance on (mmdListen)
+  mode: "cw",     // what is decoded: "cw", "ft8", "ft4", "sstv", "packet", "sat" (Sat Data), "psk31" (with its submodes), "rtty", "mfsk", "thor" (DominoEX / THOR), "navtex", "hell" (Feld-Hell), "wefax", "olivia" or "wspr" (the Mode menu)
+  shown: false,   // the window is showing (mmdVisible): listening, and the waterfall drawn; hidden, only FT8 or FT4 (mmdListen)
   ft8: null,      // FT8 mode: { X (ft8.wasm), ring, total (samples ever), endWall (ms: when the newest was heard), next (the period to decode, ms) }
   // The FT8 list: every line, the newest first ({ utc, snr, dt, freq, message, first: the first of its period }); the slice in the page,
   // the measured heights it is laid out by, and a redraw waiting for the next frame
@@ -145,14 +145,11 @@ function mmdInit()
     // A picture being sent stops, the rig unkeyed at once
     mmdSstvTxStop("", true);
     mmdStop();
-    mmdBgOwnStop();
   });
   // Shown and hidden by the main process: decoding only while it shows (the Input Device is let go while hidden)
   electron.ipcRenderer.on("windowPlaced", (event, visible) => mmdVisible(visible));
   electron.ipcRenderer.on("windowVisible", (event, visible) => mmdVisible(visible));
   nodeTimers.setInterval(mmdRender, 250);
-  // FT8 or FT4 for GridTracker's instance in any mode (mmdFt8Background.js)
-  mmdBgInit();
   // The mouse over a row puts guard lines round its signal on the waterfall; over a signal on the waterfall, its row is shaded as well
   cwRows.addEventListener("mouseover", (event) =>
   {
@@ -195,6 +192,8 @@ function mmdInit()
       if (DEC.mode == "cw" || mmdKeyMode()) mmdFocus(mmdSignalNear(hz));
       // Olivia: the signal looked for there
       else if (mmdOliviaMode()) mmdOliviaTune(hz);
+      // Feld-Hell: the signal there read (or, inside its band, found again)
+      else if (mmdHellMode()) mmdHellTune(hz);
       // Packet: HF packet locked on there (or let go, inside the lock)
       else if (DEC.mode == "packet") mmdPacketLock(hz);
       return;
@@ -299,6 +298,7 @@ function mmdInit()
   mmdScopeInit();
   mmdPacketInit();
   mmdDetectInit();
+  mmdNavtexInit();
   cwMode.value = MMD_MODES.includes(GT.settings.MMD.viewMode) ? GT.settings.MMD.viewMode : "cw";
   cwMode.onchange = () => mmdModeSet(cwMode.value);
   mmdModeSet(cwMode.value);
@@ -312,7 +312,7 @@ function mmdInit()
     GT.settings.MMD.span = Number(cwBandwidth.value);
     mmDecoderRestart();
   };
-  // UTC: the other modes' lines on the UTC clock (Off, 10s, 30s, 1m); changed, drawn again on the new step down the whole waterfall
+  // UTC: the other modes' lines on the UTC clock (Off, 10s, 15s, 30s, 1m); changed, drawn again on the new step down the whole waterfall
   cwUtc.value = mmdUtcStep();
   cwUtc.onchange = () =>
   {
@@ -351,52 +351,52 @@ function mmdInit()
   }
 }
 
+// The output of an input's own sound card (its deviceId), else null: the same device group, not one of the system's aliases
+async function mmdInputSink(device)
+{
+  try
+  {
+    if (!device || !device.groupId) return null;
+    const outputs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind == "audiooutput" && d.groupId == device.groupId);
+    const own = outputs.find((d) => d.deviceId && d.deviceId != "default" && d.deviceId != "communications");
+    return own ? own.deviceId : null;
+  }
+  catch (e)
+  {
+    return null;
+  }
+}
+
 function mmdVisible(visible)
 {
   DEC.shown = !!visible;
   mmdListen();
 }
 
-// Listening while the window shows; with it closed only in the GridTracker instance's mode (the window's Settings, Decoders, FT8 or FT4:
-// Enable GridTracker Instance), whose decodes go on to GridTracker. In any other mode the instance's FT8 (or FT4) is decoded in the
-// background (mmdFt8Background.js). The main window is told whether that instance is wanted
+// Listening while the window shows; with it closed too in FT8, FT4 and WSPR, whose decodes go on to GridTracker's instance MMD
+// (services/mmDecoder.js: the map, and FT8's and FT4's the Call Roster with Send Decodes To Call Roster on). The main window is told
+// whether it listens unseen
 function mmdListen()
 {
-  const background = DEC.mode == mmdInstanceMode();
-  const want = GT.settings.MMD.enable && (DEC.shown || background);
+  const want = GT.settings.MMD.enable && (DEC.shown || mmdFtx() || mmdWsprMode());
   if (want && !DEC.running) mmdStart();
   else if (!want && DEC.running) mmdStop();
-  mmdInstanceTell();
-}
-
-// The GridTracker instance's mode: "ft8" or "ft4" (whichever Enable GridTracker Instance is on), null with neither
-function mmdInstanceMode()
-{
-  const S = GT.settings.MMD;
-  return S.ft8Instance === true ? "ft8" : S.ft4Instance === true ? "ft4" : null;
-}
-
-// The window decodes the instance's mode itself: its decodes are the instance's (mmdFt8Decode, mmdFt8Decoded)
-function mmdInstanceMain()
-{
-  return DEC.running && DEC.mode == mmdInstanceMode();
-}
-
-// The background decoder brought in line (it may tap this pipeline), and the main window told
-function mmdInstanceTell()
-{
-  mmdBgSync();
   mmdInstanceSay();
 }
 
-// The instance's mode, from the window in that mode or the background decoder; "hidden" (the button's green dot) unless the window shows it
-// in that mode
+// Listening in FT8 or FT4: its decodes are the instance's (mmdFt8Decode, mmdFt8Decoded), on the map; in the Call Roster too with Send
+// Decodes To Call Roster on (services/mmDecoder.js)
+function mmdInstanceMain()
+{
+  return DEC.running && mmdFtx();
+}
+
+// The main window told whether the window listens while it isn't shown (the button's green dot)
 function mmdInstanceSay()
 {
-  const main = mmdInstanceMain();
   try
   {
-    window.opener.mmDecoderInstanceWanted(main || mmdBgRunning() ? mmdInstanceMode() : null, !(DEC.shown && main));
+    window.opener.mmDecoderInstanceHidden(DEC.running && !DEC.shown);
   }
   catch (e)
   {
@@ -715,14 +715,29 @@ async function mmdStart()
       // At the input's own sample rate, so an SDR's wide stream isn't brought down to the output's first (any rate it won't take: the default)
       rate = (stream.getAudioTracks()[0].getSettings() || {}).sampleRate;
     }
+    // On the input's own clock: an audio context runs on its output device's, and an input on another clock (the rig's USB sound card,
+    // the computer's own output) has blocks of its samples dropped or doubled now and then to keep up. Nothing is played, but the context
+    // is put on the output of the input's own sound card (the same device group) where it has one, so no sample is lost: a weather fax's
+    // lines and an SSTV picture's stay straight. With none, or one that won't open: the default output, as before
+    const sink = device.spyVfo ? null : await mmdInputSink(device);
+    const options = { latencyHint: "playback" };
+    if (rate > 0) options.sampleRate = rate;
     try
     {
-      ctx = new AudioContext(rate > 0 ? { latencyHint: "playback", sampleRate: rate } : { latencyHint: "playback" });
+      ctx = new AudioContext(sink ? Object.assign({ sinkId: sink }, options) : options);
     }
     catch (e)
     {
-      ctx = new AudioContext({ latencyHint: "playback" });
+      try
+      {
+        ctx = new AudioContext(options);
+      }
+      catch (e2)
+      {
+        ctx = new AudioContext({ latencyHint: "playback" });
+      }
     }
+    DEC.sinkId = sink && ctx.sinkId == sink ? sink : null;
     await ctx.audioWorklet.addModule("lib/mmd/mmdWorklet.js");
     if (generation != DEC.generation) throw null;
     const node = new AudioWorkletNode(ctx, "cw-decoder", { numberOfInputs: 1, numberOfOutputs: 0, processorOptions: { wasm: new Uint8Array(DEC.wasm), span: mmdBandwidth() } });
@@ -755,7 +770,7 @@ async function mmdStart()
     DEC.device = device.label || device.deviceId;
     mmdStatus(I18N("cwViewer.status.listening"));
     mmdTestRender();
-    mmdInstanceTell();
+    mmdInstanceSay();
   }
   catch (e)
   {
@@ -768,7 +783,7 @@ async function mmdStart()
     // Waiting for a SPY Server: said as it is (tried again by itself), not as a failure
     if (e && e.spyWait) mmdStatus(e.message);
     else mmdStatus(I18N("cwViewer.status.failed") + " " + ((e && e.message) || String(e)), true);
-    mmdInstanceTell();
+    mmdInstanceSay();
   }
 }
 
@@ -776,8 +791,7 @@ function mmdStop()
 {
   // FT8: what was heard is let go (the periods decoded stay listed)
   if (DEC.ft8) DEC.ft8.total = 0;
-  // The background decoder's too, while it taps this pipeline (mmdFt8Background.js)
-  if (BG.tap && BG.F) BG.F.total = 0;
+  mmdWsprStop();
   // A test signal playing ends with it
   mmdTestStop();
   DEC.generation++;
@@ -794,7 +808,7 @@ function mmdStop()
   DEC.deviceId = null;
   mmdStatus("");
   mmdTestRender();
-  mmdInstanceTell();
+  mmdInstanceSay();
 }
 
 // ---- An SDR server's I/Q as the Input Device (Rig Control's SPY Server or SDR++ Server VFO, rigIq.js): its samples from the main window into the
@@ -891,12 +905,11 @@ function mmdMessage(data, generation)
   // The 12 kHz audio (the worklet's FT8 stream): FT8's periods, or SSTV's pictures
   if (data.type == "ft8audio")
   {
-    // The background decoder's too, when it hears this input (mmdFt8Background.js)
-    if (BG.tap) mmdBgAudio(data, DEC.ctx);
     // Detect Modes on: its own decoders hear it, the mode's wait
     if (mmdDetectOn()) mmdDetectAudio12(data);
     else if (mmdFtx()) mmdFt8Audio(data);
-    else if (DEC.mode == "sstv") mmdSstvAudio(data);
+    else if (mmdWsprMode()) mmdWsprAudio(data);
+    else if (mmdSstvMode()) mmdSstvAudio(data);
     return;
   }
   // The input's own samples: RSID's (first: the mode's own worker is handed them), Packet's ...
@@ -908,6 +921,7 @@ function mmdMessage(data, generation)
     else if (DEC.mode == "sat") mmdSatAudio(data);
     else if (mmdKeyMode()) mmdKeyAudio(data);
     else if (mmdOliviaMode()) mmdOliviaAudio(data);
+    else if (mmdHellMode()) mmdHellAudio(data);
     return;
   }
   if (data.type != "row") return;
@@ -1023,7 +1037,7 @@ function mmdPalette(name = "classic")
   return palette;
 }
 
-// The decoded lines' header row (CW's or FT8's), dragged up or down: the waterfall's height, kept as its share of the window
+// The divider under the waterfall (the rig's frequency on it), dragged up or down: the waterfall's height, kept as its share of the window
 // (GT.settings.MMD.fallShare) so it is the same after a restart or when the window changes size. The place grabbed stays under
 // the mouse
 const MMD_FALL_SHARE = [0.08, 0.85];
@@ -1031,13 +1045,12 @@ const MMD_FALL_SHARE = [0.08, 0.85];
 function mmdSplitInit()
 {
   mmdSplitApply();
-  for (const head of [cwHead, ft8Head, sstvHead, packetHead, satHead]) head.addEventListener("mousedown", mmdSplitDrag);
+  mmdSplit.addEventListener("mousedown", mmdSplitDrag);
 }
 
 function mmdSplitDrag(event)
 {
-  // (The SSTV header's Receive / Send tabs are clicked, not dragged)
-  if (event.button != 0 || event.target.closest(".sstvTab")) return;
+  if (event.button != 0) return;
   event.preventDefault();
   const box = cwFallBox.getBoundingClientRect();
   const grab = event.clientY - box.bottom;
@@ -1246,10 +1259,19 @@ function mmdBandRow(drawn)
   mmdOverlay();
 }
 
-// The band of a dial (Hz on the air), "" off the bands
+// The band a dial is in ("" unknown). formatBand (GridTracker's) goes by whole MHz, so a weather fax on 7.795 MHz would read 40m: the
+// HF and 6m bands' edges (the widest of the ITU regions') are checked here, OOB outside them
+const MMD_BAND_EDGES = {
+  "160m": [1.8, 2.0], "80m": [3.5, 4.0], "60m": [5.25, 5.45], "40m": [7.0, 7.3], "30m": [10.1, 10.15], "20m": [14.0, 14.35],
+  "17m": [18.068, 18.168], "15m": [21.0, 21.45], "12m": [24.89, 24.99], "10m": [28.0, 29.7], "6m": [50.0, 54.0]
+};
+
 function mmdBandOf(dial)
 {
-  return dial > 0 ? window.opener.formatBand(dial / 1e6) || "" : "";
+  if (!(dial > 0)) return "";
+  const band = window.opener.formatBand(dial / 1e6) || "";
+  const edges = MMD_BAND_EDGES[band];
+  return edges && (dial < edges[0] * 1e6 || dial > edges[1] * 1e6) ? "OOB" : band;
 }
 
 // The rig on a dial: a bar on the waterfall when that is another band than it was on (known, both)
@@ -1450,13 +1472,13 @@ function mmdOverlay()
     }
   }
   // SSTV mode: where a picture's tones belong, to tune by (dashed): its sync pulses (1200 Hz, orange), black (1500 Hz) and white (2300 Hz);
-  // moved to where the newest picture's sender was found, when it was off
-  if (DEC.mode == "sstv")
+  // moved to where the newest picture's sender was found, when it was off. WEFAX the same, black and white only
+  if (mmdSstvMode())
   {
     const shift = mmdSstvShift();
     ctx.lineWidth = Math.max(1, Math.round(ratio));
     ctx.setLineDash([4 * ratio, 4 * ratio]);
-    for (const [hz, color] of [[1200, "rgba(255, 165, 0, 0.8)"], [1500, "rgba(200, 200, 200, 0.6)"], [2300, "rgba(200, 200, 200, 0.6)"]])
+    for (const [hz, color] of [[1200, "rgba(255, 165, 0, 0.8)"], [1500, "rgba(200, 200, 200, 0.6)"], [2300, "rgba(200, 200, 200, 0.6)"]].slice(DEC.mode == "wefax" ? 1 : 0))
     {
       const at = Math.round(x(hz + shift)) + 0.5;
       ctx.strokeStyle = color;
@@ -1473,6 +1495,8 @@ function mmdOverlay()
   mmdOliviaDraw(ctx, x, ratio, w, h);
   // Packet mode: where HF packet was heard, and the place locked on (mmdPacket.js)
   mmdPacketDraw(ctx, x, ratio, w, h);
+  // Feld-Hell mode: the band read (mmdHell.js)
+  mmdHellDraw(ctx, x, ratio, w, h);
   // Detect Modes: the signals found, named (mmdDetect.js)
   mmdDetectDraw(ctx, x, ratio, w, h);
   // FT8 and FT4, Slot Finder: the clearest places to transmit, each shaded in its period's colour (Even + Odd green, Even light blue, Odd
@@ -1665,8 +1689,13 @@ function mmdRender()
 {
   mmdFollowBirdWatch();
   mmdTop();
+  mmdPeriodProgress();
   // The rig's band scope: wanted (or not) of Rig Control, shown or hidden
   mmdScopeTick();
+  // WEFAX's Auto-Tune: the next chart tuned for when it's time (mmdWefaxAuto.js)
+  mmdWefaxAutoTick();
+  // NAVTEX's list: its Receiving blocks as their text comes (mmdNavtex.js)
+  mmdNavtexRender();
   // Detect Modes: its signals found, listed and labelled
   mmdDetectTick();
   // Slot Finder's places, drawn again when they move
@@ -1791,7 +1820,9 @@ function mmdFreqsShow(connected)
     const off = new Option("-", "");
     off.hidden = true;
     cwFreqs.add(off);
-    list.forEach(([hz], i) => cwFreqs.add(new Option(mmdBandFreq(hz), i)));
+    // (WEFAX's and NAVTEX's as (frequency) and their station, no band: theirs are outside the amateur bands)
+    const notes = BANDS_NOTE_MODES.includes(DEC.mode);
+    list.forEach(([hz, , note], i) => cwFreqs.add(new Option(notes ? "(" + mmdFreq(hz) + ")" + (note ? " " + note : "") : mmdBandFreq(hz), i)));
   }
   // Greyed out while BirdWatch follows a satellite with the rig on VFO-B only (nothing is sent to it then), saying why
   const locked = window.opener.mmDecoderRigLocked();
@@ -1855,6 +1886,8 @@ function mmdFollowRig()
   const followed = !!(doppler && doppler.rx) && sent.some((hz) => Math.abs(dial - hz) <= CW_DOPPLER_HZ);
   if (DEC.tuned && (DEC.tuned.freq != dial || DEC.tuned.mode != mode) && !(followed && DEC.tuned.mode == mode))
   {
+    // The dial turned (the same mode): what the waterfall had heard moved with it, so it stays where it was on the air
+    if (DEC.tuned.mode == mode) mmdFallShift(dial - DEC.tuned.freq);
     mmdRetune();
   }
   DEC.tuned = { freq: dial, mode: mode };
@@ -1887,6 +1920,11 @@ function mmdClear()
   mmdSatClear();
   mmdKeyReset();
   mmdOliviaReset();
+  mmdHellClear();
+  mmdNavtexClear();
+  mmdWsprClear();
+  // Detect Modes' list (and its decoders) too, while it's on
+  mmdDetectClear();
   DEC.dirty = true;
   mmdOverlay();
 }
@@ -2011,10 +2049,33 @@ function mmdRangeTip(side)
   cwRangeTip.style.top = box.bottom + 2 + "px";
 }
 
+// The dial moved by deltaHz (the same mode): the waterfall's history slid across by as much, so each signal heard stays at its frequency
+// on the air (the waterfall always rises left to right on the air); what slid out of the passband is gone, the side uncovered black. A
+// move past its whole width (another band) leaves it black. The RSIDs' labels move with it
+function mmdFallShift(deltaHz)
+{
+  if (!(DEC.bins > 0) || !(DEC.binHz > 0) || !deltaHz) return;
+  const px = Math.round(deltaHz / DEC.binHz);
+  if (!px) return;
+  const w = cwFall.width, h = cwFall.height;
+  const ctx = cwFall.getContext("2d");
+  const copy = document.createElement("canvas");
+  copy.width = w;
+  copy.height = h;
+  if (Math.abs(px) < w) copy.getContext("2d").drawImage(cwFall, 0, 0);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, w, h);
+  if (Math.abs(px) < w) ctx.drawImage(copy, -px, 0);
+  // An audio frequency is the other way round from the air's in USB (the waterfall unflipped), the same way in LSB (flipped)
+  const audio = (DEC.flipped ? 1 : -1) * px * DEC.binHz;
+  for (const mark of DEC.rsidMarks || []) mark.freq += audio;
+  mmdOverlay();
+}
+
 // The worklet lets go of what it found (another part of the band is in the passband now); the signals listed stay, at their frequencies.
 // FT8: the audio heard so far isn't decoded with what comes after (a period heard partly on 20m and partly on 40m would give 20m's
 // signals as 40m's): the period under way is decoded from here on only (mmdFt8Decode). SSTV: a picture coming in ends here (it is kept
-// as far as it got). The waterfall stays as it is. keepSkew: Clear's, the time skew left on
+// as far as it got). The waterfall stays (slid across where the dial moved: mmdFallShift). keepSkew: Clear's, the time skew left on
 function mmdRetune(keepSkew = false)
 {
   DEC.seq++;
@@ -2028,7 +2089,9 @@ function mmdRetune(keepSkew = false)
     // An early decode of the period under way was of the old frequency: the full one is a fresh decode, not more of it
     if (F.early == F.next) F.early = null;
   }
-  if (DEC.mode == "sstv") mmdSstvReset();
+  mmdWsprRetune();
+  if (mmdSstvMode()) mmdSstvReset();
+  if (mmdHellMode()) mmdHellReset();
   if (DEC.mode == "packet") mmdPacketReset();
   if (DEC.mode == "sat") mmdSatReset();
   if (mmdKeyMode()) mmdKeyReset();
@@ -2053,6 +2116,9 @@ function mmdTuneDial(dial, mode, data)
   if (dial != null)
   {
     dial = Math.round(dial);
+    // What the waterfall had heard moved with the dial (not when the mode changes too: mmdFlip turns it round for that)
+    const before = mmdDial();
+    if (before != null && (!mode || mode == window.opener.mmDecoderVfoRead().mode)) mmdFallShift(dial - before);
     DEC.expect = { freq: dial, until: Date.now() + CW_TUNE_SETTLE_MS };
     mmdBandFollow(dial);
     mmdRetune();
@@ -2096,11 +2162,11 @@ function mmdModeSet(mode)
   }
   DEC.mode = next;
   GT.settings.MMD.viewMode = DEC.mode;
-  const ft8 = mmdFtx(), sstv = DEC.mode == "sstv", packet = DEC.mode == "packet", sat = DEC.mode == "sat", key = mmdKeyMode();
+  const ft8 = mmdFtx(), sstv = mmdSstvMode(), hell = mmdHellMode(), packet = DEC.mode == "packet", sat = DEC.mode == "sat", key = mmdKeyMode();
   const olivia = mmdOliviaMode();
-  // CW's list shows PSK31's, RTTY's and Olivia's signals too (mmdKey.js, mmdOlivia.js), the WPM column their baud; changing between them,
+  // CW's list shows the keyboard modes' (PSK31, RTTY, MFSK, DominoEX / THOR) and Olivia's signals too (mmdKey.js, mmdOlivia.js), the WPM column their baud; changing between them,
   // the other's signals go
-  const listed = DEC.mode == "cw" || key || olivia;
+  const listed = (DEC.mode == "cw" || key || olivia) && !mmdNavtexMode();
   const own = (mode) => mmdKeyMode(mode) || mmdOliviaMode(mode);
   if (DEC.listedMode != DEC.mode && (own(DEC.mode) || own(DEC.listedMode)))
   {
@@ -2109,28 +2175,51 @@ function mmdModeSet(mode)
     cwRows.innerHTML = "";
   }
   DEC.listedMode = DEC.mode;
+  if (key) mmdKeyListed();
   cwWpmHead.textContent = I18N(key || olivia ? "cwViewer.packet.header.baud" : "cwViewer.header.wpm");
-  // The empty list's "No CW decoded yet" names the mode (PSK31, RTTY, Olivia)
-  cwEmpty.textContent = I18N("cwViewer.empty").replace("CW", key ? DEC.mode.toUpperCase() : olivia ? "Olivia" : "CW");
+  // The empty list's "No CW decoded yet" names the mode (PSK63, RTTY, DominoEX 11, Olivia ...)
+  cwEmpty.textContent = I18N("cwViewer.empty").replace("CW", key ? mmdKeyName() : olivia ? "Olivia" : "CW");
   // The last mode's status (FT8's decodes, Packet's frames ...) gone
   if (DEC.running) mmdStatus(I18N("cwViewer.status.listening"));
   cwList.style.display = listed ? "" : "none";
-  // Another mode: the SSTV view back on Receive, and a picture being sent stopped (mmdSstvTx.js)
-  if (!sstv)
+  // NAVTEX: its messages in their own list (mmdNavtex.js)
+  navtexList.style.display = mmdNavtexMode() ? "" : "none";
+  if (mmdNavtexMode())
+  {
+    NAVTEX.listKey = null;
+    mmdNavtexRender();
+  }
+  // Another mode: the SSTV view back on Receive, and a picture being sent stopped (mmdSstvTx.js); WEFAX has no Send
+  sstvTxTab.style.display = sstvRxTab.style.display = DEC.mode == "wefax" ? "none" : "";
+  if (DEC.mode != "sstv")
   {
     if (mmdSstvTxActive()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
     mmdSstvTxShow(false);
   }
   satList.style.display = sat ? "" : "none";
+  wsprList.style.display = mmdWsprMode() ? "" : "none";
+  // WSPR: listened for afresh (its list kept)
+  mmdWsprStop();
   ft8List.style.display = ft8 ? "" : "none";
   sstvView.style.display = sstv ? "" : "none";
   packetList.style.display = packet ? "" : "none";
-  cwUtcBox.style.display = ft8 ? "none" : "";
+  hellView.style.display = hell ? "" : "none";
+  // (FT8's, FT4's and WSPR's lines are their periods': no UTC menu)
+  cwUtcBox.style.display = ft8 || mmdWsprMode() ? "none" : "";
   cwSlotBox.style.display = ft8 ? "" : "none";
   if (ft8) cwSlot.checked = GT.settings.MMD[DEC.mode + "SlotFinder"] === true;
-  // Olivia: its submode menu on the second line
+  // PSK31, MFSK, DominoEX / THOR and Olivia: the submode menu on the second line
+  if (key) mmdKeyMenu();
+  else cwKeyBox.style.display = "none";
   cwOliviaBox.style.display = olivia ? "" : "none";
   if (olivia) mmdOliviaMenu();
+  // Feld-Hell: its submode and Trim; WEFAX: its line rate, index of cooperation, Start Now and Stop
+  cwHellBox.style.display = hell ? "" : "none";
+  if (hell) mmdHellMenu();
+  // The submode menus' row, while one of them is shown
+  cwSubBar.style.display = [cwHellBox, cwKeyBox, cwOliviaBox].some((box) => box.style.display != "none") ? "" : "none";
+  cwWefaxBar.style.display = DEC.mode == "wefax" ? "" : "none";
+  if (DEC.mode == "wefax") mmdWefaxMenu();
   mmdFreqsShow(mmdDial() != null);
   // This mode's Input Device (the decoder started again on it, if it was listening to another)
   mmdInputs();
@@ -2141,8 +2230,10 @@ function mmdModeSet(mode)
     mmdSstvReset();
     mmdSstvStrip();
     mmdSstvDraw();
+    mmdSstvHead();
   }
-  // Packet, Sat Data, PSK31, RTTY and Olivia: listened for afresh too, their lists kept
+  if (hell) mmdHellReset();
+  // Packet, Sat Data, the keyboard modes and Olivia: listened for afresh too, their lists kept
   if (packet) mmdPacketReset();
   if (sat) mmdSatReset();
   if (key) mmdKeyReset();
@@ -2162,8 +2253,7 @@ function mmdModeSet(mode)
   mmdTestModeChanged();
   // The waterfall's Resolution By Mode is this mode's (mmdFallView.js)
   mmdFallViewApply();
-  // Into or out of the GridTracker instance's mode: the instance follows (and a closed window listens only for it), else its background
-  // decoder takes over
+  // The GridTracker instance follows the mode (services/mmDecoder.js), and a closed window listens only in FT8, FT4 and WSPR
   mmdListen();
 }
 
@@ -2195,16 +2285,16 @@ function mmdFollowBirdWatch()
   cwMode.value = followed.mode;
   mmdModeSet(followed.mode);
 }
-// The modes decoded from the input's own samples (the worklet's raw stream): Packet, Sat Data, PSK31, RTTY and Olivia
+// The modes decoded from the input's own samples (the worklet's raw stream): Packet, Sat Data, the keyboard modes (mmdKey.js) and Olivia
 function mmdRawMode(mode = DEC.mode)
 {
-  return mode == "packet" || mode == "sat" || mmdKeyMode(mode) || mmdOliviaMode(mode);
+  return mode == "packet" || mode == "sat" || mmdKeyMode(mode) || mmdOliviaMode(mode) || mmdHellMode(mode);
 }
 
-// The worklet's 12 kHz stream: FT8's, FT4's and SSTV's, and the background decoder's while it taps this pipeline (mmdFt8Background.js)
+// The worklet's 12 kHz stream: FT8's, FT4's, WSPR's and SSTV's
 function mmdFt8StreamWanted()
 {
-  return mmdFtx() || DEC.mode == "sstv" || BG.tap;
+  return mmdFtx() || mmdWsprMode() || mmdSstvMode();
 }
 
 // FT8 or FT4 (the same decoder, ft8Worker.js: FT4 decoded the Normal way only), and the period of the one decoded (ms)
@@ -2225,9 +2315,26 @@ function mmdUtcStep()
   return MMD_UTC_STEPS.includes(step) ? step : 30;
 }
 
-// The waterfall's lines: every this many ms (FT8's and FT4's periods, the other modes' UTC menu), 0 none
+// FT8, FT4 and WSPR, while listening: how far into its period the decoder is, at the divider's right, "[ s / period ]" (the seconds
+// padded to the period's width, so the bracket stays put); else nothing
+function mmdPeriodProgress()
+{
+  let text = "";
+  if (DEC.running && (mmdFtx() || mmdWsprMode()))
+  {
+    const periodMs = mmdPeriodMs();
+    const shift = mmdFtx() ? mmdFtxShift() : 0;
+    const into = (((Date.now() - FT8_LATENCY_MS - shift) % periodMs) + periodMs) % periodMs;
+    const total = periodMs / 1000;
+    text = "[ " + String(Math.floor(into / 1000)).padStart(String(Math.floor(total)).length, " ") + " / " + total + " ]";
+  }
+  if (cwPeriodText.textContent != text) cwPeriodText.textContent = text;
+}
+
+// The waterfall's lines: every this many ms (FT8's, FT4's and WSPR's periods, the other modes' UTC menu), 0 none
 function mmdPeriodMs()
 {
+  if (mmdWsprMode()) return WSPR_PERIOD_MS;
   return mmdFtx() ? mmdFtxPeriodMs() : mmdUtcStep() * 1000;
 }
 
@@ -2315,7 +2422,7 @@ function mmdFt8Decode(F, start, heard)
   // The focus is Deep's in FT8, and FT4's (always decoded the Normal way, with one more pass at the focus)
   const focus = !plain || DEC.mode == "ft4" ? DEC.ft8Focus || 0 : 0;
   F.worker.postMessage({ type: "decode", start: start, samples: samples, more: more, myCall: myCall, focus: focus, shift: mmdFtxShift(), deadline: deadline, plain: plain, ft4: DEC.mode == "ft4" }, [samples.buffer]);
-  // GridTracker's instance (if open) says it is decoding (in its mode only: in the other the background decoder's is, mmdFt8Background.js)
+  // GridTracker's instance (if open) says it is decoding
   if (mmdInstanceMain()) window.opener.mmDecoderInstanceDecoding(true);
 }
 
@@ -2347,10 +2454,10 @@ function mmdFt8Decoded(F, data)
     sent.set(message || "", data.start);
     return true;
   });
-  // (A period heard while a test signal played stays in the window: mmdTest.js. Only the instance's mode's go)
+  // (A period heard while a test signal played stays in the window: mmdTest.js)
   if (mmdInstanceMain())
   {
-    if (!mmdTestHeard(data.start, data.start + periodMs)) window.opener.mmDecoderInstanceDecodes(data.start - shift, fresh.map(([snr, dt, freq, message]) => [Number(snr), Number(dt) - FT8_DT_ZERO + shift / 1000, Number(freq), message || ""]));
+    if (!mmdTestHeard(data.start, data.start + periodMs)) window.opener.mmDecoderInstanceDecodes(DEC.mode, data.start - shift, fresh.map(([snr, dt, freq, message]) => [Number(snr), Number(dt) - FT8_DT_ZERO + shift / 1000, Number(freq), message || ""]));
     window.opener.mmDecoderInstanceDecoding(false);
   }
   const utc = new Date(data.start).toISOString().slice(11, 19);

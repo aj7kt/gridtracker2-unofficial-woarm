@@ -21,6 +21,8 @@ const NAMES = {
   "psk31-5.wav": "BPSK31",
   "rtty-5.wav": "RTTY 45/170",
   "rtty-variants.wav": "RTTY 50/75 Baud, 425/850 Hz",
+  "mfsk-3.wav": "MFSK16 / MFSK32",
+  "navtex.wav": "NAVTEX",
   "olivia-3.wav": "Olivia / Contestia",
   "olivia-16-500-wikimedia.wav": "Olivia 16/500",
   "olivia-32-1000-wikimedia.wav": "Olivia 32/1000",

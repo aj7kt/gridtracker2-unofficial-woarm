@@ -1,421 +1,5 @@
 {
     "$schema": "bands-schema.json",
-    "bandplans":
-[
-    {
-        "dxcc": [6,110,291],
-        "name": "United States Amateur Band Plan",
-        "classes": [
-            {"N":"Novice"},
-            {"T":"Technician"},
-            {"G":"General"},
-            {"A":"Advanced"},
-            {"E":"Amateur Extra"}
-        ],
-        "bands": [
-            {
-                "band": "2200m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [0.1357, 0.1378],
-                "classes": ["E","A","G"],
-                "note": "1W EIRP, must register with Utilities Technology Council before operating."
-            },
-            {
-                "band": "630m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [0.427, 0.479],
-                "classes": ["E","A","G"],
-                "note": "5W EIRP except Alaska within 496mi of Russia 1W EIRP, must register with Utilities Technology Council before operating."
-            },
-            {
-                "band": "160m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [1.8, 2],
-                "classes": ["E","A","G"],
-                "note": "Avoid interference to radiolocation operations from 1900 to 2000 kHz."
-            },
-            {
-                "band": "80m",
-                "modes":["CW","DIG"],
-                "freq": [3.5, 3.6],
-                "classes": ["E"]
-            },
-            {
-                "band": "80m",
-                "modes":["CW","DIG"],
-                "freq": [3.525, 3.6],
-                "classes": ["A","G"]
-            },
-            {
-                "band": "80m",
-                "modes":["CW"],
-                "freq": [3.525, 3.6],
-                "classes": ["T","N"],
-                "note": "Novices and Technicians are limited to 200W on 80m."
-            },
-            {
-                "band": "80m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [3.6, 4],
-                "classes": ["E"]
-            },
-            {
-                "band": "80m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [3.7, 4],
-                "classes": ["A"]
-            },
-            {
-                "band": "80m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [3.8, 4],
-                "classes": ["G"]
-            },
-            {
-                "band": "60m",
-                "modes":["CW","DIG","USB PHONE"],
-                "freq": [5.3305, 5.3335],
-                "classes": ["E","A","G"],
-                "note": "Amateurs may operate with a maximum of 100W ERP relative to a half-wave dipole."
-            },
-            {
-                "band": "60m",
-                "modes":["CW","DIG","USB PHONE"],
-                "freq": [5.3465, 5.3495],
-                "classes": ["E","A","G"],
-                "note": "Amateurs may operate with a maximum of 100W ERP relative to a half-wave dipole."
-            },
-            {
-                "band": "60m",
-                "modes":["CW","DIG","USB PHONE"],
-                "freq": [5.357, 5.36],
-                "classes": ["E","A","G"],
-                "note": "Amateurs may operate with a maximum of 100W ERP relative to a half-wave dipole."
-            },
-            {
-                "band": "60m",
-                "modes":["CW","DIG","USB PHONE"],
-                "freq": [5.3715, 5.3745],
-                "classes": ["E","A","G"],
-                "note": "Amateurs may operate with a maximum of 100W ERP relative to a half-wave dipole."
-            },
-            {
-                "band": "60m",
-                "modes":["CW","DIG","USB PHONE"],
-                "freq": [5.4035, 5.4065],
-                "classes": ["E","A","G"],
-                "note": "Amateurs may operate with a maximum of 100W ERP relative to a half-wave dipole."
-            },
-            {
-                "band": "40m",
-                "modes":["CW","DIG"],
-                "freq": [7, 7.125],
-                "classes": ["E"],
-                "note": "Region 2 only."
-            },
-            {
-                "band": "40m",
-                "modes":["CW","DIG"],
-                "freq": [7.025, 7.125],
-                "classes": ["A","G"],
-                "note": "Region 2 only."
-            },
-            {
-                "band": "40m",
-                "modes":["CW"],
-                "freq": [7.025, 7.125],
-                "classes": ["T","N"],
-                "note": "Region 2 only, Novices and Technicians are limited to 200W on 40m."
-            },
-            {
-                "band": "40m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [7.075, 7.1],
-                "classes": ["E","A","G"],
-                "note": "Only outside Region 2 or west of 130°W or below 20°N."
-            },
-            {
-                "band": "40m",
-                "modes":["CW"],
-                "freq": [7.025, 7.075],
-                "classes": ["T","N"],
-                "note": "Only outside Region 2 or west of 130°W or below 20°N, Novices and Technicians are limited to 200W on 40m."
-            },
-            {
-                "band": "40m",
-                "modes":["CW"],
-                "freq": [7.075, 7.125],
-                "classes": ["T","N"],
-                "note": "Only outside Region 2 or west of 130°W or below 20°N, Novices and Technicians are limited to 200W on 40m."
-            },
-            {
-                "band": "40m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [7.125, 7.3],
-                "classes": ["E","A"],
-                "note": "Region 2 only."
-            },
-            {
-                "band": "40m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [7.175, 7.3],
-                "classes": ["G"],
-                "note": "Region 2 only."
-            },
-            {
-                "band": "30m",
-                "modes":["CW","DIG"],
-                "freq": [10.1, 10.15],
-                "classes": ["E","A","G"],
-                "note": "Avoid interference to fixed services outside the US, Amateurs may operate with no more than 200W PEP."
-            },
-            {
-                "band": "20m",
-                "modes":["CW","DIG"],
-                "freq": [14, 14.15],
-                "classes": ["E"]
-            },
-            {
-                "band": "20m",
-                "modes":["CW","DIG"],
-                "freq": [14.025, 14.15],
-                "classes": ["A","G"]
-            },
-            {
-                "band": "20m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [14.15, 14.35],
-                "classes": ["E"]
-            },
-            {
-                "band": "20m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [14.175, 14.35],
-                "classes": ["A"]
-            },
-            {
-                "band": "20m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [14.225, 14.35],
-                "classes": ["G"]
-            },
-            {
-                "band": "17m",
-                "modes":["CW","DIG"],
-                "freq": [18.068, 18.11],
-                "classes": ["E","A","G"]
-            },
-            {
-                "band": "17m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [18.11, 18.168],
-                "classes": ["E","A","G"]
-            },
-            {
-                "band": "15m",
-                "modes":["CW","DIG"],
-                "freq": [21, 21.2],
-                "classes": ["E"]
-            },
-            {
-                "band": "15m",
-                "modes":["CW","DIG"],
-                "freq": [21.025, 21.2],
-                "classes": ["A","G"]
-            },
-            {
-                "band": "15m",
-                "modes":["CW"],
-                "freq": [21.025, 21.2],
-                "classes": ["T","N"],
-                "note": "Novices and Technicians are limited to 200W on 15m."
-            },
-            {
-                "band": "15m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [21.2, 21.45],
-                "classes": ["E"]
-            },
-            {
-                "band": "15m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [21.225, 21.45],
-                "classes": ["A"]
-            },
-            {
-                "band": "15m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [21.275, 21.45],
-                "classes": ["G"]
-            },
-            {
-                "band": "12m",
-                "modes":["CW","DIG"],
-                "freq": [24.89, 24.93],
-                "classes": ["E","A","G"]
-            },
-            {
-                "band": "12m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [24.93, 24.99],
-                "classes": ["E","A","G"]
-            },
-            {
-                "band": "10m",
-                "modes":["CW","DIG"],
-                "freq": [28, 28.3],
-                "classes": ["E","A","G","T","N"],
-                "note": "Novices and Technicians are limited to 200W on 10m."
-            },
-            {
-                "band": "10m",
-                "modes":["CW","PHONE","IMAGE"],
-                "freq": [28.3, 29.7],
-                "classes": ["E","A","G"]
-            },
-            {
-                "band": "10m",
-                "modes":["SSB PHONE"],
-                "freq": [28.3, 28.5],
-                "classes": ["T","N"],
-                "note": "Novices and Technicians are limited to 200W on 10m."
-            },
-            {
-                "band": "6m",
-                "modes":["CW"],
-                "freq": [50, 50.1],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "6m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [50.1, 54],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "2m",
-                "modes":["CW"],
-                "freq": [144, 144.1],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "2m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [144.1, 148],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "1.25m",
-                "modes":["Fixed Digital"],
-                "freq": [219, 220],
-                "classes": ["E","A","G","T"],
-                "note": "The 219-220MHz segment is limited to fixed digital message forwarding systems only."
-            },
-            {
-                "band": "1.25m",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [222, 225],
-                "classes": ["E","A","G","T","N"],
-                "note": "Novices are limited to 25W on 1.25m."
-            },
-            {
-                "band": "70cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [420, 450],
-                "classes": ["E","A","G","T"],
-                "note": "Geographical power restrictions apply, see FCC Part 97.303 for more information."
-            },
-            {
-                "band": "33cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [902, 928],
-                "classes": ["E","A","G","T"],
-                "note": "Geographical power restrictions apply, see FCC Part 97.303 for more information."
-            },
-            {
-                "band": "23cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [1240, 1300],
-                "classes": ["E","A","G","T"],
-                "note": "Geographical power restrictions apply, see FCC Part 97.303 for more information."
-            },
-            {
-                "band": "23cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [1270, 1295],
-                "classes": ["N"],
-                "note": "Novices are limited to 5W on 23cm."
-            },
-            {
-                "band": "13cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [2300, 2310],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "13cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [2390, 2450],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "9cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [3400, 3450],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "5cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [5650, 5925],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "3cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [10000, 10500],
-                "classes": ["E","A","G","T"],
-                "note": "Pulse emission not allowed."
-            },
-            {
-                "band": "1.2cm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [24000, 24250],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "6mm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [47000, 47200],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "4mm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [76000, 81000],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "2.5mm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [122250, 123000],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "2mm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [134000, 141000],
-                "classes": ["E","A","G","T"]
-            },
-            {
-                "band": "1mm",
-                "modes":["CW","DIG","PHONE","IMAGE"],
-                "freq": [241000, 250000],
-                "classes": ["E","A","G","T"]
-            }
-        ]
-    }
-],
     "frequencies":
 [
         {"mode": "CW", "band": "160m", "freq": 1.836, "rigMode": "CW", "note": "QRP calling (IARU)"},
@@ -428,6 +12,8 @@
         {"mode": "CW", "band": "12m", "freq": 24.906, "rigMode": "CW", "note": "QRP calling (IARU)"},
         {"mode": "CW", "band": "10m", "freq": 28.06, "rigMode": "CW", "note": "QRP calling (IARU)"},
         {"mode": "CW", "band": "6m", "freq": 50.09, "rigMode": "CW", "note": "CW calling"},
+        {"mode": "CW", "band": "160m", "freq": 1.81, "rigMode": "CW", "note": "QRP calling (ARRL)"},
+        {"mode": "CW", "band": "2m", "freq": 144.05, "rigMode": "CW", "note": "CW centre of activity (IARU R1)"},
         {"mode": "FT8", "band": "160m", "freq": 1.84, "rigMode": "USB"},
         {"mode": "FT8", "band": "80m", "freq": 3.573, "rigMode": "USB"},
         {"mode": "FT8", "band": "60m", "freq": 5.357, "rigMode": "USB"},
@@ -440,6 +26,18 @@
         {"mode": "FT8", "band": "10m", "freq": 28.074, "rigMode": "USB"},
         {"mode": "FT8", "band": "6m", "freq": 50.313, "rigMode": "USB"},
         {"mode": "FT8", "band": "2m", "freq": 144.174, "rigMode": "USB"},
+        {"mode": "FT8", "band": "80m", "freq": 3.567, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "40m", "freq": 7.056, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "30m", "freq": 10.131, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "20m", "freq": 14.09, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "17m", "freq": 18.095, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "15m", "freq": 21.091, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "12m", "freq": 24.911, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "10m", "freq": 28.091, "rigMode": "USB", "note": "DXpedition (Fox/Hound)"},
+        {"mode": "FT8", "band": "6m", "freq": 50.323, "rigMode": "USB", "note": "Intercontinental"},
+        {"mode": "FT8", "band": "4m", "freq": 70.154, "rigMode": "USB", "note": "IARU R1"},
+        {"mode": "FT8", "band": "1.25m", "freq": 222.174, "rigMode": "USB", "note": "IARU R2"},
+        {"mode": "FT8", "band": "70cm", "freq": 432.174, "rigMode": "USB"},
         {"mode": "FT4", "band": "80m", "freq": 3.575, "rigMode": "USB"},
         {"mode": "FT4", "band": "40m", "freq": 7.0475, "rigMode": "USB"},
         {"mode": "FT4", "band": "30m", "freq": 10.14, "rigMode": "USB"},
@@ -450,6 +48,8 @@
         {"mode": "FT4", "band": "10m", "freq": 28.18, "rigMode": "USB"},
         {"mode": "FT4", "band": "6m", "freq": 50.318, "rigMode": "USB"},
         {"mode": "FT4", "band": "2m", "freq": 144.17, "rigMode": "USB"},
+        {"mode": "FT4", "band": "80m", "freq": 3.568, "rigMode": "USB", "note": "IARU R3"},
+        {"mode": "FT4", "band": "60m", "freq": 5.357, "rigMode": "USB"},
         {"mode": "SSTV", "band": "160m", "freq": 1.89, "rigMode": "LSB"},
         {"mode": "SSTV", "band": "80m", "freq": 3.64, "rigMode": "LSB"},
         {"mode": "SSTV", "band": "80m", "freq": 3.845, "rigMode": "LSB"},
@@ -464,6 +64,11 @@
         {"mode": "SSTV", "band": "15m", "freq": 21.34, "rigMode": "USB"},
         {"mode": "SSTV", "band": "10m", "freq": 28.68, "rigMode": "USB"},
         {"mode": "SSTV", "band": "6m", "freq": 50.68, "rigMode": "USB"},
+        {"mode": "SSTV", "band": "80m", "freq": 3.73, "rigMode": "LSB", "note": "Europe (IARU R1)"},
+        {"mode": "SSTV", "band": "40m", "freq": 7.165, "rigMode": "LSB", "note": "Europe (IARU R1)"},
+        {"mode": "SSTV", "band": "20m", "freq": 14.227, "rigMode": "USB"},
+        {"mode": "SSTV", "band": "2m", "freq": 144.5, "rigMode": "USB", "note": "Image mode centre (IARU R1)"},
+        {"mode": "SSTV", "band": "2m", "freq": 145.8, "rigMode": "FM", "note": "ISS SSTV events"},
         {"mode": "PSK31", "band": "80m", "freq": 3.58, "rigMode": "USB"},
         {"mode": "PSK31", "band": "40m", "freq": 7.07, "rigMode": "USB"},
         {"mode": "PSK31", "band": "30m", "freq": 10.142, "rigMode": "USB"},
@@ -472,6 +77,13 @@
         {"mode": "PSK31", "band": "15m", "freq": 21.08, "rigMode": "USB"},
         {"mode": "PSK31", "band": "12m", "freq": 24.92, "rigMode": "USB"},
         {"mode": "PSK31", "band": "10m", "freq": 28.12, "rigMode": "USB"},
+        {"mode": "PSK31", "band": "160m", "freq": 1.838, "rigMode": "USB"},
+        {"mode": "PSK31", "band": "40m", "freq": 7.035, "rigMode": "USB", "note": "IARU R1/R3"},
+        {"mode": "PSK31", "band": "17m", "freq": 18.097, "rigMode": "USB", "note": "Moved from 18.100 (FT8)"},
+        {"mode": "PSK31", "band": "15m", "freq": 21.07, "rigMode": "USB"},
+        {"mode": "PSK31", "band": "6m", "freq": 50.29, "rigMode": "USB"},
+        {"mode": "PSK31", "band": "6m", "freq": 50.305, "rigMode": "USB", "note": "PSK centre of activity (IARU R1)"},
+        {"mode": "PSK31", "band": "2m", "freq": 144.144, "rigMode": "USB"},
         {"mode": "RTTY", "band": "80m", "freq": 3.59, "rigMode": "USB"},
         {"mode": "RTTY", "band": "40m", "freq": 7.04, "rigMode": "USB"},
         {"mode": "RTTY", "band": "30m", "freq": 10.14, "rigMode": "USB"},
@@ -480,23 +92,23 @@
         {"mode": "RTTY", "band": "15m", "freq": 21.085, "rigMode": "USB"},
         {"mode": "RTTY", "band": "12m", "freq": 24.92, "rigMode": "USB"},
         {"mode": "RTTY", "band": "10m", "freq": 28.085, "rigMode": "USB"},
+        {"mode": "RTTY", "band": "40m", "freq": 7.08, "rigMode": "USB", "note": "IARU R2"},
+        {"mode": "Packet", "band": "40m", "freq": 7.0486, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
         {"mode": "Packet", "band": "30m", "freq": 10.1476, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "20m", "freq": 14.103, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "10m", "freq": 28.14, "rigMode": "USB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "10m", "freq": 29.25, "rigMode": "FM", "note": "APRS, 1200 baud"},
         {"mode": "Packet", "band": "2m", "freq": 144.39, "rigMode": "FM", "note": "APRS: North America"},
         {"mode": "Packet", "band": "2m", "freq": 144.575, "rigMode": "FM", "note": "APRS: New Zealand"},
-        {"mode": "Packet", "band": "2m", "freq": 144.64, "rigMode": "FM", "note": "APRS: China, Japan"},
+        {"mode": "Packet", "band": "2m", "freq": 144.64, "rigMode": "FM", "note": "APRS: China, Taiwan"},
         {"mode": "Packet", "band": "2m", "freq": 144.8, "rigMode": "FM", "note": "APRS: Europe"},
         {"mode": "Packet", "band": "2m", "freq": 145.175, "rigMode": "FM", "note": "APRS: Australia"},
         {"mode": "Packet", "band": "2m", "freq": 145.825, "rigMode": "FM", "note": "ISS digipeater"},
-        {"mode": "JS8", "band": "160m", "freq": 1.842, "rigMode": "USB"},
-        {"mode": "JS8", "band": "80m", "freq": 3.578, "rigMode": "USB"},
-        {"mode": "JS8", "band": "40m", "freq": 7.078, "rigMode": "USB"},
-        {"mode": "JS8", "band": "30m", "freq": 10.13, "rigMode": "USB"},
-        {"mode": "JS8", "band": "20m", "freq": 14.078, "rigMode": "USB"},
-        {"mode": "JS8", "band": "17m", "freq": 18.104, "rigMode": "USB"},
-        {"mode": "JS8", "band": "15m", "freq": 21.078, "rigMode": "USB"},
-        {"mode": "JS8", "band": "12m", "freq": 24.922, "rigMode": "USB"},
-        {"mode": "JS8", "band": "10m", "freq": 28.078, "rigMode": "USB"},
-        {"mode": "JS8", "band": "6m", "freq": 50.318, "rigMode": "USB"},
+        {"mode": "Packet", "band": "2m", "freq": 144.66, "rigMode": "FM", "note": "APRS: Japan"},
+        {"mode": "Packet", "band": "2m", "freq": 144.93, "rigMode": "FM", "note": "APRS: Uruguay, Panama"},
+        {"mode": "Packet", "band": "2m", "freq": 145.57, "rigMode": "FM", "note": "APRS: Brazil"},
+        {"mode": "Packet", "band": "70cm", "freq": 432.5, "rigMode": "FM", "note": "APRS: Europe (IARU R1)"},
+        {"mode": "Packet", "band": "70cm", "freq": 437.825, "rigMode": "FM", "note": "ISS digipeater (UHF)"},
         {"mode": "WSPR", "band": "630m", "freq": 0.4742, "rigMode": "USB"},
         {"mode": "WSPR", "band": "160m", "freq": 1.8366, "rigMode": "USB"},
         {"mode": "WSPR", "band": "80m", "freq": 3.5686, "rigMode": "USB"},
@@ -509,6 +121,98 @@
         {"mode": "WSPR", "band": "12m", "freq": 24.9246, "rigMode": "USB"},
         {"mode": "WSPR", "band": "10m", "freq": 28.1246, "rigMode": "USB"},
         {"mode": "WSPR", "band": "6m", "freq": 50.293, "rigMode": "USB"},
-        {"mode": "WSPR", "band": "2m", "freq": 144.489, "rigMode": "USB"}
+        {"mode": "WSPR", "band": "2m", "freq": 144.489, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "2200m", "freq": 0.136, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "4m", "freq": 70.091, "rigMode": "USB", "note": "IARU R1"},
+        {"mode": "WSPR", "band": "70cm", "freq": 432.3, "rigMode": "USB"},
+        {"mode": "WEFAX", "band": "2 MHz", "freq": 2.0521, "rigMode": "USB", "note": "NOJ Kodiak, AK (2054)"},
+        {"mode": "WEFAX", "band": "2 MHz", "freq": 2.6166, "rigMode": "USB", "note": "GYA Northwood, UK (2618.5), 2200-0500 UTC"},
+        {"mode": "WEFAX", "band": "2 MHz", "freq": 2.6261, "rigMode": "USB", "note": "VMC Charleville, Australia (2628), night"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 3.5831, "rigMode": "USB", "note": "HLL2 Seoul, Korea (3585), 1200-0000 UTC"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 3.6206, "rigMode": "USB", "note": "JMH Tokyo, Japan (3622.5)"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 3.8531, "rigMode": "USB", "note": "DDH3 Pinneberg, Germany (3855)"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 4.2331, "rigMode": "USB", "note": "NMF Boston, MA (4235), 0230-1039 UTC"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 4.2961, "rigMode": "USB", "note": "NOJ Kodiak, AK (4298)"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 4.316, "rigMode": "USB", "note": "NMG New Orleans, LA (4317.9)"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 4.3441, "rigMode": "USB", "note": "NMC Point Reyes, CA (4346), 0140-1608 UTC"},
+        {"mode": "WEFAX", "band": "4 MHz", "freq": 4.6081, "rigMode": "USB", "note": "GYA Northwood, UK (4610)"},
+        {"mode": "WEFAX", "band": "6 MHz", "freq": 5.0981, "rigMode": "USB", "note": "VMC Charleville, Australia (5100)"},
+        {"mode": "WEFAX", "band": "6 MHz", "freq": 5.7531, "rigMode": "USB", "note": "VMW Wiluna, Australia (5755), night"},
+        {"mode": "WEFAX", "band": "6 MHz", "freq": 5.8556, "rigMode": "USB", "note": "HLL2 Seoul, Korea (5857.5)"},
+        {"mode": "WEFAX", "band": "6 MHz", "freq": 6.3386, "rigMode": "USB", "note": "NMF Boston, MA (6340.5)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 7.4316, "rigMode": "USB", "note": "HLL2 Seoul, Korea (7433.5)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 7.5331, "rigMode": "USB", "note": "VMW Wiluna, Australia (7535)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 7.7931, "rigMode": "USB", "note": "JMH2 Tokyo, Japan (7795)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 7.8781, "rigMode": "USB", "note": "DDK3 Pinneberg, Germany (7880)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 8.0381, "rigMode": "USB", "note": "GYA Northwood, UK (8040)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 8.4571, "rigMode": "USB", "note": "NOJ Kodiak, AK (8459)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 8.502, "rigMode": "USB", "note": "NMG New Orleans, LA (8503.9)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 8.6801, "rigMode": "USB", "note": "NMC Point Reyes, CA (8682)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 9.1081, "rigMode": "USB", "note": "NMF Boston, MA (9110)"},
+        {"mode": "WEFAX", "band": "8 MHz", "freq": 9.1631, "rigMode": "USB", "note": "HLL2 Seoul, Korea (9165)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 9.9806, "rigMode": "USB", "note": "KVM70 Honolulu, HI (9982.5), 0519-1556 UTC"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 10.5531, "rigMode": "USB", "note": "VMW Wiluna, Australia (10555)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 11.0281, "rigMode": "USB", "note": "VMC Charleville, Australia (11030)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 11.0846, "rigMode": "USB", "note": "GYA Northwood, UK (11086.5), 0600-2000 UTC"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 11.0881, "rigMode": "USB", "note": "KVM70 Honolulu, HI (11090)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 12.4106, "rigMode": "USB", "note": "NOJ Kodiak, AK (12412.5)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 12.7481, "rigMode": "USB", "note": "NMF Boston, MA (12750), 1400-2239 UTC"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 12.7841, "rigMode": "USB", "note": "NMC Point Reyes, CA (12786)"},
+        {"mode": "WEFAX", "band": "12 MHz", "freq": 12.788, "rigMode": "USB", "note": "NMG New Orleans, LA (12789.9)"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 13.5681, "rigMode": "USB", "note": "HLL2 Seoul, Korea (13570), 0000-1200 UTC"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 13.8806, "rigMode": "USB", "note": "DDK6 Pinneberg, Germany (13882.5)"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 13.9181, "rigMode": "USB", "note": "VMC Charleville, Australia (13920)"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 13.9866, "rigMode": "USB", "note": "JMH4 Tokyo, Japan (13988.5)"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 15.6131, "rigMode": "USB", "note": "VMW Wiluna, Australia (15615)"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 16.1331, "rigMode": "USB", "note": "KVM70 Honolulu, HI (16135), 1719-0356 UTC"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 17.1445, "rigMode": "USB", "note": "NMG New Orleans, LA (17146.4), 1200-2045 UTC"},
+        {"mode": "WEFAX", "band": "16 MHz", "freq": 17.1493, "rigMode": "USB", "note": "NMC Point Reyes, CA (17151.2)"},
+        {"mode": "WEFAX", "band": "18 MHz", "freq": 18.0581, "rigMode": "USB", "note": "VMW Wiluna, Australia (18060), day"},
+        {"mode": "WEFAX", "band": "22 MHz", "freq": 20.4671, "rigMode": "USB", "note": "VMC Charleville, Australia (20469), day"},
+        {"mode": "WEFAX", "band": "22 MHz", "freq": 22.5251, "rigMode": "USB", "note": "NMC Point Reyes, CA (22527), 1840-2356 UTC"},
+        {"mode": "NAVTEX", "band": "MF", "freq": 0.489, "rigMode": "USB", "note": "NAVTEX 490 kHz, national language"},
+        {"mode": "NAVTEX", "band": "MF", "freq": 0.517, "rigMode": "USB", "note": "NAVTEX 518 kHz, international (English)"},
+        {"mode": "NAVTEX", "band": "4 MHz", "freq": 4.2085, "rigMode": "USB", "note": "HF NAVTEX 4209.5 kHz"},
+        {"mode": "NAVTEX", "band": "4 MHz", "freq": 4.209, "rigMode": "USB", "note": "HF MSI 4210 kHz"},
+        {"mode": "NAVTEX", "band": "6 MHz", "freq": 6.313, "rigMode": "USB", "note": "HF MSI 6314 kHz"},
+        {"mode": "NAVTEX", "band": "8 MHz", "freq": 8.4155, "rigMode": "USB", "note": "HF MSI 8416.5 kHz"},
+        {"mode": "NAVTEX", "band": "12 MHz", "freq": 12.578, "rigMode": "USB", "note": "HF MSI 12579 kHz"},
+        {"mode": "NAVTEX", "band": "16 MHz", "freq": 16.8055, "rigMode": "USB", "note": "HF MSI 16806.5 kHz"},
+        {"mode": "NAVTEX", "band": "18 MHz", "freq": 19.6795, "rigMode": "USB", "note": "HF MSI 19680.5 kHz"},
+        {"mode": "NAVTEX", "band": "22 MHz", "freq": 22.375, "rigMode": "USB", "note": "HF MSI 22376 kHz"},
+        {"mode": "NAVTEX", "band": "25 MHz", "freq": 26.0995, "rigMode": "USB", "note": "HF MSI 26100.5 kHz"},
+        {"mode": "Feld-Hell", "band": "160m", "freq": 1.843, "rigMode": "USB", "note": "Feld Hell Club (1.843-1.844)"},
+        {"mode": "Feld-Hell", "band": "80m", "freq": 3.578, "rigMode": "USB", "note": "Feld Hell Club (3.578-3.586)"},
+        {"mode": "Feld-Hell", "band": "40m", "freq": 7.08, "rigMode": "USB", "note": "Feld Hell Club (7.080-7.090)"},
+        {"mode": "Feld-Hell", "band": "30m", "freq": 10.137, "rigMode": "USB", "note": "Feld Hell Club (10.137-10.143)"},
+        {"mode": "Feld-Hell", "band": "20m", "freq": 14.063, "rigMode": "USB", "note": "Feld Hell Club calling (14.063 and up to 14.069)"},
+        {"mode": "Feld-Hell", "band": "17m", "freq": 18.098, "rigMode": "USB", "note": "Feld Hell Club (18.098-18.105)"},
+        {"mode": "Feld-Hell", "band": "15m", "freq": 21.063, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "12m", "freq": 24.924, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "10m", "freq": 28.063, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "6m", "freq": 50.286, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "DominoEX", "band": "80m", "freq": 3.5845, "rigMode": "USB", "note": "THOR22 NBEMS net, Massachusetts RACES"},
+        {"mode": "MFSK", "band": "80m", "freq": 3.5975, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "MFSK", "band": "40m", "freq": 7.095, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "MFSK", "band": "30m", "freq": 10.147, "rigMode": "USB", "note": "MFSK16 (ZL usage)"},
+        {"mode": "MFSK", "band": "20m", "freq": 14.08, "rigMode": "USB", "note": "MFSK16 (ZL usage)"},
+        {"mode": "MFSK", "band": "20m", "freq": 14.095, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "MFSK", "band": "17m", "freq": 18.1025, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "MFSK", "band": "17m", "freq": 18.105, "rigMode": "USB", "note": "MFSK16 (ZL usage)"},
+        {"mode": "MFSK", "band": "15m", "freq": 21.08, "rigMode": "USB", "note": "MFSK16 (ZL usage)"},
+        {"mode": "MFSK", "band": "15m", "freq": 21.095, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "MFSK", "band": "10m", "freq": 28.095, "rigMode": "USB", "note": "W1AW bulletins, MFSK16"},
+        {"mode": "Olivia", "band": "160m", "freq": 1.8255, "rigMode": "USB", "note": "Calling 8/250, IARU R2"},
+        {"mode": "Olivia", "band": "160m", "freq": 1.8375, "rigMode": "USB", "note": "Calling 8/250, IARU R1"},
+        {"mode": "Olivia", "band": "80m", "freq": 3.5815, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "40m", "freq": 7.0385, "rigMode": "USB", "note": "Calling 8/250, IARU R2"},
+        {"mode": "Olivia", "band": "40m", "freq": 7.071, "rigMode": "USB", "note": "Calling 8/250, secondary"},
+        {"mode": "Olivia", "band": "30m", "freq": 10.1415, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "20m", "freq": 14.071, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "20m", "freq": 14.107, "rigMode": "USB", "note": "32/1000"},
+        {"mode": "Olivia", "band": "17m", "freq": 18.0975, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "15m", "freq": 21.071, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "12m", "freq": 24.921, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "10m", "freq": 28.121, "rigMode": "USB", "note": "Calling 8/250"}
 ]
 }

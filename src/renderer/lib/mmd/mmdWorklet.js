@@ -181,30 +181,6 @@ class CwDecoderProcessor extends AudioWorkletProcessor
 
 registerProcessor("cw-decoder", CwDecoderProcessor);
 
-// The background FT8 decoder's own input (mmdFt8Background.js, the window in another mode or closed, on another Input Device): the 12 kHz
-// stream alone, as cw-decoder's ft8audio, with no waterfall or decoding of its own
-class FtxFeedProcessor extends AudioWorkletProcessor
-{
-  constructor()
-  {
-    super();
-    this.seq = 0;
-    this.ft8Start(true);
-  }
-
-  process(inputs)
-  {
-    const input = inputs[0];
-    if (input && input.length > 0) this.ft8Feed(input[0]);
-    return true;
-  }
-}
-
-FtxFeedProcessor.prototype.ft8Start = CwDecoderProcessor.prototype.ft8Start;
-FtxFeedProcessor.prototype.ft8Feed = CwDecoderProcessor.prototype.ft8Feed;
-
-registerProcessor("ftx-feed", FtxFeedProcessor);
-
 // A SPY Server's I/Q (the page's mmdSpyIq: I and Q in turn, at the context's rate) made into the audio above its centre, as a rig in USB
 // gives it: a complex filter that passes the frequencies above 0 Hz and not those below (a half-band low-pass, cut at a quarter of the
 // rate, moved up by a quarter), its real part out. A half-band filter's taps are 0 at every even distance from its middle but the middle:

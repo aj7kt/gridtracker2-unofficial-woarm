@@ -1,7 +1,11 @@
 // PSK31 test signals (tools/make_test_signals.js): psk31-5.wav, five BPSK31 signals at once on different carriers, starting a moment
 // apart, two of them after their RSID (BPSK31). BPSK31 as sent: 31.25 symbols a second, a 0 a phase reversal and a 1 none, the size
 // following a raised cosine through each reversal (so the signal is about 60 Hz wide); text in varicode, each character followed by
-// 00; 32 reversals before the text and after it. pskSend() is used by mixed.js too. Fictional calls only (Q prefixes are never issued)
+// 00; 32 reversals before the text and after it. psk-variants.wav: PSK63 and PSK125 (BPSK31 sent two and four times as fast, two and
+// four times as wide) and QPSK31, two of each at once. QPSK31 (as Peter Martinez G3PLX describes PSK31's QPSK mode): the same varicode
+// through a rate 1/2 convolutional code (constraint length 5, generator polynomials 0x19 and 0x17), its two bits a symbol's phase change
+// (00 180 degrees, so a run of 0s is reversals as in BPSK; 10 none; 01 -90, 11 +90). pskSend() is used by mixed.js too. Fictional
+// calls only (Q prefixes are never issued)
 
 const PSK_BAUD = 31.25;
 // Varicode (PSK31's alphabet) for ASCII 0 to 127
@@ -25,6 +29,10 @@ const PSK_VARICODE = [
 ];
 const PSK_PREAMBLE = 32;
 const PSK_POSTAMBLE = 32;
+// QPSK31's convolutional code: the generator polynomials over the last five bits (the newest the lowest), and each pair of bits'
+// phase change (radians, by the first polynomial's bit times 2 plus the second's)
+const PSK_QPSK_POLYS = [0x19, 0x17];
+const PSK_QPSK_TURNS = [Math.PI, -Math.PI / 2, 0, Math.PI / 2];
 
 // The bits sent for text: the reversals before, each character's varicode and 00, the reversals after
 function pskBits(text)
@@ -38,16 +46,26 @@ function pskBits(text)
   return bits + "0".repeat(PSK_POSTAMBLE);
 }
 
-// The seconds text takes (with a symbol each to fade in and out)
-function pskSeconds(text)
+// The seconds text takes (with a symbol each to fade in and out), at baud
+function pskSeconds(text, baud = PSK_BAUD)
 {
-  return (pskBits(text).length + 2) / PSK_BAUD;
+  return (pskBits(text).length + 2) / baud;
 }
 
-// Text sent at freq (Hz) into s from at (seconds), amp its peak; returns the time it ends
-function pskSend(common, s, freq, text, at, amp)
+// A bit's parity (the number of 1s, odd or even)
+function pskParity(v)
 {
-  const sps = common.RATE / PSK_BAUD;
+  let p = 0;
+  for (; v; v >>= 1) p ^= v & 1;
+  return p;
+}
+
+// Text sent at freq (Hz) into s from at (seconds), amp its peak; returns the time it ends. opts: baud (31.25), qpsk (false)
+function pskSend(common, s, freq, text, at, amp, opts = {})
+{
+  if (opts.qpsk) return pskSendQpsk(common, s, freq, text, at, amp, opts.baud || PSK_BAUD);
+  const baud = opts.baud || PSK_BAUD;
+  const sps = common.RATE / baud;
   // The levels symbol by symbol: 0 (off), then +-1, then 0 again
   const levels = [0];
   let level = 1;
@@ -70,7 +88,40 @@ function pskSend(common, s, freq, text, at, amp)
       s[i] += amp * env * Math.sin((2 * Math.PI * freq * i) / common.RATE);
     }
   }
-  return at + (levels.length - 1) / PSK_BAUD;
+  return at + (levels.length - 1) / baud;
+}
+
+// QPSK: each bit into the encoder, its two bits the phase change; the size and phase moving from one symbol's point to the next's
+// along a raised cosine (as BPSK's do)
+function pskSendQpsk(common, s, freq, text, at, amp, baud)
+{
+  const sps = common.RATE / baud;
+  const points = [[0, 0]];
+  let phase = 0;
+  let reg = 0;
+  points.push([1, 0]);
+  for (const b of pskBits(text))
+  {
+    reg = ((reg << 1) | (b == "1" ? 1 : 0)) & 31;
+    phase += PSK_QPSK_TURNS[(pskParity(reg & PSK_QPSK_POLYS[0]) << 1) | pskParity(reg & PSK_QPSK_POLYS[1])];
+    points.push([Math.cos(phase), Math.sin(phase)]);
+  }
+  points.push([0, 0]);
+  const start = Math.round(at * common.RATE);
+  for (let k = 1; k < points.length; k++)
+  {
+    const prev = points[k - 1], cur = points[k];
+    const a = start + Math.round((k - 1) * sps), b = start + Math.round(k * sps);
+    for (let i = a; i < b && i < s.length; i++)
+    {
+      const c = Math.cos((Math.PI * (i - a)) / (b - a));
+      const re = (prev[0] * (1 + c)) / 2 + (cur[0] * (1 - c)) / 2;
+      const im = (prev[1] * (1 + c)) / 2 + (cur[1] * (1 - c)) / 2;
+      const w = (2 * Math.PI * freq * i) / common.RATE;
+      s[i] += amp * (re * Math.sin(w) + im * Math.cos(w));
+    }
+  }
+  return at + (points.length - 1) / baud;
 }
 
 // The five: [carrier Hz, start (s), peak, RSID first, text]
@@ -80,6 +131,16 @@ const PSK_SIGNALS = [
   [1250, 1.5, 0.2, false, "CQ CQ de Q3XYZ Q3XYZ Q3XYZ pse k"],
   [1650, 4.5, 0.16, true, "Q3XYZ de Q4KLM tnx fer call, rst 579 579 op Ed qth Nowhere btu"],
   [2100, 2.0, 0.17, false, "GRIDTRACKER2 TEST SIGNAL de N0CALL 73"]
+];
+
+// psk-variants.wav's six: [carrier Hz, baud, QPSK, start (s), peak, text]
+const PSK_VARIANTS = [
+  [600, 62.5, false, 1.0, 0.18, "CQ CQ CQ de Q5SIX Q5SIX Q5SIX PSK63 pse k"],
+  [900, 31.25, true, 2.0, 0.18, "CQ CQ de Q6QPK Q6QPK QPSK31 pse k"],
+  [1300, 125, false, 1.5, 0.2, "Q7FST de Q7FST PSK125 test, 599 599 name Bo qth Nowhere btu"],
+  [1750, 62.5, false, 3.0, 0.16, "Q5SIX de Q8ABC ur 579 579 op Di, hw? btu"],
+  [2250, 125, false, 4.0, 0.17, "GRIDTRACKER2 PSK125 TEST SIGNAL de Q9XYZ 73"],
+  [2700, 31.25, true, 0.5, 0.17, "Q6QPK de Q4KLM tnx fer call 73"]
 ];
 
 // BPSK31's RSID number
@@ -97,6 +158,10 @@ function build(common)
   }
   common.noise(s, 0.02, 21);
   common.normalize(s, 0.7);
+  const v = common.buffer(Math.max(20, Math.ceil(Math.max(...PSK_VARIANTS.map(([, baud, , at, , text]) => at + pskSeconds(text, baud))) + 1.5)));
+  for (const [freq, baud, qpsk, at, amp, text] of PSK_VARIANTS) pskSend(common, v, freq, text, at, amp, { baud, qpsk });
+  common.noise(v, 0.02, 22);
+  common.normalize(v, 0.7);
   return [{
     file: "psk31-5.wav",
     modes: ["psk31"],
@@ -106,6 +171,17 @@ function build(common)
     description: "Five BPSK31 signals at once (" + PSK_SIGNALS.map(([f]) => f).join(", ") + " Hz), those at " +
       PSK_SIGNALS.filter((p) => p[3]).map(([f]) => f).join(" and ") + " Hz after their RSID",
     samples: s
+  }, {
+    file: "psk-variants.wav",
+    name: "PSK63, PSK125, QPSK31",
+    modes: ["psk31"],
+    signals: PSK_VARIANTS.length,
+    rsid: false,
+    sync: null,
+    description: "PSK63 at " + PSK_VARIANTS.filter((p) => p[1] == 62.5).map(([f]) => f).join(" and ") + " Hz, PSK125 at " +
+      PSK_VARIANTS.filter((p) => p[1] == 125).map(([f]) => f).join(" and ") + " Hz and QPSK31 at " +
+      PSK_VARIANTS.filter((p) => p[2]).map(([f]) => f).join(" and ") + " Hz, all at once",
+    samples: v
   }];
 }
 

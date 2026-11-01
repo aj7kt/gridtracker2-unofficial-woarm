@@ -75,6 +75,32 @@
       "source": "generated"
     },
     {
+      "file": "feld-hell.wav",
+      "module": "hell",
+      "name": "Feld-Hell",
+      "modes": [
+        "hell"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Feld-Hell at 1000 Hz: a CQ from Q1HEL and a reply from Q2ABC",
+      "source": "generated"
+    },
+    {
+      "file": "mfsk-3.wav",
+      "module": "mfsk",
+      "name": "MFSK16 / MFSK32",
+      "modes": [
+        "mfsk"
+      ],
+      "signals": 3,
+      "rsid": false,
+      "sync": null,
+      "description": "Three MFSK signals a moment apart: MFSK16 at 700 Hz, MFSK32 at 1500 Hz, MFSK16 at 2300 Hz",
+      "source": "generated"
+    },
+    {
       "file": "mixed-rsid.wav",
       "module": "mixed",
       "name": "CW + PSK31 + RTTY + Olivia",
@@ -88,6 +114,19 @@
       "rsid": true,
       "sync": null,
       "description": "CW at 500 Hz, then after their RSIDs PSK31 at 900 Hz, RTTY centred on 1400 Hz and Olivia 8/500 at 2100 Hz, all at once",
+      "source": "generated"
+    },
+    {
+      "file": "navtex.wav",
+      "module": "navtex",
+      "name": "NAVTEX",
+      "modes": [
+        "navtex"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "A NAVTEX broadcast (SITOR B, 100 baud, 170 Hz shift) centred on 1000 Hz: phasing, then a test message ZCZC QA01 from a fictional station",
       "source": "generated"
     },
     {
@@ -140,6 +179,19 @@
       "rsid": true,
       "sync": null,
       "description": "Five BPSK31 signals at once (600, 900, 1250, 1650, 2100 Hz), those at 600 and 1650 Hz after their RSID",
+      "source": "generated"
+    },
+    {
+      "file": "psk-variants.wav",
+      "module": "psk31",
+      "name": "PSK63, PSK125, QPSK31",
+      "modes": [
+        "psk31"
+      ],
+      "signals": 6,
+      "rsid": false,
+      "sync": null,
+      "description": "PSK63 at 600 and 1750 Hz, PSK125 at 1300 and 2250 Hz and QPSK31 at 900 and 2700 Hz, all at once",
       "source": "generated"
     },
     {
@@ -218,6 +270,32 @@
       "rsid": false,
       "sync": null,
       "description": "SSTV Robot 36 (VIS code 8, 1500 to 2300 Hz): a test card, colour bars, a grey ramp, a grid, GRIDTRACKER2 and TEST",
+      "source": "generated"
+    },
+    {
+      "file": "dominoex-thor.wav",
+      "module": "thor",
+      "name": "DominoEX / THOR",
+      "modes": [
+        "thor"
+      ],
+      "signals": 6,
+      "rsid": false,
+      "sync": null,
+      "description": "DominoEX and THOR at several speeds, two or three at once: DominoEX 11 at 800 Hz, THOR 16 at 1500 Hz, DominoEX 22 at 2300 Hz, DominoEX 8 at 1150 Hz, THOR 11 at 2000 Hz, DominoEX 16 at 2700 Hz",
+      "source": "generated"
+    },
+    {
+      "file": "wefax.wav",
+      "module": "wefax",
+      "name": "WEFAX 120 LPM, IOC 576",
+      "modes": [
+        "wefax"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Weather fax (HF radiofax, 120 LPM, IOC 576, black 1500 Hz to white 2300 Hz): start tone, 10 s of phasing, an 80 line test chart (GRIDTRACKER2 TEST, gray steps, a grid, rings), stop tone",
       "source": "generated"
     }
   ]
