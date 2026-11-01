@@ -37,8 +37,8 @@ const SSTV = {
   set viewing(id) { this.views[mmdSstvKind()] = id; },
   live: null,   // the one coming in
   drawn: null,  // where the picture shown was drawn on sstvPicture (device pixels: x, y, w, h), and which
-  // WEFAX by hand (this session's): Trim (ppm), and where the chart coming in is lined up (align: its lines moved left by this share of
-  // one; a new chart starts at 0, its phasing lines up the rest)
+  // WEFAX by hand: Trim (ppm; kept across restarts in MMD.wefaxTrim, read in mmdSstvInit), and where the chart coming in is lined up
+  // (align, this session's: its lines moved left by this share of one; a new chart starts at 0, its phasing lines up the rest)
   wefaxTrim: 0,
   wefaxAlign: 0,
   status: { state: "idle", snr: -20, line: 0, lines: 0 },
@@ -48,6 +48,9 @@ const SSTV = {
 
 function mmdSstvInit()
 {
+  // WEFAX's Trim as it was last set
+  const trim = Number(GT.settings.MMD.wefaxTrim);
+  SSTV.wefaxTrim = Number.isFinite(trim) ? Math.max(-WEFAX_TRIM_MAX, Math.min(WEFAX_TRIM_MAX, Math.round(trim / WEFAX_TRIM_STEP) * WEFAX_TRIM_STEP)) : 0;
   // A click: on a WEFAX chart coming in, its left edge set there; else back to the newest
   sstvPicture.addEventListener("click", (event) =>
   {
@@ -167,6 +170,8 @@ function mmdSstvMessage(kind, m)
     pic.rows = Math.max(pic.rows, m.count);
   }
   if (wefax) pic.height = pic.rows;
+  // A turned one's thumbnail kept up with it as it comes in
+  if (m.type == "rows" || m.type == "redraw") mmdSstvThumbTurned(pic);
   if (m.type == "done")
   {
     pic.complete = m.complete;
@@ -228,12 +233,30 @@ function mmdSstvDraw()
     const room = Math.max(1, h - top);
     // (A WEFAX chart: the lines it has so far; until it has a few, as if it were as long as it is wide)
     const height = pic.kind == "wefax" ? Math.max(pic.rows, 1) : pic.height;
-    const shape = pic.kind == "wefax" ? Math.max(height, pic.width / 2) : height;
-    const scale = Math.min(w / pic.width, room / shape);
-    const dw = pic.width * scale, dh = height * scale;
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(pic.canvas, 0, 0, pic.width, height, (w - dw) / 2, top + (room - shape * scale) / 2, dw, dh);
-    SSTV.drawn = { x: (w - dw) / 2, y: top + (room - shape * scale) / 2, w: dw, h: dh, pic };
+    const rotate = pic.rotate || 0;
+    if (!rotate)
+    {
+      const shape = pic.kind == "wefax" ? Math.max(height, pic.width / 2) : height;
+      const scale = Math.min(w / pic.width, room / shape);
+      const dw = pic.width * scale, dh = height * scale;
+      ctx.drawImage(pic.canvas, 0, 0, pic.width, height, (w - dw) / 2, top + (room - shape * scale) / 2, dw, dh);
+      SSTV.drawn = { x: (w - dw) / 2, y: top + (room - shape * scale) / 2, w: dw, h: dh, pic, rotate: 0 };
+    }
+    else
+    {
+      // Turned (mmdSstvRotate): fitted as it is shown, drawn about its middle
+      const turned = rotate % 180 != 0;
+      const sw = turned ? height : pic.width, sh = turned ? pic.width : height;
+      const scale = Math.min(w / sw, room / sh);
+      const bw = sw * scale, bh = sh * scale, bx = (w - bw) / 2, by = top + (room - bh) / 2;
+      ctx.save();
+      ctx.translate(bx + bw / 2, by + bh / 2);
+      ctx.rotate((rotate * Math.PI) / 180);
+      ctx.drawImage(pic.canvas, 0, 0, pic.width, height, (-pic.width * scale) / 2, (-height * scale) / 2, pic.width * scale, height * scale);
+      ctx.restore();
+      SSTV.drawn = { x: bx, y: by, w: bw, h: bh, pic, rotate };
+    }
     // (Its tooltip says what a click does: WEFAX's lines up the chart coming in)
     const tip = I18N(pic.kind == "wefax" ? "cwViewer.wefax.picture.hover" : "cwViewer.sstv.picture.hover");
     if (sstvPicture.title != tip) sstvPicture.title = tip;
@@ -290,7 +313,11 @@ function mmdSstvStrip()
     const item = document.createElement("div");
     item.className = "sstvThumb" + (pic == shown ? " sstvThumbShown" : "");
     item.title = mmdSstvDescribe(pic);
-    item.appendChild(pic.canvas);
+    // (Turned: a turned copy, made again as the strip is and, while it comes in, every SSTV_THUMB_TURNED_MS (mmdSstvThumbTurned); else the
+    // picture's own canvas, which shows its rows as they come)
+    pic.thumb = pic.rotate ? mmdSstvTurned(pic) : null;
+    pic.thumbAt = Date.now();
+    item.appendChild(pic.thumb || pic.canvas);
     item.addEventListener("click", () => mmdSstvView(pic == SSTV.pictures[0] ? null : pic.id));
     item.addEventListener("contextmenu", (event) => mmdSstvMenu(event, pic));
     sstvStrip.appendChild(item);
@@ -328,27 +355,82 @@ function mmdSstvHead()
   sstvHeadText.textContent = text;
 }
 
-// The right-click on a picture: Save Picture..., Copy To Clipboard, Delete
+// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Delete
 function mmdSstvMenu(event, pic)
 {
   event.preventDefault();
   event.stopPropagation();
   if (!pic) return;
   const remote = window.require("@electron/remote");
+  // Rotate: turned from as it is now, or back as it was received
+  const turn = (by) => ({ click: () => mmdSstvRotate(pic, by == null ? null : ((pic.rotate || 0) + by) % 360) });
   const menu = remote.Menu.buildFromTemplate([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdSstvSaveAs(pic) },
     { label: I18N("cwViewer.picture.copy.label"), click: () => mmdSstvCopy(pic) },
+    {
+      label: I18N("cwViewer.picture.rotate.label"),
+      submenu: [
+        Object.assign({ label: I18N("cwViewer.picture.rotateRight.label") }, turn(90)),
+        Object.assign({ label: I18N("cwViewer.picture.rotateLeft.label") }, turn(270)),
+        Object.assign({ label: I18N("cwViewer.picture.rotateHalf.label") }, turn(180)),
+        Object.assign({ label: I18N("cwViewer.picture.rotateNone.label"), enabled: !!pic.rotate }, turn(null))
+      ]
+    },
     { type: "separator" },
     { label: I18N("cwViewer.picture.delete.label"), click: () => mmdSstvDelete(pic) }
   ]);
   menu.popup({ window: remote.getCurrentWindow() });
 }
 
+// A turned picture's thumbnail made again with the rows that have come since, at most every SSTV_THUMB_TURNED_MS
+const SSTV_THUMB_TURNED_MS = 3000;
+
+function mmdSstvThumbTurned(pic)
+{
+  if (!pic.rotate || !pic.thumb || !pic.thumb.parentNode || Date.now() - pic.thumbAt < SSTV_THUMB_TURNED_MS) return;
+  const fresh = mmdSstvTurned(pic);
+  pic.thumb.parentNode.replaceChild(fresh, pic.thumb);
+  pic.thumb = fresh;
+  pic.thumbAt = Date.now();
+}
+
+// A picture turned (degrees clockwise: 0, 90, 180, 270; null as received): shown, in the strip, and saved or copied that way. A file
+// saved already stays as it was
+function mmdSstvRotate(pic, degrees)
+{
+  pic.rotate = degrees || 0;
+  mmdSstvStrip();
+  mmdSstvDraw();
+}
+
+// The picture as far as it came (a WEFAX chart: the rows received; its canvas grows WEFAX_GROW_ROWS at a time, white below them), turned
+// as it is shown: a canvas of its own
+function mmdSstvTurned(pic)
+{
+  const rows = pic.kind == "wefax" && pic.rows > 0 ? Math.min(pic.rows, pic.canvas.height) : pic.canvas.height;
+  const width = pic.canvas.width, rotate = pic.rotate || 0, turned = rotate % 180 != 0;
+  const canvas = document.createElement("canvas");
+  canvas.width = turned ? rows : width;
+  canvas.height = turned ? width : rows;
+  const ctx = canvas.getContext("2d");
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((rotate * Math.PI) / 180);
+  ctx.drawImage(pic.canvas, 0, 0, width, rows, -width / 2, -rows / 2, width, rows);
+  return canvas;
+}
+
 // The picture (as much of it as came) onto the clipboard as an image
 function mmdSstvCopy(pic)
 {
   const electron = window.require("electron");
-  electron.clipboard.writeImage(electron.nativeImage.createFromDataURL(pic.canvas.toDataURL("image/png")));
+  electron.clipboard.writeImage(electron.nativeImage.createFromDataURL(mmdSstvPng(pic)));
+}
+
+// The picture as a PNG data URL, as it is shown: a WEFAX chart only as far as its rows came, and turned if it is (mmdSstvTurned)
+function mmdSstvPng(pic)
+{
+  if (!pic.rotate && (pic.kind != "wefax" || !(pic.rows > 0) || pic.rows >= pic.canvas.height)) return pic.canvas.toDataURL("image/png");
+  return mmdSstvTurned(pic).toDataURL("image/png");
 }
 
 // Off the strip (one still coming in: the rest of it isn't shown); the newest shown large if it was the one shown. A file saved stays
@@ -388,7 +470,7 @@ function mmdSstvSave(pic, file)
     if (!file) file = path.join(window.opener.mmDecoderSstvFolder(), mmdSstvFileName(pic));
     // Its folder made first, whichever it is (one taken away since, or never made)
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    const data = pic.canvas.toDataURL("image/png").split(",")[1];
+    const data = mmdSstvPng(pic).split(",")[1];
     fs.writeFileSync(file, window.require("buffer").Buffer.from(data, "base64"));
     pic.saved = file;
     mmdSstvDraw();
@@ -438,10 +520,11 @@ function mmdWefaxConfig(extra)
   worker.postMessage(Object.assign({ type: "config", lpm: S.wefaxLpm || "auto", ioc: S.wefaxIoc || "auto", trim: SSTV.wefaxTrim, align: SSTV.wefaxAlign }, extra));
 }
 
-// Trim: the chart's slant (step: -1 or 1; 0 back to none), drawn again at once
+// Trim: the chart's slant (step: -1 or 1; 0 back to none), drawn again at once, and kept for the next start (MMD.wefaxTrim)
 function mmdWefaxTrimStep(step)
 {
   SSTV.wefaxTrim = step == 0 ? 0 : Math.max(-WEFAX_TRIM_MAX, Math.min(WEFAX_TRIM_MAX, SSTV.wefaxTrim + step * WEFAX_TRIM_STEP));
+  GT.settings.MMD.wefaxTrim = SSTV.wefaxTrim;
   cwWefaxTrimValue.textContent = (SSTV.wefaxTrim > 0 ? "+" : "") + SSTV.wefaxTrim;
   mmdWefaxConfig({});
 }
@@ -453,7 +536,9 @@ function mmdWefaxAlignAt(event)
   const d = SSTV.drawn;
   if (DEC.mode != "wefax" || !d || !d.pic || d.pic != SSTV.live || SSTV.viewing) return false;
   const ratio = window.devicePixelRatio || 1;
-  const share = (event.offsetX * ratio - d.x) / d.w;
+  // Where across the chart's lines the click was, the chart's turning undone (90° right: its lines run down the screen)
+  const across = (event.offsetX * ratio - d.x) / d.w, down = (event.offsetY * ratio - d.y) / d.h;
+  const share = { 0: across, 90: down, 180: 1 - across, 270: 1 - down }[d.rotate || 0];
   if (!(share >= 0 && share <= 1)) return false;
   SSTV.wefaxAlign = (SSTV.wefaxAlign + share) % 1;
   mmdWefaxConfig({});

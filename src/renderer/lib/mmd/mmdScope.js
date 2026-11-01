@@ -76,8 +76,12 @@ function mmdScopeTick()
   const fixed = !status.center;
   mmdScopeButton(mmdScopeNarrow, !fixed && status.state == "ok", fixed ? "cwViewer.scope.fixed.hover" : "cwViewer.scope.narrow.hover");
   mmdScopeButton(mmdScopeWider, !fixed && status.state == "ok", fixed ? "cwViewer.scope.fixed.hover" : "cwViewer.scope.wider.hover");
-  const label = status.span != null && !fixed ? "±" + mmdScopeHz(status.span) : "";
-  if (mmdScopeSpanText.textContent != label) mmdScopeSpanText.textContent = label;
+  // The span either side: −500 kHz at the left edge (after −), +500 kHz at the right (before +)
+  const span = status.span != null && !fixed ? mmdScopeHz(status.span) : "";
+  const low = span ? "−" + span : "";
+  const high = span ? "+" + span : "";
+  if (mmdScopeSpanLow.textContent != low) mmdScopeSpanLow.textContent = low;
+  if (mmdScopeSpanHigh.textContent != high) mmdScopeSpanHigh.textContent = high;
   // Why none comes, in yellow (waiting: gray)
   const why = { waiting: "cwViewer.scope.waiting", noRig: "cwViewer.scope.noRig", slow: "rig.scope.slow", refused: "rig.scope.refused", radioOff: "rig.scope.radioOff" }[status.state];
   const text = why ? I18N(why) : "";

@@ -87,6 +87,8 @@ function lookupValueChanged()
 
 function lookupCallsign(callsign, gridPass, useCache = true)
 {
+  // As a call is stored and looked up everywhere else: no spaces around it (pasted), in capitals (the prefix lookup is case-sensitive)
+  callsign = String(callsign).trim().toUpperCase();
   if (GT.settings.map.offlineMode == true && useCache == false) return;
   GT.lastLookupCallsign = callsign;
 

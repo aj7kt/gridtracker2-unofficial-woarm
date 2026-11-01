@@ -1267,6 +1267,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <template id="rigVfoTemplate">
                 <div class="rigVfoBox">
                   <div class="rigVfoTitle"><span data-f="Title"></span> <input data-f="Name" type="text" class="inputTextValue" size="10" maxlength="20" data-i18n="settings.rig.vfoName.hover" title="Your own name for this VFO, shown after its letter: VFO-C (SDR)" onchange="rigVfoNameChanged(this);" />
+                    <span data-f="MoveUp" class="rigVfoMove" data-i18n="settings.rig.moveUp.hover" title="Moves this VFO up: BirdWatch uses the VFOs higher in the list first" onclick="rigVfoMove(this, -1);">▲</span><span data-f="MoveDown" class="rigVfoMove" data-i18n="settings.rig.moveDown.hover" title="Moves this VFO down" onclick="rigVfoMove(this, 1);">▼</span>
                     <span class="rigVfoConnect"><input data-f="Connect" data-i18n="settings.rig.connect.hover" title="Uncheck to disconnect the rig and change its settings; checked, they are locked and the rig is connected with them" type="checkbox" onclick="rigConnectChanged(this);" /> <label data-for="Connect" data-i18n="settings.rig.connect.label">Connect</label> <span data-f="Remove" class="rigVfoRemove" data-i18n="settings.rig.removeVfo.hover" title="Removes this VFO" onclick="rigVfoRemove(this);">✕</span></span></div>
                   <table>
                     <tr data-f="SourceTr">
@@ -1345,6 +1346,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     <tr data-f="SsbTr">
                       <td class="mapRowLabel mapIndent" data-i18n="settings.rig.ssb.label">SSB</td>
                       <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="SsbData" data-i18n="settings.rig.ssbData.hover" title="Digital modes use the data mode (USB-D) on this VFO" onclick="rigSsbDataChanged(this);" /> <label data-for="SsbData" data-i18n="settings.rig.ssbData.label">Data</label></td>
+                    </tr>
+                    <!-- What BirdWatch uses this VFO for (rig.js, rigSatRender): ranges on the air to receive, transmit or both, every frequency
+                         receive only until changed; the list's order is the priority -->
+                    <tr data-f="SatTr">
+                      <td class="mapRowLabel mapIndent" data-i18n="settings.rig.sat.label">Satellites</td>
+                      <td style="white-space: normal; max-width: 340px;"><div data-f="SatList"></div>
+                        <div><select data-f="SatBand" data-i18n="settings.rig.sat.hover" title="What BirdWatch may use this VFO for: a band, every frequency, or a range of your own, to receive, transmit or both. The first VFO in the list that fits is used, unless a transmitter has a VFO picked of its own" onchange="rigSatBandChanged(this);"></select>
+                          <span data-f="SatCustom" style="display: none;"><input data-f="SatLo" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.lo.hover" title="From, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> - <input data-f="SatHi" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.hi.hover" title="To, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> MHz</span>
+                          <select data-f="SatDir"></select>
+                          <span class="button mapInlineButton" data-i18n="settings.rig.sat.add.hover" title="Adds the range picked" onclick="rigSatAdd(this);"><span data-i18n="settings.bands.add.label">Add</span></span></div></td>
                     </tr>
                   </table>
                 </div>
@@ -2492,13 +2503,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- BirdWatch's tabs (birdWatch.js): in its colors, shown while BirdWatch is on -->
       <div id="birdWatchGeneralDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
         <div class="mapGroups">
-          <!-- Rig Control's VFOs that follow the satellite (birdWatchLog.js, birdWatchRigVfosRender): the downlink's and the uplink's, None for a
-               side not followed. The title's box (as Footprint's): the rig follows Auto-Track's pick too (birdWatchStickyFollow) -->
+          <!-- Rig Control: the rig follows the selected satellite; the VFOs it uses are each VFO's Satellites (Settings, Rig Control) and a
+               transmitter's own picks (rig.js, rigRoles). The title's box (as Footprint's): the rig follows Auto-Track's pick too (birdWatchStickyFollow) -->
           <div class="mapGroup">
             <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchAutoRigValue" style="margin: 0;" data-i18n="birdWatch.auto.rig.hover" title="A satellite Auto-Track selects is followed by the rig too (with Rig Control), as a satellite you select is; off, Auto-Track only selects it" onclick="birdWatchAutoRigChange()" /><label for="birdWatchAutoRigValue" data-i18n="settings.rig.label">Rig Control</label></div>
             <table class="mapChecks">
-              <tr><td><label data-i18n="birdWatch.rig.downlink.label" for="birdWatchDownlinkVfo">Downlink</label></td><td><select id="birdWatchDownlinkVfo" data-i18n="birdWatch.rig.downlink.hover" title="The VFO that follows the satellite's downlink (its frequency, Doppler and mode)" onchange="birdWatchRigVfosChange()"></select></td></tr>
-              <tr><td><label data-i18n="birdWatch.rig.uplink.label" for="birdWatchUplinkVfo">Uplink</label></td><td><select id="birdWatchUplinkVfo" data-i18n="birdWatch.rig.uplink.hover" title="The VFO that follows the satellite's uplink (its frequency, Doppler, mode and tone): another VFO than the downlink's" onchange="birdWatchRigVfosChange()"></select></td></tr>
+              <tr><td colspan="2" style="white-space: normal; max-width: 300px; color: #ccc;" data-i18n="birdWatch.rig.vfos.note">Each VFO's Satellites row (Settings, Rig Control) says what it receives and transmits on; the first in the list that fits is used. Right-click a transmitter's downlink or uplink to pick its own VFO</td></tr>
               <tr><td colspan="2"><input type="checkbox" id="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.hover" title="Turning one VFO's dial tunes the other with it, for a linear transponder: the change scaled by the two frequencies, the other way for an inverting one. Both keep following the Doppler" onclick="birdWatchLockVfosSet(this.checked)" /> <label for="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.label">Lock VFOs</label></td></tr>
             </table>
           </div>

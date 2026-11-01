@@ -47,8 +47,23 @@
         document.getElementById("birdTx").addEventListener("click", (event) =>
         {
           const cell = event.target.closest("[data-part]");
-          const row = cell && cell.closest("tr[data-tx]");
-          if (row) window.opener.birdWatchDopplerClick(Number(row.dataset.tx), cell.dataset.part);
+          const row = cell && cell.closest("tr[data-uuid]");
+          if (row) window.opener.birdWatchDopplerClick(row.dataset.uuid, cell.dataset.part);
+        });
+        // A right-click on a downlink or an uplink: the VFO it goes to picked for this transmitter (birdWatchPinChoices), or Automatic
+        document.getElementById("birdTx").addEventListener("contextmenu", (event) =>
+        {
+          const cell = event.target.closest("[data-part='rx'], [data-part='tx']");
+          const row = cell && cell.closest("tr[data-uuid]");
+          if (!row) return;
+          const uuid = row.dataset.uuid;
+          const side = cell.dataset.part;
+          const pick = window.opener.birdWatchPinChoices(uuid, side);
+          if (!pick) return;
+          const remote = window.require("@electron/remote");
+          const items = pick.items.map((item) => ({ label: item.label, type: "radio", checked: item.checked, enabled: item.enabled !== false, click: () => window.opener.birdWatchPinSet(uuid, side, item.id) }));
+          const menu = remote.Menu.buildFromTemplate([{ label: pick.title, enabled: false }, { type: "separator" }].concat(items));
+          menu.popup({ window: remote.getCurrentWindow() });
         });
         window.opener.birdWatchTransmitterWindowReady();
       }

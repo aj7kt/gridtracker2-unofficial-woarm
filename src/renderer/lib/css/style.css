@@ -2257,6 +2257,32 @@ button:focus {
 .mapGroup .rigVfoRemove:hover {
   color: red;
 }
+
+/* Move up and down (the list's order is BirdWatch's priority: rig.js, rigVfoMove) */
+.mapGroup .rigVfoMove {
+  margin-left: 6px;
+  color: #aaa;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.mapGroup .rigVfoMove:hover {
+  color: #fff;
+}
+
+/* Its Satellites row's ranges (rig.js, rigSatRender), each with its ✕ */
+.mapGroup .rigSatRange {
+  display: inline-block;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 0 4px;
+  margin: 1px 4px 2px 0;
+  color: #ddd;
+}
+
+.mapGroup .rigSatRange .rigVfoRemove {
+  margin-left: 4px;
+}
 /* The Event Viewer (ui/events.js): the panel in the main window (#eventViewerDiv, a panel like Settings) and the gt_events window's list.
    A list draws only the rows in view, one line high or more where the Event column wraps; its columns are as wide as the widest row
    seen (eventsMeasure sets --evTime, --evSource and --evText), and the list as wide as its columns, or the window where it is narrower */

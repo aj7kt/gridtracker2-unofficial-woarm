@@ -70,10 +70,9 @@ const FTX_FOCUS_HALF = 25;
 // The known signals' marks on the scale (FT8, FT4): those decoded in the last two periods (both sides of a QSO)
 const FTX_MARK_PERIODS = 2;
 // Slot Finder (FT8, FT4): the clearest place to transmit, from what was heard in the last this many periods of each (even and odd) and
-// the one under way, between [ (200 Hz at the lowest) and this high (Hz: above it a rig's transmit filter cuts in)
+// the one under way, between [ and ] (the user's own range), with this much clear either side of it (Hz)
 const FTX_SLOT_PERIODS = 2;
-const FTX_SLOT_LOW_HZ = 200;
-const FTX_SLOT_TOP_HZ = 3000;
+const FTX_SLOT_GUARD_HZ = 4;
 // A waterfall bin is busy in a period when it was this far over its noise floor (dB; a row's byte is 5 dB under the floor at 0, 40 dB
 // over at 255) in this share of the period's rows or more; the period under way counts once this far into it (ms)
 const FTX_SLOT_BUSY_LEVEL = Math.round(((6 + 5) * 255) / 45);
@@ -268,12 +267,19 @@ function mmdInit()
     const over = event.clientY >= box.top && event.clientY <= box.bottom ? mmdBracketAt(event.clientX - box.left) : null;
     mmdRangeTip(over);
   });
-  // FT8 and FT4: a right-click on the waterfall turns the time skew on or off, the wheel moves it while it's on (mmdSkewWheel)
+  // A right-click on the scale or the waterfall, in every mode but FT8, FT4 and WSPR: the rig's dial tuned to the frequency on the air
+  // there (mmdTuneAt). FT8 and FT4: a right-click on the waterfall turns the time skew on or off, the wheel moves it while it's on
+  // (mmdSkewWheel)
+  cwScale.addEventListener("contextmenu", (event) =>
+  {
+    event.preventDefault();
+    if (!mmdFtx() && !mmdWsprMode()) mmdTuneAt(cwScale, event);
+  });
   cwOverlay.addEventListener("contextmenu", (event) =>
   {
-    if (!mmdFtx()) return;
     event.preventDefault();
-    mmdSkewToggle();
+    if (mmdFtx()) mmdSkewToggle();
+    else if (!mmdWsprMode()) mmdTuneAt(cwOverlay, event);
   });
   cwOverlay.addEventListener("wheel", mmdSkewWheel, { passive: false });
   // A click on a row: FT8 and FT4, the focus on its signal (its lowest tone is its Freq; centred on its middle); CW, PSK31 and RTTY, its
@@ -288,6 +294,17 @@ function mmdInit()
   {
     const row = event.target.closest("tr[data-id]");
     if (row && row.dataset.id in DEC.signals && !selecting()) mmdFocus(Number(row.dataset.id));
+  });
+  // A right-click on a row: Delete (mmdSignalDelete)
+  cwRows.addEventListener("contextmenu", (event) =>
+  {
+    const row = event.target.closest("tr[data-id]");
+    if (!row || !(row.dataset.id in DEC.signals)) return;
+    event.preventDefault();
+    const id = row.dataset.id;
+    const remote = window.require("@electron/remote");
+    const menu = remote.Menu.buildFromTemplate([{ label: I18N("cwViewer.picture.delete.label"), click: () => mmdSignalDelete(id) }]);
+    menu.popup({ window: remote.getCurrentWindow() });
   });
   // The FT8 list's virtual scrolling: its slice redrawn as it scrolls or the window changes size
   ft8List.addEventListener("scroll", mmdFt8Scrolled, { passive: true });
@@ -668,8 +685,22 @@ function mmdLevelInit()
 
 function mmdStatus(text, error = false)
 {
-  cwStatus.textContent = text;
-  cwStatus.className = error ? "cwError" : "";
+  DEC.status = { text: text, error: error };
+  mmdStatusShow();
+}
+
+// The status where it goes: FT8's, FT4's and WSPR's on the divider, left of their place in the period; an error, and the other modes',
+// at the top right
+function mmdStatusShow()
+{
+  const S = DEC.status || { text: "", error: false };
+  const onSplit = !S.error && (mmdFtx() || mmdWsprMode());
+  const top = onSplit ? "" : S.text;
+  const split = onSplit ? S.text : "";
+  if (cwStatus.textContent != top) cwStatus.textContent = top;
+  const className = S.error ? "cwError" : "";
+  if (cwStatus.className != className) cwStatus.className = className;
+  if (cwSplitStatus.textContent != split) cwSplitStatus.textContent = split;
 }
 
 async function mmdStart()
@@ -977,10 +1008,13 @@ function mmdMessage(data, generation)
     {
       if (signal.text != "" && !signal.text.endsWith(" ")) mmdText(signal, signal.text + " ");
       signal.txStart = signal.text.length;
+      signal.deleted = false;
       continue;
     }
     if (code < 0)
     {
+      // Deleted part way through the transmission: what it read again of it doesn't bring it back
+      if (signal.deleted) continue;
       const revised = (data.revisions[-code - 1] || "").replace(/ +/g, " ");
       const before = signal.text.slice(0, signal.txStart);
       mmdText(signal, before + (before == "" || before.endsWith(" ") ? revised.replace(/^ /, "") : revised));
@@ -1004,6 +1038,20 @@ function mmdText(signal, text)
   const drop = Math.max(0, text.length - CW_TEXT_KEEP);
   signal.text = text.slice(drop);
   signal.txStart = Math.max(0, signal.txStart - drop);
+}
+
+// A row deleted (its right-click): its text gone and the signal let go if pinned. A signal still sending is listed again with what it
+// sends next (what came before isn't brought back by the transmission under way being read again: the revisions, below)
+function mmdSignalDelete(id)
+{
+  const signal = DEC.signals[id];
+  if (!signal) return;
+  signal.text = "";
+  signal.txStart = 0;
+  signal.cqAt = 0;
+  signal.deleted = true;
+  if (DEC.focus == signal.id) mmdFocus(null);
+  DEC.dirty = true;
 }
 
 function mmdSignal(id)
@@ -1690,6 +1738,8 @@ function mmdRender()
   mmdFollowBirdWatch();
   mmdTop();
   mmdPeriodProgress();
+  // SSTV's Send: its Power the band's, as the rig moves (mmdSstvTx.js)
+  if (DEC.mode == "sstv" && sstvSendBody.style.display != "none") mmdSstvTxPowerRender();
   // The rig's band scope: wanted (or not) of Rig Control, shown or hidden
   mmdScopeTick();
   // WEFAX's Auto-Tune: the next chart tuned for when it's time (mmdWefaxAuto.js)
@@ -2103,6 +2153,18 @@ function mmdRetune(keepSkew = false)
   DEC.dirty = true;
 }
 
+// A right-click across the scale or the waterfall (el): the rig's dial tuned to the frequency on the air at that audio frequency
+// (mmDecoderAirHz: in CW, so the signal there is heard at the CW pitch). Only with Rig Control, and not while BirdWatch has the rig
+// (mmdTuneDial)
+function mmdTuneAt(el, event)
+{
+  const box = el.getBoundingClientRect();
+  if (!(box.width > 0) || !(DEC.bins > 0)) return;
+  const hz = mmdAudioAt(Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)));
+  const air = window.opener.mmDecoderAirHz(hz);
+  if (air != null && air > 0) mmdTuneDial(air);
+}
+
 // The rig's dial to dial (Hz on the air) through Rig Control, in mode when given (data: its data variant, true, or plain, false);
 // true when it was sent
 function mmdTuneDial(dial, mode, data)
@@ -2329,6 +2391,8 @@ function mmdPeriodProgress()
     text = "[ " + String(Math.floor(into / 1000)).padStart(String(Math.floor(total)).length, " ") + " / " + total + " ]";
   }
   if (cwPeriodText.textContent != text) cwPeriodText.textContent = text;
+  // (The mode changed: the status moved with it)
+  mmdStatusShow();
 }
 
 // The waterfall's lines: every this many ms (FT8's, FT4's and WSPR's periods, the other modes' UTC menu), 0 none
@@ -2707,17 +2771,17 @@ function mmdSlotReset()
 }
 
 // Slot Finder (FT8's and FT4's own, on unless turned off): the clearest places to transmit, from the signals decoded lately in each period
-// (even: the first of each pair, WSJT-X's Tx even/1st; odd). A slot is open where a signal fits with half a signal's width clear either
-// side of it (from the signals and the range's edges); every open one is as good, and the one nearest the middle of the range is taken.
-// The one open in both periods first, as "both"; then each period's own (where it isn't that one). [{ freq (Hz, its lowest tone, as
-// WSJT-X's Tx), period ("both", "even" or "odd") }], empty when off, nothing was decoded lately, or no slot is open
+// (even: the first of each pair, WSJT-X's Tx even/1st; odd). A slot is open where a signal fits with FTX_SLOT_GUARD_HZ clear either side
+// of it (from the signals and the edges of the range between [ and ]); every open one is as good, and the one nearest the middle of the
+// range is taken. The one open in both periods first, as "both"; then each period's own (where it isn't that one). [{ freq (Hz, its
+// lowest tone, as WSJT-X's Tx), period ("both", "even" or "odd") }], empty when off, nothing was decoded lately, or no slot is open
 function mmdFtxSlots()
 {
   if (!mmdFtx() || GT.settings.MMD[DEC.mode + "SlotFinder"] !== true) return [];
   const periodMs = mmdFtxPeriodMs();
   const width = mmdFtxWidth();
-  const low = Math.max(FTX_SLOT_LOW_HZ, mmdMinHz());
-  const top = Math.min(FTX_SLOT_TOP_HZ, mmdMaxHz());
+  const low = mmdMinHz();
+  const top = mmdMaxHz();
   if (top - low < width) return [];
   const S = DEC.slot;
   const busy = [[], []];
@@ -2760,7 +2824,7 @@ function mmdFtxSlots()
   // The open slot nearest the middle, as its lowest tone, or null: in each gap, the lowest tones that keep the guard either side, the
   // one of them nearest the middle
   const middle = (low + top) / 2;
-  const guard = width / 2;
+  const guard = FTX_SLOT_GUARD_HZ;
   const nearest = (signals) =>
   {
     let best = null;
@@ -2779,13 +2843,13 @@ function mmdFtxSlots()
     }
     return best ? best.freq : null;
   };
-  // Even's and odd's own too, each where it isn't the one open in both
+  // Even's and odd's own too, each where it isn't the one open in both (overlapping it, in the same gap a few Hz along: only "both" shown)
   const both = nearest(busy[0].concat(busy[1]));
   const slots = both == null ? [] : [{ freq: both, period: "both" }];
   for (const [period, signals] of [["even", busy[0]], ["odd", busy[1]]])
   {
     const freq = nearest(signals);
-    if (freq != null && freq != both) slots.push({ freq: freq, period: period });
+    if (freq != null && (both == null || Math.abs(freq - both) >= width)) slots.push({ freq: freq, period: period });
   }
   return slots;
 }

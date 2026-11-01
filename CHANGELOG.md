@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Clear: forgets everything decoded and starts again from scratch
   - Click a signal to pin it: its marks stay on the waterfall and its line stays listed
   - Drag the [ and ] on the scale to set the lowest and highest audio decoded (hum and noise below a few hundred Hz left out)
-  - Bandwidth (the window's Settings, General): decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)
+  - Bandpass (the window's Settings, General): decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)
   - A band change, or a frequency picked from the Frequency menu (on the same band too), is marked on the waterfall with a bar, the band and frequency on it, and the waterfall is kept
   - Whenever the rig is retuned, FT8 doesn't decode a period with audio from both frequencies (only what the new one gave), nor SSTV a picture across the change
   - VFO (the window's Settings, Decoders): the Rig Control VFO each mode reads and tunes, so an SDR on a VFO of its own can be decoded while the rig's other VFOs are busy
@@ -43,11 +43,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Frequency: the rig's frequency, band and mode are shown centered on the bar between the waterfall and the decoded lines (drag the bar to size the waterfall; in FT8, FT4 and WSPR its right end shows how far into the period it is, as [ 7 / 15 ]), and with Rig Control a menu on the second line lists each mode's usual frequencies, CW's QRP calling frequencies, FT8's and SSTV's; picking one sets the rig's frequency (Set Frequency) and its mode (Set Mode: CW's CW, SSTV's the sideband, FT8's USB), each allowed on its own for each mode in the window's Settings, Decoders (both on unless turned off)
   - SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are
   - Band scope: with Use Scope If Present (an Icom CI-V VFO's, Settings, Rig Control; off unless checked), the radio's own scope waterfall shows in a strip over the decoder's waterfall, its colors starting at the band's noise floor so it looks the same at every span (IC-7300 and other Icoms that send it over USB)
-    - Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end)
+    - Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end), shown beside them as −500 kHz and +500 kHz
     - The radio needs its CI-V USB Baud Rate at 115200 (and Rig Control the same) and its CI-V USB Port set to Unlink from [REMOTE]; a yellow note under the checkbox and over the strip says which is missing, or that the radio's scope is turned off
   - Input Device (the window's Settings, Decoders): the audio decoded (your rig's), picked for each mode on its own; Warning On Change (Settings, Audio) warns of input devices changed or missing as it does for the Output Device
     - Its levels beside it: hover over them for two sliders and the peak of the audio heard. HW is the device's own recording level (as in your system's sound settings), so a loud rig can be kept from clipping the sound card (on macOS, the default input's only); SW is a gain inside the decoder, each mode's own
-  - FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (fewer decodes than WSJT-X: about two in three on a busy band)
+  - FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (a few fewer decodes than WSJT-X: about nine in ten on a busy band)
     - Built on ft8_lib by Kārlis Goba, YL3JG
     - Set Mode (the window's Settings, Decoders): picking an FT8 frequency sets the rig's mode, USB (its data mode with the VFO's SSB Data)
     - Depth (the window's Settings, Decoders): Normal, the default, decodes with ft8_lib as it comes, quickly; Deep adds the three below for more decodes, at more processor time
@@ -60,6 +60,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - FT8 and FT4 focus: click anywhere on the waterfall, or a message, to mark a 50 Hz band in red that is searched harder each period (FT8 at its Deep depth, FT4 always); drag it along the waterfall to move it, and click inside it to let go
 - FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods
 - FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off
+- CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia: right-click a decoded line to delete it (a station still sending is listed again with what it sends next)
+- Every mode but FT8, FT4 and WSPR: with Rig Control, right-click the waterfall or the scale above it to tune the rig to the frequency there (in CW, so that signal is heard at the CW pitch)
 - PSK and RTTY modes (Mode menu): every PSK signal in the passband (PSK31, PSK63, PSK125 or QPSK31, picked on the second line), or every RTTY signal (170, 425 or 850 Hz shift, at 45.45, 50 or 75 baud, each found by itself), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise, its baud and its text; the Frequency menu has each mode's usual frequencies
 - MFSK mode (Mode menu): every MFSK16 or MFSK32 signal in the passband (picked on the second line), each found by itself and decoded on its own, listed as PSK's are; MFSK16 copies down to about 13 dB below the noise (in 3 kHz)
   - Written from ZL1BPU's published MFSK16 specification and IZ8BLY's varicode
@@ -72,7 +74,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - The strongest Hell signal is found by itself; click one on the waterfall to read it instead, and click inside its band to go back
 - WEFAX mode (Mode menu): weather fax charts from the coast and weather stations that still send them, received in SSTV's picture view, each started by its start tone with its line rate and width found by themselves (or picked on the second line), and saved as SSTV's pictures are
   - Start Now begins a chart already being sent, and Stop ends one
-  - Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand
+  - Right-click a chart (or an SSTV picture) to rotate it 90° either way or 180°, for the charts some stations send sideways; it is saved and copied as shown
+  - Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand (Trim is kept for next time)
   - The Frequency menu lists the stations heard around the world (NOAA's, Germany's, Japan's, Australia's and others), each named, with its schedule where it has one
   - Auto-Tune (with Rig Control): the rig is tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another; a frequency that doesn't come in is passed over for a while, and tuning the rig by hand turns it off
 - Every decoder now hears the rig's audio on its own sound card's clock, so no audio is dropped or doubled now and then (which slanted and stepped weather fax charts and SSTV pictures)
@@ -127,6 +130,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 #### App
 
 - Settings, Audio: Device is now Output Device
+- Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card
 
 ### HTML List
 
@@ -162,7 +166,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Clear: forgets everything decoded and starts again from scratch</li>
       <li>Click a signal to pin it: its marks stay on the waterfall and its line stays listed</li>
       <li>Drag the [ and ] on the scale to set the lowest and highest audio decoded (hum and noise below a few hundred Hz left out)</li>
-      <li>Bandwidth (the window's Settings, General): decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)</li>
+      <li>Bandpass (the window's Settings, General): decode a rig's passband (2.5k to 4.5k), or much more of an SDR's audio (up to the whole of a 96 kHz stream)</li>
       <li>A band change, or a frequency picked from the Frequency menu (on the same band too), is marked on the waterfall with a bar, the band and frequency on it, and the waterfall is kept</li>
       <li>Whenever the rig is retuned, FT8 doesn't decode a period with audio from both frequencies (only what the new one gave), nor SSTV a picture across the change</li>
       <li>VFO (the window's Settings, Decoders): the Rig Control VFO each mode reads and tunes, so an SDR on a VFO of its own can be decoded while the rig's other VFOs are busy
@@ -178,7 +182,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are</li>
       <li>Band scope: with Use Scope If Present (an Icom CI-V VFO's, Settings, Rig Control; off unless checked), the radio's own scope waterfall shows in a strip over the decoder's waterfall, its colors starting at the band's noise floor so it looks the same at every span (IC-7300 and other Icoms that send it over USB)
         <ul>
-          <li>Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end)</li>
+          <li>Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end), shown beside them as −500 kHz and +500 kHz</li>
           <li>The radio needs its CI-V USB Baud Rate at 115200 (and Rig Control the same) and its CI-V USB Port set to Unlink from [REMOTE]; a yellow note under the checkbox and over the strip says which is missing, or that the radio's scope is turned off</li>
         </ul>
       </li>
@@ -187,7 +191,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
           <li>Its levels beside it: hover over them for two sliders and the peak of the audio heard. HW is the device's own recording level (as in your system's sound settings), so a loud rig can be kept from clipping the sound card (on macOS, the default input's only); SW is a gain inside the decoder, each mode's own</li>
         </ul>
       </li>
-      <li>FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (fewer decodes than WSJT-X: about two in three on a busy band)
+      <li>FT8 mode (Mode menu): decodes each 15 second FT8 period on its own, without WSJT-X (a few fewer decodes than WSJT-X: about nine in ten on a busy band)
         <ul>
           <li>Built on ft8_lib by Kārlis Goba, YL3JG</li>
           <li>Set Mode (the window's Settings, Decoders): picking an FT8 frequency sets the rig's mode, USB (its data mode with the VFO's SSB Data)</li>
@@ -205,6 +209,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>FT8 and FT4 focus: click anywhere on the waterfall, or a message, to mark a 50 Hz band in red that is searched harder each period (FT8 at its Deep depth, FT4 always); drag it along the waterfall to move it, and click inside it to let go</li>
   <li>FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods</li>
   <li>FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off</li>
+  <li>CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia: right-click a decoded line to delete it (a station still sending is listed again with what it sends next)</li>
+  <li>Every mode but FT8, FT4 and WSPR: with Rig Control, right-click the waterfall or the scale above it to tune the rig to the frequency there (in CW, so that signal is heard at the CW pitch)</li>
   <li>PSK and RTTY modes (Mode menu): every PSK signal in the passband (PSK31, PSK63, PSK125 or QPSK31, picked on the second line), or every RTTY signal (170, 425 or 850 Hz shift, at 45.45, 50 or 75 baud, each found by itself), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise, its baud and its text; the Frequency menu has each mode's usual frequencies</li>
   <li>MFSK mode (Mode menu): every MFSK16 or MFSK32 signal in the passband (picked on the second line), each found by itself and decoded on its own, listed as PSK's are; MFSK16 copies down to about 13 dB below the noise (in 3 kHz)
     <ul>
@@ -230,7 +236,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>WEFAX mode (Mode menu): weather fax charts from the coast and weather stations that still send them, received in SSTV's picture view, each started by its start tone with its line rate and width found by themselves (or picked on the second line), and saved as SSTV's pictures are
     <ul>
       <li>Start Now begins a chart already being sent, and Stop ends one</li>
-      <li>Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand</li>
+      <li>Right-click a chart (or an SSTV picture) to rotate it 90° either way or 180°, for the charts some stations send sideways; it is saved and copied as shown</li>
+      <li>Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand (Trim is kept for next time)</li>
       <li>The Frequency menu lists the stations heard around the world (NOAA's, Germany's, Japan's, Australia's and others), each named, with its schedule where it has one</li>
       <li>Auto-Tune (with Rig Control): the rig is tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another; a frequency that doesn't come in is passed over for a while, and tuning the rig by hand turns it off</li>
     </ul>
@@ -320,5 +327,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 <h4>App</h4>
 <ul>
   <li>Settings, Audio: Device is now Output Device</li>
+  <li>Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card</li>
 </ul>
 ```

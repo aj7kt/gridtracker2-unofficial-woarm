@@ -336,11 +336,25 @@ function mmDecoderFollowVfoWanted()
   return rigRoleVfo("rx");
 }
 
-// Each second, and from the window as it draws: GT.mmdFollowVfo made what is wanted now. Its id, or null
+// Each second, and from the window as it draws: GT.mmdFollowVfo made what is wanted now. Its id, or null. Changed (BirdWatch started or
+// stopped following, Follow BirdWatch turned on or off): the window's VFO menus drawn again, so they show whose VFO is read
 function mmDecoderFollowVfoSync()
 {
   const v = mmDecoderFollowVfoWanted();
-  GT.mmdFollowVfo = v ? v.id : null;
+  const id = v ? v.id : null;
+  const changed = id !== GT.mmdFollowVfo;
+  GT.mmdFollowVfo = id;
+  if (changed && GT.mmDecoderInitialized)
+  {
+    try
+    {
+      GT.mmDecoderHandle.window.mmdVfosRender();
+    }
+    catch (e)
+    {
+      // Not loaded: its menus are made as it opens
+    }
+  }
   return GT.mmdFollowVfo;
 }
 

@@ -97,10 +97,9 @@ const def_settings = {
     auto: true,
     // Auto Select only picks a satellite whose pass climbs at least this many degrees (BirdWatch settings, General): 0 to 60
     autoMinElevation: 0,
-    // Rig Control's VFOs (BirdWatch settings, General) that follow the satellite: its downlink's and its uplink's, by their ids
-    // (settings.Rigs.vfos; "" for none: that side isn't followed)
-    downlinkVfo: "v1",
-    uplinkVfo: "v2",
+    // A transmitter's own VFOs, picked in the transmitters window (a right-click on its downlink or uplink): { uuid: { rx, tx } }, by the
+    // VFOs' ids; the others go to the first VFO whose Satellites ranges fit (settings.Rigs.vfos[].satRanges, rig.js rigRoles)
+    vfoPins: {},
     // Lock VFOs: turning one side's dial tunes the other too (a transponder followed on both: birdWatchLockFollow)
     lockVfos: false,
     // BirdWatch's Rig Control (BirdWatch settings, General): the rig follows the selected satellite, Auto-Track's pick or the user's; off,
@@ -525,7 +524,9 @@ const def_settings = {
   // Hamlib's rigctld (host, netPort), flrig (host, flrigPort), SPY Server by Airspy (host, spyPort), SDR++ Server (host, sdrppPort;
   // sdrppFreq where it was last tuned) or on a serial port (port, baud ...; civAddress in hex only to insist on
   // one: the rig is asked for its own; forceVfo: rigctld's VFO mode asked for on Rig Control's own connection, as rigctld --vfo gives),
-  // or "of" the second VFO (VFO B, or Sub) of the VFO whose id is in of }. BirdWatch and the Multi-Mode Decoder pick theirs by id
+  // or "of" the second VFO (VFO B, or Sub) of the VFO whose id is in of; satRanges: what BirdWatch may use it for, [{ lo, hi (MHz on the air;
+  // both 0 every frequency), dir ("rx", "tx" or "both") }], left out every frequency receive only }. The list's order is BirdWatch's priority.
+  // BirdWatch and the Multi-Mode Decoder pick theirs by id
   Rigs: {
     enable: false,
     vfos: [
@@ -542,7 +543,7 @@ const def_settings = {
   // through GridTracker's instance MMD (open while the decoder is on, in the window's Mode) (both off).
   // PSK31, RTTY, MFSK and DominoEX / THOR (thor): their Set Frequency and Set Mode (USB). pskSubmode ("psk31", "psk63", "psk125",
   // "qpsk31"), mfskSubmode ("mfsk16", "mfsk32"), thorSubmode ("dominoex 11", "thor 16", "dominoex all" ...): their submode menus. NAVTEX (navtex), Feld-Hell (hell) and WEFAX (wefax): their Set Frequency and Set
-  // Mode (USB); hellSubmode ("feld", "x5", "x9"), hellTrim (ppm: the print's slant), wefaxLpm and wefaxIoc ("auto" or a number).
+  // Mode (USB); hellSubmode ("feld", "x5", "x9"), hellTrim (ppm: the print's slant), wefaxLpm and wefaxIoc ("auto" or a number), wefaxTrim (ppm: the chart's slant).
   // navtexSave: NAVTEX's Save Messages, each complete message as a text file in NAVTEX Messages (off).
   // Olivia: oliviaSubmode ("olivia 8/500", "contestia 16/500" ...: its menu), oliviaCenter (audio Hz: where its signal is).
   // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
@@ -563,7 +564,7 @@ const def_settings = {
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO)
-  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
+  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", wefaxTrim: 0, pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
   audio: {
     alertMute: 0,
     speechRate: 1,

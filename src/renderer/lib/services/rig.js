@@ -182,6 +182,12 @@ function rigVfosNormalize()
     // SSB's Data (rigSsbDataChanged): off unless checked
     v.ssbData = v.ssbData === true;
     if (!RIG_PTT_METHODS.includes(v.ptt)) v.ptt = "cat";
+    // Its satellite ranges (rigVfoSatRanges), those it can use; none set (left out): every frequency, receive only
+    if (v.satRanges !== undefined)
+    {
+      v.satRanges = Array.isArray(v.satRanges) ? v.satRanges.filter((r) => r && RIG_SAT_DIRS.includes(r.dir) && Number(r.lo) >= 0 && Number(r.hi) >= Number(r.lo))
+        .map((r) => ({ lo: Number(r.lo), hi: Number(r.hi), dir: r.dir })) : undefined;
+    }
   }
   const owned = new Set();
   for (const v of S.vfos)
@@ -240,28 +246,110 @@ function rigWanted(R)
   return !!v && !rigVfoIsSecond(v) && rigVfoOn(v);
 }
 
-// BirdWatch's VFOs (its settings, General: Rig Control): side "rx" the downlink's, "tx" the uplink's (never the downlink's own); null for
-// none, or one no longer in the list
-function rigRoleVfo(side)
+// ---- BirdWatch's VFOs. Each VFO says what it is for with satellites (its box's Satellites row): ranges of frequencies on the air, each
+// to receive (rx), transmit (tx) or both; none set, every frequency, receive only (nothing transmits until the user says so). For a
+// transmitter, its downlink goes to the first VFO in the list (their order is their priority) that receives there, a connected one before
+// one that isn't; its uplink to the first that transmits there, never the downlink's own (a rig that doesn't go there is said in the
+// Event Viewer: rigVerifyLater). A transmitter's own picks come first
+// (BirdWatch.vfoPins, { uuid: { rx, tx } }: a right-click on its downlink or uplink in the transmitters window)
+
+// The bands offered in the Satellites row (MHz on the air)
+const RIG_SAT_BANDS = [["10m", 28, 29.7], ["6m", 50, 54], ["2m", 144, 148], ["1.25m", 222, 225], ["70cm", 420, 450], ["33cm", 902, 928], ["23cm", 1240, 1300], ["13cm", 2300, 2450], ["9cm", 3300, 3500], ["6cm", 5650, 5925], ["3cm", 10000, 10500], ["1.2cm", 24000, 24250]];
+const RIG_SAT_DIRS = ["rx", "tx", "both"];
+
+// A VFO's satellite ranges: [{ lo, hi (MHz; both 0: every frequency), dir }]
+function rigVfoSatRanges(v)
 {
-  const S = GT.settings.BirdWatch;
-  const v = rigVfoById(side == "rx" ? S.downlinkVfo : S.uplinkVfo);
-  if (side == "tx" && v && v.id == S.downlinkVfo) return null;
-  return v;
+  return Array.isArray(v.satRanges) ? v.satRanges : [{ lo: 0, hi: 0, dir: "rx" }];
 }
 
-// A side's VFO is in use and its rig connected
-function rigRoleConnected(side)
+// Whether a VFO is for a side ("rx" or "tx") at a frequency (Hz on the air; none given: at any frequency of its ranges)
+function rigVfoSatCovers(v, side, hz)
 {
-  const v = rigRoleVfo(side);
+  return rigVfoSatRanges(v).some((r) => (r.dir == "both" || r.dir == side) && (!(hz > 0) || (r.lo == 0 && r.hi == 0) || (hz >= r.lo * 1e6 && hz <= r.hi * 1e6)));
+}
+
+// A VFO in use with its rig connected
+function rigVfoReady(v)
+{
   const R = v && rigVfoOn(v) ? rigVfoLink(v) : null;
   return !!R && R.status == "connected";
 }
 
-// Either side's VFO is in use and its rig connected: there is something to follow a satellite with
-function rigRolesConnected()
+// BirdWatch's VFOs for a transmitter (left out: the one followed, else none in particular): { rx, tx }, each a VFO or null (none: a side
+// the transmitter hasn't, or no VFO for it)
+function rigRoles(t)
 {
-  return rigRoleConnected("rx") || rigRoleConnected("tx");
+  if (t === undefined) t = GT.rigDoppler && typeof birdWatchStickyPrevious == "function" ? birdWatchStickyPrevious() : null;
+  const pins = t && GT.settings.BirdWatch.vfoPins ? GT.settings.BirdWatch.vfoPins[t.uuid] || {} : {};
+  const pick = (side, hz, not) =>
+  {
+    const pinned = rigVfoById(pins[side]);
+    if (pinned && pinned !== not) return pinned;
+    const list = rigVfos().filter((v) => v !== not && rigVfoSatCovers(v, side, hz));
+    return list.find(rigVfoReady) || list[0] || null;
+  };
+  const rx = t && !(t.downlink_low > 0) ? null : pick("rx", t ? t.downlink_low : 0, null);
+  const tx = t && !(t.uplink_low > 0) ? null : pick("tx", t ? t.uplink_low : 0, rx);
+  return { rx: rx, tx: tx };
+}
+
+// Side "rx" the downlink's VFO, "tx" the uplink's, for a transmitter (left out: the one followed); null for none
+function rigRoleVfo(side, t)
+{
+  return rigRoles(t)[side];
+}
+
+// A side's VFO is in use and its rig connected
+function rigRoleConnected(side, t)
+{
+  return rigVfoReady(rigRoleVfo(side, t));
+}
+
+// Either side's VFO is in use and its rig connected: there is something to follow a satellite with
+function rigRolesConnected(t)
+{
+  return rigRoleConnected("rx", t) || rigRoleConnected("tx", t);
+}
+
+// A transmitter's own pick for a side ("rx" or "tx") as it is used: a VFO's id, or "" for none (the first that fits, as for any; also a
+// pick passed over: an uplink's on the downlink's own VFO)
+function rigRolePin(t, side)
+{
+  const pins = GT.settings.BirdWatch.vfoPins || {};
+  const id = t && pins[t.uuid] ? pins[t.uuid][side] : "";
+  if (!id || !rigVfoById(id)) return "";
+  const v = rigRoles(t)[side];
+  return v && v.id == id ? id : "";
+}
+
+function rigRolePinSet(t, side, id)
+{
+  const S = GT.settings.BirdWatch;
+  if (!S.vfoPins || typeof S.vfoPins != "object") S.vfoPins = {};
+  const pin = Object.assign({}, S.vfoPins[t.uuid]);
+  if (rigVfoById(id)) pin[side] = id;
+  else delete pin[side];
+  if (pin.rx || pin.tx) S.vfoPins[t.uuid] = pin;
+  else delete S.vfoPins[t.uuid];
+  rigRolesChanged();
+}
+
+// BirdWatch's VFOs may be others now: what is followed is sent again (to the VFOs it goes to now), its modes and its uplink's tone with it,
+// and what shows them is drawn again
+function rigRolesChanged()
+{
+  const D = GT.rigDoppler;
+  if (D)
+  {
+    D.sentRx = D.sentTx = null;
+    if (D.mode) D.pendingMode = true;
+    const t = D.tx && typeof birdWatchStickyPrevious == "function" ? birdWatchStickyPrevious() : null;
+    if (t) D.pendingTone = birdWatchTransmitterTone(t) || 0;
+  }
+  rigLineRender();
+  if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
+  if (typeof birdWatchTransmitterWindowUpdate == "function") birdWatchTransmitterWindowUpdate();
 }
 
 // Each VFO's converter offset, in Hz (a VFO, or its id): the rig's dial is the frequency on the air plus it. As large as a converter's LO
@@ -490,14 +578,15 @@ const RIG_PROTOCOLS = {
     setPtt: (on, R) => rigCivFrame(rigCivAddress(R), 0x1c, [0x00, on ? 0x01 : 0x00]),
     // The mode with the filter in use kept (06 mode filter: without one the rig takes the mode's default, FIL2 on the IC-7300; before the
     // filter is read, the mode alone). Data asked for or against: 1A 06 after the mode, data mode on with that filter (01 and it) or off
-    // (00 00), as the IC-7300, 705, 9700 and 7610 have it; the two frames sent together
+    // (00 00), as the IC-7300, 705, 9700 and 7610 have it. Two frames, each queued on its own (rigTune): sent in one write, an IC-7300
+    // streaming its band scope dropped the second, so data mode never came on
     setMode: (mode, R, data) =>
     {
       const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
       if (!Number.isFinite(code)) return null;
       const frame = rigCivFrame(rigCivAddress(R), 0x06, R.civFilter ? [code, R.civFilter] : [code]);
       if (data === undefined) return frame;
-      return new Uint8Array([...frame, ...rigCivFrame(rigCivAddress(R), 0x1a, [0x06, data ? 0x01 : 0x00, data ? R.civFilter || 0x01 : 0x00])]);
+      return [frame, rigCivFrame(rigCivAddress(R), 0x1a, [0x06, data ? 0x01 : 0x00, data ? R.civFilter || 0x01 : 0x00])];
     },
     // A frame from the rig to us (E0), or to everyone (00: the rig telling of a change); our own frames come back (the echo) and are skipped
     parse: (frame, R) =>
@@ -664,6 +753,37 @@ const RIG_PROTOCOLS = {
   }
 };
 
+// ---- Did it stick: each frequency sent to a VFO (rigTune) is read back RIG_VERIFY_MS later; read more than RIG_VERIFY_HZ away from it,
+// still where it was before (the rig didn't move: a dial moved elsewhere is the user's tuning), and nothing sent to that VFO since, it is a
+// warning in the Event Viewer (at most one a VFO every RIG_VERIFY_EVENT_MS). Nothing otherwise. BirdWatch's Doppler following isn't
+// checked here (it reads back every setting itself: birdWatchSideTarget)
+const RIG_VERIFY_MS = 3000;
+const RIG_VERIFY_HZ = 100;
+const RIG_VERIFY_EVENT_MS = 10000;
+// The last frequency sent to each VFO (by its id), and when each last warned
+GT.rigVerify = {};
+GT.rigVerifyWarned = {};
+
+function rigVerifyLater(v, dial)
+{
+  // Where the dial was when it was sent (null: not known, any other reading counts)
+  const was = rigVfoRead(v);
+  const sent = { dial: dial, before: was.up ? was.dial : null };
+  GT.rigVerify[v.id] = sent;
+  nodeTimers.setTimeout(() =>
+  {
+    if (GT.rigVerify[v.id] !== sent) return;
+    const read = rigVfoRead(v);
+    if (!read.up || Math.abs(read.dial - dial) <= RIG_VERIFY_HZ) return;
+    if (sent.before !== null && Math.abs(read.dial - sent.before) > RIG_VERIFY_HZ) return;
+    const now = Date.now();
+    if (now - (GT.rigVerifyWarned[v.id] || 0) < RIG_VERIFY_EVENT_MS) return;
+    GT.rigVerifyWarned[v.id] = now;
+    const text = I18N("rig.event.notTuned").replace("{vfo}", rigVfoLabel(v)).replace("{freq}", formatDialFreq(dial - rigOffset(v))).replace("{read}", formatDialFreq(read.dial - rigOffset(v)));
+    addEvent("app", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+  }, RIG_VERIFY_MS);
+}
+
 // Kenwood's CAT and the newer Yaesus' (which grew from it): text commands that end with ";" over a serial port. A question (two letters
 // and the ";", "FA;") is answered ("FA00014074000;"); a setting ("FA00145800000;") isn't, unless it is refused ("?;"). The rig that
 // answers FB has a second VFO; one that refuses it hasn't
@@ -763,9 +883,7 @@ function rigSettingsRender()
   }
   rigAddVfo.style.display = rigVfos().length < RIG_VFOS_MAX ? "" : "none";
   for (const v of rigVfos()) rigVfoBoxRender(v);
-  // The VFOs (added, removed, their letters and names) in the features' menus: BirdWatch's, and the Multi-Mode Decoder's (its window,
-  // when loaded)
-  if (typeof birdWatchRigVfosRender == "function") birdWatchRigVfosRender();
+  // The VFOs (added, removed, their letters and names) in the Multi-Mode Decoder's menus (its window, when loaded)
   try
   {
     GT.mmDecoderHandle.window.mmdVfosRender();
@@ -835,6 +953,11 @@ function rigVfoBoxRender(v)
   // SSB's Data: a rig of its own's (a second VFO's mode is set without it)
   el("SsbData").checked = v.ssbData === true;
   el("SsbTr").style.display = second ? "none" : "";
+  // Move up and down (the list's order is BirdWatch's priority): not the first up, nor the last down
+  const at = rigVfos().indexOf(v);
+  el("MoveUp").style.visibility = at > 0 ? "" : "hidden";
+  el("MoveDown").style.visibility = at < rigVfos().length - 1 ? "" : "hidden";
+  rigSatRender(v);
   if (second)
   {
     for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "ScopeTr", "HostTr", "ForceVfoTr", "PttTr"]) el(name).style.display = "none";
@@ -843,6 +966,111 @@ function rigVfoBoxRender(v)
     rigVfoSecondStatusRender(v);
   }
   else rigSettingsRenderOne(GT.rigs[v.id], true, locked);
+}
+
+// A VFO's Satellites row (rigVfoSatRanges): each range as "2m RX", "28.0 - 29.7 MHz TX" or "All Frequencies RX" with its ✕; none: not
+// used with satellites. Under them a band (or All Frequencies, or Custom with its MHz), RX, TX or RX/TX, and Add
+const RIG_SAT_DIR_NAMES = { rx: "RX", tx: "TX", both: "RX/TX" };
+const RIG_SAT_DIR_COLORS = { rx: "cyan", tx: "orange", both: "yellow" };
+
+function rigSatRender(v)
+{
+  const el = (name) => rigVfoEl(v.id, name);
+  const ranges = rigVfoSatRanges(v);
+  const html = ranges.length == 0 ? "<span style='color:#aaa'>" + htmlEntities(I18N("settings.rig.sat.none")) + "</span>" : ranges.map((r, i) =>
+    "<span class='rigSatRange'>" + htmlEntities(rigSatRangeName(r)) + " <span style='color:" + RIG_SAT_DIR_COLORS[r.dir] + "'>" + RIG_SAT_DIR_NAMES[r.dir] + "</span>" +
+    "<span class='rigVfoRemove' data-i='" + i + "' title='" + htmlEntities(I18N("settings.rig.sat.remove.hover")).replace(/'/g, "&#39;") + "' onclick='rigSatRemove(this);'>✕</span></span>").join("");
+  const list = el("SatList");
+  if (list.rigHtml !== html)
+  {
+    list.rigHtml = html;
+    list.innerHTML = html;
+  }
+  const band = el("SatBand");
+  if (!band.options.length)
+  {
+    band.add(new Option(I18N("settings.rig.sat.all"), "all"));
+    for (const [name] of RIG_SAT_BANDS) band.add(new Option(name, name));
+    band.add(new Option(I18N("settings.rig.sat.custom"), "custom"));
+    for (const dir of RIG_SAT_DIRS) el("SatDir").add(new Option(RIG_SAT_DIR_NAMES[dir], dir));
+  }
+  el("SatCustom").style.display = band.value == "custom" ? "" : "none";
+}
+
+// A range's name: All Frequencies, a band's, or its MHz
+function rigSatRangeName(r)
+{
+  if (r.lo == 0 && r.hi == 0) return I18N("settings.rig.sat.all");
+  const band = RIG_SAT_BANDS.find(([, lo, hi]) => lo == r.lo && hi == r.hi);
+  const mhz = (n) => (Number.isInteger(n) ? n.toFixed(1) : String(n));
+  return band ? band[0] : mhz(r.lo) + " - " + mhz(r.hi) + " MHz";
+}
+
+function rigSatBandChanged(el)
+{
+  const v = rigVfoOfEl(el);
+  if (v) rigSatRender(v);
+}
+
+// Add: the band picked (or every frequency, or the MHz typed), to receive, transmit or both; one already there isn't added again.
+// (The VFO's default, every frequency receive only, shows as a range of its own until a receive range is added)
+function rigSatAdd(el)
+{
+  const v = rigVfoOfEl(el);
+  if (!v) return;
+  const band = rigVfoEl(v.id, "SatBand").value;
+  const dir = rigVfoEl(v.id, "SatDir").value;
+  if (!RIG_SAT_DIRS.includes(dir)) return;
+  let lo = 0;
+  let hi = 0;
+  if (band == "custom")
+  {
+    const loEl = rigVfoEl(v.id, "SatLo");
+    const hiEl = rigVfoEl(v.id, "SatHi");
+    lo = Number(loEl.value);
+    hi = Number(hiEl.value);
+    loEl.style.outline = lo > 0 ? "" : "1px solid red";
+    hiEl.style.outline = hi >= lo && hi > 0 ? "" : "1px solid red";
+    if (!(lo > 0) || !(hi >= lo)) return;
+  }
+  else if (band != "all")
+  {
+    const found = RIG_SAT_BANDS.find(([name]) => name == band);
+    if (!found) return;
+    lo = found[1];
+    hi = found[2];
+  }
+  // The first receive (or both) range replaces the default every frequency receive only (10m RX: 10m alone); a first transmit one is
+  // added to it
+  const ranges = v.satRanges === undefined && dir != "tx" ? [] : rigVfoSatRanges(v).slice();
+  if (!ranges.some((r) => r.lo == lo && r.hi == hi && r.dir == dir)) ranges.push({ lo: lo, hi: hi, dir: dir });
+  v.satRanges = ranges;
+  rigSatRender(v);
+  rigRolesChanged();
+}
+
+// A range's ✕: taken off (the last one: the VFO isn't used with satellites)
+function rigSatRemove(el)
+{
+  const v = rigVfoOfEl(el);
+  if (!v) return;
+  v.satRanges = rigVfoSatRanges(v).filter((r, i) => i != Number(el.dataset.i));
+  rigSatRender(v);
+  rigRolesChanged();
+}
+
+// Move up (step -1) or down (1): the list's order is BirdWatch's priority (and the VFOs' letters)
+function rigVfoMove(el, step)
+{
+  const v = rigVfoOfEl(el);
+  const list = rigVfos();
+  const from = list.indexOf(v);
+  const to = from + step;
+  if (!v || to < 0 || to >= list.length) return;
+  list.splice(from, 1);
+  list.splice(to, 0, v);
+  rigSettingsRender();
+  rigRolesChanged();
 }
 
 // A second VFO's Status: how its rig is, and whether that rig has a second VFO that answers
@@ -1032,24 +1260,20 @@ function rigVfoRemove(el)
   const v = rigVfoOfEl(el);
   if (!v || v.connect !== false || rigVfos().length <= 1) return;
   GT.settings.Rigs.vfos = rigVfos().filter((x) => x !== v);
-  // What picked it (BirdWatch's downlink and uplink, the Multi-Mode Decoder's modes) uses none from now on, not a VFO added later and
+  // What picked it (a transmitter's own pick in BirdWatch, the Multi-Mode Decoder's modes) uses none from now on, not a VFO added later and
   // given its id (rigVfoNewId takes the lowest free one)
-  const B = GT.settings.BirdWatch;
-  const birdWatchUsed = B.downlinkVfo == v.id || B.uplinkVfo == v.id;
-  if (B.downlinkVfo == v.id) B.downlinkVfo = "";
-  if (B.uplinkVfo == v.id) B.uplinkVfo = "";
+  const pins = GT.settings.BirdWatch.vfoPins || {};
+  for (const uuid in pins)
+  {
+    for (const side of ["rx", "tx"]) if (pins[uuid][side] == v.id) delete pins[uuid][side];
+    if (!pins[uuid].rx && !pins[uuid].tx) delete pins[uuid];
+  }
   const modes = GT.settings.MMD.vfos || {};
   for (const mode in modes) if (modes[mode] == v.id) modes[mode] = "";
-  if (birdWatchUsed)
-  {
-    if (GT.rigDoppler) GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
-    if (typeof birdWatchSatRigAvailable == "function") birdWatchSatRigAvailable();
-    if (typeof birdWatchTransmitterWindowUpdate == "function") birdWatchTransmitterWindowUpdate();
-  }
   rigVfosNormalize();
   rigLinksSync();
   rigSettingsRender();
-  rigLineRender();
+  rigRolesChanged();
 }
 
 // SSB's Data: the digital modes set on this VFO in USB or LSB (the Multi-Mode Decoder's) set as its data mode
@@ -1883,23 +2107,30 @@ function rigReceive(R, data)
 // and mode ("USB", "FM", ...) on the VFO rxVfo names (an id; not given: BirdWatch's downlink VFO), a second VFO through its rig's
 // setTx and setTxMode, without split; tx (Hz) and txMode on BirdWatch's uplink VFO (only one that can: rigTuneCanTx): a rig of its own
 // as its VFO, or a rig's second VFO with split on (its mode where the protocol can set it: rigctld, flrig, CI-V); tone (Hz) the uplink's
-// CTCSS tone turned on (0: turned off, if it was turned on here; only a rig that can: rigTuneCanTone). True when something was sent
+// CTCSS tone turned on (0: turned off, if it was turned on here; only a rig that can: rigTuneCanTone); verify false: the frequencies not
+// read back (rigVerifyLater). True when something was sent
 function rigTune(spec)
 {
   if (typeof spec != "object" || spec === null) return false;
   // Each rig's steps, in order
   const steps = new Map();
+  // (A step of several frames, CI-V's, each its own: queued one after another, each sent once the one before is answered. flrig's
+  // steps are arrays too, [method, params]: one step each)
   const add = (R, step) =>
   {
     if (!steps.has(R)) steps.set(R, []);
-    steps.get(R).push(step);
+    if (Array.isArray(step) && step.length && step.every((s) => s instanceof Uint8Array)) steps.get(R).push(...step);
+    else steps.get(R).push(step);
   };
+  // The frequencies sent, read back later ([VFO, dial]: rigVerifyLater)
+  const verify = [];
   const rx = spec.rxVfo !== undefined ? rigVfoById(spec.rxVfo) : rigRoleVfo("rx");
   const rxR = rx && rigVfoOn(rx) ? rigVfoLink(rx) : null;
   if (rxR && rxR.status == "connected" && rxR.protocol)
   {
     // A dial is never sent below 1 Hz
     const dial = spec.rx > 0 ? spec.rx + rigOffset(rx) : 0;
+    if (dial > 0 && (!rigVfoIsSecond(rx) || rxR.dual === true)) verify.push([rx, dial]);
     if (!rigVfoIsSecond(rx))
     {
       if (dial > 0) add(rxR, rxR.protocol.setFreq(dial, rxR));
@@ -1916,6 +2147,7 @@ function rigTune(spec)
   {
     const R = rigVfoLink(tx);
     const dial = spec.tx > 0 ? spec.tx + rigOffset(tx) : 0;
+    if (dial > 0) verify.push([tx, dial]);
     if (!rigVfoIsSecond(tx))
     {
       if (dial > 0) add(R, R.protocol.setFreq(dial, R));
@@ -1944,6 +2176,7 @@ function rigTune(spec)
   }
   let sent = false;
   for (const [R, list] of steps) if (rigSend(R, list)) sent = true;
+  if (sent && spec.verify !== false) for (const [v, dial] of verify) rigVerifyLater(v, dial);
   return sent;
 }
 
@@ -1965,11 +2198,11 @@ function rigSend(R, steps)
   return true;
 }
 
-// Whether the uplink (TX) can be tuned: BirdWatch's uplink VFO is in use and its rig connected, and (a rig's second VFO) the rig has one
-// that answers; never without an uplink VFO
-function rigTuneCanTx()
+// Whether the uplink (TX) can be tuned: BirdWatch's uplink VFO (a transmitter's; left out, the one followed) is in use and its rig
+// connected, and (a rig's second VFO) the rig has one that answers; never without an uplink VFO
+function rigTuneCanTx(t)
 {
-  const tx = rigRoleVfo("tx");
+  const tx = rigRoleVfo("tx", t);
   if (!tx || !rigVfoOn(tx)) return false;
   const R = rigVfoLink(tx);
   if (!R || R.status != "connected" || !R.protocol) return false;
@@ -1979,10 +2212,10 @@ function rigTuneCanTx()
 }
 
 // Whether a CTCSS tone can be set on the uplink's rig: a CI-V rig, or one rigctld says can (flrig has no call for it)
-function rigTuneCanTone()
+function rigTuneCanTone(t)
 {
-  if (!rigTuneCanTx()) return false;
-  const U = rigVfoLink(rigRoleVfo("tx"));
+  if (!rigTuneCanTx(t)) return false;
+  const U = rigVfoLink(rigRoleVfo("tx", t));
   return typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
 }
 

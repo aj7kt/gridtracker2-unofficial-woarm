@@ -4,7 +4,7 @@
 
 // Send Picture (the Multi-Mode Decoder in SSTV mode): the SSTV view's Send tab (its header's Receive / Send) that builds the picture (a background: the GridTracker logo, the map as the main window shows it, this window's
 // waterfall, a color, or an image file; your call, grid and a line of text over it) at the mode's size, shows it, and sends it: encoded
-// (sstvEncoder.js) and played to the SSTV Output Device (the window's Settings: the common one, or SSTV's own) through the Level's gain
+// (sstvEncoder.js) and played to the SSTV Output Device (the window's Settings: the common one, or SSTV's own) through the Power's gain
 // (moved as it plays: the rig's ALC watched), the rig keyed by its PTT Method (rigPtt). The choices are kept in settings.MMD.sstvTx
 
 // The leader tone before the VIS code for VOX (s), and the PTT lead and tail with Rig Control (ms)
@@ -16,8 +16,9 @@ const SSTV_TX_WATCHDOG_S = 3;
 // Tune: a steady tone (Hz, in the SSTV passband) for this long at most (s)
 const SSTV_TX_TUNE_HZ = 1900;
 const SSTV_TX_TUNE_S = 30;
-// (How the rig is keyed is its own PTT Method, Rig Control's settings: rigPttMethod.) levelDb: the Level, dB below full scale (as WSJT-X's
-// Pwr slider, 0 to -45 dB; its tune tone is its full-scale tone less that), applied as the audio plays, so the slider acts at once
+// (How the rig is keyed is its own PTT Method, Rig Control's settings: rigPttMethod.) powerDb: Power, sending's and Tune's alike, the last
+// one set (-28 dB at first), dB below full scale (as WSJT-X's Pwr slider: 0 to -45 dB in 0.1 dB steps, a gain of 10^(dB/20)), applied as
+// the audio plays, so the slider acts at once; powerByBand: kept for the band it was set on, { "20m": dB } (mmdSstvTxPower)
 // logoZoom, logoX, logoY and imageZoom, imageX, imageY: the GridTracker logo's and the image file's own size over covering the picture
 // (0.25 to 4: under 1 it is smaller than the picture, the color round it) and where it sits (each -100 to 100: half its size either way),
 // each kept for its own background (mmdSstvTxPlace). stampDate, stampTime: the UTC date and time it is sent (either or both), in a corner
@@ -25,7 +26,7 @@ const SSTV_TX_TUNE_S = 30;
 // grid and your line of text on the picture, each its own color (callColor ...), size (callSize: SSTV_TX_SIZES) and place (callPos: one of
 // SSTV_TX_PLACES), all in textFont (SSTV_TX_FONTS). textShow, stampShow: the Text and the Time Stamp on the picture at all (their titles'
 // checkboxes; off, the rest of each is kept as it was)
-const SSTV_TX_DEFAULTS = { mode: "Martin 1", back: "logo", color: "#1a2a5a", image: "", logoZoom: 1, logoX: 0, logoY: 0, imageZoom: 1, imageX: 0, imageY: 0, textFont: "arial", call: true, callColor: "#ffff00", callSize: "xlarge", callPos: "4-2", grid: true, gridColor: "#ffff00", gridSize: "medium", gridPos: "4-2", textOn: true, text: "CQ SSTV", textColor: "#ffff00", textSize: "medium", textPos: "4-2", stampFont: "arial", stampDate: false, stampTime: false, stampPos: "topRight", stampColor: "#ffffff", stampBox: "none", stampBoxColor: "#000000", textShow: true, stampShow: true, levelDb: -6 };
+const SSTV_TX_DEFAULTS = { mode: "Martin 1", back: "logo", color: "#1a2a5a", image: "", logoZoom: 1, logoX: 0, logoY: 0, imageZoom: 1, imageX: 0, imageY: 0, textFont: "arial", call: true, callColor: "#ffff00", callSize: "xlarge", callPos: "4-2", grid: true, gridColor: "#ffff00", gridSize: "medium", gridPos: "4-2", textOn: true, text: "CQ SSTV", textColor: "#ffff00", textSize: "medium", textPos: "4-2", stampFont: "arial", stampDate: false, stampTime: false, stampPos: "topRight", stampColor: "#ffffff", stampBox: "none", stampBoxColor: "#000000", textShow: true, stampShow: true, powerDb: -28, powerByBand: null };
 const SSTV_TX_ZOOM = [0.25, 4];
 // The fonts there are to pick (the Text's and the Time Stamp's): each one's name as shown, and the families tried in turn (Windows' own
 // first, then the macOS and Linux ones nearest it). monospace: the computer's own monospaced font (its name in the locale)
@@ -78,12 +79,12 @@ function mmdSstvTxPlace(T = mmdSstvTxSettings())
   if (T.back != "logo" && T.back != "image") return null;
   return { zoom: Number(T[T.back + "Zoom"]) || 1, x: Number(T[T.back + "X"]) || 0, y: Number(T[T.back + "Y"]) || 0 };
 }
-const SSTV_TX_LEVEL_MIN_DB = -45;
+const SSTV_TX_POWER_MIN_DB = -45;
 
 const TX = {
   ctx: null,
   source: null,
-  gain: null,   // the Level, set as the audio plays
+  gain: null,   // the Power, set as the audio plays
   kind: null,   // what is sent: "picture" or "tune"
   mode: null,
   startAt: 0,   // the context's time the audio started
@@ -111,20 +112,70 @@ function mmdSstvTxSettings()
     if (S.sstvTx[key] in SSTV_TX_OLD_PLACES) S.sstvTx[key] = SSTV_TX_OLD_PLACES[S.sstvTx[key]];
     if (!SSTV_TX_PLACES.includes(S.sstvTx[key])) S.sstvTx[key] = SSTV_TX_DEFAULTS[key];
   }
-  S.sstvTx.levelDb = Math.max(SSTV_TX_LEVEL_MIN_DB, Math.min(0, Number(S.sstvTx.levelDb) || 0));
+  S.sstvTx.powerDb = mmdSstvTxPowerDb(S.sstvTx.powerDb, SSTV_TX_DEFAULTS.powerDb);
+  if (!S.sstvTx.powerByBand || typeof S.sstvTx.powerByBand != "object") S.sstvTx.powerByBand = {};
   return S.sstvTx;
 }
 
-// The Level as a gain (1 at 0 dB)
+// A Power in dB, as the slider has it: 0 to -45, to 0.1 dB (not a number: fallback)
+function mmdSstvTxPowerDb(db, fallback)
+{
+  const n = Number(db);
+  return Number.isFinite(n) ? Math.max(SSTV_TX_POWER_MIN_DB, Math.min(0, Math.round(n * 10) / 10)) : fallback;
+}
+
+// ---- Power, as WSJT-X's Pwr slider: one for sending and Tune alike, kept for the band the SSTV VFO's rig is on (a band not set yet:
+// the last one set)
+
+// The band the rig is on ("" not known, or off the bands)
+function mmdSstvTxBand()
+{
+  const dial = mmdDial();
+  const band = dial ? mmdBandOf(dial) : "";
+  return band && band != "OOB" ? band : "";
+}
+
+// This band's (powerByBand: { "20m": dB }), else the last one set
+function mmdSstvTxPower()
+{
+  const T = mmdSstvTxSettings();
+  const own = Number(T.powerByBand[mmdSstvTxBand()]);
+  return Number.isFinite(own) && typeof T.powerByBand[mmdSstvTxBand()] == "number" ? mmdSstvTxPowerDb(own, T.powerDb) : T.powerDb;
+}
+
+// The slider moved: for this band and as the last one set; onto what is playing (a picture or Tune) at once
+function mmdSstvTxPowerSet(db)
+{
+  const T = mmdSstvTxSettings();
+  db = mmdSstvTxPowerDb(db, mmdSstvTxPower());
+  T.powerDb = db;
+  const band = mmdSstvTxBand();
+  if (band) T.powerByBand[band] = db;
+  if (TX.gain) TX.gain.gain.value = mmdSstvTxAmp();
+  mmdSstvTxPowerRender();
+}
+
+// The slider and its dB as they are now: also as the band changes (mmdRender)
+function mmdSstvTxPowerRender()
+{
+  const db = mmdSstvTxPower();
+  if (Number(sstvTxPower.value) != db) sstvTxPower.value = db;
+  const text = (db == 0 ? "0" : db.toFixed(1)) + " dB";
+  if (sstvTxPowerTd.textContent != text) sstvTxPowerTd.textContent = text;
+}
+
+// The Power as a gain (1 at 0 dB)
 function mmdSstvTxAmp()
 {
-  return Math.pow(10, mmdSstvTxSettings().levelDb / 20);
+  return Math.pow(10, mmdSstvTxPower() / 20);
 }
 
 function mmdSstvTxInit()
 {
   for (const m of SSTV_TX_MODES) sstvTxMode.add(new Option(m.name + " (" + Math.round(sstvTxSeconds(m)) + " s)", m.name));
-  // Every choice: the settings taken from the form and the picture built again (the Level as it plays too)
+  // The Power as it is set, from the start (not the page's own -28)
+  mmdSstvTxPowerRender();
+  // Every choice: the settings taken from the form and the picture built again (the Power as it plays too)
   // The fonts' menus, each name in its own font
   for (const select of [sstvTxTextFont, sstvTxStampFont])
   {
@@ -151,7 +202,7 @@ function mmdSstvTxInit()
   }
   mmdSstvTxZoomInit();
   const styles = ["Call", "Grid", "Text"].flatMap((name) => [window["sstvTx" + name + "Color"], window["sstvTx" + name + "Size"], window["sstvTx" + name + "Pos"]]);
-  for (const el of [sstvTxMode, sstvTxBack, sstvTxColor, sstvTxZoom, sstvTxImgX, sstvTxImgY, sstvTxTextShow, sstvTxStampShow, sstvTxTextFont, sstvTxCall, sstvTxGrid, sstvTxTextOn, sstvTxText, ...styles, sstvTxStampFont, sstvTxStampDate, sstvTxStampTime, sstvTxStampPos, sstvTxStampColor, sstvTxStampBox, sstvTxStampBoxColor, sstvTxLevel])
+  for (const el of [sstvTxMode, sstvTxBack, sstvTxColor, sstvTxZoom, sstvTxImgX, sstvTxImgY, sstvTxTextShow, sstvTxStampShow, sstvTxTextFont, sstvTxCall, sstvTxGrid, sstvTxTextOn, sstvTxText, ...styles, sstvTxStampFont, sstvTxStampDate, sstvTxStampTime, sstvTxStampPos, sstvTxStampColor, sstvTxStampBox, sstvTxStampBoxColor, sstvTxPower])
   {
     el.addEventListener(el.type == "text" || el.type == "range" || el.type == "color" ? "input" : "change", mmdSstvTxChanged);
   }
@@ -216,6 +267,8 @@ function mmdSstvTxShow(show)
 function mmdSstvTxForm()
 {
   const T = mmdSstvTxSettings();
+  // Filled from the settings: from now on the form may be read back into them (mmdSstvTxChanged)
+  TX.formFilled = true;
   sstvTxMode.value = sstvTxModeByName(T.mode).name;
   sstvTxBack.value = T.back;
   sstvTxColor.value = T.color;
@@ -255,8 +308,7 @@ function mmdSstvTxForm()
   sstvTxStampFont.value = T.stampFont;
   sstvTxTextFont.style.fontFamily = (SSTV_TX_FONTS[T.textFont] || SSTV_TX_FONTS.arial)[1];
   sstvTxStampFont.style.fontFamily = (SSTV_TX_FONTS[T.stampFont] || SSTV_TX_FONTS.arial)[1];
-  sstvTxLevel.value = T.levelDb;
-  sstvTxLevelTd.textContent = (T.levelDb == 0 ? "0" : T.levelDb.toFixed(1)) + " dB";
+  mmdSstvTxPowerRender();
   // The color: the whole picture, or round a logo or image zoomed smaller than it; Zoom and Position: the logo's and an image file's
   const movable = T.back == "logo" || T.back == "image";
   sstvTxColorRow.style.display = T.back == "color" || movable ? "" : "none";
@@ -346,9 +398,11 @@ function mmdSstvTxPttRender()
   sstvTxPttText.style.color = method == "none" ? "orange" : "";
 }
 
-// The settings from the form, and the picture built again
+// The settings from the form, and the picture built again. Never before the form has been filled from them (mmdSstvTxForm): its blank
+// fields read back would wipe the user's Text, Time Stamp and the rest
 function mmdSstvTxChanged()
 {
+  if (!TX.formFilled) return;
   const T = mmdSstvTxSettings();
   T.mode = sstvTxMode.value;
   // Zoom and Position into the background they were showing, before Background changes (mmdSstvTxForm then shows the new one's own)
@@ -381,9 +435,8 @@ function mmdSstvTxChanged()
   }
   T.textFont = sstvTxTextFont.value in SSTV_TX_FONTS ? sstvTxTextFont.value : "arial";
   T.stampFont = sstvTxStampFont.value in SSTV_TX_FONTS ? sstvTxStampFont.value : "arial";
-  T.levelDb = Number(sstvTxLevel.value);
-  // The Level onto what is playing, at once
-  if (TX.gain) TX.gain.gain.value = mmdSstvTxAmp();
+  // Power (Transmit's or Tune's, for this band), onto what is playing at once
+  if (Number(sstvTxPower.value) != mmdSstvTxPower()) mmdSstvTxPowerSet(Number(sstvTxPower.value));
   mmdSstvTxForm();
   mmdSstvTxPreview();
 }
@@ -846,7 +899,7 @@ async function mmdSstvTxSimulate()
   mmdSstvTab("receive");
 }
 
-// Tune (its button): a steady full-scale tone at the Level (as WSJT-X's Tune: its tone held, less its Pwr slider), for SSTV_TX_TUNE_S at
+// Tune (its button): a steady full-scale tone at the Power (as WSJT-X's Tune: its tone held, less its Pwr slider), for SSTV_TX_TUNE_S at
 // most or until clicked again, to set the rig's drive by
 function mmdSstvTxTune()
 {
@@ -859,7 +912,7 @@ function mmdSstvTxTune()
 }
 
 // The audio path, a picture's or Tune's: the Output Device's context, the audio made full scale by make(rate, amp, method) ({ samples,
-// seconds }) played on it through the Level's gain (changed as it plays), the rig keyed first by its PTT Method (VOX: by the audio
+// seconds }) played on it through the Power's gain (changed as it plays), the rig keyed first by its PTT Method (VOX: by the audio
 // itself), the decoder silenced meanwhile; ended(seconds) says what the status shows when it has all gone out
 async function mmdSstvTxStart(kind, make, ended)
 {

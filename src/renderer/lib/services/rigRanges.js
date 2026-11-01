@@ -78,23 +78,47 @@ function rigRangesOf(R)
   return { rx: hz(known.rx), tx: hz(known.tx), model: model };
 }
 
-// What Scan By Rig goes by: receiving on BirdWatch's downlink VFO's rig, transmitting on its uplink VFO's (rigRoleVfo), as the satellite's
-// frequencies (each VFO's converter offset taken off its rig's ranges): { rx, tx, model, canTx }, canTx false when no uplink can be tuned
-// (no uplink VFO, or its Connect unchecked; a second VFO its rig hasn't; its rig isn't connected, or its ranges aren't known); null while
-// the downlink VFO's rig isn't connected or its ranges aren't known
+// What Scan By Rig goes by: what BirdWatch's VFOs can receive and transmit on together, as the satellite's frequencies. Each VFO in use
+// whose rig is connected: its rig's ranges, its converter offset taken off, within its own Satellites ranges for that side
+// (rigVfoSatRanges; a second VFO its rig hasn't transmits on nothing); a rig whose ranges aren't known is taken as able to tune anywhere,
+// as BirdWatch takes every VFO (rigRoles). { rx, tx, model (the rigs'), canTx: some VFO can transmit }; null while no VFO's rig is
+// connected with its ranges known
+const RIG_RANGES_ANY = { rx: [[1, 1e12]], tx: [[1, 1e12]] };
+
 function rigRanges()
 {
-  const rx = rigRoleVfo("rx");
-  const rxR = rx && rigVfoOn(rx) ? rigVfoLink(rx) : null;
-  const a = rxR ? rigRangesOf(rxR) : null;
-  if (!a) return null;
-  const shift = (list, v) => list.map(([low, high]) => [low - rigOffset(v), high - rigOffset(v)]);
-  const tx = rigRoleVfo("tx");
-  if (!tx || !rigVfoOn(tx)) return { rx: shift(a.rx, rx), tx: [], model: a.model, canTx: false };
-  const txR = rigVfoLink(tx);
-  if (txR === rxR) return { rx: shift(a.rx, rx), tx: shift(a.tx, tx), model: a.model, canTx: !rigVfoIsSecond(tx) || rxR.dual !== false };
-  const b = txR ? rigRangesOf(txR) : null;
-  return { rx: shift(a.rx, rx), tx: b ? shift(b.tx, tx) : [], model: a.model + " + " + ((b && b.model) || (txR && rigModelName(txR)) || "?"), canTx: !!b && (!rigVfoIsSecond(tx) || txR.dual !== false) };
+  const out = { rx: [], tx: [], models: [], canTx: false };
+  let known = false;
+  for (const v of rigVfos())
+  {
+    if (!rigVfoReady(v)) continue;
+    const R = rigVfoLink(v);
+    const found = rigRangesOf(R);
+    if (found) known = true;
+    const a = found || Object.assign({ model: rigModelName(R) || "?" }, RIG_RANGES_ANY);
+    if (!out.models.includes(a.model)) out.models.push(a.model);
+    const offset = rigOffset(v);
+    // The rig's ranges (Hz, on the air) cut to the VFO's own for a side
+    const within = (list, side) =>
+    {
+      const own = rigVfoSatRanges(v).filter((r) => r.dir == "both" || r.dir == side);
+      const cut = [];
+      for (const [low, high] of list.map(([lo, hi]) => [lo - offset, hi - offset]))
+      {
+        for (const r of own)
+        {
+          const from = r.lo == 0 && r.hi == 0 ? low : Math.max(low, r.lo * 1e6);
+          const to = r.lo == 0 && r.hi == 0 ? high : Math.min(high, r.hi * 1e6);
+          if (to >= from) cut.push([from, to]);
+        }
+      }
+      return cut;
+    };
+    out.rx.push(...within(a.rx, "rx"));
+    if (!rigVfoIsSecond(v) || R.dual !== false) out.tx.push(...within(a.tx, "tx"));
+  }
+  if (!known) return null;
+  return { rx: out.rx, tx: out.tx, model: out.models.join(" + "), canTx: out.tx.length > 0 };
 }
 
 // Whether a frequency (or a range of them, low to high) is inside one of the ranges

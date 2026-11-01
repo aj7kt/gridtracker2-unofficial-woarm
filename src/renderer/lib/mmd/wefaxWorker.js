@@ -586,8 +586,12 @@ function wefaxPhasingTuning(edge, period)
   if (Math.abs(offset) <= WEFAX_SHIFT_MAX) WF.offset = offset;
 }
 
-// Each phasing line's pulse measured as its line comes in, and the line rate fitted through them; the chart begins at the first of
-// three lines in a row with no pulse (after three with one). Too few found: the chart runs on at the rate the fold gave
+// Each phasing line's pulse measured as its line comes in, and the line rate fitted through them; the chart's own lines begin at the
+// first of three lines in a row with no pulse (after three with one), its phasing lines drawn above them (those before the first pulse
+// found too, back to where they were looked for from: at most WEFAX_PHASING_MOST). Too few found: the chart runs on at the rate the
+// fold gave
+const WEFAX_PHASING_MOST = 120;
+
 function wefaxTrack()
 {
   const m = WF.model;
@@ -606,7 +610,8 @@ function wefaxTrack()
     m.measured++;
     if (m.misses >= 3 && m.hits >= 3)
     {
-      wefaxPicture(m.firstMiss, true);
+      const before = Math.max(0, Math.floor((m.a - WF.searchFrom) / m.b));
+      wefaxPicture(m.firstMiss, true, Math.min(WEFAX_PHASING_MOST, before + m.firstMiss));
       return;
     }
     if (m.misses >= 8 && m.hits < 3)
@@ -715,14 +720,15 @@ function wefaxFreeRun(from)
 
 // ---- The chart's lines
 
-// A chart begins at line y0 of the line model
-function wefaxPicture(y0, phasing)
+// A chart's own lines begin at line y0 of the line model, its phasing lines (lead of them) drawn above them
+function wefaxPicture(y0, phasing, lead = 0)
 {
   const width = Math.floor(WF.ioc * Math.PI);
   const id = WF.nextId++;
   // shift: each row's start moved by this (samples) as it was read, adjust: the rows still to come, mark: where each row's line-start
-  // marker says it should start (NaN: none found) (wefaxTrackRow)
-  WF.pic = { id, width, y0, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false };
+  // marker says it should start (NaN: none found) (wefaxTrackRow); trackFrom: the first row followed (the chart's own, after its
+  // phasing lines, so its reference is made from the chart)
+  WF.pic = { id, width, y0: y0 - lead, trackFrom: lead, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false };
   WF.state = "image";
   WF.noisyRun = 0;
   const m = WF.model;
@@ -781,10 +787,12 @@ function wefaxRender()
       pic.mark = mark;
     }
     const r = pic.rendered;
+    // The chart's own first row: following begun there (the phasing lines above it aren't followed)
+    if (WF.config.track && r == pic.trackFrom && r > 0) wefaxTrackReset(pic);
     pic.shift[r] = pic.adjust;
     wefaxRow(pic, r);
     pic.rendered++;
-    if (WF.config.track) from = Math.min(from, wefaxTrackRow(pic, r));
+    if (WF.config.track && r >= pic.trackFrom) from = Math.min(from, wefaxTrackRow(pic, r));
   }
   wefaxSend(pic, from);
 }

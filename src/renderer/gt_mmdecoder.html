@@ -363,13 +363,20 @@
         opacity: 0.35;
         cursor: default;
       }
-      #mmdScopeSpanText {
+      .mmdScopeSpanText {
         position: absolute;
-        left: 30px;
         top: 0;
         line-height: 16px;
+        padding: 0 4px;
+        background: #000;
         color: #ccc;
         pointer-events: none;
+      }
+      #mmdScopeSpanLow {
+        left: 26px;
+      }
+      #mmdScopeSpanHigh {
+        right: 26px;
       }
       #mmdScopeWarn {
         position: absolute;
@@ -420,12 +427,15 @@
       }
       /* The line between the waterfall and the decoded lines; the lines' header row is dragged to share the room between them
          (mmDecoder.js, mmdSplitInit) */
+      /* Three columns: the frequency in the middle while there is room for both sides (narrower, it moves over rather than covering the
+         right's), every text on one baseline */
       #mmdSplit {
         flex: 0 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 1px 6px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: baseline;
+        column-gap: 10px;
+        padding: 1px 8px;
         border-top: 1px solid #333;
         border-bottom: 1px solid #333;
         background-color: #111;
@@ -436,10 +446,25 @@
         user-select: none;
         position: relative;
       }
-      /* FT8's, FT4's and WSPR's place in their period, at the divider's right: monospace, its spaces kept, so it doesn't move */
+      /* FT8's, FT4's and WSPR's status (mmdStatusShow) and place in their period, at the divider's right: the place monospace, its spaces
+         kept, so it doesn't move */
+      #cwFreqText {
+        grid-column: 2;
+        white-space: nowrap;
+      }
+      #cwSplitRight {
+        grid-column: 3;
+        justify-self: end;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        white-space: nowrap;
+      }
+      #cwSplitStatus {
+        color: #ccc;
+        font-size: 9pt;
+      }
       #cwPeriodText {
-        position: absolute;
-        right: 8px;
         font-family: monospace;
         white-space: pre;
         color: #aaa;
@@ -1030,7 +1055,7 @@
       <span id="cwDetectButton" class="cwButton" onclick="mmdDetectToggle();" data-i18n="cwViewer.detect.hover" title="Listens for every mode here and names each signal it finds: click one, on the waterfall or in the list, to decode it. The mode you were in waits meanwhile"><span data-i18n="cwViewer.detect.label">Detect Modes</span></span>
       <span id="cwStatus"></span>
     </div>
-    <!-- What is decoded: the mode and the mode's usual frequencies (its Bandwidth is in Settings, General) (shown with Rig Control connected, mmdFreqsShow) -->
+    <!-- What is decoded: the mode and the mode's usual frequencies (its Bandpass is in Settings, General) (shown with Rig Control connected, mmdFreqsShow) -->
     <div id="cwBar">
       <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="thor">DominoEX / THOR</option><option value="hell">Feld-Hell</option><option value="ft4">FT4</option><option value="ft8">FT8</option><option value="mfsk">MFSK</option><option value="navtex">NAVTEX</option><option value="olivia">Olivia</option><option value="packet" data-i18n="settings.packetDecoder.label">Packet</option><option value="psk31">PSK</option><option value="rtty">RTTY</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wefax">WEFAX</option><option value="wspr">WSPR</option></select></span>
       <span id="cwFreqsBox" class="cwPick"><select id="cwFreqs" style="display: none;" data-i18n="cwViewer.freqs.hover" title="The usual frequencies for this mode: pick one to set the rig to it, its frequency and its mode as this mode allows (Settings: Rig Control, then Decoders)"></select></span>
@@ -1074,8 +1099,8 @@
             <div class="mmdRigControl"><span data-i18n="settings.mmDecoder.fallRes.label">Resolution</span> <select id="mmdFallResSelect" data-i18n="settings.mmDecoder.fallRes.hover" title="Sharper in time or in frequency" onchange="mmdFallViewSet();"><option value="mode" data-i18n="settings.mmDecoder.fallRes.mode">By Mode</option><option value="quarter" data-i18n="settings.mmDecoder.fallRes.quarter">Sharpest Time</option><option value="half" data-i18n="settings.mmDecoder.fallRes.half">Sharp Time</option><option value="same" data-i18n="settings.mmDecoder.fallRes.same">Balanced</option><option value="twice" data-i18n="settings.mmDecoder.fallRes.twice">Sharp Frequency</option></select> <span data-i18n="settings.mmDecoder.fallWindow.label">Window</span> <select id="mmdFallWindowSelect" data-i18n="settings.mmDecoder.fallWindow.hover" title="Blackman-Harris: a darker floor beside strong signals" onchange="mmdFallViewSet();"><option value="hann">Hann</option><option value="blackman">Blackman-Harris</option></select></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.fallSharp.hover" title="Each frequency drawn as a sharp block" type="checkbox" id="mmdFallSharpValue" onclick="mmdFallViewSet();" /> <label data-i18n="settings.mmDecoder.fallSharp.label" for="mmdFallSharpValue">Sharp Pixels</label></div>
             <div class="mmdSettingsSep"></div>
-            <!-- Bandwidth: the span decoded (mmDecoder.js fills it; a change starts the decoder again) -->
-            <div class="mmdRigControl"><label for="cwBandwidth" data-i18n="cwViewer.bandwidth.label">Bandwidth</label> <select id="cwBandwidth" data-i18n="cwViewer.bandwidth.hover" title="The audio decoded, from 0 Hz up: a rig's passband (2.5k to 4k), or more of an SDR's stream (10k up; 44.1k, 48k and 96k are the whole of a stream at that sample rate). Changing it starts the decoder again"></select></div>
+            <!-- Bandpass: the span decoded (mmDecoder.js fills it; a change starts the decoder again) -->
+            <div class="mmdRigControl"><label for="cwBandwidth" data-i18n="cwViewer.bandwidth.label">Bandpass</label> <select id="cwBandwidth" data-i18n="cwViewer.bandwidth.hover" title="The audio decoded, from 0 Hz up: a rig's passband (2.5k to 4k), or more of an SDR's stream (10k up; 44.1k, 48k and 96k are the whole of a stream at that sample rate). Changing it starts the decoder again"></select></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.rigControl.hover" title="Lets the Multi-Mode Decoder read each mode's VFO and send the rig what each mode allows (its frequency, its mode); off, it has nothing to do with the rigs and shows audio frequencies only" type="checkbox" id="mmdRigControlValue" onclick="mmdSetRigControl();" /> <label data-i18n="settings.rig.label" for="mmdRigControlValue">Rig Control</label></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.followBirdWatch.hover" title="As BirdWatch follows a satellite transmitter, the decoder switches to its mode" type="checkbox" id="mmdFollowBirdWatchValue" onclick="mmdSetFollowBirdWatch();" /> <label data-i18n="settings.mmDecoder.followBirdWatch.label" for="mmdFollowBirdWatchValue">Follow BirdWatch</label></div>
             <div class="mmdRigControl"><input data-i18n="settings.mmDecoder.rsid.hover" title="Names the mode of a transmission on the waterfall when its sender starts it with an RSID" type="checkbox" id="mmdRsidValue" onclick="mmdSetRsid();" /> <label data-i18n="settings.mmDecoder.rsid.label" for="mmdRsidValue">RSID</label></div>
@@ -1416,8 +1441,8 @@
     <!-- The rig's band scope (mmdScope.js): shown while the decoder's VFO's rig has Use Scope If Present (Rig Control) -->
     <div id="mmdScope" style="display: none;">
       <canvas id="mmdScopeCanvas" data-i18n="cwViewer.scope.tune.hover" title="The radio's band scope: click to tune there"></canvas>
-      <span id="mmdScopeNarrow" class="cwButton mmdScopeButton">&minus;</span><span id="mmdScopeSpanText"></span>
-      <span id="mmdScopeWider" class="cwButton mmdScopeButton">+</span>
+      <span id="mmdScopeNarrow" class="cwButton mmdScopeButton">&minus;</span><span id="mmdScopeSpanLow" class="mmdScopeSpanText"></span>
+      <span id="mmdScopeSpanHigh" class="mmdScopeSpanText"></span><span id="mmdScopeWider" class="cwButton mmdScopeButton">+</span>
       <div id="mmdScopeWarn" style="display: none;"></div>
     </div>
     <!-- The Hz of the [ or ] under the mouse, or being dragged (mmDecoder.js, mmdRangeTip) -->
@@ -1428,7 +1453,7 @@
       <canvas id="cwOverlay"></canvas>
     </div>
     <!-- The divider: the rig's frequency, band and mode (mmdFreqsShow), centered; dragged up or down to size the waterfall -->
-    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="cwFreqText"></span><span id="cwPeriodText"></span></div>
+    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="cwFreqText"></span><span id="cwSplitRight"><span id="cwSplitStatus"></span><span id="cwPeriodText"></span></span></div>
     <div id="cwList">
       <table id="cwTable">
         <colgroup><col class="cwFreqCol" /><col class="cwDbCol" /><col class="cwWpmCol" /><col /></colgroup>
@@ -1593,7 +1618,7 @@
               </tr>
             </table>
           </div>
-          <!-- Transmit: how the rig is keyed (its PTT Method), the Level (moved as it plays), where the audio goes, Send, Stop and Tune -->
+          <!-- Transmit: how the rig is keyed (its PTT Method), the Power (moved as it plays), where the audio goes, Send, Stop and Tune -->
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="sstvTx.group.transmit">Transmit</div>
             <table>
@@ -1602,8 +1627,9 @@
                 <td><span id="sstvTxPttText" class="mapValue" data-i18n="sstvTx.ptt.hover" title="How the rig is keyed: the SSTV VFO's rig's PTT Method (Rig Control's settings in the main window). VOX sends a leader tone first"></span></td>
               </tr>
               <tr>
-                <td class="mapRowLabel"><label for="sstvTxLevel" data-i18n="sstvTx.level.label">Level</label></td>
-                <td><input type="range" id="sstvTxLevel" min="-45" max="0" step="0.5" value="-6" class="slider" data-i18n="sstvTx.level.hover" title="The audio's level into the rig: set it so the rig's ALC barely moves" /> <span id="sstvTxLevelTd" class="mapValue">-6.0 dB</span></td>
+                <!-- Power (mmdSstvTx.js, mmdSstvTxPowerRender), as WSJT-X's Pwr: dB below full scale, sending's and Tune's alike, kept by band -->
+                <td class="mapRowLabel"><label id="sstvTxPowerLabel" for="sstvTxPower" data-i18n="sstvTx.power.label">Power</label></td>
+                <td><input type="range" id="sstvTxPower" min="-45" max="0" step="0.1" value="-28" class="slider" data-i18n="sstvTx.power.hover" title="The audio's level into the rig, in dB below full: set it so the rig's ALC barely moves. Kept for each band, for sending and Tune alike" /> <span id="sstvTxPowerTd" class="mapValue">-28.0 dB</span></td>
               </tr>
               <tr>
                 <td class="mapRowLabel"><span data-i18n="settings.audio.row.outputDevice.label">Output Device</span></td>
@@ -1611,7 +1637,7 @@
               </tr>
               <tr>
                 <td class="mapRowLabel"></td>
-                  <td><span id="sstvTxSimulateButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSimulateClick();" data-i18n="sstvTx.simulate.hover" title="Plays the picture into the decoder as if it were received, to see how it comes out: nothing is keyed or sent"><span id="sstvTxSimulateLabel" data-i18n="sstvTx.simulate.label">Simulate Rx</span><span id="sstvTxAbortLabel" class="sstvTxHidden" data-i18n="sstvTx.abort.label">Abort</span></span> <span id="sstvTxSendButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSendClick();" data-i18n="sstvTx.send.hover" title="Keys the rig and sends the picture"><span data-i18n="sstvTx.send.label">Send</span></span> <span id="sstvTxTuneButton" class="cwButton sstvTxAction" onclick="mmdSstvTxTuneClick();" data-i18n="sstvTx.tuneButton.hover" title="Sends a steady 1900 Hz tone at the Level, for 30 s at most or until clicked again: set the rig's drive and ALC by it"><span data-i18n="sstvTx.tune.label">Tune</span></span></td>
+                  <td><span id="sstvTxSimulateButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSimulateClick();" data-i18n="sstvTx.simulate.hover" title="Plays the picture into the decoder as if it were received, to see how it comes out: nothing is keyed or sent"><span id="sstvTxSimulateLabel" data-i18n="sstvTx.simulate.label">Simulate Rx</span><span id="sstvTxAbortLabel" class="sstvTxHidden" data-i18n="sstvTx.abort.label">Abort</span></span> <span id="sstvTxSendButton" class="cwButton sstvTxAction" onclick="mmdSstvTxSendClick();" data-i18n="sstvTx.send.hover" title="Keys the rig and sends the picture"><span data-i18n="sstvTx.send.label">Send</span></span> <span id="sstvTxTuneButton" class="cwButton sstvTxAction" onclick="mmdSstvTxTuneClick();" data-i18n="sstvTx.tuneButton.hover" title="Sends a steady 1900 Hz tone at the Power, for 30 s at most or until clicked again: set the rig's drive and ALC by it"><span data-i18n="sstvTx.tune.label">Tune</span></span></td>
               </tr>
             </table>
           </div>

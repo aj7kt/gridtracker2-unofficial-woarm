@@ -168,7 +168,7 @@ static float waterfallNoise(const ftx_waterfall_t* wf)
 // Three tries, each only when the one before failed (the last two are also WSJT-X's, with credit and thanks to Joe Taylor, K1JT, and the WSJT
 // development team, as published in "The FT4 and FT8 Communication Protocols", QEX July/August 2020; written here from that description and
 // the coding literature, none of WSJT-X's code is used):
-//   1. ft8_lib's own: belief propagation over the LDPC code (bp_decode)
+//   1. ft8_lib's own: belief propagation over the LDPC code (its bp_decode, as bpDecode below)
 //   2. Ordered statistics decoding (OSD: Fossorier and Lin, 1995): the 91 most reliable bits that fix a codeword taken as heard, and
 //      each codeword they give with one of them flipped, or two of the least reliable of them, measured against what was heard; the
 //      closest kept, if its CRC is right and it is close enough
@@ -305,6 +305,36 @@ static float codewordCost(const bits174_t* cw, const bits174_t* hard, const floa
   return cost;
 }
 
+// codewordCost for many codewords against the same reading: the reliabilities summed for every pattern of each byte of a codeword's
+// differences, worked out once, so each distance is 22 lookups. (Summed in another order than codewordCost: the same to a rounding)
+#define COST_BYTES 22
+typedef struct
+{
+  float t[COST_BYTES][256];
+} CostTable;
+
+static void costTableMake(const float* reliability, CostTable* T)
+{
+  for (int j = 0; j < COST_BYTES; j++)
+  {
+    T->t[j][0] = 0.0f;
+    for (int v = 1; v < 256; v++)
+    {
+      int n = 8 * j + __builtin_ctz(v);
+      T->t[j][v] = T->t[j][v & (v - 1)] + (n < FTX_LDPC_N ? reliability[n] : 0.0f);
+    }
+  }
+}
+
+static inline float codewordCostT(const bits174_t* cw, const bits174_t* hard, const CostTable* T, int* differ)
+{
+  uint64_t d[3] = { cw->w[0] ^ hard->w[0], cw->w[1] ^ hard->w[1], cw->w[2] ^ hard->w[2] };
+  float cost = 0.0f;
+  for (int j = 0; j < COST_BYTES; j++) cost += T->t[j][(d[j >> 3] >> ((j & 7) * 8)) & 255];
+  *differ = __builtin_popcountll(d[0]) + __builtin_popcountll(d[1]) + __builtin_popcountll(d[2]);
+  return cost;
+}
+
 static int g_order[FTX_LDPC_N];
 static const float* g_sortReliability;
 
@@ -312,6 +342,22 @@ static int byReliability(const void* a, const void* b)
 {
   float x = g_sortReliability[*(const int*)a], y = g_sortReliability[*(const int*)b];
   return x < y ? 1 : x > y ? -1 : 0;
+}
+
+// A codeword's CRC syndrome: the CRC its first 91 bits carry, XOR the one worked out from its 77 message bits (0: right). Linear in the
+// codeword (ft8_lib's CRC starts at 0 and has no final XOR)
+static uint16_t crcSyndrome(const bits174_t* cw)
+{
+  uint8_t a91[FTX_LDPC_K_BYTES];
+  memset(a91, 0, sizeof(a91));
+  for (int n = 0; n < FTX_LDPC_K; n++)
+  {
+    if (bitGet(cw, n)) a91[n >> 3] |= (uint8_t)(0x80u >> (n & 7));
+  }
+  uint16_t carried = ftx_extract_crc(a91);
+  a91[9] &= 0xF8;
+  a91[10] = 0;
+  return carried ^ ftx_compute_crc(a91, 96 - 14);
 }
 
 // Ordered statistics decoding of llr: the closest codeword found (*cw), and its distance (soft); false if none of them had a right CRC
@@ -359,14 +405,20 @@ static bool osdDecode(const float* llr, bits174_t* best, int* bestDiffer)
   {
     if (bitGet(&hard, pivot[k])) bitsXor(&base, &rows[k]);
   }
+  // The CRC is linear, so a trial's CRC syndrome is the XOR of its rows' and the base's: each worked out once, and a trial's full check
+  // (codewordMessage) made only when its syndrome is 0
+  uint16_t synBase = crcSyndrome(&base), synRow[FTX_LDPC_K];
+  for (int k = 0; k < FTX_LDPC_K; k++) synRow[k] = crcSyndrome(&rows[k]);
+  static CostTable costs;
+  costTableMake(reliability, &costs);
   float bestCost = 1e30f;
   bool found = false;
   bits174_t cw;
   int differ;
-#define OSD_TRY()                                                       \
+#define OSD_TRY(SYN)                                                    \
   {                                                                     \
-    float cost = codewordCost(&cw, &hard, reliability, &differ);        \
-    if (cost < bestCost)                                                \
+    float cost = codewordCostT(&cw, &hard, &costs, &differ);            \
+    if (cost < bestCost && (SYN) == 0)                                  \
     {                                                                   \
       ftx_message_t m;                                                  \
       if (codewordMessage(&cw, &m))                                     \
@@ -379,12 +431,12 @@ static bool osdDecode(const float* llr, bits174_t* best, int* bestDiffer)
     }                                                                   \
   }
   cw = base;
-  OSD_TRY();
+  OSD_TRY(synBase);
   for (int k = 0; k < FTX_LDPC_K; k++)
   {
     cw = base;
     bitsXor(&cw, &rows[k]);
-    OSD_TRY();
+    OSD_TRY(synBase ^ synRow[k]);
   }
   for (int a = FTX_LDPC_K - OSD_PAIRS; a < FTX_LDPC_K; a++)
   {
@@ -393,7 +445,7 @@ static bool osdDecode(const float* llr, bits174_t* best, int* bestDiffer)
       cw = base;
       bitsXor(&cw, &rows[a]);
       bitsXor(&cw, &rows[b]);
-      OSD_TRY();
+      OSD_TRY(synBase ^ synRow[a] ^ synRow[b]);
     }
   }
 #undef OSD_TRY
@@ -722,13 +774,20 @@ static bool dictionaryDecode(const float* llr, float hz, ftx_message_t* message,
   float best = 1e30f, second = 1e30f;
   int bestCount = 0;
   const uint8_t* bestPayload = 0;
+  static CostTable costs;
+  bool costsMade = false;
   for (int i = 0; i < g_dictCount; i++)
   {
     if (fabsf(g_dict[i].hz - hz) > QSO_HZ) continue;
+    if (!costsMade)
+    {
+      costTableMake(sureness, &costs);
+      costsMade = true;
+    }
     for (int k = 0; k < g_dict[i].count; k++)
     {
       int count;
-      float cost = codewordCost(&g_dict[i].cw[k], &heard, sureness, &count);
+      float cost = codewordCostT(&g_dict[i].cw[k], &heard, &costs, &count);
       if (cost < best)
       {
         second = best;
@@ -746,6 +805,114 @@ static bool dictionaryDecode(const float* llr, float hz, ftx_message_t* message,
   message->hash = ftx_extract_crc(a91);
   *differ = bestCount;
   return true;
+}
+
+// ---- Belief propagation over the LDPC code: ft8_lib's bp_decode (ldpc.c, MIT, Karlis Goba) as it does it, step for step (the same
+// sums in the same order, so the same results), with each edge's place looked up once instead of searched for each time, and (BP_STALL)
+// given up when the parity checks failing haven't got fewer in that many iterations (a reading that doesn't converge rarely does later;
+// WSJT-X stops the same way). ft8_lib's fast_tanh and fast_atanh, which ldpc.c keeps to itself
+#ifndef BP_STALL
+#define BP_STALL 5  // 0: never given up early (as ft8_lib). Measured on a 20m recording against WSJT-X: the same decodes at 5 (those it
+                    // gave up on found by OSD instead), belief propagation's time cut by three fifths
+#endif
+
+static float bpTanh(float x)
+{
+  if (x < -4.97f) return -1.0f;
+  if (x > 4.97f) return 1.0f;
+  float x2 = x * x;
+  float a = x * (945.0f + x2 * (105.0f + x2));
+  float b = 945.0f + x2 * (420.0f + x2 * 15.0f);
+  return a / b;
+}
+
+static float bpAtanh(float x)
+{
+  float x2 = x * x;
+  float a = x * (945.0f + x2 * (-735.0f + x2 * 64.0f));
+  float b = (945.0f + x2 * (-1050.0f + x2 * 225.0f));
+  return a / b;
+}
+
+// For each check m and its i-th bit n: which of n's three checks m is; for each bit n and its j-th check m: n's place in m's list
+static int8_t g_bpMidx[FTX_LDPC_M][7];
+static int8_t g_bpNidx[FTX_LDPC_N][3];
+static bool g_bpReady = false;
+
+static void bpTables(void)
+{
+  for (int m = 0; m < FTX_LDPC_M; m++)
+  {
+    for (int i = 0; i < kFTX_LDPC_Num_rows[m]; i++)
+    {
+      int n = kFTX_LDPC_Nm[m][i] - 1;
+      for (int j = 0; j < 3; j++)
+      {
+        if (kFTX_LDPC_Mn[n][j] - 1 == m)
+        {
+          g_bpMidx[m][i] = (int8_t)j;
+          g_bpNidx[n][j] = (int8_t)i;
+        }
+      }
+    }
+  }
+  g_bpReady = true;
+}
+
+static void bpDecode(const float* codeword, int maxIters, uint8_t* plain, int* ok)
+{
+  if (!g_bpReady) bpTables();
+  float tov[FTX_LDPC_N][3];
+  float toc[FTX_LDPC_M][7];
+  int minErrors = FTX_LDPC_M, improvedAt = 0;
+  memset(tov, 0, sizeof(tov));
+  for (int iter = 0; iter < maxIters; iter++)
+  {
+    int sum = 0;
+    for (int n = 0; n < FTX_LDPC_N; n++)
+    {
+      plain[n] = ((codeword[n] + tov[n][0] + tov[n][1] + tov[n][2]) > 0) ? 1 : 0;
+      sum += plain[n];
+    }
+    if (sum == 0) break;
+    int errors = 0;
+    for (int m = 0; m < FTX_LDPC_M; m++)
+    {
+      uint8_t x = 0;
+      for (int i = 0; i < kFTX_LDPC_Num_rows[m]; i++) x ^= plain[kFTX_LDPC_Nm[m][i] - 1];
+      errors += x != 0;
+    }
+    if (errors < minErrors)
+    {
+      minErrors = errors;
+      improvedAt = iter;
+      if (errors == 0) break;
+    }
+    else if (BP_STALL > 0 && iter - improvedAt >= BP_STALL) break;
+    // Bits to checks: each bit's own likelihood and what its other two checks said (in their order)
+    for (int m = 0; m < FTX_LDPC_M; m++)
+    {
+      for (int i = 0; i < kFTX_LDPC_Num_rows[m]; i++)
+      {
+        int n = kFTX_LDPC_Nm[m][i] - 1, own = g_bpMidx[m][i];
+        float t = codeword[n];
+        for (int j = 0; j < 3; j++) if (j != own) t += tov[n][j];
+        toc[m][i] = bpTanh(-t / 2);
+      }
+    }
+    // Checks to bits: the product of what the check's other bits said (in their order)
+    for (int n = 0; n < FTX_LDPC_N; n++)
+    {
+      for (int j = 0; j < 3; j++)
+      {
+        int m = kFTX_LDPC_Mn[n][j] - 1, own = g_bpNidx[n][j];
+        float t = 1.0f;
+        for (int i = 0; i < kFTX_LDPC_Num_rows[m]; i++) if (i != own) t *= toc[m][i];
+        tov[n][j] = -2 * bpAtanh(t);
+      }
+    }
+  }
+  *ok = minErrors;
 }
 
 // How a message was decoded: 0 belief propagation, 1 OSD, 2 + kind for a priori (2 a1, 3 a2, 4 a3), 5 a station's next message (a4)
@@ -839,7 +1006,7 @@ static bool decodeLlr(float* llr, float hz, ftx_message_t* message, int* how, in
   uint8_t plain[FTX_LDPC_N];
   int errors;
   bits174_t cw;
-  bp_decode(llr, LDPC_ITERATIONS, plain, &errors);
+  bpDecode(llr, LDPC_ITERATIONS, plain, &errors);
   if (errors == 0)
   {
     memset(&cw, 0, sizeof(cw));
@@ -883,7 +1050,7 @@ static bool decodeLlr(float* llr, float hz, ftx_message_t* message, int* how, in
       if (guessKnown(guess, n)) apLlr[n] = payloadBit(guess->payload, n) ? sure * 1.1f : -sure * 1.1f;
     }
     bool ok = false;
-    bp_decode(apLlr, LDPC_ITERATIONS, plain, &errors);
+    bpDecode(apLlr, LDPC_ITERATIONS, plain, &errors);
     if (errors == 0)
     {
       memset(&cw, 0, sizeof(cw));
@@ -953,8 +1120,9 @@ static bool decodeLlr(float* llr, float hz, ftx_message_t* message, int* how, in
 #define BB_SYMBOL 32
 #define FINE_DF_STEPS 5    // either side, in 0.5 Hz
 #ifndef FINE_MIN_SYNC
-#define FINE_MIN_SYNC 0.27f // a fine reading whose sync tones stand out less than this isn't decoded (none under 0.30 ever did, on
-                            // three recordings: about two in three of those tried are under it)
+#define FINE_MIN_SYNC 0.24f // a fine reading whose sync tones stand out less than this isn't decoded (about two in three of those tried
+                            // are under it; with SYNC_MIN 1.3, 15 more of WSJT-X's decodes in 845 on a clean 20m recording, false ones the
+                            // same, at about half again the time)
 #endif
 #ifdef FT8_STATS
 static int g_fineSync[2][20];
@@ -1039,7 +1207,10 @@ static void symbolPowers(const kiss_fft_cpx* bb, int s, float* p)
 // transform, each start's from the one before (worked out afresh every 128, so it doesn't drift). g_tonePower[step][tone][sample]
 static float g_tonePower[2 * FINE_DF_STEPS + 1][8][BB_N];
 static float g_allPower[2 * FINE_DF_STEPS + 1][BB_N];
-static int g_powerLo, g_powerHi;
+
+// Only the symbol starts the sync search asks for are worked out: those of each of the three Costas blocks (g_win: first and last start
+// of block b's window), not every start across the message
+static int g_win[3][2];
 
 static void tonePowers(const kiss_fft_cpx* x, int d)
 {
@@ -1052,9 +1223,10 @@ static void tonePowers(const kiss_fft_cpx* x, int d)
     wi[m] = sinf(2.0f * (float)M_PI * m / BB_SYMBOL);
   }
   double re[8], im[8];
-  for (int s = g_powerLo; s <= g_powerHi; s++)
+  for (int w = 0; w < 3; w++)
+  for (int s = g_win[w][0]; s <= g_win[w][1]; s++)
   {
-    if ((s - g_powerLo) % 128 == 0)
+    if ((s - g_win[w][0]) % 128 == 0)
     {
       for (int m = 0; m < 8; m++) re[m] = im[m] = 0.0;
       for (int n = 0; n < BB_SYMBOL; n++)
@@ -1090,8 +1262,12 @@ static void tonePowers(const kiss_fft_cpx* x, int d)
   }
 }
 
-static inline float tonePower(int d, int m, int s) { return s < g_powerLo || s > g_powerHi ? 0.0f : g_tonePower[d][m][s]; }
-static inline float allPower(int d, int s) { return s < g_powerLo || s > g_powerHi ? 0.0f : g_allPower[d][s]; }
+static inline bool inWindow(int s)
+{
+  return (s >= g_win[0][0] && s <= g_win[0][1]) || (s >= g_win[1][0] && s <= g_win[1][1]) || (s >= g_win[2][0] && s <= g_win[2][1]);
+}
+static inline float tonePower(int d, int m, int s) { return inWindow(s) ? g_tonePower[d][m][s] : 0.0f; }
+static inline float allPower(int d, int s) { return inWindow(s) ? g_allPower[d][s] : 0.0f; }
 
 // How far a signal's Costas sync tones stand out at a start sample and frequency step: their share of the power in their symbols
 static float fineSync(int d, int s)
@@ -1152,52 +1328,67 @@ static void fineMultiLikelihoods(int nsym, float* llr)
     {
       int g = 29 - first < nsym ? 29 - first : nsym;
       int combos = 1 << (3 * g);
-      float bestOne[9], bestZero[9];
-      for (int b = 0; b < 3 * g; b++) bestOne[b] = bestZero[b] = -1.0f;
-#ifndef NO_MULTI_LSE
-      // Every run of tones weighed by how likely it is (e^(2 A |sum| / noise)), summed with and without each bit
-      static double mags[512];
-      double top = -1e30;
-#endif
+      // The run's symbols' tones by the bits they carry (looked up once, not for every run of tones)
+      float vr[3][8], vi[3][8];
+      for (int j = 0; j < g; j++)
+      {
+        int k = block * 29 + first + j, sym = k + (k < 29 ? 7 : 14);
+        for (int bits = 0; bits < 8; bits++)
+        {
+          vr[j][bits] = g_symRe[sym][kFT8_Gray_map[bits]];
+          vi[j][bits] = g_symIm[sym][kFT8_Gray_map[bits]];
+        }
+      }
+      static float mags[512];
       for (int c = 0; c < combos; c++)
       {
         float sr = 0.0f, si = 0.0f;
         for (int j = 0; j < g; j++)
         {
           int bits = (c >> (3 * (g - 1 - j))) & 7;
-          int k = block * 29 + first + j, sym = k + (k < 29 ? 7 : 14);
-          int tone = kFT8_Gray_map[bits];
-          sr += g_symRe[sym][tone];
-          si += g_symIm[sym][tone];
+          sr += vr[j][bits];
+          si += vi[j][bits];
         }
-        float mag = sqrtf(sr * sr + si * si);
-#ifndef NO_MULTI_LSE
-        mags[c] = g_lseGain * mag;
-        if (mags[c] > top) top = mags[c];
-#endif
-        for (int b = 0; b < 3 * g; b++)
-        {
-          if ((c >> (3 * g - 1 - b)) & 1) { if (mag > bestOne[b]) bestOne[b] = mag; }
-          else if (mag > bestZero[b]) bestZero[b] = mag;
-        }
+        mags[c] = sqrtf(sr * sr + si * si);
       }
-      for (int b = 0; b < 3 * g; b++) llr[3 * (block * 29 + first) + b] = bestOne[b] - bestZero[b];
 #ifndef NO_MULTI_LSE
       if (g_lseGain > 0.0)
       {
+        // Every run of tones weighed by how likely it is (e^(2 A |sum| / noise)), each weight worked out once, then summed with and
+        // without each bit
+        static double w[512];
+        double top = -1e30;
+        for (int c = 0; c < combos; c++)
+        {
+          w[c] = g_lseGain * mags[c];
+          if (w[c] > top) top = w[c];
+        }
+        for (int c = 0; c < combos; c++) w[c] = exp(w[c] - top);
         for (int b = 0; b < 3 * g; b++)
         {
           double one = 0.0, zero = 0.0;
           for (int c = 0; c < combos; c++)
           {
-            double w = exp(mags[c] - top);
-            if ((c >> (3 * g - 1 - b)) & 1) one += w;
-            else zero += w;
+            if ((c >> (3 * g - 1 - b)) & 1) one += w[c];
+            else zero += w[c];
           }
           llr[3 * (block * 29 + first) + b] = (float)(log(one + 1e-300) - log(zero + 1e-300));
         }
+        continue;
       }
 #endif
+      // (Without the weights: the strongest with the bit less the strongest without)
+      float bestOne[9], bestZero[9];
+      for (int b = 0; b < 3 * g; b++) bestOne[b] = bestZero[b] = -1.0f;
+      for (int c = 0; c < combos; c++)
+      {
+        for (int b = 0; b < 3 * g; b++)
+        {
+          if ((c >> (3 * g - 1 - b)) & 1) { if (mags[c] > bestOne[b]) bestOne[b] = mags[c]; }
+          else if (mags[c] > bestZero[b]) bestZero[b] = mags[c];
+        }
+      }
+      for (int b = 0; b < 3 * g; b++) llr[3 * (block * 29 + first) + b] = bestOne[b] - bestZero[b];
     }
   }
   normalizeLlr(llr);
@@ -1238,34 +1429,42 @@ static void fineLikelihoods(float f0, float t0, float range, float* llr, float* 
   static kiss_fft_cpx x[BB_N];
   fineBaseband(f0, bb);
   int s0 = (int)lroundf(t0 * BB_RATE), reach = (int)lroundf(range * BB_RATE) + 1;
-  // The symbol starts that can be asked for: the earliest sync symbol to the last symbol, either side of the time searched
-  g_powerLo = s0 - reach;
-  g_powerHi = s0 + reach + 78 * BB_SYMBOL;
-  if (g_powerLo < 0) g_powerLo = 0;
-  if (g_powerHi > BB_N - 1) g_powerHi = BB_N - 1;
-  int lo = g_powerLo, hi = g_powerHi + BB_SYMBOL < BB_N ? g_powerHi + BB_SYMBOL : BB_N;
+  // The symbol starts the sync search can ask for: each Costas block's seven symbols, either side of the time searched
+  for (int b = 0; b < 3; b++)
+  {
+    int wlo = s0 - reach + b * 36 * BB_SYMBOL, whi = s0 + reach + (b * 36 + 6) * BB_SYMBOL;
+    if (wlo < 0) wlo = 0;
+    if (whi > BB_N - 1) whi = BB_N - 1;
+    g_win[b][0] = wlo;
+    g_win[b][1] = whi;
+  }
   for (int d = -FINE_DF_STEPS; d <= FINE_DF_STEPS; d++)
   {
-    // Shifted by d half hertz: e^(-j 2 pi df n / rate), stepped from n = lo (put right every 64 steps, so it doesn't drift)
-    double step = -2.0 * M_PI * 0.5 * d / BB_RATE;
-    double c = cos(step * lo), sn = sin(step * lo), dc = cos(step), ds = sin(step);
-    for (int n = lo; n < hi; n++)
+    // Shifted by d half hertz: e^(-j 2 pi df n / rate), over each window's samples (its starts and the symbol after the last), stepped
+    // from its first sample (put right every 64 steps, so it doesn't drift)
+    double step = -2.0 * M_PI * 0.5 * d / BB_RATE, dc = cos(step), ds = sin(step);
+    for (int w = 0; w < 3; w++)
     {
-      x[n].r = (float)(bb[n].r * c - bb[n].i * sn);
-      x[n].i = (float)(bb[n].r * sn + bb[n].i * c);
-      double nc = c * dc - sn * ds;
-      sn = c * ds + sn * dc;
-      c = nc;
-      if (((n - lo) & 63) == 63)
+      int lo = g_win[w][0], hi = g_win[w][1] + BB_SYMBOL < BB_N ? g_win[w][1] + BB_SYMBOL : BB_N;
+      double c = cos(step * lo), sn = sin(step * lo);
+      for (int n = lo; n < hi; n++)
       {
-        c = cos(step * (n + 1));
-        sn = sin(step * (n + 1));
+        x[n].r = (float)(bb[n].r * c - bb[n].i * sn);
+        x[n].i = (float)(bb[n].r * sn + bb[n].i * c);
+        double nc = c * dc - sn * ds;
+        sn = c * ds + sn * dc;
+        c = nc;
+        if (((n - lo) & 63) == 63)
+        {
+          c = cos(step * (n + 1));
+          sn = sin(step * (n + 1));
+        }
       }
     }
     tonePowers(x, d + FINE_DF_STEPS);
   }
   float best = -1.0f, bestDf = 0.0f;
-  int bestS = s0, bestD = 0;
+  int bestS = s0;
   for (int d = -FINE_DF_STEPS; d <= FINE_DF_STEPS; d++)
   {
     for (int ds = -reach + 1; ds <= reach - 1; ds++)
@@ -1275,7 +1474,6 @@ static void fineLikelihoods(float f0, float t0, float range, float* llr, float* 
       {
         best = sync;
         bestDf = 0.5f * d;
-        bestD = d;
         bestS = s0 + ds;
       }
     }
@@ -1285,15 +1483,21 @@ static void fineLikelihoods(float f0, float t0, float range, float* llr, float* 
   *tOut = (float)bestS / BB_RATE;
   // Each symbol's 8 tones as complex values where it was set (for reading 2 or 3 symbols together: fineMultiLikelihoods)
   {
-    double step = -2.0 * M_PI * bestDf / BB_RATE;
+    double step = -2.0 * M_PI * bestDf / BB_RATE, dc = cos(step), ds = sin(step);
     for (int k = 0; k < FT8_NN; k++)
     {
       float re[8] = { 0 }, im[8] = { 0 };
-      for (int n = 0; n < BB_SYMBOL; n++)
+      // The shift e^(j step at), worked out at the symbol's first sample and turned a sample at a time after it
+      int first = bestS + k * BB_SYMBOL;
+      double cc = cos(step * first), ss = sin(step * first);
+      for (int n = 0; n < BB_SYMBOL; n++, first++)
       {
-        int at = bestS + k * BB_SYMBOL + n;
+        int at = first;
+        float c = (float)cc, sn = (float)ss;
+        double nc = cc * dc - ss * ds;
+        ss = cc * ds + ss * dc;
+        cc = nc;
         if (at < 0 || at >= BB_N) continue;
-        float c = (float)cos(step * at), sn = (float)sin(step * at);
         float xr = bb[at].r * c - bb[at].i * sn, xi = bb[at].r * sn + bb[at].i * c;
         for (int m = 0; m < 8; m++)
         {
@@ -1332,14 +1536,10 @@ static void fineLikelihoods(float f0, float t0, float range, float* llr, float* 
     float s[8];
     for (int j = 0; j < 8; j++)
     {
-#ifdef FINE_TONE_NORM
+      // Amplitude (tried: power, amplitude and dB; amplitude decoded the most), from the symbol's tones where it was set (tonePowers
+      // works out only the sync windows)
       int tone = kFT8_Gray_map[j];
       s[j] = sqrtf(g_symRe[sym][tone] * g_symRe[sym][tone] + g_symIm[sym][tone] * g_symIm[sym][tone]);
-#else
-      float v = tonePower(bestD + FINE_DF_STEPS, kFT8_Gray_map[j], bestS + sym * BB_SYMBOL);
-      // Amplitude (tried: power, amplitude and dB; amplitude decoded the most)
-      s[j] = sqrtf(v);
-#endif
     }
     llr[bit] = maxOf4(s[4], s[5], s[6], s[7]) - maxOf4(s[0], s[1], s[2], s[3]);
     llr[bit + 1] = maxOf4(s[2], s[3], s[6], s[7]) - maxOf4(s[0], s[1], s[4], s[5]);
@@ -1377,12 +1577,14 @@ static void fineLikelihoods(float f0, float t0, float range, float* llr, float* 
         e[j] = gain * sqrt(g_symRe[sym][tone] * g_symRe[sym][tone] + g_symIm[sym][tone] * g_symIm[sym][tone]);
         if (e[j] > top) top = e[j];
       }
+      // Each tone's weight worked out once, then summed for each of the symbol's three bits
+      for (int j = 0; j < 8; j++) e[j] = exp(e[j] - top);
       for (int b = 0; b < 3; b++)
       {
         double one = 0.0, zero = 0.0;
         for (int j = 0; j < 8; j++)
         {
-          double w = exp(e[j] - top);
+          double w = e[j];
           if ((j >> (2 - b)) & 1) one += w;
           else zero += w;
         }
@@ -1433,6 +1635,58 @@ int ft8_probe(float freq, float t0, int num_samples, float range)
     }
   }
   out += sprintf(out, "lib\t%s\n", text);
+  return 1;
+}
+
+// Test builds: the fine reading at a place measured against the message known to be there (text, written into ft8_mycall_buffer's
+// neighbour ft8_known_buffer first): "known\tsync\tfreq\tt\tsymbol errors (of 58 data, strongest tone not the sent one)\tcostas errors
+// (of 21)\tbit errors 1-symbol\t2-symbol\t3-symbol\tsignal/noise (tone power ratio)" in ft8_output; -1 if the text didn't encode
+static char g_known[64];
+char* ft8_known_buffer(void) { return g_known; }
+
+int ft8_probe_known(float freq, float t0, int num_samples, float range)
+{
+  if (!g_generatorReady) generatorRows();
+  fineSpectrum(num_samples);
+  ftx_message_t m;
+  if (ftx_message_encode(&m, &g_hash_if, g_known) != FTX_MESSAGE_RC_OK) return -1;
+  uint8_t a91[FTX_LDPC_K_BYTES], tones[FT8_NN];
+  ftx_add_crc(m.payload, a91);
+  ft8_encode(m.payload, tones);
+  bits174_t cw;
+  memset(&cw, 0, sizeof(cw));
+  for (int n = 0; n < FTX_LDPC_K; n++)
+  {
+    if (a91[n >> 3] & (0x80u >> (n & 7))) bitsXor(&cw, &g_generator[n]);
+  }
+  float llr[FTX_LDPC_N], sync, fF, fT;
+  fineLikelihoods(freq, t0, range, llr, &sync, &fF, &fT);
+  int bitErr[3] = { 0, 0, 0 };
+  for (int n = 0; n < FTX_LDPC_N; n++) bitErr[0] += (llr[n] > 0.0f) != bitGet(&cw, n);
+  int symErr = 0, costasErr = 0;
+  double on = 0.0, off = 0.0;
+  for (int k = 0; k < FT8_NN; k++)
+  {
+    int top = 0;
+    float p[8];
+    for (int t = 0; t < 8; t++)
+    {
+      p[t] = g_symRe[k][t] * g_symRe[k][t] + g_symIm[k][t] * g_symIm[k][t];
+      if (p[t] > p[top]) top = t;
+      if (t == tones[k]) on += p[t];
+      else off += p[t];
+    }
+    bool costas = k < 7 || (k >= 36 && k < 43) || k >= 72;
+    if (top != tones[k]) { if (costas) costasErr++; else symErr++; }
+  }
+  for (int nsym = 2; nsym <= 3; nsym++)
+  {
+    float l2[FTX_LDPC_N];
+    fineMultiLikelihoods(nsym, l2);
+    for (int n = 0; n < FTX_LDPC_N; n++) bitErr[nsym - 1] += (l2[n] > 0.0f) != bitGet(&cw, n);
+  }
+  double snr = off > 0.0 ? (on / FT8_NN) / (off / (7.0 * FT8_NN)) : 0.0;
+  sprintf(g_output, "known\t%.3f\t%.1f\t%.3f\t%d\t%d\t%d\t%d\t%d\t%.2f\n", sync, fF, fT, symErr, costasErr, bitErr[0], bitErr[1], bitErr[2], snr);
   return 1;
 }
 #endif
@@ -2047,7 +2301,7 @@ static float candidateT(const ftx_candidate_t* cand)
 #define SPEC_STEPS (SLOT_SAMPLES / SPEC_STEP)
 #define SPEC_BINS (SPEC_NFFT / 2)
 #ifndef SYNC_MIN
-#define SYNC_MIN 1.6f  // (1.3 found 2 more in two recordings, at 40% more time)
+#define SYNC_MIN 1.3f  // (with FINE_MIN_SYNC 0.24: see it)
 #endif
 #ifndef CANDIDATES8
 #define CANDIDATES8 300

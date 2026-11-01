@@ -123,11 +123,15 @@ function mmdSetRigControl()
   mmdTop();
 }
 
-// Follow BirdWatch: on, the transmitter BirdWatch follows now sets the mode at once (mmdFollowBirdWatch)
+// Follow BirdWatch: on, the transmitter BirdWatch follows now sets the mode at once (mmdFollowBirdWatch); on or off, the VFO menus (and
+// the Frequency menu) show at once whose VFO is read: BirdWatch's, or each mode's own again
 function mmdSetFollowBirdWatch()
 {
   GT.settings.MMD.followBirdWatch = mmdFollowBirdWatchValue.checked;
   DEC.followedUuid = undefined;
+  window.opener.mmDecoderFollowVfoSync();
+  mmdSettingsRender();
+  mmdTop();
 }
 
 // RSID: on, every mode's input goes to the RSID finder too (mmdRsid.js); off, the RSIDs drawn go
