@@ -18,13 +18,13 @@
   <head>
     <title>Call Roster</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="./lib/style.css" />
-    <link id="roster" rel="stylesheet" href="./lib/style_roster.css" />
+    <link rel="stylesheet" href="./lib/css/style.css" />
+    <link id="roster" rel="stylesheet" href="./lib/css/style_roster.css" />
     <script src="./lib/first.js" type="text/javascript"></script>
-    <script src="./lib/protos.js" type="text/javascript"></script>
-    <script src="./lib/third-party.js" type="text/javascript"></script>
-    <script src="./lib/i18n.js" type="text/javascript"></script>
-    <script src="./lib/roster.js " type="text/javascript"></script>
+    <script src="./lib/ui/formatters.js" type="text/javascript"></script>
+    <script src="./lib/third-party/third-party.js" type="text/javascript"></script>
+    <script src="./lib/ui/i18n.js" type="text/javascript"></script>
+    <script src="./lib/roster/rosterWindow.js" type="text/javascript"></script>
     <script src="./lib/roster/prepareRosterSettings.js" type="text/javascript"></script>
     <script src="./lib/roster/processRosterFiltering.js" type="text/javascript"></script>
     <script src="./lib/roster/processRosterHunting.js" type="text/javascript"></script>
@@ -34,12 +34,14 @@
     <script src="./lib/roster/rosterColumns.js" type="text/javascript"></script>
     <script src="./lib/roster/rosterColumnFunctions.js" type="text/javascript"></script>
     <script src="./lib/roster/sendAlerts.js" type="text/javascript"></script>
+    <script src="./lib/roster/sotaLogDialog.js" type="text/javascript"></script>
   </head>
   <body id="rosterBody" onload="init()"  onresize="resize()" style="display:none;" class="roster" oncontextmenu="return handleContextMenu(event);">
     <div id="settingsDiv">
       <div style="top: 1px; right: 1px; position: absolute">
         <button class="Xbutton" onclick="closeSettings()">X</button>
       </div>
+      <div id="rosterSettingsTitle">Call Roster Settings</div>
       <div class="infotab">
         <button data-i18n="settings.General.label" id="generalbox" class="infoTablinks active" onclick="openInfoTab(event, 'generalSettingsDiv')">
           General
@@ -53,8 +55,12 @@
         <button data-i18n="roster.ignores.label" id="ingoresbox" class="infoTablinks" onclick="openInfoTab(event, 'ignoresBoxDiv', renderIgnoresTab)">
           Ignores
         </button>
+        <button data-i18n="roster.columns.tab.label" id="colorsbox" class="infoTablinks" onclick="openInfoTab(event, 'colorsBoxDiv', renderColorsTab)">
+          Columns
+        </button>
       </div>
       <div id="generalSettingsDiv" class="infoTabcontent">
+        <div id="generalSettingsBoxes">
         <div class="mapItem"  align="center">
           <table >
             <tr align="center" >
@@ -83,11 +89,10 @@
             </tr>
           </table>
         </div>
-        <br/>
-        <div class="mapItem"  align="center">
+        <div class="mapItem"  align="center" id="clearRosterOnBandChangeDiv">
           <table>
             <tr align="center">
-              <td>Clear Roster on Band change</td>
+              <td data-i18n="roster.settings.clearOnBand.label">Clear Roster on Band change</td>
             </tr>
             <tr align="center">
               <td colspan="1">
@@ -99,11 +104,13 @@
         <div class="mapItem"  align="center">
           <table>
             <tr align="center">
-              <td>Decode Delay On Focus</td>
+              <td data-i18n="roster.settings.delayOnFocus.label">Decode Delay On Focus</td>
             </tr>
-            <td  align="center" colspan="1">
-              <input type="checkbox" id="rosterDelayOnFocus" onchange="rosterDelayOnFocusValueChanged(this)" />
-            </td>
+            <tr align="center"></tr>
+              <td  align="center" colspan="1">
+                <input type="checkbox" id="rosterDelayOnFocus" onchange="rosterDelayOnFocusValueChanged(this)" />
+              </td>
+            </tr>
             <tr align="center">
               <td  style="display:none;" id="rosterDelayTimeTd">1500ms</td>
             </tr>
@@ -119,14 +126,14 @@
           <div class="button" style="margin: 5px; font:larger; padding:5px;" id="compactModeDiv" onclick="compactModeChanged()">Compact Mode</div>
         </div>
         <div class="mapItem" id="compactEnityDiv">
-          <label>Compact Mode Entity<label><br />
-              <select id="compactEntitySelect" onchange="compactEntityChanged()"></select>
+          <span data-i18n="roster.settings.compactEntity.label">Compact Mode Entity</span><br />
+          <select id="compactEntitySelect" onchange="compactEntityChanged()"></select>
         </div>
-        <br />
+        </div>
         <div class="mapItem">
           <table align="center">
             <tr align="center">
-              <td align="center">Window Filters</td>
+              <td align="center" data-i18n="roster.settings.windowFilters.label">Window Filters</td>
             </tr>
             <tr align="center">
               <td align="center">
@@ -140,13 +147,13 @@
                     </tr>
                     <tr align="center">
                       <td colspan="2">
-                        <input type="range" min="10" max="100" value="100" step="1" class="slider"
+                        <input type="range" min="15" max="100" value="100" step="1" class="slider"
                           id="filterbrightnessSlider" oninput="filtersChanged()" />
                       </td>
                     </tr>
                   </table>
                 </div>
-                <div class="mapItem">
+                <!-- div class="mapItem">
                   <table align="center">
                     <tr align="center">
                       <td align="center">Contrast</td>
@@ -161,7 +168,7 @@
                       </td>
                     </tr>
                   </table>
-                </div>
+                </div-->
                 <div class="mapItem">
                   <table align="center">
                     <tr align="center">
@@ -178,7 +185,6 @@
                     </tr>
                   </table>
                 </div>
-                <br />
                 <div class="mapItem">
                   <table align="center">
                     <tr align="center">
@@ -189,12 +195,13 @@
                     </tr>
                     <tr align="center">
                       <td colspan="2">
-                        <input type="range" min="0" max="100" value="0" step="1" class="slider" id="filterinvertSlider"
+                        <input type="range" min="0" max="100" value="0" step="100" class="slider" id="filterinvertSlider"
                           oninput="filtersChanged()" />
                       </td>
                     </tr>
                   </table>
                 </div>
+                <br />
                 <div class="mapItem">
                   <table align="center">
                     <tr align="center">
@@ -214,7 +221,7 @@
                 <div class="mapItem">
                   <table align="center">
                     <tr align="center">
-                      <td align="center">Hue Rotate</td>
+                      <td align="center" data-i18n="roster.settings.hueRotate.label">Hue Rotate</td>
                     </tr>
                     <tr align="center">
                       <td align="center" id="filterhuerotateTd"></td>
@@ -232,8 +239,8 @@
             <tr>
               <td>
                 <div class="mapItem">
-                  <div class="button" style="margin: 10px;padding:3px;" onclick="resetFilters()" title="Reset Filters">Reset Filters
-                    (Ctrl-R)</div>
+                  <div class="button" style="margin: 10px;padding:3px;" onclick="resetFilters()" data-i18n="roster.settings.resetFilters.label" title="Reset Filters">Reset Filters
+                    (Ctrl-L)</div>
                 </div>
               </td>
             </tr>
@@ -248,11 +255,11 @@
             <th>Type</th>
             <th>Regex</th>
             <th id="watcherTextTh">Input</th>
-            <th>Start<br/>Date</th>
+            <th>Start<br>Date</th>
             <th id="watcherStartDateTh">UTC</th>
-            <th>End<br/>Date</th>
+            <th>End<br>Date</th>
             <th id="watcherEndDateTh">UTC</th>
-            <th id="watcherAutoDeleteTh"></thid>Auto<br/>Delete</th>
+            <th id="watcherAutoDeleteTh">Auto<br>Delete</th>
             <th>Clear</th>
             <th>Save</th>
           </tr>
@@ -263,7 +270,8 @@
             <td>
               <select id="watcherType" onchange="watcherTypeChanged(this.value)">
                 <option value="Callsign" data-i18n="roster.controls.hunting.callsign">Callsign</option>
-                <option value="Calling" data-i18n="alerts.QRZ.speech">Calling</option>
+                <option value="Calling" id="watcherCallingOption" data-i18n="alerts.QRZ.speech">Calling</option>
+                <option value="Spotter" id="watcherSpotterOption" data-i18n="rosterColumns.Spotter.header">Spotter</option>
                 <option value="Grid" data-i18n="roster.controls.hunting.grid">Grid</option>
                 <option value="Message" data-i18n="gt.WSJTMessage.Message">Message</option>
               </select>
@@ -297,8 +305,8 @@
         <div id="watcherEditView"></div>
       </div>
       <div id="exceptionsBoxDiv" class="infoTabcontent">
-        <div class="exceptionTab">
-        <div>
+        <div class="exceptionTab" id="exceptionTabDiv">
+        <div id="minDbDiv">
           <input type="checkbox" id="wantMinDB" onchange="huntingValueChanged(this);" />
           <label data-i18n="roster.secondary.exceptions.minDB" for="wantMinDB">Min dB</label>
           <span id="minDbView" class="roundBorderValue">-24</span>
@@ -313,7 +321,7 @@
             oninput="huntingValueChanged(this);"
           />
         </div>
-        <div>
+        <div id="maxDTDiv">
           <input type="checkbox" id="wantMaxDT" onchange="huntingValueChanged(this);" />
           <label data-i18n="roster.secondary.exceptions.maxDT" for="wantMaxDT">Max DT</label>
           <span id="maxDTView" class="roundBorderValue">.5</span>
@@ -328,7 +336,7 @@
             oninput="huntingValueChanged(this);"
           />
         </div>
-        <div>
+        <div id="minFreqDiv">
           <input type="checkbox" id="wantMinFreq" onchange="huntingValueChanged(this);" />
           <label data-i18n="roster.secondary.exceptions.minFreq" for="wantMinFreq">Min freq</label>
           <span id="minFreqView" class="roundBorderValue">400</span>
@@ -343,7 +351,7 @@
             oninput="huntingValueChanged(this);"
           />
         </div>
-        <div>
+        <div id="maxFreqDiv">
           <input type="checkbox" id="wantMaxFreq" onchange="huntingValueChanged(this);" />
           <label data-i18n="roster.secondary.exceptions.maxFreq" for="wantMaxFreq">Max freq</label>
           <span id="maxFreqView" class="roundBorderValue">3500</span>
@@ -364,7 +372,7 @@
           <span id="maxLoTWView" class="roundBorderValue" style="width: 35px;">3</span>
           <p>
           <input
-            title="Max time since their last upload"
+            data-i18n="roster.secondary.exceptions.maxLoTW.hover" title="Max time since their last upload"
             type="range"
             min="3"
             max="27"
@@ -382,39 +390,66 @@
           Entity&nbsp;
           <select id="ignoreTypeSelect" onchange="ignoreTypeChanged(this.value);">
             <option value="Callsign" selected="true">Callsign</option>
-            <option value="CQ">CQ</option>
-            <option value="DXCC">DXCC</option>
+            <option value="CQ" id="ignoreCqOption">CQ</option>
+            <option value="DXCC" id="ignoreDxccOption">DXCC</option>
+            <option value="DEDXCC" id="ignoreDeDxccOption" data-i18n="rosterColumns.DEDXCC.header">DE DXCC</option>
+            <option value="DECont" id="ignoreDeContOption" data-i18n="rosterColumns.DECont.header">DE Cont</option>
             <option value="Grid">Grid</option>
-            <option value="CQz">CQ Zone</option>
-            <option value="ITUz">ITU Zone</option>
+            <option value="CQz" data-i18n="rosterColumns.Wanted.cqz">CQ Zone</option>
+            <option value="ITUz" data-i18n="rosterColumns.Wanted.ituz">ITU Zone</option>
+            <option value="Spotter" id="ignoreSpotterOption" data-i18n="roster.ignores.spotters">Spotter</option>
           </select>
-          <input id="ignoreCallsignValue" type="text" class="inputTextValue"  oninput="this.value = this.value.toUpperCase()" size="10"/>
+          <input id="ignoreCallsignValue" type="text" class="inputTextValue" size="10" style="text-transform: uppercase;" />
           <input id="ignoreGridValue" type="text" class="inputTextValue"  oninput="gridInputValidate(this)" size="10"/>
           <div id ="ignoreCqDiv">
-            CQ "<input id="ignoreCqCallsignValue" type="text"  class="inputTextValue" oninput="this.value = this.value.toUpperCase()" size="4" value=""/>"
+            CQ "<input id="ignoreCqCallsignValue" type="text"  class="inputTextValue" style="text-transform: uppercase;" size="4" value=""/>"
             From
             <select id="ignoreCqDxccSelect"><option  value=-1 selected="true">All</option></select>
           </div>
           <select id="ignoreDxccSelect" >
             <option value=-1 selected="true" data-i18n="mapFilter.prop.Unknown">Unknown</option>
           </select>
+          <select id="ignoreDeContSelect">
+            <option value="AF">AF</option>
+            <option value="AN">AN</option>
+            <option value="AS">AS</option>
+            <option value="EU">EU</option>
+            <option value="NA">NA</option>
+            <option value="OC">OC</option>
+            <option value="SA">SA</option>
+          </select>
           <select id="ignoreCqzSelect"></select>
           <select id="ignoreItuzSelect"></select>
           <button onclick="addNewIgnore()" class="flexButton" style="background-color: #000000;font-weight:bold;font-size:larger;color:lightgreen;">+</button>
-          <labal id="ingnoreAddResultLabel"></label>
+          <label id="ingnoreAddResultLabel"></label>
         </div>
         <div id="ignoresEditView"></div>
       </div>
+      <!-- Column colors of the roster showing; each roster keeps its own (renderColorsTab in rosterWindow.js) -->
+      <div id="colorsBoxDiv" class="infoTabcontent">
+        <div class="mapItem" align="center">
+          <div data-i18n="roster.colors.title.label">Edit Columns</div>
+          <div id="rosterColorsDiv" class="bandColorsGrid rosterColorsGrid"></div>
+          <br />
+          <div class="rosterColorsButtons">
+            <div data-i18n="roster.colors.reset.label" class="button" title="Reset this roster's column colors to default" onclick="resetRosterColors()">Reset Colors</div>
+            <div id="resetRosterColumnsDiv" class="button" onclick="resetRosterColumns()" data-i18n="roster.settings.resetColumns">Reset Column Order</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="MainCallRoster" style="display:block;";>
+    <div id="MainCallRoster" style="display:block;">
+      <div id="rosterTabs" style="display:none;">
+        <button id="callRosterTab" class="rosterTab active" onclick="showRosterTab('call')" data-i18n="roster.tabs.call">Call Roster</button>
+        <button id="feedRosterTab" class="rosterTab" onclick="showRosterTab('feed')" data-i18n="roster.tabs.feed">Feed Roster</button>
+      </div>
       <header id="RosterControls">
         <div id="TransmitControls">
-          <div id="txrxdec" style="background-color: Green; border-style: outset; border-color: yellow;" class="roundBorder">
+          <div id="txrxdec" style="background-color: Green; border-style: outset; border-color: yellow; padding-top:2px;" class="roundBorder">
           Waiting…
           </div>
           <div class="button" style="margin: 3px;" onclick="window.opener.haltAllTx(true);" data-i18n="roster.haltTX">Halt Tx</div>
-          <div class="button" style="margin: 3px;color:cyan;" onclick="openSettings();" data-i18n="roster.menu.Settings"></div>
-          <img id="rosterChatNotifyImg" height="18px" width="18px" style="padding-top:3px;cursor: pointer;" src='img/gt_chat.png' onclick="window.opener.openMessaging()"/>
+          <div class="button" style="margin: 3px;" id="rosterSettingsButton" onclick="openSettings();" data-i18n="roster.menu.Settings"></div>
         </div>
 
         <div id="MoreControls">
@@ -433,9 +468,13 @@
               <option data-i18n="roster.controls.logbook.liveBandMode" value="0" selected="true">Live Band &amp; Mode</option>
               <option data-i18n="roster.controls.logbook.liveBandMixMode" value="1">Live Band, Mix Modes</option>
               <option data-i18n="roster.controls.logbook.liveBandDigiMode" value="2">Live Band, Digi Modes</option>
+              <option data-i18n="roster.controls.logbook.spotsBandPhoneMode" value="7" class="feedLogbookOption">Spots Band, Phone Modes</option>
+              <option data-i18n="roster.controls.logbook.spotsBandCwMode" value="8" class="feedLogbookOption">Spots Band, CW Mode</option>
               <option data-i18n="roster.controls.logbook.mixBandLiveMode" value="3">Mix Band, Live Mode</option>
               <option data-i18n="roster.controls.logbook.mixBandMode" value="4">Mix Band &amp; Modes</option>
               <option data-i18n="roster.controls.logbook.mixBandDigiMode" value="5">Mix Band &amp; Digi Modes</option>
+              <option data-i18n="roster.controls.logbook.mixBandPhoneMode" value="9" class="feedLogbookOption">Mix Band &amp; Phone Modes</option>
+              <option data-i18n="roster.controls.logbook.mixBandCwMode" value="10" class="feedLogbookOption">Mix Band &amp; CW Mode</option>
             </select>
           </div>
 
@@ -518,9 +557,10 @@
                 <label data-i18n="roster.secondary.wanted.pota" for="huntPOTA" title="Parks On The Air">POTA</label>
                 <label></label>
               </div>
-               <div id="huntingMatrixOAMSDiv">
-                <input type="checkbox" id="huntOAMS" onchange="wantedChanged(this);" />
-                <label data-i18n="roster.secondary.wanted.OAMS" for="huntOAMS" title="Off-Air Message Service Users">OAMS</label>
+              <!-- Feed Roster only, while SOTA Chasing is on -->
+              <div id="huntingMatrixSotaDiv">
+                <input type="checkbox" id="huntSOTA" onchange="wantedChanged(this);" />
+                <label data-i18n="roster.secondary.wanted.sota" for="huntSOTA" title="Summits on the Air">SOTA</label>
                 <label></label>
               </div>
               <div>
@@ -566,7 +606,7 @@
                 <input type="checkbox" id="cqOnly" onchange="huntingValueChanged(this);" />
               <label data-i18n="roster.secondary.exceptions.cqOnly" for="cqOnly">CQ Only</label>
               </div>
-              <div>
+              <div id="wantRRCQDiv">
                 <input type="checkbox" id="wantRRCQ" onchange="huntingValueChanged(this);" />
                 <label data-i18n="roster.secondary.exceptions.wantRRCQ" for="wantRRCQ">RR73 as CQ</label>
               </div>
@@ -580,12 +620,24 @@
             </div>
               <div>
                 <input type="checkbox" id="noMyDxcc" onchange="onlyMyDxcc.checked=false; huntingValueChanged(onlyMyDxcc); huntingValueChanged(this);" />
-                <label data-i18n="roster.secondary.exceptions.noMyDXCC" for="noMyDxcc">Not My DXCC</label>
+                <label id="noMyDxccLabel" data-i18n="roster.secondary.exceptions.noMyDXCC" for="noMyDxcc">Not My DXCC</label>
               </div>
               <div>
                 <input type="checkbox" id="onlyMyDxcc" onchange="noMyDxcc.checked=false; huntingValueChanged(noMyDxcc); huntingValueChanged(this);" />
-                <label data-i18n="roster.secondary.exceptions.onlyMyDXCC" for="onlyMyDxcc">Only My DXCC</label>
-              </div>   
+                <label id="onlyMyDxccLabel" data-i18n="roster.secondary.exceptions.onlyMyDXCC" for="onlyMyDxcc">Only My DXCC</label>
+              </div>
+              <div id="hideSelfSpotsDiv">
+                <input type="checkbox" id="hideSelfSpots" onchange="huntingValueChanged(this);" />
+                <label data-i18n="roster.secondary.exceptions.hideSelfSpots" for="hideSelfSpots">Hide Self-Spot</label>
+              </div>
+              <div id="autoBandDiv">
+                <input type="checkbox" id="autoBand" onchange="huntingValueChanged(this);" />
+                <label data-i18n="roster.secondary.exceptions.autoBand.label" for="autoBand">Auto Band</label>
+              </div>
+              <div id="autoModeDiv">
+                <input type="checkbox" id="autoMode" onchange="huntingValueChanged(this);" />
+                <label data-i18n="roster.secondary.exceptions.autoMode.label" for="autoMode">Auto Mode</label>
+              </div>
 
              <div id="onlySpotDiv">
               <input type="checkbox" id="onlySpot" onchange="huntingValueChanged(this);" />
@@ -599,7 +651,7 @@
               <input type="checkbox" id="usesOQRS" onchange="huntingValueChanged(this);" />
               <label data-i18n="roster.secondary.exceptions.usesOQRS" for="usesOQRS">Uses OQRS</label>
             </div>
-            <div class="flexButton" style="margin-left: 18px;font-weight: bolder;" onclick="openExceptions()">&nbsp;. . .&nbsp;</div>           
+            <div class="flexButton" id="moreExceptionsButton" style="margin-left: 18px;font-weight: bolder;" onclick="openExceptions()">&nbsp;. . .&nbsp;</div>
        
          </div>
 
@@ -615,6 +667,33 @@
     </div>
 
     <div id="rosterDelayDiv" class="roundBorder" style="display:none; margin: 0px; margin-top: -1px; position:fixed; top:3px; left:3px;font-size:larger;">&#8987;</div>
+
+    <!-- Log a POTA / SOTA QSO: click a park or summit in the Feed Roster's POTA / SOTA column (roster/sotaLogDialog.js).
+         Above the settings panel -->
+    <div id="sotaLogBox" class="sotaLogScrim">
+      <div class="sotaLogDialog roundBorder">
+        <div class="sotaLogTitle" data-i18n="sotaLog.title">Log POTA / SOTA QSO</div>
+        <table class="darkTable sotaLogFields">
+          <tr><td data-i18n="stats.sotaExport.myCall">My Call</td><td><input type="text" id="sotaLogMyCall" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="stats.sotaExport.worked">Worked</td><td><input type="text" id="sotaLogCall" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="sotaLog.park">Park</td><td><input type="text" id="sotaLogPark" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="stats.sotaExport.summit">Summit</td><td><input type="text" id="sotaLogRef" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="sotaLog.date">Date (UTC)</td><td><input type="date" id="sotaLogDate" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="sotaLog.time">Time (UTC)</td><td><input type="time" id="sotaLogTime" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="sotaLog.freq">Freq (MHz)</td><td><input type="text" id="sotaLogFreq" class="inputTextValue" oninput="sotaLogBandFromFreq();" /></td></tr>
+          <tr><td data-i18n="stats.sotaExport.band">Band</td><td><select id="sotaLogBand" class="inputTextValue"></select></td></tr>
+          <tr><td data-i18n="stats.sotaExport.mode">Mode</td><td><input type="text" id="sotaLogMode" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="sotaLog.rst">RST Sent / Rcvd</td><td class="sotaLogRst"><input type="text" id="sotaLogRstS" class="inputTextValue" /><input type="text" id="sotaLogRstR" class="inputTextValue" /></td></tr>
+          <tr><td data-i18n="stats.sotaExport.comment">Comment</td><td><input type="text" id="sotaLogComment" class="inputTextValue" /></td></tr>
+        </table>
+        <div id="sotaLogStatusText" class="sotaLogStatus"></div>
+        <div class="sotaLogButtons">
+          <div class="button" onclick="closeSotaLogDialog();" data-i18n="stats.sotaExport.cancel">Cancel</div>
+          <div class="button" onclick="submitSotaLogQso();" data-i18n="sotaLog.logButton">Log QSO</div>
+        </div>
+      </div>
+    </div>
+
 
 
   </body>

@@ -4,8 +4,9 @@ directories:
   buildResources: build
 files:
   - '!**/.vscode/*'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CLAUDE.md,HISTORY.md,README.md,SVG Image Notes}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!tools{,/**/*}'
 asar: true
 afterPack: "./electron-builder-afterpack.js"
 win:
@@ -37,7 +38,7 @@ mac:
   extendInfo:
     - NSDocumentsFolderUsageDescription: GridTracker requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: GridTracker requests access to the user's Downloads folder.
-    - NSHumanReadableCopyright: Copyright (c) 2024 GridTracker.org
+    - NSHumanReadableCopyright: Copyright (c) 2026 GridTracker.org
     - NSLocalNetworkUsageDescription: GridTracker needs access to the local network to talk to WSJT-X
     - NSMicrophoneUsageDescription: GridTracker requests access to the device's microphone.
   notarize: true
@@ -63,8 +64,10 @@ linux:
     # requires building on a linux machine or a multipass.run account
     #- snap
   maintainer: gridtracker.org
-  category: Utility
+  category: Utility;HamRadio
   artifactName: ${name}-${version}-${arch}.${ext}
+  # lowercase on linux
+  executableName: gridtracker2
 flatpak:
   runtimeVersion: 23.08
 npmRebuild: false

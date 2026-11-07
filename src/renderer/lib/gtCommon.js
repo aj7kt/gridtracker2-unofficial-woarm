@@ -1,15 +1,14 @@
-// GridTracker Copyright © 2024 GridTracker.org
+// GridTracker Copyright © 2026 GridTracker.org
 // All rights reserved.
 // See LICENSE for more information.
-// gtCommon.js is common functions used by gt.js , adifWorker.js, trackerWorker.js and others
+// gtCommon.js is common functions used by GridTracker2.js , adifWorker.js, trackerWorker.js and others
 // var GT must be initiliazed before loading this script.
 
 GT.callsignDatabaseDXCC = {
   291: true,
   1: true,
   6: true,
-  110: true,
-  202: true
+  110: true
 };
 
 GT.callsignDatabaseUS = {
@@ -25,28 +24,41 @@ GT.callsignDatabaseUSplus = {
   202: true
 };
 
-function validateGridFromString(inputText)
-{
-  var validGrid = false;
-  if (inputText && (inputText.length == 4 || inputText.length == 6))
-  {
-    var LETTERS = inputText.substr(0, 2);
-    var NUMBERS = inputText.substr(2, 2);
-    if (/^[A-R]+$/.test(LETTERS) && /^[0-9]+$/.test(NUMBERS))
-    {
-      validGrid = true;
-    }
-    if (validGrid && inputText.length == 6)
-    {
-      var LETTERS_SUB = inputText.substr(4, 2);
-      if (!(/^[A-Xa-x]+$/.test(LETTERS_SUB)))
-      {
-        validGrid = false;
-      }
-    }
-  }
+GT.acLogBandMap = {
+  "2200": "2200m",
+  "2190": "2190m",
+  "630":  "630m",
+  "560":  "560m",
+  "160":  "160m",
+  "80":   "80m",
+  "60":   "60m",
+  "40":   "40m",
+  "30":   "30m",
+  "20":   "20m",
+  "17":   "17m",
+  "15":   "15m",
+  "12":   "12m",
+  "10":   "10m",
+  "8":    "8m",
+  "6":    "6m",
+  "4":    "4m",
+  "2":    "2m",
+  "1.25": "1.25m",
+  "70":   "70cm",
+  "33":   "33cm",
+  "23":   "23cm",
+  "13":   "13cm",
+  "9":    "9cm",
+  "3":    "3cm",
+  "1.25cm": "1.2cm"
+};
 
-  return validGrid;
+const K_GRID_REGEX = /^[A-R]{2}[0-9]{2}([A-X]{2})?$/i;
+
+function validateGridFromString(inputText) {
+  if (!inputText) return false;
+  // Matches exactly 2 letters (A-R), 2 numbers, and optionally 2 sub-letters (A-X)
+  return K_GRID_REGEX.test(inputText);
 }
 
 function isKnownCallsignDXCC(dxcc)
@@ -120,7 +132,7 @@ function ituZoneFromCallsign(insign, dxcc)
 
 function getWpx(callsign)
 {
-  var prefix = null;
+  let prefix = null;
 
   if (callsign.includes("/"))
   // Handle in the future?
@@ -129,9 +141,9 @@ function getWpx(callsign)
   // Insert 0, never seen this
   { return null; }
 
-  var end = callsign.length;
-  var foundPrefix = false;
-  var prefixEnd = 1;
+  let end = callsign.length;
+  let foundPrefix = false;
+  let prefixEnd = 1;
   while (prefixEnd != end)
   {
     if (/\d/.test(callsign.charAt(prefixEnd)))
@@ -148,399 +160,285 @@ function getWpx(callsign)
   return String(prefix);
 }
 
-GT.ancPrefixes = ["P", "M", "MM", "AM", "A", "NWS"];
+const OPERATIONAL_MODIFIERS = new Set([
+  "P",     // Portable
+  "M",     // Mobile
+  "MM",    // Maritime Mobile
+  "AM",    // Aeronautical Mobile
+  "QRP",   // Low Power
+  "QRO",   // High Power
+  "R",     // Rover
+  "ROV",   // Rover
+  "B",     // Beacon
+  "J",     // JOTA (Jamboree on the Air)
+  "T",     // Testing
+  "AE",    // Amateur Extra upgrade indicator (US)
+  "AG",    // General upgrade indicator (US)
+  "KT",    // Technician upgrade indicator (US)
+  "LH",    // Lighthouse
+  "FF",    // Flora & Fauna
+  "WFF",   // World Flora & Fauna
+  "SOTA",  // Summits on the Air
+  "POTA",  // Parks on the Air
+  "IOTA",  // Islands on the Air
+  "LOTA",  // Lighthouses on the Air
+  "SWL"    // Shortwave Listener
+]);
 
-function callsignToDxcc(insign)
-{
-  var callsign = insign;
+function callsignToDxcc(callsign) {
+  // 1. Raw string exact match (e.g., explicitly mapped VP2V/W1AW)
+  if (GT.directCallToDXCC[callsign]) return GT.directCallToDXCC[callsign];
 
-  if (!/\d/.test(callsign) || !/[a-zA-Z]/.test(callsign))
-  {
-    return -1;
+  // 2. Strip SSID (CPU-fast string slicing)
+  let call = callsign;
+  const dashIndex = callsign.lastIndexOf('-');
+  if (dashIndex > -1) call = callsign.substring(0, dashIndex);
+
+  if (call.indexOf('/') === -1) {
+    if (GT.directCallToDXCC[call]) return GT.directCallToDXCC[call];
+    return lookupPrefix(call);
   }
 
-  if (callsign in GT.directCallToDXCC) { return Number(GT.directCallToDXCC[callsign]); }
+  const parts = call.split('/');
+  
+  if (parts.includes('MM') || parts.includes('AM')) return 0; // Maritime and Air Mobile strictly 0 (none)
 
-  if (callsign.includes("/"))
-  {
-    var parts = callsign.split("/");
-    var end = parts.length - 1;
-    if (GT.ancPrefixes.includes(parts[end]))
-    {
-      if (parts[end].toUpperCase() == "MM")
-      {
-        return 0;
-      }
-      parts.pop();
-      end = parts.length - 1;
-    }
-    if (end)
-    {
-      if (isNaN(parts[end]))
-      {
-        if (parts[1].length > parts[0].length)
-        {
-          callsign = parts[0];
-        }
-        else
-        {
-          if (callsignToDxcc(parts[1]) != -1) callsign = parts[1];
-          else callsign = parts[0];
-        }
-      }
-      else callsign = parts[0];
-    }
-    else callsign = parts[0];
+  let possibleBaseCalls = [];
+  let prefixOverride = null;
+  let zoneOverride = null;
 
-    if (callsign in GT.directCallToDXCC) { return Number(GT.directCallToDXCC[callsign]); }
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    
+    if (OPERATIONAL_MODIFIERS.has(part)) continue; // Ignore /QRP, /M, etc.
+    
+    if (part.length === 1 && part >= '0' && part <= '9') {
+      zoneOverride = part; // Single digit zone modifier (e.g., /1)
+      continue;
+    }
+
+    // POSITION SENSITIVITY: Regional Indicators (e.g., LU1ABC/F)
+    // If a single letter is at the very END of the callsign, it is an internal 
+    // regional/province indicator, NOT a geographic DXCC override.
+    if (part.length === 1 && part >= 'A' && part <= 'Z' && i === parts.length - 1) {
+      continue; 
+    }
+
+    possibleBaseCalls.push(part);
   }
 
-  for (var x = callsign.length; x > 0; x--)
-  {
-    if (callsign.substr(0, x) in GT.prefixToMap)
-    {
-      return Number(GT.dxccInfo[GT.prefixToMap[callsign.substr(0, x)]].dxcc);
+  let baseCall = possibleBaseCalls[0] || parts[0];
+  if (possibleBaseCalls.length > 1) {
+    for (let i = 1; i < possibleBaseCalls.length; i++) {
+      const p = possibleBaseCalls[i];
+      if (p.length > baseCall.length) {
+        baseCall = p;
+      } else if (p.length === baseCall.length) {
+        // TIE-BREAKER for KH0/K0H (both length 3)
+        // If the current candidate is a known explicit prefix block but the new one isn't,
+        // the new one is the base call (K0H) and the other is the geographic override (KH0).
+        if (GT.prefixToDXCC[baseCall] && !GT.prefixToDXCC[p]) {
+          baseCall = p;
+        }
+      }
+    }
+  }
+
+  // Identify Geographic Override
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part !== baseCall && 
+        !OPERATIONAL_MODIFIERS.has(part) && 
+        !(part.length === 1 && part >= '0' && part <= '9') &&
+        !(part.length === 1 && part >= 'A' && part <= 'Z' && i === parts.length - 1)) {
+      prefixOverride = part;
+      break;
+    }
+  }
+
+  let basePrefix = baseCall;
+  for (let i = baseCall.length - 1; i >= 0; i--) {
+    if (baseCall[i] >= '0' && baseCall[i] <= '9') {
+      basePrefix = baseCall.substring(0, i + 1);
+      break;
+    }
+  }
+
+  let activePrefix = prefixOverride ? prefixOverride : basePrefix;
+
+  if (zoneOverride) {
+    const lastCharCode = activePrefix.charCodeAt(activePrefix.length - 1);
+    // 48 is '0', 57 is '9' in ASCII
+    if (lastCharCode >= 48 && lastCharCode <= 57) {
+      activePrefix = activePrefix.substring(0, activePrefix.length - 1) + zoneOverride;
+    } else {
+      activePrefix += zoneOverride;
+    }
+  }
+
+  if (!prefixOverride && !zoneOverride) {
+    if (GT.directCallToDXCC[baseCall]) return GT.directCallToDXCC[baseCall];
+  }
+
+  return lookupPrefix(activePrefix);
+}
+
+function lookupPrefix(prefixStr) {
+  let len = prefixStr.length;
+  for (let x = len; x > 0; x--) {
+    let sub = prefixStr.substring(0, x);
+    let dxccNum = GT.prefixToDXCC[sub];
+    if (dxccNum) {
+      // We assume "KG4 2x2 is (KG4) else (K)""
+      if (dxccNum === 105 ) return (len === 5) ? 105 : 291;
+      return dxccNum;
     }
   }
   return -1;
 }
 
-function initQSOdata()
+function timeNowSec()
 {
-  GT.tracker = {};
-  GT.tracker.worked = {};
-  GT.tracker.confirmed = {};
-
-  GT.tracker.worked.call = {};
-  GT.tracker.worked.grid = {};
-  GT.tracker.worked.field = {};
-  GT.tracker.worked.dxcc = {};
-  GT.tracker.worked.cqz = {};
-  GT.tracker.worked.dxm = {};
-  GT.tracker.worked.ituz = {};
-  GT.tracker.worked.state = {};
-  GT.tracker.worked.px = {};
-  GT.tracker.worked.cnty = {};
-  GT.tracker.worked.cont = {};
-  GT.tracker.worked.pota = {};
-
-  GT.tracker.confirmed.call = {};
-  GT.tracker.confirmed.grid = {};
-  GT.tracker.confirmed.field = {};
-  GT.tracker.confirmed.dxcc = {};
-  GT.tracker.confirmed.cqz = {};
-  GT.tracker.confirmed.dxm = {};
-  GT.tracker.confirmed.ituz = {};
-  GT.tracker.confirmed.state = {};
-  GT.tracker.confirmed.px = {};
-  GT.tracker.confirmed.cnty = {};
-  GT.tracker.confirmed.cont = {};
-  GT.tracker.confirmed.pota = {};
+  return Math.trunc(Date.now() / 1000);
 }
 
-function trackQSO(details, currentYear, currentDay)
-{
-  let qsoDate = new Date(1970, 0, 1); qsoDate.setSeconds(details.time);
-  let isCurrentYear = (qsoDate.getUTCFullYear() == currentYear);
-  let isCurrentDay = (parseInt(details.time / 86400) == currentDay);
-  let fourGrid = details.grid.substring(0, 4);
-  let isDigi = details.digital;
-  let isPhone = details.phone;
+const K_15_DAYS_IN_SECONDS = 1296000;
 
-  GT.tracker.worked.call[details.DEcall + details.band + details.mode] = true;
-  GT.tracker.worked.call[details.DEcall] = true;
-  GT.tracker.worked.call[details.DEcall + details.mode] = true;
-  GT.tracker.worked.call[details.DEcall + details.band] = true;
+function initQSOdata() {
+  // V8 OPTIMIZATION: Initializing the entire object structure literally 
+  // establishes the Hidden Classes immediately, preventing V8 from having 
+  // to recompile the object shape 24 separate times.
+  GT.tracker = {
+    worked: {
+      call: {}, grid: {}, dxcc: {}, cqz: {}, dxm: {},
+      ituz: {}, state: {}, px: {}, cnty: {}, cont: {}, pota: {}, sota: {},
+      // Distinct summits chased per SOTA association ("W7O") and region ("W7O/NC"): counts, for the SOTA column hover
+      sotaAssoc: {}, sotaRegion: {}
+    },
+    confirmed: {
+      call: {}, grid: {}, dxcc: {}, cqz: {}, dxm: {},
+      ituz: {}, state: {}, px: {}, cnty: {}, cont: {}, pota: {}, sota: {}
+    }
+  };
+}
 
-  if (isDigi == true)
-  {
-    GT.tracker.worked.call[details.DEcall + "dg"] = true;
-    GT.tracker.worked.call[details.DEcall + details.band + "dg"] = true;
+
+function mark(obj, baseKey, baseVal, includePhone, details, bandMode, bandDg, bandPh) {
+  obj[baseKey] = baseVal;
+  obj[baseKey + details.mode] = true;
+  obj[baseKey + details.band] = true;
+  obj[baseKey + bandMode] = true;
+
+  if (details.digital) {
+    obj[baseKey + "dg"] = true;
+    obj[baseKey + bandDg] = true;
   }
-
-  if (fourGrid != "")
-  {
-    GT.tracker.worked.grid[fourGrid] = true;
-    GT.tracker.worked.grid[fourGrid + details.mode] = true;
-    GT.tracker.worked.grid[fourGrid + details.band] = true;
-    GT.tracker.worked.grid[fourGrid + details.band + details.mode] = true;
-
-    let field = fourGrid.substring(0, 2);
-
-    GT.tracker.worked.field[field] = true;
-    GT.tracker.worked.field[field + details.mode] = true;
-    GT.tracker.worked.field[field + details.band] = true;
-    GT.tracker.worked.field[field + details.band + details.mode] = true;
-
-    if (isDigi == true)
-    {
-      GT.tracker.worked.grid[fourGrid + "dg"] = true;
-      GT.tracker.worked.grid[fourGrid + details.band + "dg"] = true;
-
-      GT.tracker.worked.field[field + "dg"] = true;
-      GT.tracker.worked.field[field + details.band + "dg"] = true;
-    }
-  }
-
-  if (details.ituz)
-  {
-    GT.tracker.worked.ituz[details.ituz + "|" + details.band + details.mode] = true;
-    GT.tracker.worked.ituz[details.ituz + "|"] = true;
-    GT.tracker.worked.ituz[details.ituz + "|" + details.mode] = true;
-    GT.tracker.worked.ituz[details.ituz + "|" + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.worked.ituz[details.ituz + "|dg"] = true;
-      GT.tracker.worked.ituz[details.ituz + "|" + details.band + "dg"] = true;
-    }
-  }
-
-  if (details.cqz)
-  {
-    GT.tracker.worked.cqz[details.cqz + "|" + details.band + details.mode] = true;
-    GT.tracker.worked.cqz[details.cqz + "|"] = true;
-    GT.tracker.worked.cqz[details.cqz + "|" + details.mode] = true;
-    GT.tracker.worked.cqz[details.cqz + "|" + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.worked.cqz[details.cqz + "|dg"] = true;
-      GT.tracker.worked.cqz[details.cqz + "|" + details.band + "dg"] = true;
-    }
-    if (isCurrentYear)
-    {
-      GT.tracker.worked.dxm[`${details.cqz}z${currentYear}`] = true;
-    }
-  }
-
-  if (details.dxcc > 0)
-  {
-    var sDXCC = String(details.dxcc);
-    GT.tracker.worked.dxcc[sDXCC + "|" + details.band + details.mode] = true;
-    GT.tracker.worked.dxcc[sDXCC + "|"] = true;
-    GT.tracker.worked.dxcc[sDXCC + "|" + details.mode] = true;
-    GT.tracker.worked.dxcc[sDXCC + "|" + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.worked.dxcc[sDXCC + "|dg"] = true;
-      GT.tracker.worked.dxcc[sDXCC + "|" + details.band + "dg"] = true;
-    }
-    if (isPhone == true)
-    {
-      GT.tracker.worked.dxcc[sDXCC + "|ph"] = true;
-    }
-    if (isCurrentYear)
-    {
-      GT.tracker.worked.dxm[`${sDXCC}c${currentYear}`] = true;
-    }
-  }
-
-  if (details.px)
-  {
-    GT.tracker.worked.px[details.px + details.band + details.mode] = true;
-    // store the last one
-    GT.tracker.worked.px[details.px] = details.hash;
-    GT.tracker.worked.px[details.px + details.mode] = true;
-    GT.tracker.worked.px[details.px + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.worked.px[details.px + "dg"] = true;
-      GT.tracker.worked.px[details.px + details.band + "dg"] = true;
-    }
-    if (isPhone == true)
-    {
-      GT.tracker.worked.px[details.px + "ph"] = true;
-      GT.tracker.worked.px[details.px + details.band + "ph"] = true;
-    }
-  }
-
-  if (details.cont)
-  {
-    GT.tracker.worked.cont[details.cont + details.band + details.mode] = true;
-    // store the last one
-    GT.tracker.worked.cont[details.cont] = details.hash;
-    GT.tracker.worked.cont[details.cont + details.mode] = true;
-    GT.tracker.worked.cont[details.cont + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.worked.cont[details.cont + "dg"] = true;
-      GT.tracker.worked.cont[details.cont + details.band + "dg"] = true;
-    }
-  }
-
-  if (details.state)
-  {
-    GT.tracker.worked.state[details.state] = true;
-    GT.tracker.worked.state[details.state + details.mode] = true;
-    GT.tracker.worked.state[details.state + details.band] = true;
-    GT.tracker.worked.state[details.state + details.band + details.mode] = true;
-
-    if (isDigi)
-    {
-      GT.tracker.worked.state[details.state + "dg"] =
-      GT.tracker.worked.state[details.state + details.band + "dg"] = true;
-    }
-  }
-
-  if (details.cnty)
-  {
-    GT.tracker.worked.cnty[details.cnty] = true;
-    GT.tracker.worked.cnty[details.cnty + details.mode] = true;
-    GT.tracker.worked.cnty[details.cnty + details.band] = true;
-    GT.tracker.worked.cnty[details.cnty + details.band + details.mode] = true;
-
-    if (isDigi)
-    {
-      GT.tracker.worked.cnty[details.cnty + "dg"] = true;
-      GT.tracker.worked.cnty[details.cnty + details.band + "dg"] = true;
-    }
-  }
-
-  if (details.pota)
-  {
-    let day = String(currentDay);
-    let potas = details.pota.split(",");
-    for (let x in potas)
-    {
-      let pota = potas[x].trim();
-
-      if (isCurrentDay)
-      {
-        GT.tracker.worked.pota[day + "." + details.DEcall + "." + pota + "." + details.band + details.mode] = true;
-        GT.tracker.worked.pota[day + "." + pota + "." + details.band + details.mode] = true;
-      }
-      GT.tracker.worked.pota[pota] = true;
-    }
-  }
-
-  if (details.confirmed == true)
-  {
-    GT.tracker.confirmed.call[details.DEcall + details.band + details.mode] = true;
-    GT.tracker.confirmed.call[details.DEcall] = true;
-    GT.tracker.confirmed.call[details.DEcall + details.mode] = true;
-    GT.tracker.confirmed.call[details.DEcall + details.band] = true;
-    if (isDigi == true)
-    {
-      GT.tracker.confirmed.call[details.DEcall + "dg"] = true;
-      GT.tracker.confirmed.call[details.DEcall + details.band + "dg"] = true;
-    }
-
-    if (fourGrid != "")
-    {
-      GT.tracker.confirmed.grid[fourGrid + details.band + details.mode] = true;
-      GT.tracker.confirmed.grid[fourGrid] = true;
-      GT.tracker.confirmed.grid[fourGrid + details.mode] = true;
-      GT.tracker.confirmed.grid[fourGrid + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.grid[fourGrid + "dg"] = true;
-        GT.tracker.confirmed.grid[fourGrid + details.band + "dg"] = true;
-      }
-    }
-    if (details.ituz && details.ituz.length > 0)
-    {
-      GT.tracker.confirmed.ituz[details.ituz + "|" + details.band + details.mode] = true;
-      GT.tracker.confirmed.ituz[details.ituz + "|"] = true;
-      GT.tracker.confirmed.ituz[details.ituz + "|" + details.mode] = true;
-      GT.tracker.confirmed.ituz[details.ituz + "|" + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.ituz[details.ituz + "|dg"] = true;
-        GT.tracker.confirmed.ituz[details.ituz + "|" + details.band + "dg"] = true;
-      }
-    }
-    if (details.cqz && details.cqz.length > 0)
-    {
-      GT.tracker.confirmed.cqz[details.cqz + "|" + details.band + details.mode] = true;
-      GT.tracker.confirmed.cqz[details.cqz + "|"] = true;
-      GT.tracker.confirmed.cqz[details.cqz + "|" + details.mode] = true;
-      GT.tracker.confirmed.cqz[details.cqz + "|" + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.cqz[details.cqz + "|dg"] = true;
-        GT.tracker.confirmed.cqz[details.cqz + "|" + details.band + "dg"] = true;
-      }
-    }
-
-    if (details.dxcc > 0)
-    {
-      var sDXCC = String(details.dxcc);
-      GT.tracker.confirmed.dxcc[sDXCC + "|" + details.band + details.mode] = true;
-      GT.tracker.confirmed.dxcc[sDXCC + "|"] = true;
-      GT.tracker.confirmed.dxcc[sDXCC + "|" + details.mode] = true;
-      GT.tracker.confirmed.dxcc[sDXCC + "|" + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.dxcc[sDXCC + "|dg"] = true;
-        GT.tracker.confirmed.dxcc[sDXCC + "|" + details.band + "dg"] = true;
-      }
-      if (isPhone == true)
-      {
-        GT.tracker.confirmed.dxcc[sDXCC + "|ph"] = true;
-      }
-    }
-
-    if (details.state)
-    {
-      GT.tracker.confirmed.state[details.state] = true;
-      GT.tracker.confirmed.state[details.state + details.mode] = true;
-      GT.tracker.confirmed.state[details.state + details.band] = true;
-      GT.tracker.confirmed.state[details.state + details.band + details.mode] = true;
-
-      if (isDigi)
-      {
-        GT.tracker.confirmed.state[details.state + "dg"] = true;
-        GT.tracker.confirmed.state[details.state + details.band + "dg"] = true;
-      }
-    }
-
-    if (details.cnty)
-    {
-      GT.tracker.confirmed.cnty[details.cnty] = true;
-      GT.tracker.confirmed.cnty[details.cnty + details.mode] = true;
-      GT.tracker.confirmed.cnty[details.cnty + details.band] = true;
-      GT.tracker.confirmed.cnty[details.cnty + details.band + details.mode] = true;
-
-      if (isDigi)
-      {
-        GT.tracker.confirmed.cnty[details.cnty + "dg"] = true;
-        GT.tracker.confirmed.cnty[details.cnty + details.band + "dg"] = true;
-      }
-    }
-
-    if (details.px)
-    {
-      GT.tracker.confirmed.px[details.px + details.band + details.mode] = true;
-      // store the last one
-      GT.tracker.confirmed.px[details.px] = details.hash;
-      GT.tracker.confirmed.px[details.px + details.mode] = true;
-      GT.tracker.confirmed.px[details.px + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.px[details.px + "dg"] = true;
-        GT.tracker.confirmed.px[details.px + details.band + "dg"] = true;
-      }
-      if (isPhone == true)
-      {
-        GT.tracker.confirmed.px[details.px + "ph"] = true;
-        GT.tracker.confirmed.px[details.px + details.band + "ph"] = true;
-      }
-    }
-
-    if (details.cont)
-    {
-      GT.tracker.confirmed.cont[details.cont + details.band + details.mode] = true;
-      // store the last one
-      GT.tracker.confirmed.cont[details.cont] = details.hash;
-      GT.tracker.confirmed.cont[details.cont + details.mode] = true;
-      GT.tracker.confirmed.cont[details.cont + details.band] = true;
-      if (isDigi == true)
-      {
-        GT.tracker.confirmed.cont[details.cont + "dg"] = true;
-        GT.tracker.confirmed.cont[details.cont + details.band + "dg"] = true;
-      }
-    }
+  
+  // Phone is marked for every category (the Feed Roster's Phone logbook choices); includePhone is kept for the callers
+  if (details.phone) {
+    obj[baseKey + "ph"] = true;
+    obj[baseKey + bandPh] = true;
   }
 }
+
+
+function applyTracking(tracker, isWorked, details, isCurrentYear, currentYear, workedDxm, bandMode, bandDg, bandPh) {
+  const { DEcall, grid4, vucc_grids, ituz, cqz, dxcc, px, cont, state, cnty } = details;
+
+  if (DEcall) mark(tracker.call, DEcall, true, false, details, bandMode, bandDg, bandPh);
+  if (grid4) mark(tracker.grid, grid4, true, false, details, bandMode, bandDg, bandPh);
+
+  for (let i = 0, len = vucc_grids.length; i < len; i++) {
+    mark(tracker.grid, vucc_grids[i].substring(0, 4), true, false, details, bandMode, bandDg, bandPh);
+  }
+
+  if (ituz) mark(tracker.ituz, ituz + "|", true, false, details, bandMode, bandDg, bandPh);
+  
+  if (cqz) {
+    mark(tracker.cqz, cqz + "|", true, false, details, bandMode, bandDg, bandPh);
+    if (isWorked && isCurrentYear) workedDxm[cqz + "z" + currentYear] = true; 
+  }
+
+  if (dxcc > 0) {
+    mark(tracker.dxcc, dxcc + "|", true, true, details, bandMode, bandDg, bandPh);
+    if (isWorked && isCurrentYear) workedDxm[dxcc + "c" + currentYear] = true;
+  }
+
+  if (px) mark(tracker.px, px, DEcall, true, details, bandMode, bandDg, bandPh); 
+  if (cont) mark(tracker.cont, cont, true, false, details, bandMode, bandDg, bandPh);
+  if (state) mark(tracker.state, state, true, false, details, bandMode, bandDg, bandPh);
+  if (cnty) mark(tracker.cnty, cnty, true, false, details, bandMode, bandDg, bandPh);
+}
+
+// A SOTA reference's association and region: "W7O/NC-039" -> { assoc: "W7O", region: "W7O/NC" }, or null
+function sotaRefParts(ref) {
+  const match = /^([A-Z0-9]+)\/([A-Z0-9]+)-\d+$/.exec(String(ref || "").toUpperCase());
+  return match ? { assoc: match[1], region: match[1] + "/" + match[2] } : null;
+}
+
+function trackQSO(details, currentYear, currentDay, currentSecond) {
+  const { DEcall, time, dxcc, pota, sota, confirmed, band, mode } = details;
+
+  const qsoDate = new Date(time * 1000);
+  const isCurrentYear = (qsoDate.getUTCFullYear() === currentYear);
+  const isCurrentDay = (~~(time / 86400) === currentDay);
+
+  if (
+    DEcall.length === 3 &&
+    DEcall.charCodeAt(0) !== 65 &&
+    DEcall.charCodeAt(2) !== 88 &&
+    isKnownCallsignUS(dxcc) &&
+    (currentSecond - time) > K_15_DAYS_IN_SECONDS
+  ) {
+    return;
+  }
+
+  const bandMode = band + mode;
+  const bandDg = band + "dg";
+  const bandPh = band + "ph";
+  
+  const worked = GT.tracker.worked;
+
+  // Process WORKED
+  applyTracking(worked, true, details, isCurrentYear, currentYear, worked.dxm, bandMode, bandDg, bandPh);
+
+  // Process POTA (Worked Only)
+  if (pota) {
+    const wPota = worked.pota;
+    const sDay = "" + currentDay;
+    const potasList = pota.split(",");
+    
+    for (let i = 0, len = potasList.length; i < len; i++) {
+      const p = potasList[i].trim();
+      if (isCurrentDay) {
+        wPota[sDay + "." + DEcall + "." + p + "." + bandMode] = true;
+        wPota[sDay + "." + p + "." + bandMode] = true;
+      }
+      wPota[p] = true;
+    }
+  }
+
+  // Process SOTA (Worked Only): the summit, and "<day>.<summit>" for the QSO's own UTC day (a summit counts once
+  // per day). Every day is kept, not just today's: the app can stay open past midnight
+  if (sota) {
+    // A summit chased for the first time counts once toward its association and region
+    if (!(sota in worked.sota)) {
+      const parts = sotaRefParts(sota);
+      if (parts) {
+        worked.sotaAssoc[parts.assoc] = (worked.sotaAssoc[parts.assoc] || 0) + 1;
+        worked.sotaRegion[parts.region] = (worked.sotaRegion[parts.region] || 0) + 1;
+      }
+    }
+    worked.sota[sota] = true;
+    worked.sota[~~(time / 86400) + "." + sota] = true;
+  }
+
+  // Process CONFIRMED
+  if (confirmed) {
+    applyTracking(GT.tracker.confirmed, false, details, isCurrentYear, currentYear, null, bandMode, bandDg, bandPh);
+  }
+}
+
 
 /* eslint-disable */
 

@@ -18,11 +18,11 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Statistics</title>
-    <link rel="stylesheet" href="./lib/style.css" />
+    <link rel="stylesheet" href="./lib/css/style.css" />
     <script src="./lib/first.js"></script>
-    <script src="./lib/protos.js" type="text/javascript"></script>
-    <script src="./lib/i18n.js" type="text/javascript"></script>
-    <script src="./lib/stats.js"></script>
+    <script src="./lib/ui/formatters.js" type="text/javascript"></script>
+    <script src="./lib/ui/i18n.js" type="text/javascript"></script>
+    <script src="./lib/stats/statsWindow.js"></script>
   </head>
 
   <body id="mainBody" onresize="Resize();" onload="init();GT.statsWindowInitialized = true">
@@ -50,7 +50,7 @@
           id="qsobox"
           data-i18n="stats.tabs.logbook"
           class="infoTablinks active"
-          onclick="resetSearch(); openInfoTab(event, 'workedBoxDiv', 'showWorkedBox')"
+          onclick="openInfoTab(event, 'workedBoxDiv', 'renderLogbookView')"
         >
           Logbook
         </button>
@@ -66,7 +66,7 @@
         <button id="waswacbox" data-i18n="stats.tabs.WAS"  class="infoTablinks" onclick="openInfoTab(event, 'wasPlusBoxDiv', 'showWASPlusBox')">
           WAS / WACP / US48
         </button>
-        <button id="wpxbox" class="infoTablinks" onclick="openInfoTab(event, 'wpxBoxDiv', 'showWPXBox')">WPX</button>
+        <button id="wpxbox" class="infoTablinks" onclick="openInfoTab(event, 'wpxBoxDiv', 'showWPXBox')">WPX / USC</button>
         <button id="calbox" data-i18n="stats.tabs.live"  class="infoTablinks" onclick="openInfoTab(event, 'callsignBoxDiv', 'showCallsignBox')">
           Live
         </button>
@@ -89,14 +89,36 @@
       </div>
       <div id="workedBoxDiv" class="infoTabcontent">
         <div id="workedHeadDiv"></div>
-        <div id="workedListDiv" style="margin: 2px; padding: 2px; overflow: auto"></div>
+        <div id="workedListDiv" style="margin: 2px; padding: 0 2px 2px 2px; overflow: auto"></div>
+      </div>
+      <!-- Logbook -> Export SOTA Chaser Log (filled by the main window, stats/sotaExport.js) -->
+      <div id="sotaExportBox" class="sotaExportBox" style="display: none">
+        <div class="sotaExportDialog roundBorder">
+          <div class="sotaExportTitle" data-i18n="stats.sotaExport.title">SOTA Chaser Log Export</div>
+          <div class="sotaExportRange">
+            <label><span data-i18n="stats.sotaExport.from">From</span>
+              <input type="datetime-local" id="sotaExportFrom" class="inputTextValue" oninput="window.opener.sotaExportPreview();" /></label>
+            <label><span data-i18n="stats.sotaExport.to">To</span>
+              <input type="datetime-local" id="sotaExportTo" class="inputTextValue" oninput="window.opener.sotaExportPreview();" /></label>
+            <span id="sotaExportCount" class="sotaExportCount"></span>
+            <span style="flex: 1"></span>
+            <span class="sotaExportNote" data-i18n="stats.sotaExport.note">Edits here only change the exported file, not your logbook.</span>
+          </div>
+          <div class="sotaExportList">
+            <table id="sotaExportTable" class="darkTable"></table>
+          </div>
+          <div class="sotaExportButtons">
+            <div class="button" data-i18n="stats.sotaExport.cancel" onclick="window.opener.closeSotaChaserExport();">Cancel</div>
+            <div class="button" data-i18n="stats.sotaExport.export" onclick="window.opener.doSotaChaserExport();">Export CSV&hellip;</div>
+          </div>
+        </div>
       </div>
       <div id="callsignBoxDiv" class="infoTabcontent">
         <div id="callsignListDiv" style="margin: 2px; padding: 2px"></div>
       </div>
       <div id="decodeLastDiv" class="infoTabcontent">
         <div id="decodeLastListDiv" style="margin: 2px; padding: 2px; overflow: auto; overflow-x: hidden">
-          No decodes yet
+          <span data-i18n="stats.noDecodes">No decodes yet</span>
         </div>
       </div>
     </div>

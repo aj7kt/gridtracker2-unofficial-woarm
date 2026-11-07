@@ -1,0 +1,566 @@
+# History
+
+Changes from earlier releases, oldest first. The current work is in CHANGELOG.md.
+
+## [Released]
+
+### Added
+
+- Added new CI/CD build system that allows packaging for Windows, MacOS, and Linux and enaables auto-update @nr0q
+- Ported a lot of code from NWJS to Electron - @tag.loomis
+- Built the framework files boilerplate, provided lots of good advice @beaugunderson
+
+### Old Changed
+
+- Animate Active Paths moved from Ctrl-A to Ctrl-J
+- Conditions Window Toggle moved from Ctrl-C to Ctrl-E
+- Ctrl-A, Ctrl-C, Ctrl-V reserved for Select All, Copy, Paste for text inputs
+- Screenshot Ctrl-K writes PNG to appData Screenshots folder, in addition to copy to clipboard
+- Fixed Callsign hover "Callsign" in Call Roster
+- New Settings -> Features -> CR Wanted+Audio Alerts Band+Mode Memory
+- Fixed improper parsing of DL60RRDXA and PC38EUDX callsigns
+- Added JTDX installation search if WSJT-X installation not found
+- Disabled high DPI scaling on Windows causing window save/restore issues
+- Fixed QRZ return paths not displaying
+- App: Fixed screen issues on older operating systems
+- App: Ctrl-Y Toggles Offline Mode
+- Call Roster: Right-click of Callsign or Calling presents new "Copy" to clipboard option
+- System: {AppData}/logs/main.log error log created, helps with debugging issues (eg: tqsl)
+- Windows: Update now shows a dialog when updating
+
+- System: Fixed exception logging
+
+- App: New disable auto-update with --disable-auto-updates command line flag, yes there are two dashes
+- App: Improved multi-instance support
+- App: Warning when audio output devices have changed (opt-out in Settings -> Audio)
+- App: Fixed bad data in some PSK-MQTT spot reports
+- Main: New 'log download busy' animation
+- Main: Right-click on buttons that open windows will show vs toggle
+- Custom Alerts: Fixed QRZ callsign not populating at startup
+- Map: Overscan enabled to allow fitting more map in the window
+- POTA: Log loading now honors <SIG:4>POTA <SIG_INFO:x>PARK-ID in addition to <POTA_REF:x>
+- Stats: Logbook tab now shows "POTA" column if "POTA Hunting" enabled
+- Call Roster: POTA column 'All Time New One' (ATNO) Bright vs Dim
+- Call Roster: Fixed 'Spot' column and 'Spotted Me' exception when enabled/disabled
+- Call Roster: Fixed CQz and ITUz not sortable
+- Call Roster: dB column color now white
+- Call Roster: Fixed "Only My DXCC" "Not My DXCC" mutual exclusion
+- Audio Alerts: Fixed broken ITUz alert
+- Note for Windows users where the installer refuses to launch:
+    - Find the installer file then go to the properties, you will see "Security" under the "General" tab
+    - If there's a dialog about it being blocked, check the "Unblock" checkbox
+
+- App: Fixed audio device selected not found reset to default
+- App: Fixed issue where Windows reports different Device IDs for Audio Devices every session
+- MSHV: Fixed issue where an incomplete 'DX Grid' would break the map view
+- Main: Fixed ignore not working on RECIEVE bar left-click
+- Main: Added "New QSO CALLSIGN" to status messages on QSO log event
+- Call Roster: Added Ctrl-L toggle "Uses LoTW"
+
+- App: Identified an issue where some systems would go 'black screen' on startup
+- Main: New "QTH" button: resets map to North, default zoom and re-centers on your grid (Ctrl-Z hotkey)
+- Map: Higher resolution US County shapes
+- Map: Backgroud color picker for each map: Settings -> Map -> Background Color
+- Lookups: When using CALLOOK service; uses Lat, Long from result to get county
+- Call Roster: Underline UTC timestamp on even decode cycles
+- Call Roster: Fixed bug when Settings -> Features -> 'Clear on CQ' enabled and DX Call began with "CQ" eg: CQ3WWA would abort Tx
+- Happy New Year!
+
+App: Windows command line notification added to help batch file use
+App: v1.24.09xx settings no longer importing on new installs due to compatibility issues
+App: Fixed AEQD map position on new installs
+App: Enabled POTA by default on new installs
+App: Updated Chinese translations
+App: Ctrl+Alt+MouseWheel to change zoom level in any window  (Ctrl-Zero as always to reset)
+Call Roster: Fixed PR showing as a wanted US State
+Call Roster: Very long "Watcher" values now displayed with "..." 
+Chat: Left-click a callsign will do a lookup
+Stats-Logbook: Added "Current Day UTC" filter checkbox to "When" column
+
+
+Map: Fixed distant grid distortions in AEQD projection
+App: Fixed missing JA grids
+App: Fixed issue where MSHV not reporting TX_PWR
+Award Tracker: Fixed QRZ.com 'Masters of ...' scoring
+N3FJP ACL: Fixed grid not appearing in GT status panel
+N3FJP ACL: New log entry will automatically be added when QSO completed
+
+App: Updated Electron engine to v35.1.2 (except for Windows 7)
+App: Added DYNAMIC as recognized mode
+App: Added "New Message Alert" to Settings -> Features -> Online -> Chat Messaging .. default is none
+App: Added new media files "Message-Abrupt|AIM|Bosun|Bright|Gentle|ICQ|Mild-Echo|MSN|Nokia|RIM"
+Logging: Fixed issue when logging to the backup log (if enabled) when callsign contains '/' 
+
+
+Logging: New optional feature to receive ADIF UDP Broadcasts from apps like fldigi and log just like WSJT-X log events
+            (Settings -> General -> Recive ADIF UDP Broadcasts For Logging)
+Linux: Added "HamRadio" to the gridtracker2.desktop category
+App: Updated initial install Big CTY data to version April 6th, 2025
+App: Big CTY update check now at 2 miuntes from start instead of 5 minutes
+            (Provides additional notification of update in the waterfall as well as Settings -> Lookups)
+Logging: Fixed ADIF CNTY field when logging (removed space after comma)
+
+
+Logging -> Cloudlog: Fixed logging issue after startup
+Stats -> Logbook: Added County column
+Stats -> Logbook: Added State and County searching, sorting
+Stats -> WPX: Added US counties, now [WPX / USC] tab
+Stats -> Live: Fixed issue with DXCC count and live refresh
+App: Updated initial install Big CTY data to version April 12th, 2025
+Settings -> Grids: New 'All Grid Overlay' Opacity setting
+
+
+App: Updated Electron engine to v35.2.2 (except for Windows 7)
+App: Linux pacman auto-updater support
+Logging:
+    Cloudlog/Wavelog: Comprehensive fixes supplied by DJ7NT and DF2ET, many thanks!
+    QRZ.com: Added extra error info to main.log on upload failure
+    
+App: Fixed 7 year old bug in ADIF parsing, big thanks to VE3MSC for this find!
+     If "PSKReporter" appears anywhere in the ADIF being loaded it would be rejected entirely
+
+
+Call Roster -> Watcher: Fixed display of compound callsign matches in Msg column
+App: Settings -> General: Multiple IPs supported in 'Forwared UDP Messages' (comma separated)
+
+App: Fixed crash on startup on Windows system when no text-2-speech available (Thanks PU8REG)
+Map: Right-Click empty grid info now shows all DXCC grids associated
+Logging: ACLog: Fixed issue with incorrect band info from 70cm and above
+Mac: Cmd-Q now exits the application
+
+
+
+App: Updated Electron engine to 35.7.0
+      (Windows users should double-check firewall settings after installation)
+App: Multiple GridTracker instance support using --gt-name=UniqueName
+Logging: WSJT-X source renamed to "App Log(s)" .. all WSJT-X/JTDX log file locations searched at startup
+      (Then disable the ones you don't want to load, this is for multiple GT instance support)
+Logging: LoTW: Will now queue failed uploads and retry on next QSO
+Logging: Any 1x1 QSO in the US over 15 days not considered worked for hunting purposes
+Logging: MacOS no longer allows third-party apps to find installed apps, will use known install locations
+        /Applications/TrustedQSL/tqsl.app
+        /Applications/tqsl.app
+        ~/Applications/TrustedQSL/tqsl.app
+        ~/Applications/tqsl.app
+        ~/Desktop/TrustedQSL/tqsl.app
+        ~/Desktop/tqsl.app
+        ~/Applications/Ham Radio/TrustedQSL/tqsl.app
+        ~/Applications/Ham Radio/tqsl.app
+Call Roster: Due to complaints 1x1 US Special Callsign highlighting removed
+      (Use the watcher -> Callsign Regex  ^[KNW][0-9][A-W|Y|Z]$ to replicate)
+
+
+App: 
+  Fixed mouse stutter/system slowing issue:
+    Removed the rarely used and expensive to maintain Off-Air Message Service (OAMS)
+
+
+Map: Upgrade to OpenLayers map library 10.6.0
+Map: Fixed animation toggle issue
+Logging: LoTW: Use temp directory for LoTW queue file
+Logging: Wavelog/Cloudlog: Fix for intermitten failure
+Logging: ADIF field length for unicode strings corrected
+Lookups: Fixed county bug on repeated cache hits
+
+
+Map: Reverted to OpenLayers 10.1.0 due to issue on some Windows systems
+App: Main window minimum height updated
+
+
+Map: US Weather Radar restored after service removed by NOAA
+
+
+App: Electron engine update to 35.7.5
+Map: Updated OpenStreetMaps attribution URL
+Logging: No longer add fields to ADIF record if unicode chars are present in data
+
+
+Call Roster: General Settings: Window Filters: Removed 'Contrast' as people were managing to gray/wash-out the window entirely
+Wavelog: Fixed '/' entry in URL
+App: Do not lookup Canadian grids to province if Canadian Callsign DB is disabled
+Stats: Scores: Fixed an error when the longest distance worked is in the same grid as the operator
+Map: Added 4 new autonavimaps for Chinese users
+App: Tenatively recognize FT2 as an MFSK submode
+
+
+App: Initial support for JS8Call-Improved (Must enable WSJT-X Server)
+  Known JS8Call UDP Issues:
+    It does not send "Recieving"/"Decoding" Status changes or periodic UDP heartbeats
+    Reply (click callsign in Call Roster) not supported
+App:    
+  Improved Slashed Callsign DXCC resolution
+Call Roster: 
+  Fixed script start issue
+Logging: 
+  HRD Logbook:
+    Re-enabled support for HRD Logbook for versions older then v6.9
+    v6.9.x and above use "ADIF UDP / N1MM"
+App: 
+  Recognize FST4 and FST4W MFSK submodes
+Map:
+  Pin Mode: 
+  Fixed missing 630m pins
+
+Stats:
+  Logbook:
+    Fixed multiple sorting and rendering issues
+
+
+Call Roster:
+  Recognize WSJT-X 'Super Fox' replies correctly when in 'Super Hound' mode
+Stats:
+  WPX/USC:
+    Fixed broken display on some systems
+
+App:
+  Fixed lockup at start if Off-Air Services and Band Activity were disabled
+
+Stats:
+  DXCCs:
+    Confirmed Band Slots:
+      Added CW count
+Logging:
+  HRD Logbook <- v6.8.x
+    Fixed bug preventing logging
+Call Roster:
+  Fixed issue when changing to a Special Operating Activity in WSJT-X (duplicate rows)
+
+App:
+  Rx Calls and Rx DXCC counts are now cumulative per session
+    Click 'Clear Live' to reset them
+  ADIF Processing
+    Fixed regression in parser
+
+Map:
+  Grayline Terminator:
+    Now supported in AEQD Projection
+    New Map Settings "Grayline Terminator" values [Horizon, Civil, Nautical, Astronomical]
+App:
+  Translated "Features" tab to other languages
+  Fixed live QSO logging event bug/regression
+
+
+Map: Fixed CQ and ITU award layers in AEQD projection 
+Audio: Fixed sound stacking / silence issue 
+Audio: Mute is now immediate
+Grayline Terminator: Fixed dateline issue in Mercator projection when terminator is circular
+
+Logging:
+  Cloudlog / Wavelog: Fixed regression
+
+App:
+  Valid maidenhead grid test fixed for lowercase 5th and 6th characters
+
+App:
+  Prevent POTA reporting on old records being sent to GT via ADIF UDP Broadcast
+
+
+Call Roster:
+  Improved exact US county matching (89% US callsigns -> County without doing a lookup)
+  RR73 as CQ now includes 73
+Map:
+  Added optional Equator to Map (enable in Settings -> Map -> Show Equator)
+
+
+App:
+  Command-line flag to disable auto updates (--disable-auto-updates) properly honored
+  Added Japanese translation / æ—¥æœ¬èªžç¿»è¨³ã‚’è¿½åŠ ã—ã¾ã—ãŸ
+  Fixed (/R) suffix from registering as European Russia
+Map:
+  Added Major Parallels and Meridians in addition to the Equator
+  Moved the Settings -> Map -> "Show Equator" option to a new button "Toggle Major Parallels and Meridians" in the button panel
+  Added Settings -> Map -> "Meridians and Parallels Color"
+
+
+App:
+  Roster / Audio Alerts Band Memory feature now includes optional exceptions and custom alerts
+Logging:
+  LoTW station list now gathered on-demand
+Map:
+  Added Range Rings to Mercator (flat map) projection
+    Includes toggle button on the main panel
+    Includes proper translations for all languages
+
+
+App:
+  New option to place the Map on the right side of the screen
+    Settings -> General -> "Map On Right Side"
+Map:
+  Fix Statute and Nuatical Miles range rings not landing on multiples of 100
+
+
+
+
+ADIF Parser:
+  Now accepts both GRIDSQUARE and VUCC_GRIDS within a single record.
+
+Call Roster:
+  Improved sorting in the "Calling" column so that "CQ" calls are now cleanly grouped together.
+
+App / Core:
+  Improved grid resolution for decodes using PSK, RTSN, and Lookups (Contributed by WA4YA).
+    Note: A grid resolution derived via Lookup is now indicated with a diamond ( ◇ ) symbol, denoting a possibility rather than a guarantee.
+  Added Translations:
+    Nederlands, Polski, Português (Brasil e Portugal), Quebecois
+
+Map / UI:
+  Added a new Tropospheric Inversion VHF prediction layer (Contributed by WA4YA).
+    Added a right-click context menu to the Prediction button for quick, direct selection of prediction layers.
+  Improved the "RX Spots" Max Age setting by adding a duration picker for manually entered times.
+    Added a right-click context menu to the Spots button for quick, direct selection of the RX Spot mode (Spots / Heatmap).
+
+
+
+App:
+  Fixed issue with some compound callsign suffixes not being recognized
+  Added 10 minute auto-save of settings (if changed)
+  Further improved grid resolution using RTSN (Real-time Spotting Network)
+Map:
+  Added 6m Es blobs to Tropospheric Inversion VHF prediction layer (by WA4YA)
+Scores:
+  Fixed grid tally mismatch
+
+
+Call Roster:
+  Added VUCC_GRIDS to worked/confirmed grids
+Map:
+  Fixed CARTO Maps API key issue
+
+Custom Alerts:
+  Added testing of WSPR decodes
+App:
+  Restart no longer required when BigCTY updates
+  
+  
+App:
+  Fixed KG4 2x2 (Guantanamo Bay) regression
+
+
+Features:
+  Simplepush notifications updated from Simplepush.io to Simplepu.sh (API v1.0)
+    Note: The Simplepush API Key is deprecated; existing users may need to create a new API Token
+  Simplepu.sh and Pushover.net now support "Use Daily Schedule"
+Logbook:
+  Setting a working date/callsign no longer clears the LoTW cache
+    Note: The "Clear Log" button will always clear the LoTW cache
+Logging:
+  App Log(s):
+    Support added for "WS - Digital Mode Suite" (formerly WSJT-X Improved)
+
+## [v2.261011.2]
+
+#### Off-Air Services
+
+- New DX Feeds (Settings -> Features -> Online -> Off-Air Services -> "DX Feeds", off by default)
+  - Beacon spots (BEACON / NCDXF) are ignored
+  - New Settings -> Feeds tab (shown while DX Feeds is on):
+    - CW, Digital and Phone: which spots to receive, for the Feed Roster and the map (all on by default)
+    - Feed Spots Max Age: how long feed spots stay on the map, 1 to 60 minutes (default 5 minutes)
+    - Clear All Feeds: clears all feed data received (Feed Roster and map); new spots keep arriving
+  - Feed spots are kept for an hour after they were last spotted; the map shows them per Feed Spots Max Age, the Feed Roster per its own Roster Max Age (up to 1 hour, default 2 minutes)
+
+#### Call Roster
+
+- New "Call Roster | Feed Roster" tabs at the top of the roster window (shown when DX Feeds is on)
+  - The Call Roster shows WSJT-X/JTDX decodes only; feed spots are in the Feed Roster
+  - The settings pane is titled "Call Roster Settings" or "Feed Roster Settings", and opens below the tabs: click a tab to switch rosters without closing settings
+  - New "Reset Columns To Default" in each roster's Settings -> General: resets that roster's columns and order only
+  - The Feed Roster swaps the Call Roster's yellow and cyan (callsigns, grids, active tabs, Settings button) to tell them apart
+- Settings -> Audio Alerts: new "Call Roster | Feed Roster" sub-tabs (shown when DX Feeds is on)
+  - Each roster has its own alert choices, sounds and speech (Type, On Single, On Multiple), Reference and Exceptions, kept in step with that roster's own controls; Rules are Call Roster only
+  - The bell next to a roster's Wanted choices opens its own Audio Alerts sub-tab
+- Sliders in the roster window now show "(Use Arrow Keys For Smaller Increments)" on hover, like the main window; translated in both
+- DXCC column: click to center the map on the entity and highlight (dazzle) its outline, like clicking a Grid
+- Fixed dragging the Band or Mode column when it is shown for multiple bands or modes but not enabled
+  - Hidden columns now keep their place when other columns are dragged
+
+#### New Feed Roster (DX Cluster / CW Skimmer / Spothole spots)
+
+- Its own Logbook, Hunting, Wanted, Exceptions, Watchers, columns, sorting, compact mode and Roster Max Age
+  - One set of settings for all bands and modes (Band/Mode Memory applies to the Call Roster only)
+  - Its own Ignores (Callsign, DX DXCC, DE DXCC, DE Cont, Grid, CQ Zone, ITU Zone and Spotter), separate from the Call Roster's
+    - DE DXCC drops spots reported by spotters in that entity, DE Cont by spotters on that continent; right-click a DX DXCC, DE DXCC or DE Cont entry to ignore it
+- Triangle before the callsign: a rig is on the spot's band and mode, left-click sets the DX call and grid on that rig
+- Otherwise the spot is read-only, hover shows how to work it
+- "Gen Msgs" works on any feed spot, using a rig on the spot's band and mode, otherwise the active rig
+- Freq column shows the spot's frequency
+- "CQ" column: ✔ when the spot's comment starts with CQ (any case), except "CQ Contest"
+- US feed spots get the same state and county lookups as decodes
+- POTA: feed spots get the activator's park from a park reference in the spot's comment, otherwise like decodes (current POTA spot or scheduled activation), or "?-????" for a "CQ POTA" spot; works with Wanted POTA and the POTA column
+  - The park sticks: a later spot without one doesn't erase it, and newer information (a spot naming another park, or a newer POTA spot) replaces it, so an activator who moves parks is picked up
+- "Feeds" tab in the Feed Roster's Settings:
+  - Allow Alert Script for feed spots (audio alerts are set in Settings -> Audio Alerts -> Feed Roster)
+  - Allow Notifications (Pushover, Simplepush) for feed spots
+  - Feed spots never trigger Custom Alerts
+  - Modes: one tick box per mode seen in feed spots; untick a mode to hide its spots in the Feed Roster (every mode seen is remembered, ticked or not)
+  - Bands: choose which bands' feed spots appear, based on a US or non-US band plan (all bands on by default)
+- "Spotter" column: the station that reported a feed spot
+  - Right-click a spotter for Lookup, Add Watcher (a Spotter watcher), Copy, Ignore Spotter or Edit Ignores
+- "DX DXCC" column (the Call Roster's DXCC column) and new "DE DXCC" column: the spotter's DXCC entity
+- "DX Cont" column (the Call Roster's Cont column) and new "DE Cont" column: the spotter's continent
+- Exceptions (in the Feed Roster and Settings -> Audio Alerts -> Feed Roster): "Not My DX DXCC" and "Only My DX DXCC" for the spotted station
+  - New "Hide Self-Spotters": hides spots where the station spotted itself (W1AW-#, W1AW/P and VE/W1AW count as W1AW)
+  - "..." opens the Feed Roster's Exceptions settings tab, which has Uses LoTW (with its last-upload age)
+- Settings -> Watcher: New "Spotter" type, with or without Regex, highlighted in the Spotter column
+  - A plain Spotter watcher also covers the spotter's skimmer suffixes (W3LPL also covers W3LPL-# and W3LPL-2)
+- "Spotter" category in the Feed Roster's Settings -> Ignores, for spotters sending false or too many questionable spots
+  - An ignored spotter's spots are dropped from the Feed Roster and the map (W3LPL also covers W3LPL-# and W3LPL-2)
+
+#### Map / UI
+
+- New "DX Feed Spots" button in the main button panel (shown when DX Feeds is on) shows feed spots on the map
+  - Green target: a rig is on the spot's band and mode
+  - Teal triangle: a rig is on the spot's band, in a different mode
+  - Grey triangle: no rig is on the spot's band
+  - Shows all bands, following only the map's Band / Mode filters
+  - A spot without a grid is placed at the center of its DXCC entity (its grid stays empty, e.g. in the Feed Roster)
+  - Hover (or right-click) shows the spot's call, spotter, age, DXCC, grid, frequency, mode, distance, azimuth, time and message
+  - Left-click sets the DX call and grid on a rig on the spot's band and mode, otherwise the active rig
+- New Main App -> Settings -> "Colors" tab: change any band's color, with "Reset Colors" to return to the defaults
+  - Gridsquare Colors moved here from the Grids tab, above the Band Colors
+  - Applies to the Call Roster, map spots, grids and pins, Stats and Lookup
+- Map pins are now drawn in the band colors instead of images
+  - Worked: plain pin, Confirmed: black V cap, Live/heard: diamond head
+  - MH4 pin mode with Mixed bands: logbook pins use the Gridsquare Colors Worked/Confirmed colors instead of a red dot
+  - MH4 pin mode with Auto or a single band: logbook pins use the band colors
+  - The confirmed V cap is used with band colors, not with the Mixed bands Gridsquare Colors
+- Fixed a logbook pin staying "worked" after its grid was confirmed, until the next map redraw
+- Fixed flight paths in the AEQD projection skirting around the poles instead of crossing them
+
+#### App
+
+- All new text translated for every supported language
+- About 230 more tooltips, labels and status messages are now translated (main window buttons and settings, Call Roster settings, logging and test results, Lookup details); GridTracker feature names such as Call Roster stay in English
+- Fixed the Democratic Republic of the Congo (DRC) and Republic of the Congo flags being swapped
+- Fixed the Band Activity popout window not opening on macOS
+
+## [v2.261019.4]
+
+#### Call Roster / Feed Roster
+
+- New Settings -> "Columns" tab in each roster: every column in one place, in the roster's column order
+  - Change any column's color (Callsign, Grid, DXCC, State, Spotter, DE DXCC, Freq, Age, ...), with "Reset Colors" to return to the defaults
+  - Drag a column onto another to move it, like the column headers; tick it to show or hide it
+  - "Reset Column Order" moved here from the General tab
+  - The Call Roster and Feed Roster keep their own colors; the hunting colors (Callsign, Grid, DXCC, State, County, Cont, POTA, CQz, ITUz, PX, DXM, Calling) also color a wanted entry's background
+  - Band and Mode keep using the band and mode colors from the main window: click Band to open Settings -> Colors there
+- The column headers stick at the top of the window while the roster scrolls; returning long lost behavior
+- Faster with long rosters
+- The SOTA column marks what a summit is worth to you with dots beside its reference
+  - Two dots before it: you haven't chased a summit in that association yet; one dot: you've chased one there
+  - A dot after it: you haven't chased a summit in that region yet
+- The DXCC column marks new ones, whatever the Logbook choice: ★ either side of an ATNO (an entity you've never worked); after the name, ◆ a band you haven't worked it on, ● a mode you haven't worked it in; its hover says which
+- In the Feed Roster, click a park or summit in the POTA / SOTA column to log the QSO by hand (CW, SSB), while no logger such as AC Log is connected and no WSJT-X / JTDX is on its band and mode
+  - A park QSO is spotted to POTA, as for a logged decode
+
+
+#### Call Roster
+
+- With SOTA Chasing on, a decoded station that DX Feeds spots on a summit gets that summit
+  - A new "SOTA" column (off by default; turn it on in Settings -> Columns) and a "SOTA" Wanted, like the Feed Roster's
+  - A QSO logged with them gets the summit's SOTA_REF
+  - The station's grid stays the one it transmits; with none sent, the summit's square is shown, not qualified (◇)
+
+#### Feed Roster
+
+- New Settings -> Features -> Online -> "SOTA Chasing" (shown while DX Feeds is on): Summits on the Air activators from DX Feeds spots
+  - A "SOTA" column (off by default, like POTA), right of POTA, shows the summit named in the spot; its hover gives the summit's name, height and points
+  - A "SOTA" Wanted highlights summits you haven't chased today (from SOTA_REF in your logs), also in Settings -> Audio Alerts -> Feed Roster ("Wanted Feed Summit" / "Many Feed Summits")
+  - A spot on a summit is placed there: its grid becomes the summit's (Feed Roster, distance, and a logged QSO that has no grid)
+  - On the map, on their own layer with a new SOTA button in the button panel (shown while SOTA Chasing is on): one snow-capped double-peak marker per summit, black with an orange outline, or orange, for the same three states as the DX Feeds markers; its tooltip lists every spot on it
+  - Like POTA Hunting, it turns on the GT backup log, and a QSO logged with a spotted activator gets the summit's SOTA_REF
+  - A spot saying "QRT" ends that activation: the activator's spots on the summit leave the Feed Roster and the map until they're spotted again
+  - So does a spot with no frequency
+  - An activator spotted on another summit leaves the old one at once
+  - An activator still being decoded keeps their summit, even after the last spot of them ages out
+  - A spot of an activator that doesn't name the summit (a skimmer's, say) gets the summit they're on
+  - An activator you decode is shown on their summit's marker as a spot from you, like POTA's
+- New "Auto Band" and "Auto Mode" exceptions (in the Feed Roster and Settings -> Audio Alerts -> Feed Roster): only spots on a band / in a mode one of your rigs is on (WSJT-X, JTDX, AC Log or Log4OM); with both, a rig on the spot's band and mode
+  - With no rig connected they show everything
+- The roster's Feeds settings tab (Modes, Bands, "Allow Alert Script", "Allow Notifications") moved to the main window's Settings -> Feeds, under Feed Spots Max Age and Clear All Feeds
+  - The map's DX Feeds and SOTA markers now follow the same Modes and Bands as the Feed Roster
+- Logbook choices say "Spots" instead of "Live" (e.g. "Spots Band & Mode"), in the Feed Roster and Settings -> Audio Alerts -> Feed Roster
+- New Logbook choices for Phone and CW, beside the Digi ones: "Spots Band, Phone Modes", "Spots Band, CW Mode", "Mix Band & Phone Modes" and "Mix Band & CW Mode" (Feed Roster and Settings -> Audio Alerts -> Feed Roster)
+- "DE DXCC" and "DE Cont" columns are now shown by default
+- Clicking a callsign works the spot from the right place
+  - A rig already on the spot's band and mode (WSJT-X, JTDX, AC Log or Log4OM) gets it, as before
+  - Otherwise a connected AC Log gets it, on any band and mode: its entry tab is cleared and filled with the spot's frequency, band, mode, call and grid
+  - With "Enable Rig Control" (Settings -> Logging -> N3FJP Loggers), AC Log tunes the rig to the spot's frequency and mode instead
+  - Without AC Log, it goes to Gen Msgs on the active WSJT-X / JTDX
+- The ▲ before a callsign now only marks spots on the band and mode one of your rigs is on
+- A callsign in a rig's DX Call (WSJT-X, JTDX, or AC Log's entry tab) is highlighted green, like in the Call Roster
+- "Hide Self-Spotters" is now "Hide Self-Spot"
+- Faster with the Feed Roster on screen
+
+#### Map / UI
+
+- Overlapping POTA, SOTA and DX Feeds markers in the same DXCC entity are grouped into one marker, at their averaged position
+  - A grouped tooltip is a compact table ("POTA Spot × 3", "SOTA Spot × 2") with the park / summit reference after the grid
+  - New Settings -> Map -> "Group Overlapping Spots" (on by default): turn it off to show every marker on its own
+- The POTA tooltip has a new header, like SOTA's: the park reference and name, its location, and distance / bearing
+- Callsigns in a popped-out tooltip can be clicked to look them up
+- Right-click a POTA park to pop out its tooltip
+- POTA parks are drawn above DX Feeds spots, and SOTA summits above both
+- Left-click a POTA, SOTA or DX Feeds marker to work the spot, like a Feed Roster callsign: a rig on its band and mode, else a connected AC Log (and its rig, with "Enable Rig Control")
+  - A marker for several spots works the first one its tooltip lists
+  - Where markers are stacked, only the top one is worked
+- A POTA, SOTA or DX Feeds marker of a callsign in a rig's [DX Call] is ringed for easy finding on the map
+- DX Feeds and SOTA markers leave the map once their spots expire, even while no new spots arrive
+- The GridTracker Spotters button's hover shows how many spotters are on the map, with the map's band and mode filters applied ("Spotters: 42")
+- Settings -> Map is regrouped into Base Map, Paths, Grayline, Overlays and Display boxes: day and night side by side, each path's width and colors on one row, and the colors shown as swatches
+  - The Night column shows while "Auto Night Map" is on
+  - More options have hover help
+  - "Merge Award Overlay" is now "Keep Other Layers With Award View", and "'CQ' Highlighting" is now "Outline Directed CQ Areas"
+- The Grids tab is now a Grids box in Settings -> Map: its three sliders with their values, Split QSL Grids and Auto Mouseover Grids
+- So does Settings -> Audio: an Audio box (Device, notification sound, volume) and a Text-To-Speech box (Voice, rate, pitch, volume, phonetics)
+- And Settings -> Lookups: Callsign Lookup Service, Lookups and Callsign Databases boxes
+- And Settings -> Features: Operational, Service and Online boxes, with options indented under the one they depend on; the Simplepush and Pushover boxes show while each is on
+  - "Clear on CQ" is now "Clear WSJT-X / JTDX On CQ"
+- And Settings -> Logging: Logbooks On This Computer beside Logging Programs, above Online Logbooks, each with only the columns its services use; PSK-Reporter 24 Hour History has its own box at the bottom; no more scrolling to reach HRD Logbook
+  - The columns are now "Connect", "Menu Button", "Load At Startup" and "Log QSO"
+- And Settings -> Logbook: a QSL Location Authority box and a Logbook Filters box (Working Callsign(s), Grid(s) and Date, each with its Enable tick, and Apply Changes)
+  - An empty Working Callsign(s) / Grid(s) field shows the callsigns / grids found in your logs, faintly, until you type there
+  - A new QSL Location Authority is applied with its own Apply Changes button (it reloads your logbooks), no longer at once
+- And Settings -> Colors: Gridsquare Colors and Band Colors boxes, each with its Reset Colors button in the title, and smaller swatches beside their names
+- And Settings -> Feeds: a DX Feeds box (Max Age, Clear All Feeds, the Allow options) above Modes and Bands boxes side by side
+- And Settings -> General: the three UDP boxes, Station, Display and Settings boxes, and an On QSO Reply box shown while more than one WSJT-X / JTDX instance is open (it now hides again when you're back to one)
+
+#### Logbook
+
+- The whole logbook is one scrolling list instead of pages, and even very large logs scroll smoothly
+- The search boxes and column headers stay at the top while the list scrolls
+- The sorted column shows an arrow with the sort direction, like the rosters
+  - Sorting by another column keeps the current direction; click the same column again to reverse it
+- New "SOTA" column with the summit of each QSO (SOTA_REF), with its own search box
+- The POTA and SOTA columns are shown when your log has POTA / SOTA QSOs, whether or not POTA Hunting / SOTA Chasing is on
+- New "Export SOTA Chaser Log…" button (shown when your log has SOTA QSOs): your SOTA chases as a CSV file for the SOTA database's chaser log upload
+  - Pick the From and To times (local time; the file is UTC); each export starts where the last one ended
+  - The QSOs are listed first: edit any field or leave a QSO out (possible duplicates are flagged); this only changes the file, never your logbook
+
+#### Logging / AC Log
+
+- Settings -> Logging -> N3FJP Loggers: a green / red dot right of "Connect" shows whether AC Log is connected
+- New "Enable Rig Control" under the N3FJP Loggers details (shown while Connect is on): clicking a Feed Roster callsign tunes the rig through AC Log
+- AC Log's band and mode follow its entry tab when it has no rig frequency, and a rig frequency is shown in the main panel when it has one
+- The call and grid in AC Log's entry tab show in GridTracker even before tabbing out of the call, and clear with the entry tab
+- The status bar shows "CONNECTED" instead of "RECEIVE" while AC Log is the active rig
+- Clicking a spot also fills AC Log's Other fields titled POTA_REF / SOTA_REF with the spot's park / summit
+- QSOs logged in AC Log reach GridTracker more reliably: even several logged in quick succession
+- A QSO logged in AC Log with a park (its Other field titled POTA_REF) is spotted to POTA, like one logged from WSJT-X (with POTA Hunting on)
+- A QSO a logger broadcasts back is no longer logged and sent out a second time
+
+#### Logging / Log4OM
+
+- New "Connect" in Settings -> Logging -> Log4OM, through Log4OM's UDP remote control, with a green / red dot showing whether Log4OM is connected
+  - Log4OM's rig frequency, band and mode show in the main panel, and the status bar shows "CONNECTED" while Log4OM is the active rig
+  - With Log4OM on the same PC, its station callsign and locator are read from its settings when connecting
+- Clicking a Feed Roster callsign, or a POTA, SOTA or DX Feeds marker, sends the spot's call to Log4OM's QSO entry (not over a call you typed there yourself)
+  - The main panel shows the call and grid sent
+- New "Enable Rig Control" (shown while Connect is on): clicking a spot also tunes the rig through Log4OM to the spot's frequency and mode
+
+#### App
+
+- New Settings -> General -> Station -> "Callsign": your callsign while no WSJT-X, JTDX, AC Log or Log4OM is connected; a callsign they report is always used for them
+  - While it's blank, it takes the callsign WSJT-X / JTDX gives; you can change it, and it's never replaced
+- Settings -> General -> Forward UDP Messages accepts hostnames (e.g. ft8battle.com) as well as IP addresses, several comma separated: "IP(s)/Hostname(s)"
+  - A hostname that can't be found (a typo, or no internet) is reported under the field

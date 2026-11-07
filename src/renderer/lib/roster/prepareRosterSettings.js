@@ -3,31 +3,30 @@ function prepareRosterSettings()
   let rosterSettings = {
     bands: {},
     modes: {},
-    onlyHits: CR.rosterSettings.onlyHits,
-    canMsg: window.opener.oamsCanMsg(),
+    onlyHits: CR.activeExceptions.onlyHits,
     isAwardTracker: false,
     now: timeNowSec()
   }
 
-  if (GT.activeRoster.logbook.referenceNeed == LOGBOOK_AWARD_TRACKER)
+  if (CR.activeRoster.logbook.referenceNeed == LOGBOOK_AWARD_TRACKER)
   {
-    rosterSettings.onlyHits = false;
+    CR.activeExceptions.onlyHits = false;
     rosterSettings.isAwardTracker = true;
   }
 
-  if (GT.activeRoster.logbook.huntNeed == "mixed")
+  if (CR.activeRoster.logbook.huntNeed == "mixed")
   {
     rosterSettings.huntIndex = GT.tracker.confirmed;
     rosterSettings.workedIndex = GT.tracker.worked;
-    rosterSettings.layeredMode = LAYERED_MODE_FOR[GT.activeRoster.logbook.referenceNeed];
+    rosterSettings.layeredMode = LAYERED_MODE_FOR[CR.activeRoster.logbook.referenceNeed];
   }
-  else if (GT.activeRoster.logbook.huntNeed == "worked")
+  else if (CR.activeRoster.logbook.huntNeed == "worked")
   {
     rosterSettings.huntIndex = GT.tracker.worked;
     rosterSettings.workedIndex = false;
     rosterSettings.layeredMode = false;
   }
-  else if (GT.activeRoster.logbook.huntNeed == "confirmed")
+  else if (CR.activeRoster.logbook.huntNeed == "confirmed")
   {
     rosterSettings.huntIndex = GT.tracker.confirmed;
     rosterSettings.workedIndex = GT.tracker.worked;

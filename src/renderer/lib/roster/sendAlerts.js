@@ -1,39 +1,59 @@
+// Runs for one roster profile (see withProfile): its visible entries alert through its own settings
 function sendAlerts()
 {
-  CR.alertTimer = null;
+  CR.profile.alertTimer = null;
   const callRoster = CR.callRoster;
+  const feedRoster = isFeedRoster();
   let scriptPath = GT.scriptPath;
-  let everyDecode = GT.settings.audioAlerts.rules.everyDecode;
+  // The Feed Roster has no Rules
+  let everyDecode = !feedRoster && GT.settings.audioAlerts.rules.everyDecode;
   let dirPath = path.dirname(scriptPath);
   let scriptExists = false;
-  let shouldRosterAlert = 0;
+  let pushAlerts = 0;
+  let scriptAlerts = 0;
   let shouldAudioAlert = 0;
-  let audioAlertCounts = { ...AUDIO_ALERT_HUNT_ZERO };
+  let audioAlertCounts = createEmptyAudioAlerts();
+  let pushReport = {};
   let scriptReport = {};
+  // Feed Roster, per the main window's Settings -> Feeds: "Allow Alert Script" and "Allow Notifications" (Pushover,
+  // Simplepush); its audio alerts come from Settings -> Audio Alerts -> Feed Roster, like the Call Roster's
+  const allowScript = !feedRoster || GT.settings.app.feeds.alertScript;
+  const allowPush = !feedRoster || GT.settings.app.feeds.notifications;
 
   for (const entry in callRoster)
   {
     const callObj = callRoster[entry].callObj;
 
-    // if it's not visible in the roster, we don't want to send a report with it, 
+    // if it's not visible in the roster, we don't want to send a report with it,
     // otherwise the entire roster will be sent out, including all the ones that were filtered by exceptions
     if (callRoster[entry].tx == false) continue;
 
-    let call = callObj.DEcall;
-    scriptReport[call] = Object.assign({}, callObj);
-    scriptReport[call].dxccName = GT.dxccToAltName[callObj.dxcc];
-    scriptReport[call].distance = (callObj.distance > 0) ? parseInt(callObj.distance * MyCircle.validateRadius(window.opener.distanceUnit.value)) : 0;
-
-    delete scriptReport[call].DEcall;
-    delete scriptReport[call].style;
-    delete scriptReport[call].wspr;
-    delete scriptReport[call].qso;
-    delete scriptReport[call].instance;
-
-    if (callObj.shouldRosterAlert == true && callObj.rosterAlerted == false)
+    if (allowScript || allowPush)
     {
-      callObj.rosterAlerted = true;
-      shouldRosterAlert++;
+      let call = callObj.DEcall;
+      // Copied before rosterAlerted is set below, so the push messages can tell which entries are new
+      let report = Object.assign({}, callObj);
+      report.dxccName = GT.dxccToAltName[callObj.dxcc];
+      report.distance = (callObj.distance > 0) ? parseInt(callObj.distance * MyCircle.validateRadius(window.opener.distanceUnit.value)) : 0;
+
+      delete report.DEcall;
+      delete report.style;
+      delete report.wspr;
+      delete report.qso;
+      delete report.instance;
+
+      const newAlert = callObj.shouldRosterAlert == true && callObj.rosterAlerted == false;
+      if (allowScript)
+      {
+        scriptReport[call] = report;
+        if (newAlert) scriptAlerts++;
+      }
+      if (allowPush)
+      {
+        pushReport[call] = report;
+        if (newAlert) pushAlerts++;
+      }
+      if (newAlert) callObj.rosterAlerted = true;
     }
     callObj.shouldRosterAlert = false;
 
@@ -58,27 +78,31 @@ function sendAlerts()
     let multi = 0;
     for (const key in audioAlertCounts)
     {
-      if (audioAlertCounts[key] > 0)
+      // The ATNO counts are part of their type's alert, not types of their own
+      if (audioAlertCounts[key] > 0 && !key.endsWith("Atno"))
       {
         multi++;
       }
     }
     audioAlertCounts.huntMultiple = multi;
-    window.opener.processAudioAlertsFromRoster(audioAlertCounts);
+    window.opener.processAudioAlertsFromRoster(audioAlertCounts, CR.profile.name);
   }
 
-  // NOTE: Ring alerts if needed
-  if (shouldRosterAlert > 0)
+  if (pushAlerts > 0)
   {
-    if (GT.settings.msg.msgPushover && GT.settings.msg.msgPushoverRoster)
+    const pushTitle = (feedRoster ? "Feed Alert - " : "GT Alert - ") + formatCallsign(GT.settings.app.myCall);
+    if (GT.settings.msg.msgPushover)
     {
-      sendPushOverAlert(parseCRJson(scriptReport));
+      sendPushOverAlert(pushTitle, parseCRJson(pushReport));
     }
-    if (GT.settings.msg.msgSimplepush && GT.settings.msg.msgSimplepushRoster)
+    if (GT.settings.msg.msgSimplepush)
     {
-      sendSimplePushMessage(parseCRJson(scriptReport));
+      sendSimplePushMessage(pushTitle, GT.settings.msg.msgSimplepushNotifyOnly ? parseCRJson(pushReport) : parseCRJsonToMarkdown(pushReport));
     }
+  }
 
+  if (scriptAlerts > 0)
+  {
     try
     {
       if (fs.existsSync(scriptPath))
@@ -106,33 +130,42 @@ function sendAlerts()
   }
 }
 
-function sendSimplePushMessage(message)
+
+function sendSimplePushMessage(title, message)
 {
-  const url = "https://api.simplepush.io/send";
+  if (GT.settings.msg.msgSimplepushDailySchedule && !GT.isWithinScheduledMinutes(GT.settings.msg.msgSimplepushScheduleStart, GT.settings.msg.msgSimplepushScheduleEnd)) return;
+
+  const url = "https://api.simplepu.sh/v1/" + (GT.settings.msg.msgSimplepushNotifyOnly ? "notifications" : "tasks") + "/json";
+
   let data = {
-    key: GT.settings.msg.msgSimplepushApiKey,
-    title: "GT Alert - " + formatCallsign(GT.settings.app.myCall),
-    msg: message
+    title: title,
+    content: message,
+    contentFormat: "markdown"
   };
 
-  GT.getPostBuffer(
+  GT.getPostJSONBuffer(
     url,
     null, // callback,
-    null,
+    false,  // test flag
     "https",
     443,
     data,
-    5000
+    5000,
+    undefined,
+    undefined,
+    { "API-Token": GT.settings.msg.msgSimplepushApiKey }
   );
 }
 
-function sendPushOverAlert(message)
+function sendPushOverAlert(title, message)
 {
+  if (GT.settings.msg.msgPushoverDailySchedule && !GT.isWithinScheduledMinutes(GT.settings.msg.msgPushoverScheduleStart, GT.settings.msg.msgPushoverScheduleEnd)) return;
+
   const url = "https://api.pushover.net/1/messages.json";
   let data = {
     user: GT.settings.msg.msgPushoverUserKey,
     token: GT.settings.msg.msgPushoverToken,
-    title: "GT Alert - " + formatCallsign(GT.settings.app.myCall),
+    title: title,
     message: message
   };
 
@@ -147,41 +180,74 @@ function sendPushOverAlert(message)
   );
 }
 
+// Feed spots carry no SNR (RSTsent stays "-"), so Feed Roster alerts show the mode in its place;
+// called from sendAlerts, so isFeedRoster() reflects the roster sending them
+function alertSignalOrMode(entry)
+{
+  return isFeedRoster() ? entry.mode : String(entry.RSTsent);
+}
+
 function parseCRJson(data)
 {
   let message = "";
+
+  for (const callsign in data)
+  {
+    const entry = data[callsign];
+
+    if (entry.shouldRosterAlert == true && entry.rosterAlerted == false)
+    {
+      const parts = [formatCallsign(callsign), entry.dxccName, alertSignalOrMode(entry)];
+      if (entry.grid) parts.push(entry.grid);
+      parts.push(entry.band);
+      if (entry.state) parts.push(entry.state);
+
+      message += parts.join(", ") + " (" + wantedColumnParts(entry).join(",") + ")\n";
+    }
+  }
+
+  return message;
+}
+
+
+function parseCRJsonToMarkdown(data)
+{
+  let rows = [];
+
   for (let callsign in data)
   {
-    if (data[callsign].shouldRosterAlert == true && data[callsign].rosterAlerted == false)
+    let entry = data[callsign];
+    if (entry.shouldRosterAlert == true && entry.rosterAlerted == false)
     {
-      let wanted = " (" + wantedColumnParts(data[callsign]) + ")";
-
-      if (data[callsign].grid)
-      {
-        if (data[callsign].state)
-        {
-          message = message + formatCallsign(callsign) + ", " + data[callsign].dxccName + ", " + data[callsign].RSTsent.toString() + ", " + data[callsign].grid + ", " + data[callsign].band + ", " + data[callsign].state + wanted + "\n";
-        }
-        else
-        {
-          message = message + formatCallsign(callsign) + ", " + data[callsign].dxccName + ", " + data[callsign].RSTsent.toString() + ", " + data[callsign].grid + ", " + data[callsign].band + wanted + "\n";
-        }
-      }
-      else
-      {
-        if (!data[callsign].grid)
-        {
-          if (data[callsign].state)
-          {
-            message = message + formatCallsign(callsign) + ", " + data[callsign].dxccName + ", " + data[callsign].RSTsent.toString() + ", " + data[callsign].band + ", " + data[callsign].state + wanted + "\n";
-          }
-          else
-          {
-            message = message + formatCallsign(callsign) + ", " + data[callsign].dxccName + ", " + data[callsign].RSTsent.toString() + ", " + data[callsign].band + wanted + "\n";
-          }
-        }
-      }
+      rows.push({
+        callsign: callsign,
+        entry: entry,
+        wanted: wantedColumnParts(entry)
+      });
     }
+  }
+
+  // most wanted-parts first; tie-break alphabetically by callsign
+  rows.sort((a, b) =>
+    b.wanted.length - a.wanted.length ||
+    a.callsign.localeCompare(b.callsign)
+  );
+
+  let message = "";
+  for (let row of rows)
+  {
+    let entry = row.entry;
+    let parts = [
+      entry.dxccName,
+      alertSignalOrMode(entry),
+      entry.grid,
+      entry.band,
+      entry.state
+    ].filter(Boolean);
+
+    message += "**" + formatCallsign(row.callsign) + "** `" + row.wanted.join(", ") + "`\n";
+    message += "- " + parts.join(", ") + "\n\n";
   }
   return message;
 }
+

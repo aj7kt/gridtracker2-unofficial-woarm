@@ -1,0 +1,4255 @@
+// GridTracker Copyright © 2026 GridTracker.org
+// All rights reserved.
+// See LICENSE for more information.
+
+// var CR is in first.js
+Object.assign(CR,
+{
+  developerMode: false,
+  modes: {},
+  modes_phone: {},
+  day: 0,
+  dayAsString: "0",
+  menuHide: null,
+  menuShow: null,
+  columnMenu: null,
+  columnMembers: {},
+  callMenu: null,
+  callMenuRotator: null,
+  callingMenu: null,
+  callingMenuRotator: null,
+  spotterMenu: null,
+  ageMenu: null,
+  compactMenuHide: null,
+  compactMenuShow: null,
+  currentColumnName: null,
+  targetHash: "",
+  dxccMenu: null,
+  targetDxcc: -1,
+  CQMenu: null,
+  CQzMenu: null,
+  GridMenu: null,
+  MsgMenu: null,
+  targetCQ: "",
+  targetCQz: null,
+  timerInterval: null,
+  alertTimer: null,
+  awards: {},
+  awardTypes: {},
+  awardTracker: {},
+  callsignDatabaseDXCC: {},
+  callsignDatabaseUS: {},
+  callsignDatabaseUSplus: {},
+  rosterTimeout: null,
+  rosterFocus: false,
+  lastTime: 0,
+  def_displayFilters: {
+    brightness: 100,
+    contrast: 100,
+    saturate: 100,
+    invert: 0,
+    sepia: 0,
+    huerotate: 0
+  }
+});
+
+// A roster profile is everything one roster works from: its entries and its settings.
+// The roster code reads them through CR.callRoster, CR.rosterSettings, CR.activeRoster, CR.activeExceptions,
+// CR.activeAudioAlerts, CR.watchers and CR.watchersTest, which follow CR.profile.
+// CR.profile is the visible tab's profile, except while withProfile() processes the other one in the background
+CR.profiles = {
+  // WSJT-X decodes
+  call: {
+    name: "call",
+    entries: () => GT.callRoster,
+    settings: () => GT.settings.roster,
+    roster: () => GT.activeRoster,
+    exceptions: () => GT.activeExceptions,
+    audioAlerts: () => GT.activeAudioAlerts,
+    // Holds ignoredCalls, ignoredCQ, ignoredDxcc, ignoredGrid, ignoredCQz and ignoredITUz
+    ignores: () => GT.settings,
+    // Entries from instances that are gone, or unticked in a multi-instance roster, are hidden
+    filter: (callObj) => (callObj.instance in GT.instances) && !(GT.instanceCount > 1 && GT.instances[callObj.instance].crEnable === false),
+    excludedColumns: { Spotter: true, CQ: true, DEDXCCv2: true, DEContv2: true },
+    watchersTest: {},
+    alertTimer: null
+  },
+  // DX Cluster / CW Skimmer spots: one fixed profile, no Band/Mode Memory
+  feed: {
+    name: "feed",
+    entries: () => GT.feedRoster,
+    settings: () => GT.settings.feedRoster,
+    roster: () => GT.settings.feedRoster,
+    exceptions: () => GT.settings.feedRoster.exceptions,
+    audioAlerts: () => GT.settings.feedAudioAlerts,
+    // Its own ignores, not the Call Roster's (no CQ ignores: CR.ignoredCQ is always empty), plus DE DXCC (the spotter's)
+    ignores: () => GT.settings.feedRoster,
+    // Bands and modes unticked in the main window's Settings -> Feeds, and ignored spotters, are hidden
+    filter: (callObj) => window.opener.feedSpotShown(callObj) && !(callObj.spotter.split("-")[0] in CR.ignoredSpotters),
+    excludedColumns: { Rig: true, dB: true, DT: true, Spot: true, Calling: true },
+    watchersTest: {},
+    alertTimer: null
+  }
+};
+CR.profile = CR.profiles.call;
+CR.visibleProfile = CR.profiles.call;
+
+Object.defineProperties(CR, {
+  callRoster: { get: () => CR.profile.entries() },
+  rosterSettings: { get: () => CR.profile.settings() },
+  activeRoster: { get: () => CR.profile.roster() },
+  activeExceptions: { get: () => CR.profile.exceptions() },
+  activeAudioAlerts: { get: () => CR.profile.audioAlerts() },
+  watchers: { get: () => CR.profile.settings().watchers },
+  watchersTest: { get: () => CR.profile.watchersTest },
+  // Settings for the roster window itself, shared by both tabs (filters, controls, always on top, focus delay)
+  windowSettings: { get: () => GT.settings.roster },
+  // Spotter ignores only exist for the Feed Roster
+  ignoredSpotters: { get: () => GT.settings.ignoredSpotters, set: (value) => { GT.settings.ignoredSpotters = value; } }
+});
+
+// Each roster's ignores, read and written (Clear All replaces the object) in its profile's settings;
+// one the roster doesn't have (the Feed Roster's CQ, the Call Roster's DE DXCC and DE Cont) reads as empty
+const NO_IGNORES = Object.freeze({});
+for (const key of ["ignoredCalls", "ignoredCQ", "ignoredDxcc", "ignoredDeDxcc", "ignoredDeCont", "ignoredGrid", "ignoredCQz", "ignoredITUz"])
+{
+  Object.defineProperty(CR, key, {
+    get: () => CR.profile.ignores()[key] || NO_IGNORES,
+    set: (value) => { CR.profile.ignores()[key] = value; }
+  });
+}
+
+function isFeedRoster()
+{
+  return CR.profile === CR.profiles.feed;
+}
+
+// A rig's mode as feed spots name it: AC Log reports the radio's sideband
+const FEED_RIG_MODE_ALIASES = { USB: "SSB", LSB: "SSB" };
+
+// The bands and modes the connected rigs are on (every WSJT-X / JTDX instance, AC Log and Log4OM): for the Feed
+// Roster's ▲ (a rig on the spot's band and mode) and its Auto Band / Auto Mode exceptions. A logger with no band yet
+// (Log4OM without a rig) isn't one. count is 0 with no rig connected
+function feedRigBandModes()
+{
+  const rigs = { bands: {}, modes: {}, bandModes: {}, count: 0 };
+  for (const id in GT.instances)
+  {
+    const instance = GT.instances[id];
+    if (instance.valid && instance.open && instance.status && !(window.opener.isLoggerInstance(id) && instance.status.Band == "OOB"))
+    {
+      const band = instance.status.Band;
+      const reported = String(instance.status.MO || "").toUpperCase();
+      const mode = FEED_RIG_MODE_ALIASES[reported] || reported;
+      rigs.bands[band] = true;
+      rigs.modes[mode] = true;
+      rigs.bandModes[band + "|" + mode] = true;
+      rigs.count++;
+    }
+  }
+  return rigs;
+}
+
+// Runs fn with profile as the current one, then restores the visible tab's profile
+function withProfile(profile, fn)
+{
+  const previous = CR.profile;
+  CR.profile = profile;
+  try
+  {
+    return fn();
+  }
+  finally
+  {
+    CR.profile = previous;
+  }
+}
+
+const LOGBOOK_LIVE_BAND_LIVE_MODE = "0";
+const LOGBOOK_LIVE_BAND_MIX_MODE = "1";
+const LOGBOOK_LIVE_BAND_DIGI_MODE = "2";
+const LOGBOOK_MIX_BAND_LIVE_MODE = "3";
+const LOGBOOK_MIX_BAND_MIX_MODE = "4";
+const LOGBOOK_MIX_BAND_DIGI_MODE = "5";
+const LOGBOOK_AWARD_TRACKER = "6";
+// Feed Roster only
+const LOGBOOK_LIVE_BAND_PHONE_MODE = "7";
+const LOGBOOK_LIVE_BAND_CW_MODE = "8";
+const LOGBOOK_MIX_BAND_PHONE_MODE = "9";
+const LOGBOOK_MIX_BAND_CW_MODE = "10";
+
+const LAYERED_MODE_FOR = {
+  [LOGBOOK_LIVE_BAND_LIVE_MODE]: false,
+  [LOGBOOK_LIVE_BAND_MIX_MODE]: false,
+  [LOGBOOK_LIVE_BAND_DIGI_MODE]: false,
+  [LOGBOOK_MIX_BAND_LIVE_MODE]: LOGBOOK_LIVE_BAND_LIVE_MODE,
+  [LOGBOOK_MIX_BAND_MIX_MODE]: LOGBOOK_LIVE_BAND_MIX_MODE,
+  [LOGBOOK_MIX_BAND_DIGI_MODE]: LOGBOOK_LIVE_BAND_DIGI_MODE,
+  [LOGBOOK_AWARD_TRACKER]: false,
+  [LOGBOOK_LIVE_BAND_PHONE_MODE]: false,
+  [LOGBOOK_LIVE_BAND_CW_MODE]: false,
+  [LOGBOOK_MIX_BAND_PHONE_MODE]: LOGBOOK_LIVE_BAND_PHONE_MODE,
+  [LOGBOOK_MIX_BAND_CW_MODE]: LOGBOOK_LIVE_BAND_CW_MODE
+};
+
+// Hoisted Regular Expressions to prevent recompilation in hot loops
+const HAS_DIGIT_REGEX = /\d/;
+const HAS_UPPER_REGEX = /[A-Z]/;
+const WATCHER_CLEAN_NAME_REGEX = /[$%.'"\\,<>]/g;
+const MSG_CLEAN_REGEX = /[^A-Z0-9/<>\s]+/g;
+const CALLING_CLEAN_REGEX = /[^A-Z0-9/\s]+/g;
+const CALLSIGN_CLEAN_REGEX = /[^A-Z0-9/]+/g;
+// Spotters can carry a skimmer suffix, e.g. W3LPL-# or W3LPL-2
+const SPOTTER_CLEAN_REGEX = /[^A-Z0-9/#-]+/g;
+
+// awardTrackersActive is a much smaller object than awardTracker
+CR.awardTrackersActive = GT.settings.awardTracker;
+CR.awardTracker = {};
+
+// The ignores live in GT.settings (see the CR.ignored* accessors above), so there's nothing to copy back
+function storeBlocks(render = true)
+{
+  if (render)
+  {
+    renderIgnoresTab();
+  }
+}
+
+function storeAwardTracker()
+{
+  let activeAwards = {};
+  for (const hash in CR.awardTracker)
+  {
+    activeAwards[hash] = {
+      sponsor: CR.awardTracker[hash].sponsor,
+      name: CR.awardTracker[hash].name,
+      enable: CR.awardTracker[hash].enable
+    };
+  }
+  GT.settings.awardTracker = activeAwards;
+}
+
+function loadSettings()
+{
+  for (const profile of Object.values(CR.profiles))
+  {
+    withProfile(profile, loadWatcherSettings);
+  }
+}
+
+function loadWatcherSettings()
+{
+  for (let key in CR.rosterSettings.watchers)
+  {
+    let watcher = CR.rosterSettings.watchers[key];
+    
+    // Fix because I allowed \ to be input as a key name char. -Tag
+    let test = key.replace(/\\/g, "");
+    if (test.length !== key.length)
+    {
+      delete CR.rosterSettings.watchers[key];
+      continue;
+    }
+
+    // Fix because we could have stored a regex object in settings in older versions
+    if ("test" in watcher)
+    {
+      delete watcher.test;
+    }
+
+    // Fix to add the name to the entry, makes sorting easier since we can sort on members vs key
+    if (!("name" in watcher))
+    {
+      watcher.name = key;
+    }
+
+    if (!watcher.start) watcher.startTime = 0;
+    if (!watcher.end) watcher.endTime = 0;
+  }
+}
+
+function writeRosterSettings()
+{
+  storeAwardTracker();
+  storeBlocks();
+}
+
+function isKnownCallsignDXCC(dxcc)
+{
+  return (dxcc in CR.callsignDatabaseDXCC);
+}
+
+function isKnownCallsignUS(dxcc)
+{
+  return (dxcc in CR.callsignDatabaseUS);
+}
+
+function isKnownCallsignUSplus(dxcc)
+{
+  return (dxcc in CR.callsignDatabaseUSplus);
+}
+
+function timeNowSec()
+{
+  // Math.trunc is much faster than parseInt, avoiding String conversion
+  return Math.trunc(Date.now() / 1000);
+}
+
+function hashMaker(callObj, reference)
+{
+  // 1. Safe extraction: Prevents crashes AND prevents "20mundefined"
+  const b = callObj?.band ?? "";
+  const m = callObj?.mode ?? "";
+
+  // 2. Switch statements use Strict Equality (===) and V8 Jump Tables
+  switch (reference)
+  {
+    case LOGBOOK_LIVE_BAND_LIVE_MODE:
+    case LOGBOOK_AWARD_TRACKER:
+      return `${b}${m}`;
+
+    case LOGBOOK_LIVE_BAND_DIGI_MODE:
+      return `${b}dg`;
+
+    case LOGBOOK_LIVE_BAND_MIX_MODE:
+      return b;
+
+    case LOGBOOK_MIX_BAND_LIVE_MODE:
+      return m;
+
+    case LOGBOOK_MIX_BAND_DIGI_MODE:
+      return "dg";
+
+    case LOGBOOK_LIVE_BAND_PHONE_MODE:
+      return `${b}ph`;
+
+    case LOGBOOK_LIVE_BAND_CW_MODE:
+      return `${b}CW`;
+
+    case LOGBOOK_MIX_BAND_PHONE_MODE:
+      return "ph";
+
+    case LOGBOOK_MIX_BAND_CW_MODE:
+      return "CW";
+
+    case LOGBOOK_MIX_BAND_MIX_MODE:
+    default:
+      return "";
+  }
+}
+
+function rosterInFocus()
+{
+  if (CR.windowSettings.rosterDelayOnFocus)
+  {
+    CR.rosterFocus = true;
+  }
+}
+
+function rosterNoFocus()
+{
+  CR.rosterFocus = false;
+  if (CR.rosterTimeout !== null)
+  {
+    nodeTimers.clearTimeout(CR.rosterTimeout);
+    CR.rosterTimeout = null;
+    viewRoster();
+  }
+}
+
+// From the main window: both rosters (decodes, worked status and settings changes affect both)
+function processRoster()
+{
+  processProfile(CR.profiles.call);
+  processProfile(CR.profiles.feed);
+}
+
+// From the main window: a rig status that doesn't affect the Feed Roster
+function processCallRoster()
+{
+  processProfile(CR.profiles.call);
+}
+
+// From the main window: new DX Cluster / CW Skimmer spots
+function processFeedRoster()
+{
+  processProfile(CR.profiles.feed);
+}
+
+// The visible tab is rendered (after the focus delay, if on); the other is processed for its alerts only
+function processProfile(profile)
+{
+  if (profile !== CR.visibleProfile)
+  {
+    withProfile(profile, () => runRoster(false));
+    return;
+  }
+
+  if (CR.rosterTimeout !== null)
+  {
+    nodeTimers.clearTimeout(CR.rosterTimeout);
+    CR.rosterTimeout = null;
+  }
+
+  if (CR.rosterFocus)
+  {
+    CR.rosterTimeout = nodeTimers.setTimeout(viewRoster, CR.windowSettings.rosterDelayTime);
+    rosterDelayDiv.style.display = "inline-block";
+  }
+  else
+  {
+    viewRoster();
+  }
+}
+
+// Processes and renders the visible tab
+function viewRoster()
+{
+  CR.rosterTimeout = null;
+  rosterDelayDiv.style.display = "none";
+  runRoster(true);
+}
+
+function runRoster(render)
+{
+  let rosterSettings = prepareRosterSettings();
+  processRosterFiltering(CR.callRoster, rosterSettings);
+  processRosterHunting(CR.callRoster, rosterSettings);
+  if (render)
+  {
+    renderRoster(CR.callRoster, rosterSettings);
+  }
+  const profile = CR.profile;
+  if (profile.alertTimer !== null)
+  {
+    nodeTimers.clearTimeout(profile.alertTimer);
+    profile.alertTimer = null;
+  }
+
+  profile.alertTimer = nodeTimers.setTimeout(() => withProfile(profile, sendAlerts), 250);
+}
+
+function realtimeRoster()
+{
+  let now = timeNowSec();
+  CR.day = Math.trunc(now / 86400);
+  CR.dayAsString = String(CR.day);
+
+  if (!CR.windowSettings.realtime) return;
+
+  for (const timeCol of document.getElementsByClassName("timeCol"))
+  {
+    let id = timeCol.id.slice(2);
+    if (id in CR.callRoster)
+    {
+      timeCol.textContent = toDHMS(now - CR.callRoster[id].callObj.age);
+    }
+  }
+
+  for (const lifeCol of document.getElementsByClassName("lifeCol"))
+  {
+    let id = lifeCol.id.slice(2);
+    if (id in CR.callRoster)
+    {
+      lifeCol.textContent = toDHMS(now - CR.callRoster[id].callObj.life);
+    }
+  }
+  
+  if (CR.rosterSettings.columns.Spot)
+  {
+    for (const spotCol of document.getElementsByClassName("spotCol"))
+    {
+      let id = spotCol.id.slice(2);
+      if (id in CR.callRoster)
+      {
+        spotCol.textContent = getSpotString(CR.callRoster[id].callObj);
+      }
+    }
+  }
+}
+
+function getSpotString(callObj)
+{
+  const spot = callObj.spot;
+  if (!spot || spot.when <= 0) return "";
+
+  const elapsed = timeNowSec() - spot.when;
+  if (elapsed > GT.settings.reception.viewHistoryTimeSec) return "";
+
+  return `${toDHM(elapsed)} / ${spot.snr}`;
+}
+
+function isFeedEntry(thisHash)
+{
+  return isFeedRoster() && thisHash in CR.callRoster;
+}
+
+function initiateQso(thisHash)
+{
+  if (isFeedEntry(thisHash))
+  {
+    window.opener.workFeedSpot(thisHash);
+    return;
+  }
+  window.opener.initiateQso(thisHash);
+}
+
+function callLookup(thisHash, grid)
+{
+  window.opener.startLookup(CR.callRoster[thisHash].DEcall, CR.callRoster[thisHash].grid);
+}
+
+// DX Cluster spotters can carry a node suffix (W3LPL-#, DK9IP-2); lookups and watchers need the callsign
+function spotterBaseCallsign(thisHash)
+{
+  return CR.callRoster[thisHash].callObj.spotter.split("-")[0];
+}
+
+function callingLookup(thisHash, grid)
+{
+  window.opener.startLookup(CR.callRoster[thisHash].DXcall, grid);
+}
+
+function callGenMessage(thisHash, grid)
+{
+  if (isFeedEntry(thisHash))
+  {
+    window.opener.genFeedMessages(thisHash);
+    return;
+  }
+  let thisCall = CR.callRoster[thisHash].DEcall;
+  let instance = CR.callRoster[thisHash].callObj.instance;
+
+  window.opener.startGenMessages(thisCall, grid, instance);
+}
+
+function callingGenMessage(thisHash, grid)
+{
+  // On a feed spot the "calling" station is the spotter
+  if (isFeedEntry(thisHash)) return;
+  let thisCall = CR.callRoster[thisHash].DXcall;
+  let instance = CR.callRoster[thisHash].callObj.instance;
+
+  window.opener.startGenMessages(thisCall, grid, instance);
+}
+
+function centerOn(grid)
+{
+  window.opener.centerOn(grid);
+}
+
+function centerOnDxcc(dxcc)
+{
+  window.opener.centerOnDxcc(dxcc);
+}
+
+function instanceChange(what)
+{
+  GT.instances[what.id].crEnable = what.checked;
+  viewRoster();
+}
+
+function updateInstances()
+{
+  // The Feed Roster has no instance selector (its modes are in its Settings -> Feeds)
+  if (CR.visibleProfile === CR.profiles.feed)
+  {
+    instancesDiv.innerHTML = "";
+    instancesWrapper.style.display = "none";
+    return;
+  }
+
+  if (GT.instanceCount > 1)
+  {
+    let instances = GT.instances;
+    let html = [];
+    let keys = Object.keys(instances).sort();
+    
+    for (const inst of keys)
+    {
+      if (instances[inst].canRoster)
+      {
+        let sp = inst.split(" - ");
+        let shortInst = sp[sp.length - 1].substring(0, 18);
+        let color = instances[inst].open ? "blue" : "purple";
+
+        html.push(`<div class='button' style='background-color:${color};'>` +
+                  `<input type='checkbox' id='${inst}' onchange='instanceChange(this);' ` +
+                  (instances[inst].crEnable ? "checked " : "") +
+                  `>&nbsp;${shortInst}</div>`);
+      }
+    }
+    instancesDiv.innerHTML = html.join("");
+    instancesWrapper.style.display = "";
+  }
+  else
+  {
+    instancesDiv.innerHTML = "";
+    instancesWrapper.style.display = "none";
+  }
+}
+
+function processStatus(newMessage)
+{
+  if (newMessage.Transmitting == 0)
+  {
+    if (newMessage.Decoding == 1)
+    {
+      txrxdec.style.backgroundColor = "Blue";
+      txrxdec.style.borderColor = "Cyan";
+      txrxdec.innerHTML = I18N("gt.status.txrx.decode");
+    }
+    else
+    {
+      txrxdec.style.backgroundColor = "Green";
+      txrxdec.style.borderColor = "GreenYellow";
+      // AC Log doesn't receive or decode: it's just connected
+      txrxdec.innerHTML = I18N(window.opener.isLoggerInstance(newMessage.instance) ? "gt.status.txrx.connected" : "gt.status.txrx.receive");
+    }
+  }
+  else
+  {
+    txrxdec.style.backgroundColor = "red";
+    txrxdec.style.borderColor = "orange";
+    txrxdec.innerHTML = I18N("gt.status.txrx.transmit");
+  }
+}
+
+function newOption(value, text)
+{
+  if (typeof text === "undefined") text = value;
+  let option = document.createElement("option");
+  option.value = value;
+  option.text = text;
+  return option;
+}
+
+function createSelectOptions(
+  selectElementString,
+  selectNameDefault,
+  forObject,
+  altName = null,
+  defaultValue = null,
+  checkSponsor = null
+)
+{
+  let selector = document.getElementById(selectElementString);
+  selector.innerHTML = "";
+
+  let option = document.createElement("option");
+  option.value = defaultValue;
+  option.text = selectNameDefault;
+  option.selected = true;
+  option.disabled = true;
+  option.style.display = "none";
+  selector.appendChild(option);
+
+  let obj = forObject ? Object.keys(forObject).sort() : null;
+  
+  for (const k in obj)
+  {
+    let opt = obj[k];
+    let optElement = document.createElement("option");
+    optElement.value = opt;
+    optElement.text = altName ? forObject[opt][altName] : opt;
+    
+    if (checkSponsor && opt + "-" + checkSponsor in CR.awardTracker)
+    { 
+      optElement.disabled = true; 
+    }
+
+    selector.appendChild(optElement);
+  }
+}
+
+function awardSponsorChanged()
+{
+  awardName.style.display = "";
+  createSelectOptions(
+    "awardName",
+    "Select Award",
+    CR.awards[awardSponsor.value].awards,
+    "name",
+    null,
+    awardSponsor.value
+  );
+}
+
+function addAwardTracker(sponsor, name, enabled)
+{
+  let awardToAdd = newAwardTrackerObject(sponsor, name, enabled);
+  let hash = awardToAdd.name + "-" + awardToAdd.sponsor;
+  
+  if (!(hash in CR.awardTracker))
+  {
+    CR.awardTracker[hash] = awardToAdd;
+    storeAwardTracker();
+    processAward(hash);
+    updateAwardList(hash);
+    viewRoster();
+  }
+  
+  createSelectOptions(
+    "awardName",
+    "Select Award",
+    CR.awards[awardToAdd.sponsor].awards,
+    "name",
+    null,
+    awardToAdd.sponsor
+  );
+}
+
+function updateAwardList(target = null)
+{
+  let html = ["<table id='awardTable' class='awardTableCSS' >"];
+  html.push("<tr>");
+  html.push("<th align='left'>Name</th><th>Award</th><th>Track</th><th></th>");
+  html.push("</tr>");
+  html.push("</table>");
+
+  AwardWantedList.innerHTML = html.join("");
+
+  let keys = Object.keys(CR.awardTracker).sort();
+
+  for (const key of keys)
+  {
+    let award = CR.awardTracker[key];
+    let row = awardTable.insertRow();
+    row.id = key;
+    let baseAward = false;
+    let baseCount = 0;
+
+    let endorseCount = 0;
+    let endorseTotal = 0;
+    let allEndorse = false;
+
+    let tooltip = CR.awards[award.sponsor].awards[award.name].tooltip + " (" + CR.awards[award.sponsor].sponsor + ")\n";
+    tooltip += toProperCase(award.test.look) + " QSO\n";
+    
+    for (const mode in award.comp.counts)
+    {
+      tooltip += mode + "\n";
+      for (const count in award.comp.counts[mode])
+      {
+        endorseTotal++;
+        if (award.comp.counts[mode][count].per === 100)
+        {
+          baseAward = true;
+          endorseCount++;
+        }
+        if (award.comp.counts[mode][count].num > baseCount)
+        { 
+          baseCount = award.comp.counts[mode][count].num; 
+        }
+
+        tooltip += "\t" + award.comp.counts[mode][count].num + "/" + count + " (" + award.comp.counts[mode][count].per + "%)\n";
+        let wrk = "";
+        
+        if (Object.keys(award.comp.endorse).length > 0)
+        {
+          for (const band in award.comp.endorse[mode])
+          {
+            endorseTotal++;
+            if (award.comp.endorse[mode][band][count] === true)
+            {
+              endorseCount++;
+              wrk += band + " ";
+            }
+          }
+        }
+        if (wrk.length > 0)
+        {
+          tooltip += "\t\t" + wrk + "\n";
+        }
+      }
+    }
+    
+    if (baseCount > 0 && endorseCount === endorseTotal) allEndorse = true;
+
+    let cell = createCellHtml(row, award.name + " - " + award.sponsor);
+    cell.style.textAlign = "left";
+    cell.style.color = "lightblue";
+
+    createCellHtml(
+      row, (allEndorse
+        ? "<img src='img/award-trophy.png' height='14px'>"
+        : baseAward
+          ? "<img src='img/award-medal.png' height='13px'>"
+          : baseCount > 0
+            ? "<img src='img/award-tally.png' height='15px'>"
+            : "<img src='img/award-empty.png' height='12px'>"),
+      tooltip
+    );
+    createCell(row, "enable", award.enable, award.enable, "Toggle Tracking", true);
+    createCellHtml(row, "<img title='Remove Tracker' onclick='deleteAwardTracker(this)' style='margin:0;padding:0;margin-top:2px;cursor:pointer;' src='img/award-delete.png' height='12px'>");
+  }
+}
+
+function deleteAwardTracker(sender)
+{
+  delete CR.awardTracker[sender.parentNode.parentNode.id];
+  storeAwardTracker();
+  resetAwardAdd();
+  updateAwardList();
+  viewRoster();
+}
+
+function awardCheckboxChanged(sender)
+{
+  CR.awardTracker[sender.target.parentNode.parentNode.id][sender.target.name] = sender.target.checked;
+  storeAwardTracker();
+  viewRoster();
+}
+
+function awardValueChanged(sender)
+{
+  CR.awardTracker[sender.target.parentNode.parentNode.id][sender.target.name] = sender.target.value;
+  storeAwardTracker();
+  viewRoster();
+}
+
+function createCell(row, target, value, data = null, title = null, checkbox = false)
+{
+  let cell = row.insertCell();
+  if (data === null) cell.innerHTML = value;
+  if (title) cell.title = title;
+  
+  if (checkbox)
+  {
+    let x = document.createElement("INPUT");
+    x.setAttribute("type", "checkbox");
+    x.checked = value;
+    x.name = target;
+    x.addEventListener("change", awardCheckboxChanged);
+    cell.appendChild(x);
+  }
+  else if (data)
+  {
+    cell.appendChild(createAwardSelector(cell, target, value, data));
+  }
+  return cell;
+}
+
+function createCellHtml(row, html, title = null)
+{
+  let cell = row.insertCell();
+  cell.innerHTML = html;
+  if (title) cell.title = title;
+  return cell;
+}
+
+function createAwardSelector(cell, target, value, forObject)
+{
+  let selector = document.createElement("select");
+  selector.name = target;
+  selector.value = value;
+  selector.disabled = forObject.length === 1;
+  selector.style.margin = "0px";
+  selector.style.padding = "1px";
+  
+  if (selector.disabled) selector.style.cursor = "auto";
+  selector.addEventListener("change", awardValueChanged);
+  
+  for (const opt in forObject)
+  {
+    let option = document.createElement("option");
+    option.value = forObject[opt];
+    if (option.value === "Phone" || option.value === "CW") option.disabled = true;
+    option.text = forObject[opt];
+    selector.appendChild(option);
+  }
+  return selector;
+}
+
+function resetAwardAdd()
+{
+  awardName.style.display = "none";
+  createSelectOptions("awardName", "Select Award", null);
+  createSelectOptions("awardSponsor", "Select Sponsor", CR.awards, "sponsor");
+}
+
+function openAwardPopup()
+{
+  awardHunterDiv.style.display = "";
+  resetAwardAdd();
+}
+
+function closeAwardPopup()
+{
+  awardHunterDiv.style.display = "none";
+  resetAwardAdd();
+}
+
+function toggleMoreControls()
+{
+  CR.windowSettings.controlsExtended = !CR.windowSettings.controlsExtended;
+  setVisual();
+}
+
+function setVisual()
+{
+  referenceNeed.value = CR.activeRoster.logbook.referenceNeed;
+  huntNeed.value = CR.activeRoster.logbook.huntNeed;
+
+  if (CR.windowSettings.controls)
+  {
+    if (CR.windowSettings.controlsExtended)
+    {
+      RosterControls.className = "extended";
+      instancesWrapper.style.display = "";
+    }
+    else
+    {
+      RosterControls.className = "normal";
+      instancesWrapper.style.display = "none";
+    }
+  }
+  else
+  {
+    RosterControls.className = "hidden";
+    instancesWrapper.style.display = "none";
+  }
+
+  // Award Hunter
+  if (CR.activeRoster.logbook.referenceNeed === LOGBOOK_AWARD_TRACKER)
+  {
+    huntNeed.style.display = "none";
+    onlyHitsDiv.style.display = "none";
+    HuntModeControls.style.display = "none";
+    huntingMatrixDiv.style.display = "none";
+
+    AwardTrackerControls.style.display = "";
+    AwardWantedList.style.display = "";
+    updateAwardList();
+  }
+  else
+  {
+    for (const key in CR.activeRoster.wanted)
+    {
+      if (key in window)
+      {
+        window[key].checked = CR.activeRoster.wanted[key];
+        if (CR.activeAudioAlerts.wanted[key] === true)
+        {
+          window[key].nextElementSibling.nextElementSibling.innerHTML = "<font style='font-size:smaller;' onclick='window.opener.openAudioAlertSettings(\"" + CR.profile.name + "\")'>&#128276;</font>";
+        }
+        else
+        {
+          window[key].nextElementSibling.nextElementSibling.innerHTML = "";
+        }
+      }
+    }
+
+    AwardTrackerControls.style.display = "none";
+    AwardWantedList.style.display = "none";
+    closeAwardPopup();
+
+    HuntModeControls.style.display = "";
+    huntingMatrixDiv.style.display = "";
+    huntNeed.style.display = "";
+    onlyHitsDiv.style.display = "";
+  }
+
+  usesLoTWDiv.style.display = (GT.settings.callsignLookups.lotwUseEnable) ? "" : "none";
+  updateFeedExceptionsTab();
+  useseQSLDiv.style.display = (GT.settings.callsignLookups.eqslUseEnable) ? "" : "none";
+  usesOQRSDiv.style.display = (GT.settings.callsignLookups.oqrsUseEnable) ? "" : "none";
+  onlySpotDiv.style.display = (CR.rosterSettings.columns.Spot) ? "" : "none";
+  huntingMatrixPotaDiv.style.display = (GT.settings.app.potaFeatureEnabled && !GT.settings.map.offlineMode) ? "" : "none";
+  huntingMatrixSotaDiv.style.display = sotaActive() ? "" : "none";
+  rosterBody.style.display = "block";
+   
+  resize();
+}
+
+function wantedChanged(element)
+{
+  CR.activeRoster.wanted[element.id] = element.checked;
+
+  if (element.checked)
+  {
+    let id = element.id.replace("hunt", "");
+
+    if (id in CR.rosterSettings.columns)
+    {
+      CR.rosterSettings.columns[id] = true;
+      if (id in CR.columnMembers)
+      {
+        CR.columnMembers[id].checked = true;
+      }
+    }
+  }
+
+  resetAlertReporting(true, false);
+  setVisual();
+  viewRoster();
+}
+
+// Main window Audio Alerts; rosterName is the roster its sub-tab shows ("call" / "feed")
+function wantedValuesChangedFromAudioAlerts(rosterName = "call")
+{
+  withProfile(CR.profiles[rosterName], () => resetAlertReporting(false, true));
+  setVisual();
+  viewRoster();
+}
+
+// Main window Audio Alerts exceptions; when that roster isn't the visible tab, the controls here belong
+// to the other roster, so only its setting changes
+function huntingValueChangedFromAudioAlerts(id, value, rosterName = "call")
+{
+  const profile = CR.profiles[rosterName];
+  if (profile !== CR.visibleProfile)
+  {
+    if (id in window)
+    {
+      profile.exceptions()[id] = value;
+      withProfile(profile, () => resetAlertReporting(true, true));
+      processProfile(profile);
+    }
+    return;
+  }
+
+  if (id in window)
+  {
+    if (window[id].type === "checkbox")
+    {
+      CR.activeExceptions[id] = window[id].checked = value;
+    }
+    else
+    {
+      CR.activeExceptions[id] = window[id].value = value;
+    }
+    resetAlertReporting(true, true);
+    setVisual();
+    viewRoster();
+  }
+}
+
+function logbookValuesChanged()
+{
+  CR.activeRoster.logbook.referenceNeed = referenceNeed.value;
+  CR.activeRoster.logbook.huntNeed = huntNeed.value;
+  setVisual();
+  window.opener.setVisualAudioAlerts();
+}
+
+function huntingValueChanged(element)
+{
+  let id = element.id;
+  
+  if (id in CR.activeExceptions)
+  {
+    let value;
+    if (element.type === "checkbox")
+    {
+      value = CR.activeExceptions[id] = element.checked;
+    }
+    else
+    {
+      value = CR.activeExceptions[id] = element.value;
+      let view = id + "View";
+      if (view in window)
+      {
+        window[view].innerHTML = element.value;
+      }
+    }
+    // Main window Audio Alerts mirrors each roster's exceptions
+    window.opener.huntingValueChangedFromCallRoster(id, value, CR.profile.name);
+  }
+
+  maxLoTWView.innerHTML = CR.activeExceptions.maxLoTW < 27 ? toYM(Number(CR.activeExceptions.maxLoTW)) : "<b>&infin;</b>";
+
+  resetAlertReporting(true, true);
+  setVisual();
+  viewRoster();
+}
+
+function resetAlertReporting(clearRoster, clearAudio)
+{
+  const callRoster = CR.callRoster;
+  for (const callHash in callRoster)
+  {
+    if (clearRoster) callRoster[callHash].callObj.rosterAlerted = false;
+    if (clearAudio) callRoster[callHash].callObj.audioAlerted = false;
+  }
+}
+
+function loadFilterSettings()
+{
+  let filters = "";
+  for (const filter in CR.windowSettings.displayFilters)
+  {
+    let slider = document.getElementById("filter" + filter + "Slider");
+
+    if (slider)
+    {
+      slider.value = CR.windowSettings.displayFilters[filter];
+      let td = document.getElementById("filter" + filter + "Td");
+
+      if (filter === "invert")
+      {
+        if (slider.value > 49) slider.value = 100;
+        if (slider.value <= 49) slider.value = 0;
+      }
+      
+      if (filter === "huerotate")
+      {
+        td.innerHTML = slider.value + " deg";
+        filters += "hue-rotate(" + slider.value + "deg) ";
+      }
+      else 
+      {
+        td.innerHTML = slider.value + "%";
+        filters += filter + "(" + slider.value + "%) ";
+      }
+    }
+  }
+  document.documentElement.style.filter = filters;
+}
+
+function filtersChanged()
+{
+  for (const filter in CR.windowSettings.displayFilters)
+  {
+    let slider = document.getElementById("filter" + filter + "Slider");
+
+    if (slider)
+    {
+      CR.windowSettings.displayFilters[filter] = slider.value;
+    }
+    else
+    {
+      delete CR.windowSettings.displayFilters[filter];
+    }
+  }
+  loadFilterSettings();
+}
+
+function resetFilters()
+{
+  for (const filter in CR.windowSettings.displayFilters)
+  {
+    CR.windowSettings.displayFilters[filter] = CR.def_displayFilters[filter];
+  }
+  loadFilterSettings();
+}
+
+function initSelectors()
+{
+  for (const column in ROSTER_COLUMNS)
+  {
+    if (column !== "Callsign")
+    {
+      let option = newOption(column, column);
+      if (column === CR.rosterSettings.compactEntity)
+      {
+        option.selected = true;
+      }
+      compactEntitySelect.appendChild(option);
+    }
+  }
+
+  let items = Object.keys(GT.dxccToAltName).sort(function (a, b)
+  {
+    return GT.dxccToAltName[a].localeCompare(GT.dxccToAltName[b]);
+  });
+
+  for (const key of items)
+  {
+    if (GT.dxccInfo[key].geo !== "deleted")
+    {
+      let option = document.createElement("option");
+      option.value = key;
+      option.text = GT.dxccToAltName[key] + " (" + GT.dxccInfo[key].pp + ")";
+      ignoreCqDxccSelect.appendChild(option.cloneNode(true));
+      ignoreDxccSelect.appendChild(option.cloneNode(true));
+    }
+  }
+
+  items = Object.keys(GT.cqZones).sort();
+  for (const key of items)
+  {
+    let option = document.createElement("option");
+    option.value = key;
+    option.text = key + " - " + GT.cqZones[key].name;
+    ignoreCqzSelect.appendChild(option);
+  }
+
+  items = Object.keys(GT.ituZones).sort();
+  for (const key of items)
+  {
+    let option = document.createElement("option");
+    option.value = key;
+    option.text = key;
+    ignoreItuzSelect.appendChild(option);
+  }
+
+  CR.ignoreTypeInputs = {
+    Callsign: ignoreCallsignValue,
+    Grid: ignoreGridValue,
+    CQ: ignoreCqDiv,
+    DXCC: ignoreDxccSelect,
+    DEDXCC: ignoreDxccSelect,
+    DECont: ignoreDeContSelect,
+    CQz: ignoreCqzSelect,
+    ITUz: ignoreItuzSelect,
+    Spotter: ignoreCallsignValue
+  };
+
+  ignoreTypeChanged("Callsign");
+  watcherTypeChanged("Callsign");
+}
+
+function hideIgnoreElements()
+{
+  ignoreCallsignValue.style.display = "none";
+  ignoreGridValue.style.display = "none";
+  ignoreCqDiv.style.display = "none";
+  ignoreDxccSelect.style.display = "none";
+  ignoreDeContSelect.style.display = "none";
+  ignoreCqzSelect.style.display = "none";
+  ignoreItuzSelect.style.display = "none";
+}
+
+CR.ignoreType = "Callsign";
+
+function ignoreTypeChanged(ignoreTypeValue)
+{
+  hideIgnoreElements();
+  CR.ignoreTypeInputs[ignoreTypeValue].style.display = "";
+  if (CR.ignoreType !== ignoreTypeValue)
+  {
+    ingnoreAddResultLabel.innerHTML = "";
+    CR.ignoreType = ignoreTypeValue;
+  }
+  ValidateTextInput(ignoreCallsignValue);
+  gridInputValidate(ignoreGridValue);
+  ValidateTextInput(ignoreCqCallsignValue);
+}
+
+function gridInputValidate(element)
+{
+  element.value = element.value.toUpperCase().replace(/[^A-Z0-9/]+/g, "").substr(0, 4);
+  if (!element.value.match(GRID_REGEXP))
+  {
+    element.style.color = "#000";
+    element.style.backgroundColor = "yellow";
+  }
+  else
+  {
+    element.style.color = "";
+    element.style.backgroundColor = "";
+  }
+}
+
+function addNewIgnore()
+{
+  if (CR.ignoreType === "Callsign")
+  {
+    if (ValidateTextInput(ignoreCallsignValue, ingnoreAddResultLabel))
+    {
+      ignoreCallsign(ignoreCallsignValue.value);
+    }
+  }
+  else if (CR.ignoreType === "CQ")
+  {
+    if (ValidateTextInput(ignoreCqCallsignValue, ingnoreAddResultLabel))
+    {
+      ignoreCQ("CQ " + ignoreCqCallsignValue.value, ignoreCqDxccSelect.value);
+    }
+  }
+  else if (CR.ignoreType === "DXCC")
+  {
+    ignoreDxcc(ignoreDxccSelect.value);
+  }
+  else if (CR.ignoreType === "DEDXCC")
+  {
+    ignoreDeDxcc(ignoreDxccSelect.value);
+  }
+  else if (CR.ignoreType === "DECont")
+  {
+    ignoreDeCont(ignoreDeContSelect.value);
+  }
+  else if (CR.ignoreType === "Grid")
+  {
+    ignoreGrid(ignoreGridValue.value);
+  }
+  else if (CR.ignoreType === "CQz")
+  {
+    ignoreCQz(ignoreCqzSelect.value)
+  }
+  else if (CR.ignoreType === "ITUz")
+  {
+    ignoreITUz(ignoreItuzSelect.value);
+  }
+  else if (CR.ignoreType === "Spotter")
+  {
+    if (ValidateTextInput(ignoreCallsignValue, ingnoreAddResultLabel))
+    {
+      ignoreSpotter(ignoreCallsignValue.value);
+    }
+  }
+}
+
+function updateWorked()
+{
+  CR.modes = GT.modes;
+  CR.modes_phone = GT.modes_phone;
+  processAllAwardTrackers();
+}
+
+function deleteCallsignIgnore(key)
+{
+  delete CR.ignoredCalls[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreCallsign(callsign)
+{
+  CR.ignoredCalls[callsign] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreDxcc(dxcc)
+{
+  CR.ignoredDxcc[dxcc] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+// Feed Roster: spots from spotters in this DXCC
+function ignoreDeDxcc(dxcc)
+{
+  CR.ignoredDeDxcc[dxcc] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+// Feed Roster: spots from spotters on this continent
+function ignoreDeCont(cont)
+{
+  CR.ignoredDeCont[cont] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreGrid(grid)
+{
+  CR.ignoredGrid[grid] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreCQ(cq, dxcc)
+{
+  if (dxcc > 0)
+  {
+    CR.ignoredCQ[cq + ":" + dxcc] = true;
+  }
+  else
+  {
+    CR.ignoredCQ[cq] = true;
+  }
+
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreCQz(cqz)
+{
+  CR.ignoredCQz[cqz] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+function ignoreITUz(ituz)
+{
+  CR.ignoredITUz[ituz] = true;
+  storeBlocks();
+  viewRoster();
+}
+
+// Spotters are ignored by base callsign, so W3LPL also covers W3LPL-# and W3LPL-2
+function ignoreSpotter(spotter)
+{
+  const base = spotter.split("-")[0].toUpperCase();
+  if (base.length === 0) return;
+  CR.ignoredSpotters[base] = true;
+  storeBlocks();
+  window.opener.dropFeedSpotter(base);
+  viewRoster();
+}
+
+function deleteSpotterIgnore(key)
+{
+  delete CR.ignoredSpotters[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllSpotterIgnores()
+{
+  CR.ignoredSpotters = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteDxccIgnore(key)
+{
+  delete CR.ignoredDxcc[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteDeDxccIgnore(key)
+{
+  delete CR.ignoredDeDxcc[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteDeContIgnore(key)
+{
+  delete CR.ignoredDeCont[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteGridIgnore(key)
+{
+  delete CR.ignoredGrid[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteCQIgnore(key)
+{
+  delete CR.ignoredCQ[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteCQzIgnore(key)
+{
+  delete CR.ignoredCQz[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function deleteITUzIgnore(key)
+{
+  delete CR.ignoredITUz[key];
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllCallsignIgnores()
+{
+  CR.ignoredCalls = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllDxccIgnores()
+{
+  CR.ignoredDxcc = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllDeDxccIgnores()
+{
+  CR.ignoredDeDxcc = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllDeContIgnores()
+{
+  CR.ignoredDeCont = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllGridIgnores()
+{
+  CR.ignoredGrid = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllCQIgnores()
+{
+  CR.ignoredCQ = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllCQzIgnores()
+{
+  CR.ignoredCQz = {};
+  storeBlocks();
+  viewRoster();
+}
+
+function clearAllITUzIgnores()
+{
+  CR.ignoredITUz = {};
+  storeBlocks();
+  viewRoster();
+}
+
+// The pane is shown before the tab renders, so the Ignores and Watcher tabs can measure where they start
+function openSettings()
+{
+  settingsDiv.style.display = "inline-block";
+  openInfoTab("generalbox", "generalSettingsDiv");
+}
+
+function openWatcher()
+{
+  settingsDiv.style.display = "inline-block";
+  openInfoTab("watcherbox", "watcherBoxDiv", openWatchersTab);
+}
+
+// The Feed Roster's Exceptions settings tab holds only Uses LoTW (dB / DT / Freq are Call Roster only)
+function feedExceptionsTabEmpty()
+{
+  return isFeedRoster() && !GT.settings.callsignLookups.lotwUseEnable;
+}
+
+// Without LoTW the Feed Roster's Exceptions tab would be empty: remove "..." and the tab
+// (from setVisual(), as the LoTW setting can change, and from updateRosterTabControls() on a roster switch)
+function updateFeedExceptionsTab()
+{
+  const empty = feedExceptionsTabEmpty();
+  moreExceptionsButton.style.display = empty ? "none" : "";
+  exceptionsbox.style.display = empty ? "none" : "";
+  if (empty && exceptionsBoxDiv.style.display === "block") openInfoTab("generalbox", "generalSettingsDiv");
+}
+
+function openExceptions()
+{
+  if (feedExceptionsTabEmpty()) return;
+  settingsDiv.style.display = "inline-block";
+  openInfoTab("exceptionsbox", "exceptionsBoxDiv");
+}
+
+function openIgnores()
+{
+  settingsDiv.style.display = "inline-block";
+  openInfoTab("ingoresbox", "ignoresBoxDiv", renderIgnoresTab);
+}
+
+function closeSettings()
+{
+  settingsDiv.style.display = "none";
+}
+
+// Settings -> Colors, for the roster showing (CR.visibleProfile: a background pass may have the other one in
+// CR.profile): one swatch per column it has, in that roster's column order (its default order until a column is
+// dragged; hidden columns keep their place). Band and Mode use the main window's band and mode colors. Each roster
+// keeps its own colors (defaults in defaults.js)
+function renderColorsTab()
+{
+  withProfile(CR.visibleProfile, () =>
+  {
+    const excluded = CR.profile.excludedColumns;
+    const colorColumns = window.opener.defaultRosterColors(CR.profile.name);
+    const order = CR.rosterSettings.columnOrder.slice();
+    // Any column the saved order lacks goes last, in the default order
+    for (const column of DEFAULT_COLUMN_ORDER) if (!order.includes(column)) order.push(column);
+    // Every column gets a cell so all can be moved; those without a color of their own show a fixed swatch:
+    // Band and Mode use the main window's band / mode colors (Band click: main Settings -> Colors; mode colors are fixed), Flag a flag
+    const bandColor = "#" + (GT.bandColors["20m"] || "FFFFFF");
+    const modeColor = "#" + (GT.modeColors.FT8 || "FFFFFF");
+    const fixedSwatches = {
+      Band: { color: bandColor, html: `<span class="rosterColorSample rosterColorLink" onclick="window.opener.openColorSettings()" style="color:${bandColor};">20m</span>` },
+      Mode: { color: modeColor, html: `<span class="rosterColorSample" style="color:${modeColor};">FT8</span>` },
+      Flag: { color: "", html: `<span class="rosterColorSample rosterColorFlag"><img src="img/flags/24/un.png" /></span>` }
+    };
+    rosterColorsDiv.innerHTML = order
+      .filter((column) => (column in ROSTER_COLUMNS) && !excluded[column])
+      .map((column) =>
+      {
+        const fixedSwatch = (column in colorColumns) ? null : fixedSwatches[column];
+        const color = fixedSwatch ? fixedSwatch.color : rosterColor(column);
+        const info = ROSTER_COLUMNS[column];
+        const label = (info && info.label) ? info.label() : column;
+        // Drag a cell onto another to move the column, like the headers; the tick box under the swatch shows / hides it.
+        // Callsign is always shown and stays first
+        const fixed = column === "Callsign";
+        const shown = fixed || CR.rosterSettings.columns[column] === true;
+        return `<div class="bandColorCell rosterColorCell" name="${column}"` +
+          (fixed ? "" : ` draggable="true" ondragstart="dragStart(event)"`) + `>` +
+          `<b id="rosterColorLabel_${column}"${color ? ` style="color:${color};"` : ""}>${label}</b><br />` +
+          (fixedSwatch ? fixedSwatch.html : `<input type="color" value="${color}" oninput="changeRosterColor('${column}', this)" />`) + `<br />` +
+          `<input type="checkbox"${shown ? " checked" : ""}${fixed ? " disabled" : ` onchange="toggleRosterColorColumn('${column}', this)"`} />` +
+          `</div>`;
+      }).join("");
+  });
+}
+
+function changeRosterColor(column, input)
+{
+  const hex = input.value.substring(1).toUpperCase();
+  const settings = CR.visibleProfile.settings();
+  if (!settings.colors) settings.colors = window.opener.defaultRosterColors(CR.visibleProfile.name);
+  settings.colors[column] = hex;
+  document.getElementById("rosterColorLabel_" + column).style.color = "#" + hex;
+
+  // Dragging in the picker fires many changes: redraw once it settles
+  nodeTimers.clearTimeout(CR.rosterColorsTimeout);
+  CR.rosterColorsTimeout = nodeTimers.setTimeout(() => window.opener.goProcessRoster(), 300);
+}
+
+// Settings -> Colors tick box: same as ticking the column in the header menu
+function toggleRosterColorColumn(column, input)
+{
+  toggleColumn(input, column);
+  logbookValuesChanged();
+}
+
+function resetRosterColors()
+{
+  CR.visibleProfile.settings().colors = window.opener.defaultRosterColors(CR.visibleProfile.name);
+  renderColorsTab();
+  window.opener.goProcessRoster();
+}
+
+function feedsActive()
+{
+  return window.opener.feedsActive();
+}
+
+// SOTA Chasing is on and DX Feeds is running
+function sotaActive()
+{
+  return window.opener.sotaActive();
+}
+
+// From the main window when feed settings change: the Feed Roster tab exists only while a feed is on
+function updateFeedsTab()
+{
+  const anyActive = feedsActive();
+
+  rosterTabs.style.display = anyActive ? "" : "none";
+  rosterBody.classList.toggle("rosterTabsShown", anyActive);
+
+  if (!anyActive && CR.visibleProfile === CR.profiles.feed)
+  {
+    showRosterTab("call");
+  }
+  else
+  {
+    updateRosterTabControls();
+  }
+}
+
+// Call Roster | Feed Roster tabs: the controls, settings panel and table all switch to the chosen roster
+function showRosterTab(name, render = true)
+{
+  if (name === "feed" && !feedsActive()) name = "call";
+  if (!(name in CR.profiles)) name = "call";
+
+  CR.windowSettings.activeTab = name;
+  CR.visibleProfile = CR.profile = CR.profiles[name];
+
+  callRosterTab.classList.toggle("active", name === "call");
+  feedRosterTab.classList.toggle("active", name === "feed");
+  rosterBody.classList.toggle("feedRosterShown", name === "feed");
+  rosterSettingsTitle.textContent = I18N(name === "feed" ? "roster.settings.feed" : "roster.settings.call");
+
+  createColumnMenu();
+  applyActiveRoster();
+  setCompactView();
+  setRosterTimeView();
+  compactEntitySelect.value = CR.rosterSettings.compactEntity;
+  updateRosterTabControls();
+  if (render)
+  {
+    setVisual();
+    viewRoster();
+  }
+  updateInstances();
+}
+
+// Settings that only one roster has: Spotter ignores and watchers, and Spotter column for the Feed Roster;
+// CQ ignores, Calling watchers, dB / DT / Freq exceptions and Clear Roster on Band change for the Call Roster
+function updateRosterTabControls()
+{
+  const feed = isFeedRoster();
+
+  ignoreSpotterOption.style.display = feed ? "" : "none";
+  ignoreCqOption.style.display = feed ? "none" : "";
+  watcherSpotterOption.style.display = feed ? "" : "none";
+  watcherCallingOption.style.display = feed ? "none" : "";
+  // Feed Roster: Hide Self-Spot, Auto Band / Auto Mode, and its DXCC exceptions are for the spotted station ("DX DXCC")
+  hideSelfSpotsDiv.style.display = feed ? "" : "none";
+  autoBandDiv.style.display = feed ? "" : "none";
+  autoModeDiv.style.display = feed ? "" : "none";
+  // Logbook: "Spots Band & Mode" etc. in the Feed Roster, "Live Band & Mode" in the Call Roster
+  setLogbookOptionLabels(referenceNeed, feed);
+  // Settings -> Colors open while switching rosters: show the other roster's colors
+  if (colorsBoxDiv.style.display === "block") renderColorsTab();
+  // DXCC ignores: likewise DX DXCC and DE DXCC in the Feed Roster
+  ignoreDeDxccOption.style.display = feed ? "" : "none";
+  ignoreDeContOption.style.display = feed ? "" : "none";
+  ignoreDxccOption.textContent = feed ? I18N("rosterColumns.DXCC.feedHeader") : "DXCC";
+  if (CR.dxccIgnoreItem)
+  {
+    CR.dxccIgnoreItem.visible = !feed;
+    CR.dxDxccIgnoreItem.visible = feed;
+  }
+  if (watcherType.value === (feed ? "Calling" : "Spotter"))
+  {
+    watcherTypeChanged("Callsign");
+  }
+  clearRosterOnBandChangeDiv.style.display = feed ? "none" : "";
+  minDbDiv.style.display = feed ? "none" : "";
+  maxDTDiv.style.display = feed ? "none" : "";
+  minFreqDiv.style.display = feed ? "none" : "";
+  maxFreqDiv.style.display = feed ? "none" : "";
+  // The Feed Roster has no RR73; its Exceptions settings tab ("...") has only Uses LoTW (dB / DT / Freq are hidden above),
+  // centered
+  wantRRCQDiv.style.display = feed ? "none" : "";
+  exceptionTabDiv.classList.toggle("feedExceptions", feed);
+  updateFeedExceptionsTab();
+
+  if ((!feed && (CR.ignoreType === "Spotter" || CR.ignoreType === "DEDXCC" || CR.ignoreType === "DECont")) || (feed && CR.ignoreType === "CQ"))
+  {
+    ignoreTypeSelect.value = "Callsign";
+    ignoreTypeChanged("Callsign");
+  }
+
+  // An open settings tab redraws for the roster now showing
+  if (ignoresBoxDiv.style.display === "block")
+  {
+    renderIgnoresTab();
+  }
+  else if (watcherBoxDiv.style.display === "block")
+  {
+    openWatchersTab();
+  }
+}
+
+function renderIgnoresTab()
+{
+  let html = [];
+  let clearString = "<th>none</th>";
+  
+  if (Object.keys(CR.ignoredCalls).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllCallsignIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>Callsigns</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredCalls).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:#FFFF00;'>${key}</td><td style='cursor:pointer;' onclick='deleteCallsignIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (!isFeedRoster() && Object.keys(CR.ignoredCQ).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllCQIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>CQ</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredCQ).sort().forEach(function (rawKey)
+    {
+      let split = rawKey.split(":");
+      let key = split[0];
+      let dxcc = split.length === 2 ? parseInt(split[1]) : -1;
+      html.push(`<tr><td align='left' style='color:lightgreen;'>${key} from ${dxcc === -1 ? "All" : GT.dxccToAltName[dxcc]}</td><td style='cursor:pointer;' onclick='deleteCQIgnore("${rawKey}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (Object.keys(CR.ignoredDxcc).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllDxccIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${isFeedRoster() ? I18N("rosterColumns.DXCC.feedHeader") : "DXCC"}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredDxcc).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:#FFA500;'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (isFeedRoster() && Object.keys(CR.ignoredDeDxcc).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllDeDxccIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("rosterColumns.DEDXCC.header")}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredDeDxcc).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:#5caeff;'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDeDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (isFeedRoster() && Object.keys(CR.ignoredDeCont).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllDeContIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("rosterColumns.DECont.header")}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredDeCont).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:#5caeff;'>${key}</td><td style='cursor:pointer;' onclick='deleteDeContIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (Object.keys(CR.ignoredGrid).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllGridIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>Grid</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredGrid).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteGridIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (Object.keys(CR.ignoredCQz).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllCQzIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("gt.viewInfo.cqZones")}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredCQz).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteCQzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (Object.keys(CR.ignoredITUz).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllITUzIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("gt.awardNames.ITU")}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredITUz).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteITUzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  if (isFeedRoster() && Object.keys(CR.ignoredSpotters).length > 0)
+  {
+    clearString = "<th style='cursor:pointer;' onclick='clearAllSpotterIgnores()'>" + I18N("roster.ignores.clearAll") + "</th>";
+    html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("roster.ignores.spotters")}</th>${clearString}</tr>`);
+    Object.keys(CR.ignoredSpotters).sort().forEach(function (key)
+    {
+      html.push(`<tr><td align='left' style='color:#5caeff;'>${key}</td><td style='cursor:pointer;' onclick='deleteSpotterIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+    });
+    html.push("</table></div>");
+  }
+
+  ignoresEditView.innerHTML = html.join("");
+  // Fit to the window from where the tab actually starts (the pane's title and the roster tabs move it down);
+  // 27px is where it started before either existed, for when it isn't showing yet
+  const boxTop = ignoresBoxDiv.offsetParent ? ignoresBoxDiv.getBoundingClientRect().top : 27;
+  ignoresBoxDiv.style.height = (window.innerHeight - boxTop - 23) + "px";
+
+  let elems = document.getElementsByClassName("ignoresTables");
+  for (const elem of elems)
+  {
+    let height = 110 + (boxTop - 27);
+    if (elem.offsetHeight > window.innerHeight - height)
+    {
+      elem.style.height = (window.innerHeight - height) + "px";
+    }
+  }
+}
+
+function onMyKeyDown(event)
+{
+  if (event.keyCode === 27)
+  {
+    closeSettings();
+  }
+
+  if (event.ctrlKey)
+  {
+    if (event.code === "KeyL")
+    {
+      resetFilters();
+    }
+    else if (event.code === "KeyS")
+    {
+      openSettings();
+    }
+    else if (event.code === "KeyW" || event.code === "KeyO")
+    {
+      openWatcher();
+    }
+    else if (event.code === "KeyE")
+    {
+      openExceptions();
+    }
+    else if (event.code === "KeyI")
+    {
+      openIgnores();
+    }
+    else if (event.code === "KeyL")
+    {
+      usesLoTW.checked = !usesLoTW.checked;
+      huntingValueChanged(usesLoTW);
+    }
+  }
+}
+
+function blurOnEnter(ele)
+{
+  if (event.key === "Enter")
+  {
+    ele.blur();
+  }
+}
+
+function resize()
+{
+  if (!GT.callRosterWindowInitialized) return;
+
+  if (ignoresBoxDiv.style.display !== "none")
+  {
+    renderIgnoresTab();
+  }
+
+  wantRenderWatchersTab();
+  viewRoster();
+  window.opener.goProcessRoster();
+}
+
+function init()
+{
+  loadSettings();
+
+  CR.callsignDatabaseDXCC = GT.callsignDatabaseDXCC;
+  CR.callsignDatabaseUS = GT.callsignDatabaseUS;
+  CR.callsignDatabaseUSplus = GT.callsignDatabaseUSplus;
+
+  loadAwardJson();
+  updateWorked();
+  loadFilterSettings();
+  updateInstances();
+  loadRosterI18n();
+  // Like the main window: every slider's hover mentions the arrow keys (after the translations set any hover)
+  for (const slider of document.querySelectorAll("input[type='range']"))
+  {
+    if (slider.title.length > 0) slider.title += "\n";
+    slider.title += I18N("gt.slider.arrowKeys");
+  }
+  setRosterTop();
+  createActiveAwardsFromSettings();
+  registerCutAndPasteContextMenu();
+  
+  GT.callRosterWindowInitialized = true;
+}
+
+function toggleShowControls()
+{
+  CR.windowSettings.controls = !CR.windowSettings.controls;
+  setVisual();
+}
+
+// called from i18n.js
+function addControls()
+{
+  WANTED_LABELS = {
+    cont: I18N("rosterColumns.Wanted.cont"),
+    cqz: I18N("rosterColumns.Wanted.cqz"),
+    ituz: I18N("rosterColumns.Wanted.ituz"),
+    dxcc: I18N("rosterColumns.Wanted.dxcc"),
+    dxm: I18N("rosterColumns.Wanted.dxm"),
+    state: I18N("rosterColumns.Wanted.state"),
+    grid: I18N("rosterColumns.Wanted.grid"),
+    cnty: I18N("rosterColumns.Wanted.cnty"),
+    wpx: I18N("rosterColumns.Wanted.wpx"),
+    call: I18N("rosterColumns.Wanted.call"),
+    watcher: I18N("roster.watcher.label"),
+    oams: I18N("rosterColumns.Wanted.oams"),
+    pota: I18N("rosterColumns.Wanted.pota"),
+    sota: I18N("rosterColumns.Wanted.sota")
+  };
+
+  window.opener.setRosterSpot(CR.rosterSettings.columns.Spot);
+
+  applyActiveRoster();
+
+  createMenuHide();
+  createMenuShow();
+  createCompactMenuHide();
+  createCompactMenuShow();
+  createRestOfMenus();
+
+  clearRosterOnBandChange.checked = CR.windowSettings.clearRosterOnBandChange;
+  rosterAlwaysOnTop.checked = CR.windowSettings.rosterAlwaysOnTop;
+  rosterDelayOnFocus.checked = CR.windowSettings.rosterDelayOnFocus;
+  displayDelayOnFocus();
+  rosterDelayTime.value = CR.windowSettings.rosterDelayTime;
+  rosterDelayTimeTd.innerHTML = rosterDelayTime.value + "ms";
+  setRosterTimeView();
+  setCompactView();
+  initSelectors();
+  updateFeedsTab();
+  showRosterTab(CR.windowSettings.activeTab, false);
+  setVisual();
+  document.addEventListener("keydown", onMyKeyDown, false);
+  CR.timerInterval = nodeTimers.setInterval(realtimeRoster, 1000);
+  updateInstances();
+}
+
+function applyActiveRoster()
+{
+  for (const key in CR.activeRoster.wanted)
+  {
+    if (key in window)
+    { 
+      window[key].checked = CR.activeRoster.wanted[key]; 
+    }
+  }
+
+  referenceNeed.value = CR.activeRoster.logbook.referenceNeed;
+  huntNeed.value = CR.activeRoster.logbook.huntNeed;
+
+  requireGrid.checked = CR.activeExceptions.requireGrid;
+
+  wantMaxDT.checked = CR.activeExceptions.wantMaxDT;
+  wantMinDB.checked = CR.activeExceptions.wantMinDB;
+  wantMinFreq.checked = CR.activeExceptions.wantMinFreq;
+  wantMaxFreq.checked = CR.activeExceptions.wantMaxFreq;
+  wantRRCQ.checked = CR.activeExceptions.wantRRCQ;
+
+  maxDTView.innerHTML = maxDT.value = CR.activeExceptions.maxDT;
+  minDbView.innerHTML = minDb.value = CR.activeExceptions.minDb;
+  minFreqView.innerHTML = minFreq.value = CR.activeExceptions.minFreq;
+  maxFreqView.innerHTML = maxFreq.value = CR.activeExceptions.maxFreq;
+
+  maxLoTW.value = CR.activeExceptions.maxLoTW;
+  maxLoTWView.innerHTML = maxLoTW.value < 27 ? toYM(Number(maxLoTW.value)) : "<b>&infin;</b>";
+
+  onlyHits.checked = CR.activeExceptions.onlyHits;
+  cqOnly.checked = CR.activeExceptions.cqOnly;
+  noMyDxcc.checked = CR.activeExceptions.noMyDxcc;
+  onlyMyDxcc.checked = CR.activeExceptions.onlyMyDxcc;
+  hideSelfSpots.checked = CR.activeExceptions.hideSelfSpots === true;
+  autoBand.checked = CR.activeExceptions.autoBand === true;
+  autoMode.checked = CR.activeExceptions.autoMode === true;
+
+  usesLoTW.checked = CR.activeExceptions.usesLoTW;
+  useseQSL.checked = CR.activeExceptions.useseQSL;
+  onlySpot.checked = CR.activeExceptions.onlySpot;
+  usesOQRS.checked = CR.activeExceptions.usesOQRS;
+
+  allOnlyNew.checked = CR.activeExceptions.allOnlyNew;
+
+  let wantedHeader = document.querySelector('h3[data-i18n="roster.secondary.wanted.label"]');
+  let exceptionsHeader = document.querySelector('h3[data-i18n="roster.exceptions.label"]');
+
+  // Band/Mode Memory applies to the Call Roster only
+  if (!isFeedRoster() && GT.settings.app.wantedByBandMode == true && GT.instanceCount == 1) {
+    if (wantedHeader && !document.getElementById('wanted_mode_indicator')) {
+      wantedHeader.insertAdjacentHTML('beforeend', ' <span id="wanted_mode_indicator" class="band-mode-indicator">M</span>');
+      wanted_mode_indicator.title = I18N("settings.Features.BandMemory");
+    }
+    if (GT.settings.app.includeExceptions) {
+      if (exceptionsHeader && !document.getElementById('exceptions_mode_indicator')) {
+        exceptionsHeader.insertAdjacentHTML('beforeend', ' <span id="exceptions_mode_indicator" class="band-mode-indicator">M</span>');
+        exceptions_mode_indicator.title = I18N("settings.Features.BandMemory");
+      }
+    } else {
+      let excIndicator = document.getElementById('exceptions_mode_indicator');
+      if (excIndicator) excIndicator.remove();
+    }
+  } else {
+    let wantedIndicator = document.getElementById('wanted_mode_indicator');
+    if (wantedIndicator) wantedIndicator.remove();
+
+    let excIndicator = document.getElementById('exceptions_mode_indicator');
+    if (excIndicator) excIndicator.remove();
+  }
+}
+
+function setCompactView()
+{
+  compactModeDiv.innerHTML = CR.rosterSettings.compact ? I18N("roster.menu.RosterMode") : I18N("roster.menu.CompactMode");
+  compactEnityDiv.style.display = CR.rosterSettings.compact ? "" : "none";
+  // Compact mode has no columns to reset
+  resetRosterColumnsDiv.style.display = CR.rosterSettings.compact ? "none" : "";
+}
+
+function compactModeChanged()
+{
+  CR.rosterSettings.compact = !CR.rosterSettings.compact;
+  setCompactView();
+  viewRoster();
+}
+
+// Colors tab "Reset Column Order": the visible roster's columns (shown and order) only
+function resetRosterColumns()
+{
+  const def = window.opener.defaultRosterColumns(CR.profile.name);
+  CR.rosterSettings.columns = def.columns;
+  CR.rosterSettings.columnOrder = validateRosterColumnOrder(def.columnOrder);
+  createColumnMenu();
+  if (!isFeedRoster())
+  {
+    window.opener.setRosterSpot(CR.rosterSettings.columns.Spot);
+  }
+  setVisual();
+  viewRoster();
+  renderColorsTab();
+}
+
+function compactEntityChanged()
+{
+  CR.rosterSettings.compactEntity = compactEntitySelect.value;
+  viewRoster();
+}
+
+function clearRosterOnBandChangeValueChanged(what)
+{
+  CR.windowSettings.clearRosterOnBandChange = clearRosterOnBandChange.checked;
+}
+
+function rosterDelayOnFocusValueChanged(what)
+{
+  CR.windowSettings.rosterDelayOnFocus = rosterDelayOnFocus.checked;
+  displayDelayOnFocus();
+}
+
+function displayDelayOnFocus()
+{
+  if (CR.windowSettings.rosterDelayOnFocus)
+  {
+    rosterDelayTimeTd.style.display = "block";
+    rosterDelayTime.style.display = "block";
+  }
+  else
+  {
+    rosterDelayTimeTd.style.display = "none";
+    rosterDelayTime.style.display = "none";
+  }
+}
+
+function changeRosterDelayTime()
+{
+  CR.windowSettings.rosterDelayTime = rosterDelayTime.value;
+  rosterDelayTimeTd.innerHTML = rosterDelayTime.value + "ms";
+}
+
+function changeRosterTime()
+{
+  CR.rosterSettings.rosterTime = rosterTime.value;
+  setRosterTimeView();
+  viewRoster();
+}
+
+function changeRosterTop(butt)
+{
+  CR.windowSettings.rosterAlwaysOnTop = butt.checked;
+  setRosterTop();
+}
+
+function setRosterTop()
+{
+  electron.ipcRenderer.send("setAlwaysOnTop", "gt_roster", CR.windowSettings.rosterAlwaysOnTop);
+}
+
+function setRosterTimeView()
+{
+  // Roster Max Age goes up to 1 hour in the Feed Roster (spots stay longer than decodes), 5 minutes in the Call Roster.
+  // The limit is set first, so the value isn't clipped to the other roster's limit
+  rosterTime.max = isFeedRoster() ? 3600 : 300;
+  rosterTime.value = CR.rosterSettings.rosterTime;
+  rosterTimeTd.innerHTML = toDHMS(Number(rosterTime.value));
+}
+
+function handleContextMenu(ev)
+{
+  let mouseX = Math.round(ev.x);
+  let mouseY = Math.round(ev.y);
+
+  if (typeof ev.target !== "undefined")
+  {
+    if (ev.target.className === "inputTextValue") return true;
+
+    let name = "";
+    let target = ev.target;
+    let parent = ev.target.parentNode;
+    if (target.tagName === "SPAN")
+    {
+      target = ev.target.parentNode;
+      parent = target.parentNode;
+    }
+    if (target.tagName === "TD" || (CR.rosterSettings.compact && target.tagName === "DIV"))
+    {
+      name = target.getAttribute("name");
+    }
+    if (CR.rosterSettings.compact && name !== "Callsign")
+    {
+      parent = parent.parentNode;
+    }
+    if (name === "Callsign")
+    {
+      CR.targetHash = parent.id;
+      CR.callMenu.popup();
+    }
+    else if (name === "Calling")
+    {
+      CR.targetHash = parent.id;
+      CR.callingMenu.popup();
+    }
+    else if (name === "Msg")
+    {
+      CR.targetHash = parent.id;
+      CR.MsgMenu.popup();
+    }
+    else if (name === "Spotter" && CR.callRoster[parent.id] && CR.callRoster[parent.id].callObj.spotter)
+    {
+      CR.targetHash = parent.id;
+      CR.spotterMenu.popup();
+    }
+    else if (name === "Grid")
+    {
+      if (CR.callRoster[parent.id].callObj.grid.length === 4)
+      {
+        CR.targetHash = parent.id;
+        CR.GridMenu.popup();
+      }
+    }
+    else if (name === "CQ" && !isFeedRoster())
+    {
+      if (CR.callRoster[parent.id].DXcall !== "CQ")
+      {
+        CR.targetCQ = parent.id;
+        CR.CQMenu.popup();
+      }
+    }
+    else if (name === "CQz")
+    {
+      CR.targetCQz = parent.id;
+      CR.CQzMenu.popup();
+    }
+    else if (name === "ITUz")
+    {
+      CR.targetITUz = parent.id;
+      CR.ITUzMenu.popup();
+    }
+    else if (name && name.startsWith("DXCC"))
+    {
+      let dxcca = name.split("(");
+      let dxcc = parseInt(dxcca[1]);
+      CR.targetDxcc = dxcc;
+      CR.dxccMenu.popup();
+    }
+    else if (name === "DEDXCC" && CR.callRoster[parent.id] && CR.callRoster[parent.id].callObj.spotterDxcc > 0)
+    {
+      CR.targetDxcc = CR.callRoster[parent.id].callObj.spotterDxcc;
+      CR.deDxccMenu.popup();
+    }
+    else if (name === "DECont" && CR.callRoster[parent.id] && CR.callRoster[parent.id].callObj.spotterCont)
+    {
+      CR.targetDeCont = CR.callRoster[parent.id].callObj.spotterCont;
+      CR.deContMenu.popup();
+    }
+    else
+    {
+      if (CR.rosterSettings.compact)
+      {
+        CR.windowSettings.controls ? CR.compactMenuHide.popup() : CR.compactMenuShow.popup();
+      }
+      else
+      {
+        if (target.tagName === "TH" && target.getAttribute("name"))
+        {
+          CR.currentColumnName = target.getAttribute("name");
+          CR.columnMenu.popup();
+        }
+        else
+        {
+          CR.windowSettings.controls ? CR.menuHide.popup() : CR.menuShow.popup();
+        }
+      }
+    }
+  }
+  else
+  {
+    if (!CR.rosterSettings.compact)
+    {
+      CR.menu.popup();
+    }
+    else
+    {
+      CR.compactMenu.popup();
+    }
+  }
+
+  ev.preventDefault();
+  return false;
+}
+
+function getTypeFromMode(mode)
+{
+  if (CR.modes[mode]) return "Digital";
+  if (CR.modes_phone[mode]) return "Phone";
+  return "";
+}
+
+function testAward(awardName, obj)
+{
+  if (
+    CR.awardTracker[awardName].test.dxcc &&
+    CR.awardTracker[awardName].rule.dxcc.indexOf(obj.dxcc) === -1
+  )
+  { return false; }
+
+  if (
+    CR.awardTracker[awardName].test.mode &&
+    CR.awardTracker[awardName].rule.mode.indexOf(obj.mode) === -1
+  )
+  { return false; }
+
+  if (
+    CR.awardTracker[awardName].test.band &&
+    CR.awardTracker[awardName].rule.band.indexOf(obj.band) === -1
+  )
+  { return false; }
+
+  if (
+    CR.awardTracker[awardName].test.DEcall &&
+    CR.awardTracker[awardName].rule.call.indexOf(obj.DEcall) === -1
+  )
+  { return false; }
+
+  if (
+    CR.awardTracker[awardName].test.cont &&
+    CR.awardTracker[awardName].rule.cont.indexOf(obj.cont) === -1
+  )
+  { return false; }
+
+  if (
+    CR.awardTracker[awardName].test.prop &&
+    CR.awardTracker[awardName].rule.propMode !== obj.propMode
+  )
+  { return false; }
+
+  let baseHash = "";
+  if (CR.awardTracker[awardName].test.band) baseHash += obj.band;
+  if (CR.awardTracker[awardName].test.mode) baseHash += obj.mode;
+
+  return CR.awardTypes[CR.awardTracker[awardName].rule.type].test(
+    CR.awardTracker[awardName],
+    obj,
+    baseHash
+  );
+}
+
+function processAward(awardName)
+{
+  let award = CR.awards[CR.awardTracker[awardName].sponsor].awards[CR.awardTracker[awardName].name];
+  CR.awardTracker[awardName].rule = award.rule;
+  let test = (CR.awardTracker[awardName].test = {});
+  
+  // Clean Array Filtering
+  let mode = award.rule.mode.filter(m => m !== "Mixed" && m !== "Digital" && m !== "Phone");
+ 
+  test.mode = mode.length > 0;
+  test.confirmed = "qsl_req" in CR.awards[CR.awardTracker[awardName].sponsor].awards[CR.awardTracker[awardName].name].rule ? CR.awards[CR.awardTracker[awardName].sponsor].awards[CR.awardTracker[awardName].name].rule.qsl_req === "confirmed" : CR.awards[CR.awardTracker[awardName].sponsor].qsl_req === "confirmed";
+  test.look = "qsl_req" in CR.awards[CR.awardTracker[awardName].sponsor].awards[CR.awardTracker[awardName].name].rule ? CR.awards[CR.awardTracker[awardName].sponsor].awards[CR.awardTracker[awardName].name].rule.qsl_req : CR.awards[CR.awardTracker[awardName].sponsor].qsl_req;
+  test.DEcall = "call" in award.rule;
+  test.band = "band" in award.rule && award.rule.band.indexOf("Mixed") === -1;
+  test.dxcc = "dxcc" in award.rule;
+  test.cont = "cont" in award.rule;
+  test.grid = "grid" in award.rule;
+  test.prop = "propMode" in award.rule;
+
+  CR.awardTracker[awardName].stat = {};
+
+  for (const i in GT.QSOhash)
+  {
+    let obj = GT.QSOhash[i];
+
+    if (test.confirmed && !obj.confirmed) continue;
+    if (obj.dxcc < 1) continue;
+    if (test.grid && award.rule.grid.indexOf(obj.grid4) === -1) continue;
+    if (test.dxcc && award.rule.dxcc.indexOf(obj.dxcc) === -1) continue;
+    if (test.mode && award.rule.mode.indexOf(obj.mode) === -1) continue;
+    if (test.band && award.rule.band.indexOf(obj.band) === -1) continue;
+    if (test.DEcall && award.rule.call.indexOf(obj.DEcall) === -1) continue;
+    if (test.cont && award.rule.cont.indexOf(obj.cont) === -1) continue;
+    if (test.prop && award.rule.propMode !== obj.propMode) continue;
+
+    CR.awardTypes[award.rule.type].score(CR.awardTracker[awardName], obj);
+  }
+
+  CR.awardTracker[awardName].comp = CR.awardTypes[award.rule.type].compile(
+    CR.awardTracker[awardName],
+    CR.awardTracker[awardName].stat
+  );
+  CR.awardTracker[awardName].stat = {};
+}
+
+function newAwardCountObject()
+{
+  return {
+    bands: {
+      Mixed: {},
+      Digital: {},
+      Phone: {}
+    },
+    modes: {
+      Mixed: {},
+      Digital: {},
+      Phone: {}
+    },
+    unique: null
+  };
+}
+
+function workAwardObject(obj, band, mode, isDigital, isPhone, unique = null)
+{
+  obj.bands.Mixed[band] = ~~obj.bands.Mixed[band] + 1;
+  if (!(mode in obj.bands)) obj.bands[mode] = {};
+  obj.bands[mode][band] = ~~obj.bands[mode][band] + 1;
+  obj.modes.Mixed[mode] = ~~obj.modes.Mixed[mode] + 1;
+
+  if (isDigital)
+  {
+    obj.bands.Digital[band] = ~~obj.bands.Digital[band] + 1;
+    obj.modes.Digital[mode] = ~~obj.modes.Digital[mode] + 1;
+  }
+  if (isPhone)
+  {
+    obj.bands.Phone[band] = ~~obj.bands.Phone[band] + 1;
+    obj.modes.Phone[mode] = ~~obj.modes.Phone[mode] + 1;
+  }
+  if (unique)
+  {
+    if (obj.unique === null) obj.unique = {};
+    if (!(unique in obj.unique)) obj.unique[unique] = newAwardCountObject();
+    workAwardObject(obj.unique[unique], band, mode, isDigital, isPhone);
+  }
+  return true;
+}
+
+function buildAwardTypeHandlers()
+{
+  CR.awardTypes = {
+    IOTA:        { name: "Islands On The Air",    score: scoreAIOTA,       test: testAIOTA,       compile: singleCompile },
+    call:        { name: "Callsign",              score: scoreAcall,       test: testAcall,       compile: singleCompile },
+    callarea:    { name: "Call Area",             score: scoreAcallarea,   test: testAcallarea,   compile: singleCompile },
+    calls2dxcc:  { name: "Stations per DXCC",     score: scoreAcalls2dxcc, test: testAcalls2dxcc, compile: doubleCompile },
+    cnty:        { name: "County",                score: scoreAcnty,       test: testAcnty,       compile: singleCompile },
+    cont:        { name: "Continents",            score: scoreAcont,       test: testAcont,       compile: singleCompile },
+    cont5:       { name: "5 Continents",          score: scoreAcont5,      test: testAcont5,      compile: singleCompile },
+    cont52band:  { name: "5 Continents per Band", score: scoreAcont52band, test: testAcont52band, compile: doubleCompile },
+    cqz:         { name: "CQ Zone",               score: scoreAcqz,        test: testAcqz,        compile: singleCompile },
+    dxcc:        { name: "DXCC",                  score: scoreAdxcc,       test: testAdxcc,       compile: singleCompile },
+    grids:       { name: "Grids",                 score: scoreAgrids,      test: testAgrids,      compile: singleCompile },
+    numsfx:      { name: "Call Area + Suffix",    score: scoreAnumsfx,     test: testAnumsfx,     compile: singleCompile },
+    px:          { name: "Prefix",                score: scoreApx,         test: testApx,         compile: singleCompile },
+    pxa:         { name: "Prefixes",              score: scoreApxa,        test: testApxa,        compile: singleCompile },
+    pxplus:      { name: "Special Calls",         score: scoreApxplus,     test: testApxplus,     compile: singleCompile },
+    sfx:         { name: "Suffix",                score: scoreAsfx,        test: testAsfx,        compile: singleCompile },
+    states:      { name: "States",                score: scoreAstates,     test: testAstates,     compile: singleCompile },
+    cont2band:   { name: "Continents per Band",   score: scoreAcont2band,  test: testAcont2band,  compile: doubleCompile },
+    calls2band:  { name: "Stations per Band",     score: scoreAcalls2band, test: testAcalls2band, compile: doubleCompile },
+    dxcc2band:   { name: "DXCC per Band",         score: scoreAdxcc2band,  test: testAdxcc2band,  compile: doubleCompile },
+    states2band: { name: "States per Band",       score: scoreAstates2band,test: testAstates,     compile: doubleCompile }
+  };
+}
+
+function scoreAstates(award, obj)
+{
+  if (obj.state)
+  {
+    if (!(obj.state in award.stat))
+    { award.stat[obj.state] = newAwardCountObject(); }
+    return workAwardObject(
+      award.stat[obj.state],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAstates(award, obj, baseHash)
+{
+  if (!obj.state || obj.state + baseHash in GT.tracker[award.test.look].state)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAstates2band(award, obj)
+{
+  if (obj.state)
+  {
+    if (!(obj.band in award.stat)) award.stat[obj.band] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[obj.band],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone,
+      obj.state
+    );
+  }
+  return false;
+}
+
+function scoreAdxcc(award, obj)
+{
+  if (!(obj.dxcc in award.stat)) award.stat[obj.dxcc] = newAwardCountObject();
+  return workAwardObject(
+    award.stat[obj.dxcc],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone
+  );
+}
+
+function testAdxcc(award, obj, baseHash)
+{
+  if (String(obj.dxcc) + "|" + baseHash in GT.tracker[award.test.look].dxcc)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAcont(award, obj)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont === "AN" ? "OC" : obj.cont;
+    if (!(cont in award.stat)) award.stat[cont] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[cont],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAcont(award, obj, baseHash)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont === "AN" ? "OC" : obj.cont;
+    if (cont + baseHash in GT.tracker[award.test.look].cont)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+function scoreAcont5(award, obj, baseHash)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont;
+    if (cont === "NA" || cont === "SA") cont = "AM";
+    if (cont === "AN") cont = "OC";
+
+    if (!(cont in award.stat)) award.stat[cont] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[cont],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAcont5(award, obj, baseHash)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont;
+    if (cont === "NA" || cont === "SA") cont = "AM";
+    if (cont === "AN") cont = "OC";
+
+    if (cont + baseHash in GT.tracker[award.test.look].cont)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+function scoreAcont2band(award, obj)
+{
+  if (!(obj.band in award.stat)) award.stat[obj.band] = newAwardCountObject();
+
+  return workAwardObject(
+    award.stat[obj.band],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone,
+    obj.cont
+  );
+}
+
+function testAcont2band(award, obj, baseHash)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont === "AN" ? "OC" : obj.cont;
+
+    if (cont + baseHash in GT.tracker[award.test.look].cont)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+function scoreAcont52band(award, obj)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont;
+    if (cont === "NA" || cont === "SA") cont = "AM";
+    if (cont === "AN") cont = "OC";
+
+    if (!(obj.band in award.stat)) award.stat[obj.band] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[obj.band],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone,
+      cont
+    );
+  }
+  return false;
+}
+
+function testAcont52band(award, obj, baseHash)
+{
+  if (obj.cont)
+  {
+    let cont = obj.cont;
+    if (cont === "NA" || cont === "SA") cont = "AM";
+    if (cont === "AN") cont = "OC";
+
+    if (cont + baseHash in GT.tracker[award.test.look].cont)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+function scoreAgrids(award, obj)
+{
+  if (obj.grid4)
+  {
+    let grid = obj.grid4;
+
+    if (!(grid in award.stat)) award.stat[grid] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[grid],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAgrids(award, obj, baseHash)
+{
+  let grid = obj.grid;
+  if (!grid || grid.length === 0) return false;
+  if (award.rule.grid && award.rule.grid.indexOf(grid) === -1) return false;
+  if (grid + baseHash in GT.tracker[award.test.look].grid) return false;
+
+  return true;
+}
+
+function scoreAcnty(award, obj)
+{
+  if (obj.cnty)
+  {
+    if (!(obj.cnty in award.stat)) award.stat[obj.cnty] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[obj.cnty],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAcnty(award, obj, baseHash)
+{
+  if (obj.cnty && obj.cnty + baseHash in GT.tracker[award.test.look].cnty)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAcall(award, obj)
+{
+  let call = obj.DEcall;
+
+  if (call.indexOf("/") > -1)
+  {
+    if (call.endsWith("/MM")) return false;
+    call = call.replace("/P", "").replace("/R", "").replace("/QRP");
+  }
+
+  if (!(call in award.stat)) award.stat[call] = newAwardCountObject();
+  return workAwardObject(
+    award.stat[call],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone
+  );
+}
+
+function testAcall(award, obj, baseHash)
+{
+  if (obj.DEcall.indexOf("/") > -1 && obj.DEcall.endsWith("/MM")) return false;
+
+  if (obj.DEcall + baseHash in GT.tracker[award.test.look].call)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAIOTA(award, obj)
+{
+  if (obj.IOTA)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+
+    if ("IOTA" in test.rule && test.rule.IOTA.indexOf(obj.IOTA) === -1)
+    { return false; }
+
+    if (!(obj.IOTA in award.stat)) award.stat[obj.IOTA] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[obj.IOTA],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+// NO IOTA YET
+function testAIOTA(award, obj, baseHash)
+{
+  /* if ( obj.IOTA )
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+
+    if ( "IOTA" in test.rule && test.rule.IOTA.indexOf(obj.IOTA) == -1 )
+      return false;
+
+  } */
+
+  return false;
+}
+
+function scoreAcallarea(award, obj)
+{
+  if (obj.zone !== null)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+
+    if ("zone" in test.rule && test.rule.zone.indexOf(obj.zone) === -1)
+    { return false; }
+
+    if (!(obj.zone in award.stat)) award.stat[obj.zone] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[obj.zone],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAcallarea(award, obj, baseHash)
+{
+  if (obj.zone !== null)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+
+    if ("zone" in test.rule && test.rule.zone.indexOf(obj.zone) === -1)
+    { return false; }
+  }
+  return true;
+}
+
+function scoreApx(award, obj)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    let px = obj.px;
+    if ("px" in test.rule)
+    {
+      px = px.slice(0, test.rule.px[0].length);
+      if (test.rule.px.indexOf(px) === -1) return false;
+    }
+
+    if (!(px in award.stat)) award.stat[px] = newAwardCountObject();
+    return workAwardObject(
+      award.stat[px],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testApx(award, obj, baseHash)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    let px = obj.px;
+    if ("px" in test.rule)
+    {
+      px = px.slice(0, test.rule.px[0].length);
+      if (test.rule.px.indexOf(px) === -1) return false;
+    }
+
+    if (String(obj.px) + baseHash in GT.tracker[award.test.look].px)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+function scoreApxa(award, obj)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    for (const i in test.rule.pxa)
+    {
+      if (test.rule.pxa[i].indexOf(obj.px) > -1)
+      {
+        if (!(i in award.stat)) award.stat[i] = newAwardCountObject();
+        return workAwardObject(
+          award.stat[i],
+          obj.band,
+          obj.mode,
+          obj.digital,
+          obj.phone
+        );
+      }
+    }
+  }
+  return false;
+}
+
+function testApxa(award, obj, baseHash)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    for (const i in test.rule.pxa)
+    {
+      if (test.rule.pxa[i].indexOf(obj.px) > -1)
+      {
+        if (String(obj.px) + baseHash in GT.tracker[award.test.look].px)
+        {
+          return false;
+        }
+        else
+        {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function scoreAsfx(award, obj)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+  let suf = obj.DEcall.replace(obj.px, "");
+  
+  for (const i in test.rule.sfx)
+  {
+    for (const s of test.rule.sfx[i])
+    {
+      if (suf.indexOf(s) === 0)
+      {
+        if (!(i in award.stat)) award.stat[i] = newAwardCountObject();
+        return workAwardObject(
+          award.stat[i],
+          obj.band,
+          obj.mode,
+          obj.digital,
+          obj.phone
+        );
+      }
+    }
+  }
+
+  return false;
+}
+
+function testAsfx(award, obj, baseHash)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+  let suf = obj.DEcall.replace(obj.px, "");
+  
+  for (const i in test.rule.sfx)
+  {
+    for (const s of test.rule.sfx[i])
+    {
+      if (suf.indexOf(s) === 0)
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function scoreAcalls2dxcc(award, obj)
+{
+  if (!(obj.dxcc in award.stat)) award.stat[obj.dxcc] = newAwardCountObject();
+
+  return workAwardObject(
+    award.stat[obj.dxcc],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone,
+    obj.DEcall
+  );
+}
+
+function testAcalls2dxcc(award, obj, baseHash)
+{
+  if (obj.DEcall + baseHash in GT.tracker[award.test.look].call)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAcalls2band(award, obj)
+{
+  if (!(obj.band in award.stat)) award.stat[obj.band] = newAwardCountObject();
+
+  return workAwardObject(
+    award.stat[obj.band],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone,
+    obj.DEcall
+  );
+}
+
+function testAcalls2band(award, obj, baseHash)
+{
+  if (obj.DEcall + baseHash in GT.tracker[award.test.look].call)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAdxcc2band(award, obj)
+{
+  if (!(obj.band in award.stat)) award.stat[obj.band] = newAwardCountObject();
+
+  return workAwardObject(
+    award.stat[obj.band],
+    obj.band,
+    obj.mode,
+    obj.digital,
+    obj.phone,
+    obj.dxcc
+  );
+}
+
+function testAdxcc2band(award, obj, baseHash)
+{
+  if (String(obj.dxcc) + "|" + baseHash in GT.tracker[award.test.look].dxcc)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAcqz(award, obj)
+{
+  if (obj.cqz)
+  {
+    if (!(obj.cqz in award.stat)) award.stat[obj.cqz] = newAwardCountObject();
+
+    return workAwardObject(
+      award.stat[obj.cqz],
+      obj.band,
+      obj.mode,
+      obj.digital,
+      obj.phone
+    );
+  }
+  return false;
+}
+
+function testAcqz(award, obj, baseHash)
+{
+  if (!obj.cqz || obj.cqz + "|" + baseHash in GT.tracker[award.test.look].cqz)
+  {
+    return false;
+  }
+  return true;
+}
+
+function scoreAnumsfx(award, obj)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    let px = obj.px.slice(0, -1);
+    let suf = obj.DEcall.replace(px, "");
+    suf = suf.slice(0, test.rule.numsfx[0][0].length);
+    
+    for (const i in test.rule.numsfx)
+    {
+      for (const s of test.rule.numsfx[i])
+      {
+        if (suf.indexOf(s) === 0)
+        {
+          if (!(i in award.stat)) award.stat[i] = newAwardCountObject();
+          return workAwardObject(
+            award.stat[i],
+            obj.band,
+            obj.mode,
+            obj.digital,
+            obj.phone
+          );
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function testAnumsfx(award, obj)
+{
+  if (obj.px)
+  {
+    let test = CR.awards[award.sponsor].awards[award.name];
+    let px = obj.px.slice(0, -1);
+    let suf = obj.DEcall.replace(px, "");
+    suf = suf.slice(0, test.rule.numsfx[0][0].length);
+    
+    for (const i in test.rule.numsfx)
+    {
+      for (const s of test.rule.numsfx[i])
+      {
+        if (suf.indexOf(s) === 0)
+        {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+function scoreApxplus(award, obj)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+
+  if (test.rule.pxplus)
+  {
+    for (const i in test.rule.pxplus)
+    {
+      if (obj.DEcall.indexOf(test.rule.pxplus[i]) === 0)
+      {
+        if (!(i in award.stat)) award.stat[i] = newAwardCountObject();
+        return workAwardObject(
+          award.stat[i],
+          obj.band,
+          obj.mode,
+          obj.digital,
+          obj.phone
+        );
+      }
+    }
+  }
+  return false;
+}
+
+function testApxplus(award, obj)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+
+  if (test.rule.pxplus)
+  {
+    for (const i in test.rule.pxplus)
+    {
+      if (obj.DEcall.indexOf(test.rule.pxplus[i]) === 0)
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function loadAwardJson()
+{
+  CR.awards = {};
+  try
+  {
+    CR.awards = requireJson("data/awards.json");
+    for (const sp in CR.awards)
+    {
+      for (const aw in CR.awards[sp].awards)
+      {
+        if (!("unique" in CR.awards[sp].awards[aw].rule))
+        { CR.awards[sp].awards[aw].rule.unique = 1; }
+
+        if (CR.awards[sp].awards[aw].rule.band[0] === "Mixed")
+        {
+          CR.awards[sp].awards[aw].rule.band.shift();
+        }
+
+        if (CR.awards[sp].awards[aw].rule.band[0] === "Any") CR.awards[sp].awards[aw].rule.band[0] = "Mixed";
+
+        if (CR.awards[sp].awards[aw].rule.band.length === 0)
+        {
+          CR.awards[sp].awards[aw].rule.band = [];
+          for (let key in CR.awards[sp].mixed)
+          {
+            CR.awards[sp].awards[aw].rule.band.push(CR.awards[sp].mixed[key]);
+          }
+        }
+
+        if (
+          CR.awards[sp].awards[aw].rule.endorse.length === 1 &&
+          CR.awards[sp].awards[aw].rule.endorse[0] === "Mixed"
+        )
+        {
+          CR.awards[sp].awards[aw].rule.endorse = [];
+          for (let key in CR.awards[sp].mixed)
+          {
+            CR.awards[sp].awards[aw].rule.endorse.push(
+              CR.awards[sp].mixed[key]
+            );
+          }
+        }
+      }
+    }
+
+    buildAwardTypeHandlers();
+  }
+  catch (e)
+  {
+    alert("Core awards.json : " + e);
+    CR.awards = {};
+  }
+}
+
+function createActiveAwardsFromSettings()
+{
+  for (const hash in CR.awardTrackersActive)
+  {
+    const award = CR.awardTrackersActive[hash];
+    if (award.sponsor in CR.awards && award.name in CR.awards[award.sponsor].awards)
+    {
+      addAwardTracker(award.sponsor, award.name, award.enable);
+    }
+  }
+}
+
+function processAllAwardTrackers()
+{
+  for (let tracker in CR.awardTracker)
+  {
+    if (!(CR.awardTracker[tracker].sponsor in CR.awards))
+    {
+      delete CR.awardTracker[tracker];
+      continue;
+    }
+    if (
+      !(
+        CR.awardTracker[tracker].name in
+        CR.awards[CR.awardTracker[tracker].sponsor].awards
+      )
+    )
+    {
+      delete CR.awardTracker[tracker];
+      continue;
+    }
+    processAward(tracker);
+  }
+  updateAwardList();
+}
+
+function newAwardTrackerObject(sponsor, award, enable)
+{
+  const rule = CR.awards[sponsor].awards[award].rule;
+
+  return {
+    sponsor,
+    name: award,
+    enable,
+    mode: rule.mode[0],
+    band: rule.band[0],
+    count: rule.count[0],
+    stat: {},
+    comp: {},
+    test: {}
+  };
+}
+
+function addAllAwards()
+{
+  for (let sponsor in CR.awards)
+  {
+    for (let award in CR.awards[sponsor].awards)
+    {
+      let awardToAdd = newAwardTrackerObject(sponsor, award, true);
+
+      let hash = awardToAdd.name + "-" + awardToAdd.sponsor;
+      if (!(hash in CR.awardTracker))
+      {
+        CR.awardTracker[hash] = awardToAdd;
+        processAward(hash);
+        storeAwardTracker();
+      }
+    }
+  }
+  updateAwardList();
+  viewRoster();
+}
+
+function delAllAwards()
+{
+  CR.awardTracker = {};
+  storeAwardTracker();
+  updateAwardList();
+  viewRoster();
+}
+
+function newCompileCountObject()
+{
+  let compileCountObject = {};
+  compileCountObject.bands = {};
+  compileCountObject.modes = {};
+  compileCountObject.endorse = {};
+  compileCountObject.counts = {};
+  return compileCountObject;
+}
+
+function singleCompile(award, obj)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+  let rule = test.rule;
+  let comp = newCompileCountObject();
+  
+  for (const mode of rule.mode)
+  {
+    comp.modes[mode] = 0;
+    comp.bands[mode] = {};
+
+    for (const band of rule.band)
+    {
+      comp.bands[mode][band] = 0;
+    }
+    for (let key in obj)
+    {
+      if (mode in obj[key].bands && Object.keys(obj[key].bands[mode]).length)
+      {
+        comp.modes[mode] += 1;
+
+        for (const band of rule.band)
+        {
+          if (band in obj[key].bands[mode])
+          { comp.bands[mode][band] += 1; }
+        }
+      }
+    }
+
+    if ("score" in rule && rule.score === "band")
+    {
+      comp.modes[mode] = 0;
+      for (let band in comp.bands[mode])
+      {
+        comp.modes[mode] += comp.bands[mode][band];
+      }
+    }
+  }
+
+  for (let mode in comp.modes)
+  {
+    comp.endorse[mode] = {};
+    comp.counts[mode] = {};
+    
+    for (const countLimit of rule.count)
+    {
+      comp.counts[mode][countLimit] = {
+        num: comp.modes[mode],
+        per: ~~Math.min(100, (comp.modes[mode] / countLimit) * 100.0)
+      };
+    }
+
+    for (const endorse of rule.endorse)
+    {
+      comp.endorse[mode][endorse] = {};
+      for (const countLimit of rule.count)
+      {
+        comp.endorse[mode][endorse][countLimit] =
+          comp.bands[mode][endorse] >= countLimit;
+      }
+    }
+  }
+
+  return comp;
+}
+
+function doubleCompile(award, firstLevel)
+{
+  let test = CR.awards[award.sponsor].awards[award.name];
+
+  for (let k in firstLevel)
+  {
+    firstLevel[k].bands = {};
+    let obj = singleCompile(award, firstLevel[k].unique);
+
+    for (let mode in obj.bands)
+    {
+      for (const countLimit of test.rule.count)
+      {
+        if (obj.counts[mode][countLimit].num >= test.rule.unique)
+        {
+          for (let band in obj.bands[mode])
+          {
+            if (!(mode in firstLevel[k].bands)) firstLevel[k].bands[mode] = {};
+
+            if (obj.bands[mode][band] > 0)
+            {
+              firstLevel[k].bands[mode][band] = ~~firstLevel[k].bands[mode][band] + 1;
+            }
+          }
+        }
+      }
+    }
+
+    delete firstLevel[k].unique;
+    firstLevel[k].unique = null;
+  }
+
+  return singleCompile(award, firstLevel);
+}
+
+function listShortInstances()
+{
+  let shortInstances = [];
+  if (typeof GT.instances !== "undefined" && Object.keys(GT.instances).length > 1)
+  {
+    let keys = Object.keys(GT.instances).sort();
+    
+    for (const inst of keys)
+    {
+      let sp = inst.split(" - ");
+      let shortInst = sp[sp.length - 1].substring(0, 18);
+      if (GT.instances[inst].canRoster === true) shortInstances.push(shortInst);
+    }
+  }
+  return shortInstances;
+}
+
+function openInfoTab(evt, tabName, callFunc, callObj)
+{
+  var i, infoTabcontent, infoTablinks;
+
+  infoTabcontent = document.getElementsByClassName("infoTabcontent");
+  for (i = 0; i < infoTabcontent.length; i++)
+  {
+    infoTabcontent[i].style.display = "none";
+  }
+
+  infoTablinks = document.getElementsByClassName("infoTablinks");
+  for (i = 0; i < infoTablinks.length; i++)
+  {
+    infoTablinks[i].className = infoTablinks[i].className.replace(
+      " active",
+      ""
+    );
+  }
+
+  document.getElementById(tabName).style.display = "block";
+  if (typeof evt === "string")
+  {
+    for (i = 0; i < infoTablinks.length; i++)
+    {
+      if (infoTablinks[i].id === evt)
+      {
+        infoTablinks[i].className += " active";
+      }
+    }
+  }
+  else if (typeof evt.currentTarget !== "undefined")
+  {
+    evt.currentTarget.className += " active";
+  }
+  else
+  {
+    evt.className += " active";
+  }
+
+  if (callFunc)
+  {
+    if (typeof callFunc === "function")
+    {
+      if (callObj) callFunc(callObj);
+      else callFunc();
+    }
+  }
+}
+
+function ValidateTextInput(inputText, validDiv = null)
+{
+  if (inputText.value.length > 0)
+  {
+    var passed = false;
+    inputText.value = inputText.value.toUpperCase();
+    if (HAS_DIGIT_REGEX.test(inputText.value) || HAS_UPPER_REGEX.test(inputText.value))
+    {
+      passed = true;
+    }
+    if (passed)
+    {
+      inputText.style.color = "#FF0";
+      inputText.style.backgroundColor = "darkgreen";
+      if (validDiv) validDiv.innerHTML = "";
+      return true;
+    }
+    else
+    {
+      inputText.style.color = "#000";
+      inputText.style.backgroundColor = "yellow";
+      if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
+      return false;
+    }
+  }
+  else
+  {
+    inputText.style.color = "#000";
+    inputText.style.backgroundColor = "yellow";
+    if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
+    return false;
+  }
+}
+
+function watcherOnName()
+{
+  watcherName.value = watcherName.value.replace(WATCHER_CLEAN_NAME_REGEX, "");
+  watcherNameValidate();
+}
+
+function watcherNameValidate()
+{
+  if (watcherName.value.length === 0 || (watcherName.value in CR.watchers && watcherName.value !== CR.watcherEditKey))
+  {
+    watcherName.style.color = "#000";
+    watcherName.style.backgroundColor = "orange";
+    return false;
+  }
+  else
+  {
+    watcherName.style.color = "";
+    watcherName.style.backgroundColor = "";
+    return true;
+  }
+}
+
+function watcherTypeChanged(value)
+{
+  watcherType.value = value;
+  if (value === "Callsign")
+  {
+    watcherTextTh.innerHTML = I18N("roster.controls.hunting.callsign");
+  }
+  if (value === "Calling")
+  {
+    watcherTextTh.innerHTML = I18N("alerts.QRZ.speech");
+  }
+  if (value === "Spotter")
+  {
+    watcherTextTh.innerHTML = I18N("rosterColumns.Spotter.header");
+  }
+  if (value === "Grid")
+  {
+    watcherTextTh.innerHTML = I18N("roster.controls.hunting.grid");
+  }
+  if (value === "Message")
+  {
+    watcherTextTh.innerHTML = I18N("gt.WSJTMessage.Message");
+  }
+
+  watcherStartDateEnable(watcherStartDateCheckbox.checked);
+  watcherEndDateEnable(watcherEndDateCheckbox.checked);
+}
+
+function watcherRegexChanged(checked)
+{
+  watcherOnText();
+}
+
+function watcherOnText()
+{
+  var testCallsign = false;
+  if (!watcherRegexCheckbox.checked)
+  {
+    if (watcherType.value === "Message")
+    {
+      watcherText.value = watcherText.value.toUpperCase().replace(MSG_CLEAN_REGEX, "");
+    }
+    else if (watcherType.value === "Calling")
+    {
+      testCallsign = true;
+      watcherText.value = watcherText.value.toUpperCase().replace(CALLING_CLEAN_REGEX, "");
+    }
+    else if (watcherType.value === "Spotter")
+    {
+      testCallsign = true;
+      watcherText.value = watcherText.value.toUpperCase().replace(SPOTTER_CLEAN_REGEX, "");
+    }
+    else if (watcherType.value === "Grid")
+    {
+      gridInputValidate(watcherText);
+      return;
+    }
+    else
+    {
+      testCallsign = true;
+      watcherText.value = watcherText.value.toUpperCase().replace(CALLSIGN_CLEAN_REGEX, "");
+    }
+  }
+  else
+  {
+    let originalValue = watcherText.value;
+    try
+    {
+      new RegExp(watcherText.value);
+    }
+    catch (e)
+    {
+      watcherText.value = "";
+      watcherTextValidate(true);
+      watcherText.value = originalValue;
+      return;
+    }
+  }
+  watcherTextValidate(testCallsign);
+}
+
+function watcherTextValidate(testCallsign = false)
+{
+  if (watcherText.value.length === 0)
+  {
+    watcherText.style.color = "#FFF";
+    watcherText.style.backgroundColor = "orange";
+    return false;
+  }
+  else
+  {
+    if (testCallsign && !watcherText.value.match(CALLSIGN_REGEXP))
+    {
+      watcherText.style.color = "#000";
+      watcherText.style.backgroundColor = "yellow";
+    }
+    else
+    {
+      watcherText.style.color = "";
+      watcherText.style.backgroundColor = "";
+    }
+    return true;
+  }
+}
+
+function watcherStartDateEnable(checked)
+{
+  watcherStartDateTh.style.display = watcherStartDateTd.style.display = (checked ? "" : "none");
+}
+
+function watcherEndDateEnable(checked)
+{
+  watcherAutoDeleteTd.style.display = watcherAutoDeleteTh.style.display = watcherEndDateTh.style.display = watcherEndDateTd.style.display = (checked ? "" : "none");
+}
+
+function newWatcherEntry()
+{
+  return {
+    watch: true,
+    type: "Callsign",
+    regex: false,
+    text: "",
+    name: "",
+    start: false,
+    end: false,
+    startTime: 0,
+    endTime: 0,
+    autoDelete: false,
+    error: false
+  };
+}
+
+function saveWatcher()
+{
+  watcherName.value = watcherName.value.trim();
+  watcherText.value = watcherText.value.trim();
+  if (!watcherNameValidate() || !watcherTextValidate()) return;
+
+  if (CR.watcherEditKey.length > 0 && CR.watcherEditKey in CR.watchers)
+  {
+    delete CR.watchers[CR.watcherEditKey];
+    if (CR.watcherEditKey in CR.watchersTest) delete CR.watchersTest[CR.watcherEditKey];
+  }
+
+  let entry = newWatcherEntry();
+  entry.watch = true;
+  entry.name = watcherName.value;
+  entry.type = watcherType.value;
+  entry.regex = watcherRegexCheckbox.checked;
+  entry.text = watcherText.value;
+  entry.start = watcherStartDateCheckbox.checked;
+  entry.end = watcherEndDateCheckbox.checked;
+  entry.autoDelete = entry.end ? watcherAutoDeleteCheckbox.checked : false;
+
+  if (entry.start)
+  {
+    if (watcherStartDate.value.length === 0)
+    {
+      entry.startTime = Date.now();
+    }
+    else
+    {
+      entry.startTime = Date.parse(watcherStartDate.value + "Z");
+    }
+  }
+  else entry.startTime = 0;
+
+  if (entry.end)
+  {
+    if (watcherEndDate.value.length === 0)
+    {
+      entry.endTime = Date.now();
+    }
+    else
+    {
+      entry.endTime = Date.parse(watcherEndDate.value + "Z");
+    }
+    if (entry.start && entry.endTime <= entry.startTime)
+    {
+      entry.endTime = entry.startTime + 60000;
+    }
+  }
+  else entry.endTime = 0;
+
+  CR.watchers[entry.name] = entry;
+  CR.watchersTest[entry.name] = null;
+  openWatchersTab();
+  window.opener.goProcessRoster();
+}
+
+function addWatcher(value, type)
+{
+  if (!(value in CR.watchers))
+  {
+    let entry = newWatcherEntry();
+    entry.watch = true;
+    entry.type = type;
+    entry.regex = false;
+    entry.text = value;
+    entry.autoDelete = false;
+    entry.name = value;
+    CR.watchers[value] = entry;
+    CR.watchersTest[value] = null;
+    CR.activeRoster.wanted.huntWatcher = huntWatcher.checked = true;
+    window.opener.goProcessRoster();
+    wantRenderWatchersTab();
+  }
+}
+
+function clearWatcher()
+{
+  CR.watcherEditKey = "";
+  watcherName.style.color = "";
+  watcherName.style.backgroundColor = "";
+  watcherText.style.color = "";
+  watcherText.style.backgroundColor = "";
+  loadWatcherValues("", newWatcherEntry());
+}
+
+function toggleWatcher(key)
+{
+  CR.watchers[key].watch = !CR.watchers[key].watch;
+  wantRenderWatchersTab();
+  window.opener.goProcessRoster();
+}
+
+function deleteWatcher(key)
+{
+  delete CR.watchers[key];
+  if (key in CR.watchersTest) delete CR.watchersTest[key];
+  wantRenderWatchersTab();
+  window.opener.goProcessRoster();
+}
+
+CR.watcherEditKey = "";
+
+function editWatcher(key)
+{
+  CR.watcherEditKey = key;
+  loadWatcherValues(key, CR.watchers[key]);
+}
+ 
+function loadWatcherValues(key, entry)
+{
+  watcherName.value = key;
+  watcherType.value = entry.type;
+  watcherRegexCheckbox.checked = entry.regex;
+  watcherText.value = entry.text;
+  watcherStartDateCheckbox.checked = entry.start;
+  watcherEndDateCheckbox.checked = entry.end;
+  
+  let today = Date.now();
+  today -= today % 86400000;
+  
+  let date = entry.startTime > 0 ? new Date(entry.startTime) : new Date(today);
+  watcherStartDate.value = date.toISOString().slice(0, 16);
+  date = entry.endTime > 0 ? new Date(entry.endTime) : new Date(today);
+  watcherEndDate.value = date.toISOString().slice(0, 16);
+  
+  watcherAutoDeleteCheckbox.checked = entry.autoDelete;
+  watcherTypeChanged(entry.type);
+}
+
+// Hoist maps and compiled regexes outside the functions so V8 creates them once.
+const ENTITY_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+const BRACE_MAP = { '{': '<', '}': '>' };
+const ENTITY_REGEX = /[&<>"]/g;
+const BRACE_REGEX = /[{}]/g;
+
+function htmlEntities(str)
+{
+  return String(str).replace(ENTITY_REGEX, (s) => ENTITY_MAP[s]);
+}
+
+function bracesToHTML(str)
+{
+  return String(str).replace(BRACE_REGEX, (s) => BRACE_MAP[s]);
+}
+
+function openWatchersTab()
+{
+  clearWatcher();
+  wantRenderWatchersTab();
+}
+
+function wantRenderWatchersTab()
+{
+  if (watcherBoxDiv.style.display !== "none")
+  {
+    renderWatchersTab();
+  }
+}
+
+function stringCompare(a, b)
+{
+  return a.toLowerCase() < b.toLowerCase() ? -1 : (a === b) ? 0 : 1;
+}
+
+const numberCompare = (a, b) => a - b;
+const boolCompare = (a, b) => Number(a) - Number(b);
+
+CR.watcherColumns = {
+  watch: { text: "👁️", sort: true, cmp: boolCompare },
+  name: { text: "Name", sort: true, cmp: stringCompare  },
+  type: { text: "Type", sort: true, cmp: stringCompare },
+  regex: { text: "Regex", sort: true, cmp: boolCompare },
+  text: { text: "Text", sort: true, cmp: stringCompare },
+  startTime: { text: I18N("roster.watcher.startDate"), sort: true, cmp: numberCompare },
+  endTime: { text: I18N("roster.watcher.endDate"), sort: true, cmp: numberCompare },
+  edit: { text: "Edit", sort: false },
+  delete: { text: "Delete", sort: false }
+};
+
+function watcherSortFunc(a, b)
+{
+  return CR.watcherColumns[CR.rosterSettings.watcherSortColumn].cmp(CR.watchers[a][CR.rosterSettings.watcherSortColumn], CR.watchers[b][CR.rosterSettings.watcherSortColumn]);
+}
+
+function renderWatchersTab()
+{
+  let now = Date.now();
+  for (let key in CR.watchers)
+  {
+    let watcher = CR.watchers[key];
+    if (watcher.end && now > watcher.endTime && watcher.autoDelete)
+    {
+      delete CR.watchers[key];
+      if (key in CR.watchersTest) delete CR.watchersTest[key];
+    }
+  }
+
+  if (Object.keys(CR.watchers).length > 0)
+  {
+    let html = ["<div id='watcherTable'><table class='darkTable' align='center'><tr>"];
+    
+    for (const column in CR.watcherColumns)
+    {
+      html.push(`<th ${CR.watcherColumns[column].sort ? `style='cursor:pointer;' onClick='setWatcherSorting("${column}");'` : ""}>${CR.watcherColumns[column].text}`);
+      if (CR.rosterSettings.watcherSortColumn === column)
+      {
+        html.push(`<div style='display:inline-block;margin:0px;padding:0px;'>&nbsp;${!CR.rosterSettings.watcherSortReverse ? "▲" : "▼"}</div>`);
+      }
+      html.push("</th>");
+    }
+
+    html.push("</tr>");
+
+    let sorted = Object.keys(CR.watchers).sort(watcherSortFunc);
+    if (CR.rosterSettings.watcherSortReverse) sorted.reverse();
+
+    sorted.forEach(function (key)
+    {
+      let watcher = CR.watchers[key];
+      let text = htmlEntities(watcher.text);
+      let callsignDisplay = watcher.regex ? text : formatCallsign(text);
+
+      html.push(`<tr><td style="cursor:pointer;font-size:larger;" onclick="toggleWatcher('${key}')">${watcher.watch ? "👀" : "🙈"}</td>` +
+                `<td align="left" style="color:yellow;">${watcher.name}</td><td>${watcher.type}</td><td>${watcher.regex ? "☑️" : ""}</td>` +
+                `<td style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:250px;color:cyan;">${callsignDisplay}</td>` +
+                `<td>${watcher.start ? window.opener.userTimeString(watcher.startTime) : ""}</td>` +
+                `<td>${watcher.end ? window.opener.userTimeString(watcher.endTime) : ""}</td>` +
+                `<td style="cursor:pointer;font-size:larger;" onclick="editWatcher('${key}')">📝</td>` +
+                `<td style="cursor:pointer;font-size:larger;" onclick="deleteWatcher('${key}')">${watcher.autoDelete ? "🤖" : "🚮"}</td></tr>`);
+    });
+    html.push("</table></div>");
+    
+    watcherEditView.innerHTML = html.join("");
+    // Fit to the window from where the tab actually starts (27px before the pane's title and roster tabs existed)
+    const boxTop = watcherBoxDiv.offsetParent ? watcherBoxDiv.getBoundingClientRect().top : 27;
+    let height = 40 + (boxTop - 27);
+    if (watcherBoxDiv.offsetHeight >= window.innerHeight - height)
+    {
+      watcherBoxDiv.style.height = (window.innerHeight - height) + "px";
+    }
+    else
+    {
+      watcherBoxDiv.style.height = "";
+    }
+  }
+  else
+  {
+    watcherBoxDiv.style.height = "";
+    watcherEditView.innerHTML = "";
+  }
+}
+
+function setWatcherSorting(column)
+{
+  if (CR.rosterSettings.watcherSortColumn === column)
+  {
+    CR.rosterSettings.watcherSortReverse = !CR.rosterSettings.watcherSortReverse;
+  }
+  else
+  {
+    CR.rosterSettings.watcherSortColumn = column;
+    CR.rosterSettings.watcherSortReverse = false;
+  }
+  renderWatchersTab();
+}
+
+function createMenuHide()
+{
+  CR.menuHide = new Menu();
+  CR.menuHide.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.HideControls"),
+    click: function () { toggleShowControls(); }
+  }));
+
+  CR.menuHide.append(new MenuItem({ type: "separator" }));
+
+  CR.menuHide.append(new MenuItem({
+    type: "checkbox",
+    label: I18N("roster.menu.Realtime"),
+    checked: CR.windowSettings.realtime,
+    click: function (item)
+    {
+      CR.windowSettings.realtime = item.checked;
+      CR.menuShow.items[2].checked = item.checked;
+      viewRoster();
+    }
+  }));
+}
+
+function createMenuShow()
+{
+  CR.menuShow = new Menu();
+  CR.menuShow.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.ShowControls"),
+    click: function () { toggleShowControls(); }
+  }));
+
+  CR.menuShow.append(new MenuItem({ type: "separator" }));
+
+  CR.menuShow.append(new MenuItem({
+    type: "checkbox",
+    label: I18N("roster.menu.Realtime"),
+    checked: CR.windowSettings.realtime,
+    click: function (item)
+    {
+      CR.windowSettings.realtime = item.checked;
+      CR.menuHide.items[2].checked = item.checked;
+      viewRoster();
+    }
+  }));
+}
+
+function createCompactMenuHide()
+{
+  CR.compactMenuHide = new Menu();
+  CR.compactMenuHide.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.HideControls"),
+    click: function () { toggleShowControls(); }
+  }));
+}
+
+function createCompactMenuShow()
+{
+  CR.compactMenuShow = new Menu();
+  CR.compactMenuShow.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.ShowControls"),
+    click: function () { toggleShowControls(); }
+  }));
+}
+
+function createRestOfMenus()
+{
+  CR.callMenu = new Menu();
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.Lookup"),
+    click: function () { callLookup(CR.targetHash, ""); }
+  }));
+
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.GenMesg"),
+    click: function () { callGenMessage(CR.targetHash, ""); }
+  }));
+
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(CR.callRoster[CR.targetHash].DEcall, "Callsign"); }
+  }));
+
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("copy"),
+    click: function () { navigator.clipboard.writeText(CR.callRoster[CR.targetHash].DEcall); }
+  }));
+
+  CR.callMenuRotator = new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.AimRotator"),
+    visible: GT.settings.pstrotator.enable,
+    click: function ()
+    {
+      let target = CR.callRoster[CR.targetHash]
+      window.opener.aimRotator(target, "");
+    }
+  });
+
+  CR.callMenu.append(CR.callMenuRotator);
+  CR.callMenu.append(new MenuItem({ type: "separator" }));
+ 
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreCall"),
+    click: function () { ignoreCallsign(CR.callRoster[CR.targetHash].DEcall); }
+  }));
+
+  CR.callMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  CR.callingMenu = new Menu();
+  CR.callingMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.Lookup"),
+    click: function () { callingLookup(CR.targetHash, ""); }
+  }));
+
+  CR.callingMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.GenMesg"),
+    click: function () { callingGenMessage(CR.targetHash, ""); }
+  }));
+
+  CR.callingMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(CR.callRoster[CR.targetHash].DXcall, "Callsign"); }
+  }));
+
+  CR.callingMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("copy"),
+    click: function () { navigator.clipboard.writeText(CR.callRoster[CR.targetHash].DXcall); }
+  }));
+
+  CR.callingMenuRotator = new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.AimRotator"),
+    visible: GT.settings.pstrotator.enable,
+    click: function ()
+    {
+      let target = CR.callRoster[CR.targetHash]
+      window.opener.aimRotator(target, "");
+    }
+  });
+  CR.callingMenu.append(CR.callingMenuRotator);
+
+  // Calling menu minus Gen Msgs (a spotter isn't a station to call) and Aim Rotator (feeds carry no spotter grid)
+  CR.spotterMenu = new Menu();
+  CR.spotterMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.Lookup"),
+    click: function () { window.opener.startLookup(spotterBaseCallsign(CR.targetHash), ""); }
+  }));
+
+  CR.spotterMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(spotterBaseCallsign(CR.targetHash), "Spotter"); }
+  }));
+
+  CR.spotterMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("copy"),
+    click: function () { navigator.clipboard.writeText(CR.callRoster[CR.targetHash].callObj.spotter); }
+  }));
+
+  CR.spotterMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreSpotter"),
+    click: function () { ignoreSpotter(CR.callRoster[CR.targetHash].callObj.spotter); }
+  }));
+
+  CR.spotterMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    click: function () { openIgnores(); }
+  }));
+
+  createColumnMenu();
+
+  CR.MsgMenu = new Menu();
+  CR.MsgMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(CR.callRoster[CR.targetHash].callObj.msg, "Message"); }
+  }));
+
+  CR.CQMenu = new Menu();
+  CR.CQMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(CR.callRoster[CR.targetCQ].DXcall, "Calling"); }
+  }));
+
+  CR.CQMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreCQFromDXCC"),
+    click: function () { ignoreCQ(CR.callRoster[CR.targetCQ].DXcall, CR.callRoster[CR.targetCQ].callObj.dxcc); }
+  }));
+
+  CR.CQMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreCQFromAll"),
+    click: function () { ignoreCQ(CR.callRoster[CR.targetCQ].DXcall, -1); }
+  }));
+
+  CR.CQzMenu = new Menu();
+  CR.CQzMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreCQZone"),
+    click: function () { ignoreCQz(CR.callRoster[CR.targetCQz].callObj.cqz); }
+  }));
+
+  CR.CQzMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  CR.ITUzMenu = new Menu();
+  CR.ITUzMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreITUZone"),
+    click: function () { ignoreITUz(CR.callRoster[CR.targetITUz].callObj.itu); }
+  }));
+
+  CR.ITUzMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  // The Feed Roster's DXCC is the spotted station's ("DX DXCC"); updateRosterTabControls() shows the matching item
+  CR.dxccMenu = new Menu();
+  CR.dxccIgnoreItem = new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreDXCC"),
+    visible: !isFeedRoster(),
+    click: function () { ignoreDxcc(CR.targetDxcc); }
+  });
+  CR.dxccMenu.append(CR.dxccIgnoreItem);
+  CR.dxDxccIgnoreItem = new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreDXDXCC"),
+    visible: isFeedRoster(),
+    click: function () { ignoreDxcc(CR.targetDxcc); }
+  });
+  CR.dxccMenu.append(CR.dxDxccIgnoreItem);
+
+  CR.dxccMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  // Feed Roster: the spotter's DXCC ("DE DXCC" column)
+  CR.deDxccMenu = new Menu();
+  CR.deDxccMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreDEDXCC"),
+    click: function () { ignoreDeDxcc(CR.targetDxcc); }
+  }));
+
+  CR.deDxccMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  // Feed Roster: the spotter's continent ("DE Cont" column)
+  CR.deContMenu = new Menu();
+  CR.deContMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreDECont"),
+    click: function () { ignoreDeCont(CR.targetDeCont); }
+  }));
+
+  CR.deContMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+
+  CR.GridMenu = new Menu();
+  CR.GridMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.add.watcher.label"),
+    click: function () { addWatcher(CR.callRoster[CR.targetHash].callObj.grid, "Grid"); }
+  }));
+
+  CR.GridMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.IgnoreGrid"),
+    click: function () { ignoreGrid(CR.callRoster[CR.targetHash].callObj.grid); }
+  }));
+
+  CR.GridMenu.append(new MenuItem({
+    type: "normal",
+    label: I18N("roster.menu.EditIgnores"),
+    enabled: true,
+    click: function () { openIgnores(); }
+  }));
+}
+
+// Column header menu for the visible tab's columns; rebuilt when the tab changes
+function createColumnMenu()
+{
+  CR.columnMenu = new Menu();
+  CR.columnMembers = {};
+
+  for (const key of CR.rosterSettings.columnOrder)
+  {
+    if (key !== "Callsign" && !CR.profile.excludedColumns[key])
+    {
+      const column = ROSTER_COLUMNS[key];
+      let itemx = new MenuItem({
+        type: "checkbox",
+        label: (column && column.label) ? column.label() : key,
+        checked: CR.rosterSettings.columns[key],
+        click: function (item)
+        {
+          toggleColumn(item, key);
+          logbookValuesChanged();
+        }
+      });
+      CR.columnMenu.append(itemx);
+      CR.columnMembers[key] = itemx;
+    }
+  }
+}
+
+function setPstrotatorEnable(enabled)
+{
+  CR.callingMenuRotator.visible = CR.callMenuRotator.visible = enabled;
+}

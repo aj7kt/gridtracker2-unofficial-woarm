@@ -1,0 +1,1087 @@
+/* == General Elements ==================================== */
+table,
+th,
+td {
+  color: #eee;
+  white-space: nowrap;
+  font-family: Sans-Serif;
+  text-align: auto;
+  vertical-align: baseline;
+  padding: 0px;
+  margin: 0px;
+  top: 0;
+}
+
+th {
+  vertical-align: bottom;
+}
+
+table,
+th,
+td,
+select,
+.compact {
+  font-size: 12px;
+}
+
+th,
+td {
+  padding-bottom: 1px;
+  padding-right: 1px;
+
+}
+
+input[type="checkbox"] {
+  appearance: checkbox !important;
+  margin: 0;
+  margin-top: 0px;
+  margin-right: 1px;
+  vertical-align: top;
+  position: relative;
+}
+
+option:disabled {
+  color: #666;
+}
+
+/* == Layout ============================================== */
+
+body.roster {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  margin: 0;
+  padding: 0;
+
+  background-color: black;
+  white-space: nowrap;
+
+  overflow: auto;
+}
+
+#MainCallRoster {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+#MainCallRoster header {
+  flex: 0;
+}
+
+#MainCallRoster main {
+  flex: 1;
+}
+
+#RosterControls {
+  display: grid;
+}
+
+#RosterControls.hidden {
+  display: none;
+}
+
+#RosterControls.normal #SecondaryRosterControls {
+  display: none;
+}
+
+#RosterControls.normal {
+  min-height: 28px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+#RosterControls.normal #MainRosterControls {
+  margin-left: 1px;
+  margin-top: 3px;
+  display: flex;
+}
+
+#TransmitControls {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 242px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+#LessControls {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  text-align: center;
+}
+
+#MoreControls {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  text-align: right;
+}
+
+
+/* Call Roster | Feed Roster tabs, shown while a DX Cluster / CW Skimmer feed is on.
+   The header's absolutely placed controls move down below them */
+#rosterTabs {
+  height: 22px;
+  padding-left: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-bottom: 1px solid lightblue;
+}
+
+.rosterTab {
+  height: 22px;
+  padding: 1px 10px;
+  margin-right: 3px;
+  border: 1px solid lightblue;
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background-color: black;
+  color: #eee;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.rosterTab.active {
+  background-color: cyan;
+  color: black;
+}
+
+#rosterSettingsButton {
+  color: cyan;
+}
+
+/* Settings pane title: which roster these settings belong to */
+#rosterSettingsTitle {
+  margin: 2px 30px 4px 30px;
+  font-weight: bold;
+  font-size: larger;
+  color: cyan;
+}
+
+body.feedRosterShown #rosterSettingsTitle {
+  color: yellow;
+}
+
+/* Feed Roster tab: the window's yellow / cyan swap, so the two rosters are easy to tell apart
+   (callsign and grid colors swap too, in processRosterHunting) */
+body.feedRosterShown .rosterTab.active,
+body.feedRosterShown .infotab button.active {
+  background-color: yellow;
+}
+
+body.feedRosterShown #rosterSettingsButton {
+  color: yellow;
+}
+
+body.rosterTabsShown #TransmitControls,
+body.rosterTabsShown #RosterControls.normal #MainRosterControls {
+  top: 26px;
+}
+
+body.rosterTabsShown #LessControls,
+body.rosterTabsShown #MoreControls {
+  top: 30px;
+}
+
+/* The settings pane starts on the tab bar's bottom line, so the roster tabs stay clickable while it's open */
+body.rosterTabsShown #settingsDiv {
+  top: 22px;
+}
+
+#RosterControls.normal #ShowFewerControlsLink {
+  display: none;
+}
+#RosterControls.normal #ShowMoreControlsLink {
+  display: block;
+}
+
+#RosterControls.normal #MainRosterControls {
+  position: absolute;
+  top: 3px;
+  left: 250px;
+  text-align: left;
+  justify-content: left;
+}
+
+#RosterControls.extended {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+#RosterControls.extended #MainRosterControls {
+  margin-top: 30px;
+  min-width: 242px;
+  flex: 0;
+}
+
+#RosterControls.extended #SecondaryRosterControls {
+  flex: 1;
+}
+
+#MainRosterControls label {
+  margin-right: 4px;
+  margin-left: 8px;
+}
+
+#RosterControls.extended #MainRosterControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+#RosterControls.extended #MainRosterControls > div {
+  margin-bottom: 4px;
+}
+
+#RosterControls.extended #MainRosterControls select {
+  min-width: 140px;
+}
+
+#RosterControls.extended #HuntModeControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+#AwardWantedList {
+  overflow: auto;
+  overflow-x: hidden;
+  max-height: 142px;
+}
+
+@media (max-width: 770px) {
+  #RosterControls.normal #HuntModeControls {
+    display: none !important;
+  }
+}
+
+@media (max-width: 580px) {
+  #RosterControls.normal #LogbookControls {
+    display: none;
+  }
+}
+
+#RosterControls.normal #AwardTrackerControls {
+  display: none !important;
+}
+
+#RosterControls.extended #AwardTrackerControls {
+  margin-left: 8px;
+  width: 100%;
+}
+
+#awardTable {
+  width: 100%;
+}
+
+#RosterControls.extended #ShowFewerControlsLink {
+  display: block;
+}
+#RosterControls.extended #ShowMoreControlsLink {
+  display: none;
+}
+#RosterControls.extended #SecondaryRosterControls {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-right: 1px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 650px) {
+  #RosterControls.extended #SecondaryRosterControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 735px) {
+  #RosterControls.extended {
+    margin-top: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  #RosterControls.extended #MainRosterControls {
+    align-self: flex-start;
+  }
+
+  #RosterControls.extended #SecondaryRosterControls {
+    width: 100%;
+  }
+}
+
+.secondaryControlGroup {
+  flex: 1;
+  margin-left: 4px;
+  padding: 0px;
+}
+
+#huntingMatrixDiv {
+  flex: .9;
+}
+
+#exceptionDiv {
+  flex: .7;
+}
+
+.secondaryControlGroup h3 {
+  text-align: left;
+  font-size: 12px;
+  margin: 0px;
+  margin-bottom: 2px;
+  padding: 0;
+}
+
+#huntingMatrixDiv h3 {
+  color: #099;
+  border-bottom: 2px solid #066;
+  margin-bottom: 3px;
+}
+
+/* Feed Roster: the same dark shade in yellow, like its other cyan / yellow swaps */
+body.feedRosterShown #huntingMatrixDiv h3 {
+  color: #990;
+  border-bottom-color: #660;
+}
+
+/* Exceptions: which ones show varies (Only Wanted, Spotted Me, eQSL / OQRS, LoTW's "...": Call Roster 7-11 items,
+   Feed Roster 9-12), so balance them over two even columns instead of filling a fixed height.
+   Spacing is padding, not margin: a column's top margin is dropped, which would misalign the columns */
+#exceptionDiv .columns {
+  display: block;
+  column-count: 2;
+  column-gap: 8px;
+  max-height: none;
+}
+
+#exceptionDiv .columns > div {
+  break-inside: avoid;
+  margin-top: 0;
+  padding-top: 3px;
+}
+
+#exceptionDiv h3 {
+  color: rgb(206, 89, 89);
+  border-bottom: 2px solid rgba(253, 113, 113, 0.644);
+  margin-bottom: 3px;
+}
+
+.secondaryControlGroup .columns {
+  /* column-count: 2; */
+  max-height: 100px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: left;
+  padding-bottom: 0px;
+}
+
+.secondaryControlGroup .columns div {
+  text-align: left;
+  vertical-align: bottom;
+  margin-top: 3px;
+  margin-right: 0px;
+}
+
+input.slider {
+  display: inline-block;
+  width: max-content;
+}
+
+
+#instancesWrapper .button {
+  display: inline-block;
+  margin: 1px;
+  padding: 2px;
+  border-width: 1px;
+  text-align: left;
+}
+
+#RosterTable > table {
+  width: 100%;
+}
+/* == Other Elements ====================================== */
+
+#txrxdec {
+  padding-left: 3px;
+  padding-right: 3px;
+  margin: 3px;
+  border-width: 2px;
+  /* Room for the longest status, AC Log's "CONNECTED", so it stays centered (wider text spills to the right) */
+  width: 76px;
+}
+
+.link {
+  cursor: hand;
+  color: #ffffaaa1;
+}
+
+.link:hover {
+  color: #ffff00;
+  text-decoration: underline;
+}
+
+table.awardTableCSS {
+  border-collapse: collapse;
+  border: 0px solid #888;
+  background-color: black;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+table.awardTableCSS td,
+table.awardTableCSS th {
+  border: 1px solid #888;
+  padding: 0px;
+  margin: 0px;
+  border-left: none;
+  border-right: none;
+  font-size: 12px;
+  vertical-align: baseline;
+}
+
+table.awardTableCSS tr {
+  padding: 0px;
+  margin: 0px;
+  max-height: 16px;
+}
+
+table.awardTableCSS thead {
+  border-bottom: 0px solid #888;
+}
+table.awardTableCSS thead th {
+  font-weight: bold;
+  text-align: center;
+  border-left: none;
+}
+table.awardTableCSS thead th:first-child {
+  border-left: none;
+}
+
+.awardTableCSS tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+/* The column titles stay at the top of the window while the roster scrolls (the controls above scroll away); rows pass
+   under them. With collapsed borders the rows would show through the sticky header's borders, so the table uses
+   separate borders, each cell drawing only its right and bottom one (the titles their top one too) so lines stay single */
+table.rosterTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: black;
+  text-align: center;
+  width: 100%;
+}
+
+table.rosterTable > thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+table.rosterTable th {
+  border: 1px solid #555;
+  border-left-width: 0;
+  background-color: black;
+  font-weight: bold;
+  padding: 2px;
+  padding-bottom: 1px;
+}
+
+table.rosterTable th:first-child {
+  border-left: none;
+  padding-left: 2px;
+}
+
+table.rosterTable th:last-child {
+  border-right: none;
+}
+
+table.rosterTable td {
+  border: 1px solid #555;
+  border-width: 0 1px 1px 0;
+  padding: 2px;
+  padding-bottom: 1px;
+}
+
+table.rosterTable td:first-child {
+  border-left: none;
+  padding-left: 2px;
+}
+
+table.rosterTable td:last-child {
+  border-right: none;
+}
+
+/* Roster virtual scrolling (renderVirtualRoster, both rosters' normal view): every row the same height, so the spacers'
+   heights match the rows they stand in for. The cells' line height keeps a symbol-font glyph (the CQ column's check
+   mark, drawn from a taller fallback font) from making its row 2px taller than the rest */
+table.virtualRoster > tbody > tr {
+  height: 18px;
+}
+
+table.virtualRoster > tbody > tr > td {
+  line-height: 14px;
+}
+
+table.virtualRoster > tbody > tr > td img {
+  vertical-align: middle;
+}
+
+/* Stands in for the rows not in the page */
+table.rosterTable tr.virtualSpacer td {
+  border: none;
+  padding: 0;
+}
+
+.rosterTable tr.virtualSpacer:hover td {
+  box-shadow: none;
+}
+
+.regexMatch {
+  background-color: #ffffff;
+  color: #000;
+}
+
+.dxCaller {
+  background-clip: content-box;
+  box-shadow: 0 0 4px 4px inset #0f0;
+  background-color: #000;
+  color: #ff0;
+}
+
+.dxCalling {
+  background-clip: content-box;
+  box-shadow: 0 0 4px 4px inset #f00;
+  background-color: #000;
+  color: #ff0;
+}
+
+.compact {
+  cursor: pointer;
+  margin: 0px;
+  padding: 0px;
+  margin-right: 2px;
+  margin-bottom: 2px;
+  border-width: 2px;
+  border-color: #999;
+  border-style: outset;
+  min-width: 9em;
+  min-height: 2em;
+  display: inline-block;
+  color: #eee;
+  transition: border-style;
+  border-radius: 4px;
+}
+
+.compact:active {
+  border-style: inset;
+}
+
+.compact:hover {
+  border-color: #fff;
+}
+
+.compactCallsign {
+  padding: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.compactData {
+  padding: 2px;
+  max-width: 9em;
+  min-width: 9em;
+  max-height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rosterTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+/* Feed spots that can't be worked from any rig (marked with ▲ before the callsign) */
+.rosterTable tr.feedReadOnly *,
+.compact.feedReadOnly,
+.compact.feedReadOnly * {
+  cursor: default !important;
+}
+
+.compact.feedReadOnly:active {
+  border-style: outset;
+}
+
+/* Settings -> General: the boxes above Window Filters, three per row like the filters, all the same size,
+   partial rows centered (Call Roster 3 + 3, Feed Roster 3 + 2) */
+#generalSettingsBoxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  max-width: 510px;
+  margin: 0 auto;
+}
+
+#generalSettingsBoxes > .mapItem {
+  width: 164px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Settings -> Colors: the main window's band color cells, wider for column names, 6 to a row */
+.rosterColorsGrid {
+  grid-template-columns: repeat(6, 84px);
+}
+
+/* Drag a cell to move its column; the tick box sits under the swatch */
+.rosterColorCell[draggable="true"] {
+  cursor: grab;
+}
+
+.rosterColorCell input[type="checkbox"] {
+  margin: 2px 0 0 0;
+}
+
+/* Band, Mode and Flag: a fixed swatch the size and frame of the color pickers */
+.rosterColorSample {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 50px;
+  height: 25px;
+  padding: 1px 2px;
+  border: 2px outset #888;
+  border-radius: 2px;
+  background-color: #000;
+  font-weight: bold;
+  line-height: 19px;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.rosterColorSample.rosterColorLink {
+  cursor: pointer;
+}
+
+/* Flag: same 50x25 frame as a color picker, the flag stretched to fill inside it (46x21).
+   img/flags/24/un.png is 24x24 with the flag itself at columns 1-22, rows 4-19 (the rest is shadow / transparent):
+   scale that 22x16 to 46x21 and clip the rest */
+.rosterColorSample.rosterColorFlag {
+  padding: 0;
+}
+
+.rosterColorSample.rosterColorFlag img {
+  width: 50.18px;
+  height: 31.5px;
+  margin: -5.25px 0 0 -2.09px;
+}
+
+.rosterColorSample img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Reset Colors and Reset Column Order side by side */
+.rosterColorsButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Feed Roster Settings -> Feeds: Allow Alert Script / Notifications centered vertically in their box */
+#feedsAllowBox {
+  display: inline-flex;
+  align-items: center;
+}
+
+.acknowledged {
+  float: right;
+  font-size: 70%;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+
+/* Msg: a long message is cut on screen only ("…"), on the cell's inner .msgCut (a table cell's own max-width is only
+   a hint to the table layout). The widths match MSG_VISIBLE_CHARS in processRosterHunting.js */
+.msgCol .msgCut {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Feed Roster: narrower, about 22 characters of a spot comment, centered in the column */
+body.feedRosterShown .msgCol {
+  text-align: center;
+}
+
+body.feedRosterShown .msgCol .msgCut {
+  max-width: 146px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* Log SOTA Chase dialog (gt_roster.html #sotaLogBox, roster/sotaLogDialog.js): a scrim over the whole window, the dialog
+   centred, above the settings panel */
+.sotaLogScrim {
+  display: none;
+  position: fixed;
+  z-index: 1201;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+.sotaLogDialog {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+  background-color: #1b1b1b;
+  border: 1px solid #777;
+  padding: 6px 10px;
+  white-space: normal;
+}
+
+.sotaLogTitle {
+  font-weight: bold;
+  color: #40FFD8;
+  padding-bottom: 6px;
+}
+
+table.sotaLogFields {
+  width: 100%;
+}
+
+table.sotaLogFields td:first-child {
+  text-align: right;
+  white-space: nowrap;
+  padding-right: 6px;
+}
+
+table.sotaLogFields input,
+table.sotaLogFields select {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+table.sotaLogFields td.sotaLogRst {
+  display: flex;
+  gap: 4px;
+}
+
+.sotaLogStatus {
+  min-height: 1.2em;
+  padding: 4px 0;
+  text-align: center;
+  color: #888;
+}
+
+.sotaLogButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* SOTA column: dots beside a summit reference (rosterColumns.js sotaColumnRef), stacked in a narrow slot in the text's
+   color, centred on the line */
+.sotaMark {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  width: 5px;
+  height: 1em;
+  vertical-align: middle;
+}
+
+.sotaMark > i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* DXCC column: ATNO / New Band / New Mode marks after the entity's name (rosterColumns.js, dxccNewMarks) */
+.dxccNew {
+  font-size: 0.85em;
+  letter-spacing: 1px;
+}
+
+.wantedCol {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Style the tab */
+.infotab {
+  overflow: hidden;
+  background-color: black;
+}
+
+/* Style the buttons that are used to open the tab content */
+.infotab button {
+  border: 1px solid lightblue;
+  padding: 3px;
+  font-weight: bold;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  margin-left: 5px;
+  margin-right: 0px;
+  color: #eee;
+  background: black;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom-style: none;
+  transition: 0.1s;
+}
+
+/* Create an active/current tablink class */
+.infotab button.active {
+  background-color: cyan;
+  color: black;
+}
+/* Style the tab content */
+.infoTabcontent {
+  margin: auto;
+  display: none;
+  background-color: black;
+  padding: 0;
+  padding-top: 4px;
+  text-align: center;
+  width: auto;
+  left:0;
+  right:0;
+  border-top: 1px solid lightblue;
+  vertical-align: top;
+  white-space: normal;
+  overflow:auto;
+  min-width: 480px;
+}
+
+.exceptionTab {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(150px, 1fr));
+  justify-content:center;
+  align-items:center;
+}
+
+/* Feed Roster: only Uses LoTW, centered instead of in the grid's first column */
+.exceptionTab.feedExceptions {
+  display: flex;
+  justify-content: center;
+}
+
+.exceptionTab > div {
+  margin: 6px;
+  padding: 5px;
+  height: 35px;
+  width: 140px;
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: inset;
+  vertical-align:baseline;
+  border-radius: 4px;
+  transition: border-color;
+}
+
+p {
+  margin-top: 4px;
+  margin-bottom: 1px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.exceptionTab > div:hover {
+  border-color: #fff;
+}
+
+.break {
+  flex-basis: 100%;
+}
+
+.columnEditView {
+  margin:5px;
+  padding:5px;
+  vertical-align:top;
+  display:inline-block;
+  overflow:auto;
+  overflow-x:hidden;
+  height: fit-content;
+}
+
+.columnEditRow {
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  margin-top:2px;
+  margin-bottom: 5px;
+}
+
+.columnEditRowHeader {
+  border: 1px solid #cecccc;
+  grid-row: 1 / span 4;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.columnEditRow:hover {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+.columnAvailableRow {
+  display:grid;
+  grid-template-columns: 1fr 3fr;
+  margin-top:2px;
+  margin-bottom: 5px;
+}
+
+.columnAvailableRow:hover {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+.huzzah {
+  background: linear-gradient(135deg, #360000, #00580f, rgb(11, 0, 80));
+  background-size: 500% 500%;
+  animation: AnimationHuzzah 5s alternate infinite;
+  text-shadow: black 0 0 6px;
+}
+
+@keyframes AnimationHuzzah {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rowBuilder {
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: outset;
+  vertical-align: top;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  transition: border-color;
+  text-align: center; 
+  vertical-align:middle;
+  justify-content:center;
+  align-items:center;
+  width: fit-content;
+  left:0;
+  right:0;
+  margin: auto;
+  padding: 4px;
+}
+
+.rowBuilder:hover {
+  border-color: #fff;
+}
+
+.rowBuilder > * {
+  margin-right: 4px;
+  padding: 2px;
+}
+
+
+
+.ignoresTables  {
+  margin:10px;
+  padding:0px;
+  vertical-align:top;
+  display:inline-block;
+  margin-right:2px;
+  overflow:auto;
+  overflow-x:hidden;
+}
+
+#watcherTable  {
+  margin: auto;
+  left:0;
+  right:0;
+  width:fit-content;
+  padding:0px;
+  vertical-align:top;
+  display:inline-block;
+  margin-top:2px;
+  overflow:auto;
+  overflow-x:hidden;
+}
+
+#settingsDiv {
+  padding: 3px;
+  overflow: hidden;
+  margin: auto;
+  top: 3px;
+  left:0;
+  right:0;
+  width: fit-content;
+  display:none;
+  padding: 1px;
+  text-align: center;
+  vertical-align: middle;
+  position: absolute;
+  z-index: 600;
+  border: 1px solid lightblue;
+  border-radius: 4px;
+  /* Opaque, so the roster tabs underneath don't show through the title */
+  background-color: black;
+}
+
+
+.alertButtonOff {
+
+  font-size:smaller;
+  text-decoration: line-through red;
+  text-decoration-thickness: 3px;
+  /* text-decoration-style: double; */
+}
+
+.alertButtonOn {
+  font-size:smaller;
+  /* text-decoration-style: double; */
+}

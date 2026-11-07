@@ -1,8 +1,10 @@
 function rosterColumnList(settings = {}, overrides = {})
 {
+  const excluded = CR.profile.excludedColumns;
+  // A saved column this version doesn't have (ROSTER_COLUMNS) is skipped rather than breaking the roster
   return CR.rosterSettings.columnOrder.filter(column =>
   {
-    return column && (settings[column] || overrides[column]) && !(overrides[column] == false);
+    return column && ROSTER_COLUMNS[column] && !excluded[column] && (settings[column] || overrides[column]) && overrides[column] !== false;
   });
 }
 
@@ -13,35 +15,52 @@ function dragStart(event)
   event.dataTransfer.dropEffect = "move";
 }
 
+// A column header, or a Settings -> Colors cell (dropping on its label, tick box or swatch counts)
+function columnDropTarget(target)
+{
+  if (target.draggable && target.nodeName === "TH") return target;
+  const cell = target.closest && target.closest(".rosterColorCell");
+  return (cell && cell.draggable) ? cell : null;
+}
+
 function onDrop(event)
 {
   event.preventDefault();
 
-  if (event.target.draggable && event.target.nodeName == "TH")
+  const target = columnDropTarget(event.target);
+  if (target)
   {
-    let dragName = event.dataTransfer.getData("Column");
-    let columns = rosterColumnList(CR.rosterSettings.columns, { Callsign: true });
-    const movingColumn = columns.indexOf(dragName);
-    const targetColumn = columns.indexOf(event.target.attributes.name.nodeValue);
-  
-    if (movingColumn < targetColumn)
-    {
-      columns.splice(targetColumn + 1, 0 ,dragName);
-      columns.splice(movingColumn, 1);
-    }
-    else
-    {
-      columns.splice(movingColumn, 1);
-      columns.splice(targetColumn, 0 , dragName);
-    }
-
-    changeRosterColumnOrder(columns);
+    moveRosterColumn(event.dataTransfer.getData("Column"), target.attributes.name.nodeValue);
   }
 }
 
+function moveRosterColumn(dragName, targetName)
+{
+  // Reorder the full column order: Band and Mode can be shown without being enabled,
+  // and hidden columns keep their place
+  let columns = CR.rosterSettings.columnOrder.slice();
+  const movingColumn = columns.indexOf(dragName);
+  const targetColumn = columns.indexOf(targetName);
+  if (movingColumn === -1 || targetColumn === -1 || movingColumn === targetColumn) return;
+
+  if (movingColumn < targetColumn)
+  {
+    columns.splice(targetColumn + 1, 0, dragName);
+    columns.splice(movingColumn, 1);
+  }
+  else
+  {
+    columns.splice(movingColumn, 1);
+    columns.splice(targetColumn, 0, dragName);
+  }
+
+  changeRosterColumnOrder(columns);
+}
+
 document.addEventListener("drop", onDrop);
-document.addEventListener("dragover", function(event) {
-  if (event.target.draggable && event.target.nodeName == "TH")
+document.addEventListener("dragover", function(event)
+{
+  if (columnDropTarget(event.target))
   {
     event.preventDefault();
   }
@@ -53,7 +72,7 @@ function renderHeaderForColumn(column)
 
   let attrs = (columnInfo && columnInfo.tableHeader && columnInfo.tableHeader()) || {};
 
-  if (column != "Callsign")
+  if (column !== "Callsign")
   {
     attrs.draggable = "true";
     attrs.ondragstart ="dragStart(event)";
@@ -68,9 +87,9 @@ function renderHeaderForColumn(column)
     attrs.onClick = `setRosterSorting('${column}');`;
   }
 
-  if (CR.rosterSettings.sortColumn == column)
+  if (CR.rosterSettings.sortColumn === column)
   {
-    attrs.html += "<div style='display:inline-block;margin:0px;padding:0px;'>&nbsp;" + (CR.rosterSettings.sortReverse == false ? "▲" : "▼") + "</div>";
+    attrs.html += "<div style='display:inline-block;margin:0px;padding:0px;'>&nbsp;" + (CR.rosterSettings.sortReverse === false ? "▲" : "▼") + "</div>";
   }
 
   return renderRosterTableHTML("th", attrs);
@@ -88,19 +107,25 @@ function renderEntryForColumn(column, entry, element = "td")
 function renderRosterTableHTML(tag, attrs)
 {
   let innerHtml = attrs.html || "";
-  delete attrs.html;
-
   let rawAttrs = attrs.rawAttrs || "";
-  delete attrs.rawAttrs;
+  let attrStr = "";
 
-  let attrEntries = Object.entries(attrs).filter(kv => !!kv[1]);
+  // Performance: Prevent using 'delete attrs.html' to preserve V8 hidden classes.
+  // Performance: Prevents allocating multiple intermediate arrays via Object.entries().filter().map()
+  for (const key in attrs)
+  {
+    if (key !== "html" && key !== "rawAttrs" && attrs[key])
+    {
+      attrStr += ` ${key}="${String(attrs[key]).replace(/"/g, "&quot;")}"`;
+    }
+  }
 
-  return `<${tag} ${rawAttrs} ${attrEntries.map((kv) => `${kv[0]}="${kv[1].replace(/"/g, "&quot;")}"`).join(" ")}>${innerHtml}</${tag}>`
+  return `<${tag} ${rawAttrs}${attrStr}>${innerHtml}</${tag}>`;
 }
 
 function setRosterSorting(column)
 {
-  if (CR.rosterSettings.sortColumn == column)
+  if (CR.rosterSettings.sortColumn === column)
   {
     CR.rosterSettings.sortReverse = !CR.rosterSettings.sortReverse;
   }
@@ -136,51 +161,73 @@ function sortCallList(callList, sortColumn, sortReverse, columns)
 
 const multiColumnComparer = (comparers) => (a, b) =>
 {
-  let result = 0;
-  for (let i in comparers)
+  // Performance: Avoid 'for...in' loops on arrays in V8
+  for (const comparer of comparers)
   {
-    result = comparers[i] && comparers[i](a, b);
-    if (result) return result;
+    if (comparer)
+    {
+      const result = comparer(a, b);
+      if (result !== 0) return result;
+    }
   }
   return 0;
-}
+};
 
 function validateRosterColumnOrder(columns)
 {
-  let correctedColumnOrder = (columns || DEFAULT_COLUMN_ORDER || []).slice();
+  let sourceOrder = columns || DEFAULT_COLUMN_ORDER;
 
-  // Append columns not included in the suggested list.
-  DEFAULT_COLUMN_ORDER.forEach(column =>
+  // Performance: Single-pass iteration to prevent allocating 5 intermediate arrays
+  // via .slice(), .filter(), and .unshift(). O(1) object map for lookups.
+  let finalOrder = ["Callsign"];
+  // Columns this roster doesn't have (Spotter in the Call Roster, Rig/dB/DT/Spot in the Feed Roster) are left out
+  let added = { Callsign: true, ...CR.profile.excludedColumns };
+
+  // Append validated columns requested
+  for (const col of sourceOrder)
   {
-    if (!correctedColumnOrder.includes(column)) correctedColumnOrder.push(column);
-  })
+    if (ROSTER_COLUMNS[col] && !added[col])
+    {
+      finalOrder.push(col);
+      added[col] = true;
+    }
+  }
 
-  // Exclude any unexpected values
-  correctedColumnOrder = correctedColumnOrder.filter(column => !!ROSTER_COLUMNS[column])
+  // Ensure all default columns are present if missing
+  for (const col of DEFAULT_COLUMN_ORDER)
+  {
+    if (!added[col] && ROSTER_COLUMNS[col])
+    {
+      finalOrder.push(col);
+      added[col] = true;
+    }
+  }
 
-  // Ensure the first column is always Callsign
-  correctedColumnOrder = correctedColumnOrder.filter(column => column != "Callsign");
-  correctedColumnOrder.unshift("Callsign");
-
-  return correctedColumnOrder;
+  return finalOrder;
 }
 
 function changeRosterColumnOrder(columns)
 {
   CR.rosterSettings.columnOrder = validateRosterColumnOrder(columns);
   viewRoster();
+  // Settings -> Colors lists the swatches in column order
+  if (colorsBoxDiv.style.display === "block") renderColorsTab();
 }
 
 function toggleColumn(target, column = null)
 {
   let label = column || target.label;
   CR.rosterSettings.columns[label] = target.checked;
-  CR.columnMembers[label].checked = target.checked;
-  if (label == "Spot")
+  // Settings -> Colors can list a column the header menu doesn't have yet
+  if (label in CR.columnMembers) CR.columnMembers[label].checked = target.checked;
+  
+  if (label === "Spot")
   {
     window.opener.setRosterSpot(CR.rosterSettings.columns.Spot);
   }
 
   viewRoster();
   resize();
+  // Keep Settings -> Colors' tick boxes in step with the header menu
+  if (colorsBoxDiv.style.display === "block") renderColorsTab();
 }

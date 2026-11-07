@@ -1,0 +1,2316 @@
+html, body {
+  margin: 0px;
+  -webkit-user-select: none;
+  user-select: none;
+  height: 100%;
+  background-color: black;
+  color: #fff;
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif, "Yu Gothic UI", "Meiryo UI", "Microsoft YaHei";
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  width: 100%;
+  display: block;
+}
+
+:root {
+  accent-color: #4ab9f8;
+  color-scheme: dark;
+}
+
+@media print {
+  .printHotKeyDiv {
+    background-color: white;
+    color: black;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 15px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+}
+
+
+.mapDivClass {
+  height: 100%;
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0px;
+  margin: 0px;
+  right: 201px;
+  background-color: black;
+  overflow: hidden;
+}
+
+.menuDivClass {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 200px;
+  z-index: 1;
+  background-color: black;
+  color: #fff;
+  display: none;
+  height: 100%;
+}
+
+
+.chevronDivClass {
+  padding: 0px;
+  margin: 0px;
+  width: 16px;
+  height: 16px;
+  border-width: 1px;
+  border-color: #CCC;
+  border-style: solid;
+  font-weight: bold;
+  position: absolute;
+  right: 7px;
+  top: 28px;
+  z-index: 2;
+  background-color: white;
+  -webkit-border-radius: 2px;
+  color: black;
+  display: none;
+  transition: border-color 0.2s ease;
+}
+
+.chevronDivClass:hover {
+  border-color: #333; 
+  background-color: #f5f5f5; 
+}
+
+.legendDivClass {
+  position: absolute;
+  bottom: 17px;
+  right: 203px;
+  vertical-align: top;
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Santa Tracker legend (seasonal.js) */
+.santaLegend {
+  border: 1px solid #e02a2a;
+  background-color: #000;
+  color: #eee;
+  width: fit-content;
+  margin-top: 1px;
+  padding: 4px;
+}
+
+.santaTable td {
+  padding: 1px 4px;
+  white-space: nowrap;
+}
+
+.santaTable .santaHeader {
+  font-weight: bold;
+  text-align: center;
+  color: #ff6b6b;
+}
+
+.santaTable .santaLost {
+  text-align: center;
+  color: #ff6b6b;
+}
+
+.santaLostBlink {
+  font-weight: bold;
+  color: #ff2a2a;
+  animation: santaBlink 1.2s steps(1, end) infinite;
+}
+
+@keyframes santaBlink {
+  50% { visibility: hidden; }
+}
+
+/* Santa Tracker countdown (seasonal.js) */
+.santaCountdown {
+  position: absolute;
+  top: 6px;
+  transform: translateX(-50%);
+  z-index: 60;
+  text-align: center;
+  background: linear-gradient(135deg, #0b3d1e, #7a0f12);
+  border: 2px solid #ffd23c;
+  border-radius: 14px;
+  padding: 5px 10px 7px;
+  box-shadow: 0 0 14px rgba(255, 210, 60, 0.55);
+  pointer-events: none;
+}
+
+.santaCountdownTitle {
+  color: #ffd23c;
+  font-weight: bold;
+  font-size: 15px;
+  text-shadow: 0 1px 2px #000;
+  margin-bottom: 4px;
+}
+
+.santaCountdownUnits {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.santaUnit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 62px;
+  padding: 3px 6px 4px;
+  border: 1px solid #fff;
+  border-radius: 9px;
+}
+
+.santaUnit span {
+  color: #ffe98a;
+  font-family: monospace;
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px #000;
+}
+
+.santaUnit small {
+  color: #fff;
+  font-size: 11px;
+}
+
+.santaUnitRed {
+  background-color: #b3141a;
+}
+
+.santaUnitGreen {
+  background-color: #1b7a33;
+}
+
+.barGraph {
+	border: 0px;
+	height: 8px;
+}
+
+.mouseTrackClass {
+  position: absolute;
+  top: 8px;
+  padding: 1px;
+  background-color: #000000;
+  -webkit-border-radius: 6px;
+  vertical-align: top;
+  left: 35px;
+  font-size: larger;
+}
+
+.absoluteCenterDiv {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #000000;
+  -webkit-border-radius: 6px;
+  vertical-align: top;
+  z-index: 1000;
+}
+
+.busyDiv {
+  border: 1px solid rgb(153, 153, 153);
+  -webkit-border-radius: 4px;
+  background: linear-gradient(90deg, #ff6600, blue);
+  background-size: 200% 200%;
+  animation: AnimationQsoQsl 1s ease infinite;
+  text-shadow: black 0 0 6px;
+}
+
+@keyframes AnimationQsoQsl {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes geoStorm {
+  0% {
+    background-size: 100% 100%;
+  }
+  100% {
+    background-size: 200% 200%;
+  }
+}
+
+.myFlagtipEnd {
+  vertical-align: top;
+  -webkit-border-radius: 6px;
+  -webkit-user-select: text;
+  background-color: black;
+  padding: 5px;
+  text-align: center;
+  display: block;
+  position: absolute;
+  z-index: -500;
+  left: -1000px;
+  top: -1000px;
+  border: 2px solid lightgreen;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#countryEditDiv {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 200px;
+  z-index: 1;
+  background-color: black;
+  color: #fff;
+  display: none;
+  height: 100%;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #09d;
+}
+
+.rainbow {
+  background: linear-gradient(
+    to bottom right,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet
+  );
+  filter: brightness(0.7);
+  color: white;
+}
+
+.graph {
+  padding: 1px;
+  border: 1px solid #aeaeae;
+}
+.myBand {
+  padding: 0px;
+  padding-right: 1px;
+  margin-top: -1px;
+
+  border: 1px solid yellow;
+  border-radius: 6px;
+}
+.aBand {
+  padding: 0px;
+  margin: 0px;
+  margin-right: 3px;
+}
+.barTx {
+  width: 5px;
+  margin: 0px;
+  padding: 0px;
+  display: inline-block;
+  position: relative;
+  background-color: red;
+  vertical-align: baseline;
+}
+.barRx {
+  width: 5px;
+  margin: 0px;
+  padding: 0px;
+  display: inline-block;
+  position: relative;
+  background-color: #1e90ff;
+  vertical-align: baseline;
+}
+
+.inputTextValue {
+  -webkit-border-radius: 6px;
+  border: 1px solid #999;
+  outline: none;
+  margin: 1px;
+  padding: 1px;
+  background-color: darkblue;
+  color: yellow;
+  border-style: outset;
+  font-size: 12px;
+}
+
+.inputTextValue:hover {
+  border-color: #fff;
+  border-style: inset;
+  cursor: auto;
+}
+
+.roundBorderValue {
+  border: 1px solid white;
+  border-radius: 6px;
+  background-color: Blue;
+  color: #ff0;
+  padding: 1px;
+  min-width: 20px;
+  outline: none;
+}
+
+.roundBorder {
+  vertical-align: top;
+  border-radius: 6px;
+}
+
+
+.buttonRed {
+  height: 2em;
+  overflow: hidden;
+  border: 1px outset #fff;
+  padding: 1px;
+  -webkit-border-radius: 6px;
+  color: #fff;
+  background: #f00;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  align: center;
+  margin: 1px;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 64px;
+  -webkit-transition: border;
+}
+
+.Xbutton:active {
+  border: 1px inset #fff;
+}
+
+.Xbutton {
+  height: 20px;
+  overflow: hidden;
+  border: 1px outset #aaa;
+  padding: 1px;
+  -webkit-border-radius: 3px;
+  color: #ee0;
+  background: #600;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  margin: 1px;
+  font-size: 11px;
+  font-weight: bold;
+  width: 20px;
+  -webkit-transition: border;
+}
+
+.iconButton {
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 1px;
+  padding: 1px;
+  padding-top: 4px;
+  padding-bottom: 2px;
+  padding-left: 2px;
+  border-width: 1px;
+  border-color: #999;
+  border-style: outset;
+  display: inline-grid;
+  transition: border-style;
+}
+
+
+@keyframes borderDash {
+  0% {
+    border-color: cyan;
+  }
+  50% {
+    border-color: rgb(187, 187, 0);
+  }
+  100% {
+    border-color: cyan;
+  }
+}
+
+.iconButton:active {
+  margin:0px;
+  border-width: 2px;
+  border-style: inset;
+}
+
+.iconButton:hover {
+  margin:0px;
+  border-width: 2px;
+  border-color: #fff;
+}
+
+.mapItem {
+  margin: 2px;
+  padding: 0px;
+  min-height: 40px;
+  min-width: 150px;
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: inset;
+  vertical-align: top;
+  -webkit-border-radius: 4px;
+  display: inline-block;
+  -webkit-transition: border-color;
+}
+
+.mapItem table {
+  border-collapse: collapse;
+}
+
+.mapItemNoSize {
+  margin: 2px;
+  padding: 0px;
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: inset;
+  vertical-align: top;
+  -webkit-border-radius: 4px;
+  display: inline-block;
+  -webkit-transition: border-color;
+}
+
+img {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+.mapItem td {
+  padding: 1px;
+}
+
+.mapItem:hover {
+  border-color: #fff;
+}
+
+.buttonImg {
+  height: 32px;
+  padding: 0;
+  margin: 0;
+}
+
+.buttonImgWide {
+  width: 74px;
+  height: 36px;
+  padding: 0;
+  margin-top: 1px;
+  margin-bottom: -1px;
+}
+
+.solarImg {
+  height: 80px;
+  -webkit-border-radius: 4px;
+  margin: 0px;
+  padding: 0px;
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: outset;
+
+  position: relative;
+
+  -webkit-transform: scale(1);
+
+  -webkit-transition: 0.3s ease-in-out;
+
+  z-index: inherit;
+}
+
+.solarImg:hover {
+  -webkit-transform: scale(2);
+
+  -webkit-transition: 0.3s ease-in-out;
+
+  z-index: 9999;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  outline: none;
+}
+
+input[type="checkbox"] {
+  appearance: checkbox !important;
+  margin: 0;
+  vertical-align: top;
+  position: relative;
+}
+
+input[type="checkbox"]:hover {
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 4px;
+  border: 1px solid  #888;
+  background: linear-gradient(to right, #111, #888);
+  -webkit-border-radius: 10px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: 1px solid rgba(0, 0, 136, 0.514);
+  height: 13px;
+  width: 12px;
+  -webkit-border-radius: 25%;
+  background:linear-gradient(to right, #1100a7, #00f7ff);
+  margin-top: -6px;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-runnable-track {
+  outline: none;
+}
+
+select {
+  -webkit-appearance: none;
+  -webkit-border-radius: 6px;
+  border: 1px solid #999;
+  text-indent: 0.2px;
+  min-width: 30px;
+  padding: 1px;
+  padding-right: 2px;
+  margin: 1px;
+  background-color: darkblue;
+  color: #ff0;
+  cursor: pointer;
+  font-size: 12px;
+  border-style: outset;
+}
+
+select:focus {
+  outline: none;
+}
+
+select:hover {
+  border-color: #fff;
+  border-style: inset;
+}
+
+select:disabled {
+  border: 1px solid grey;
+  background-color: #008;
+  color: #ff0;
+  outline: none;
+}
+
+select option {
+  background: #000;
+  color: #fff;
+}
+
+select option:focus {
+  color: #f00;
+}
+
+option:disabled {
+  color: #666;
+}
+
+a {
+  -webkit-appearance: none;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Shown as inline-flex: a column capped at the window size, so the tab bar wraps
+   and the tab content takes the remaining height and scrolls */
+#rootSettingsDiv {
+  flex-direction: column;
+  max-width: calc(100vw - 12px);
+  max-height: calc(100vh - 2px);
+}
+
+/* Style the tab */
+.settingstab {
+  overflow: hidden;
+  -webkit-border-radius: 6px;
+  background-color: black;
+  white-space: normal;
+  flex-shrink: 0;
+}
+
+/* Style the buttons that are used to open the tab content */
+.settingstab button.settingsTablinks {
+  border: 1px solid blue;
+  padding: 3px;
+  font-weight: bold;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  margin-left: 5px;
+  margin-right: 1px;
+  color: #eee;
+  background: black;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom-style: none;
+  transition: 0.1s;
+}
+
+/* Create an active/current tablink class */
+.settingstab button.settingsTablinks.active {
+  background-color: blue;
+  color: yellow;
+}
+
+/* Settings -> Colors, Band Colors: as many 70px columns as fit, adding rows as the window narrows */
+#bandColorsBox {
+  display: block;
+}
+
+/* Logbook virtual scrolling (stats/logbook.js, renderLogbookRows): every row the same height, so the spacers'
+   heights match the rows they stand in for (the flag image and symbol-font check marks would otherwise vary it) */
+#logTable > tbody > tr {
+  height: 20px;
+}
+
+#logTable > tbody > tr > td {
+  line-height: 14px;
+}
+
+#logTable > tbody > tr > td img {
+  vertical-align: middle;
+  padding-top: 0 !important;
+}
+
+/* Free text that would otherwise widen its column for good (the State column) */
+#logTable .logClip {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#logTable > tbody > tr.logbookSpacer > td {
+  border: none;
+  padding: 0;
+}
+
+/* The search boxes and column titles stay at the top of the list while it scrolls; rows pass under them. The list
+   (#workedListDiv) has no top padding, so the header sticks where it rests and no rows show through above it */
+#logTable > thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+#logTable > thead th {
+  background-color: #000;
+}
+
+/* A sticky header in a table with collapsed borders lets the rows scrolling under it show through its top: the table
+   uses separate borders instead, each cell drawing only its right and bottom one so the lines stay single. The top line
+   is drawn by the search row's cells, not the table, so it stays with the header when the table scrolls away */
+#logTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-width: 0 0 0 1px;
+}
+
+#logTable > thead th,
+#logTable > tbody td {
+  border-width: 0 1px 1px 0;
+}
+
+#logTable > thead > tr:first-child > th {
+  border-top-width: 1px;
+}
+
+/* Logbook -> Export SOTA Chaser Log (gt_stats.html, stats/sotaExport.js) */
+.sotaExportButton {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.sotaExportBox {
+  position: fixed;
+  z-index: 1201;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+.sotaExportDialog {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(900px, 94vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #1b1b1b;
+  border: 1px solid #777;
+  color: #eee;
+}
+
+.sotaExportTitle {
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
+  font-weight: bold;
+  color: #40ffd8;
+}
+
+.sotaExportRange {
+  padding: 8px 12px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #333;
+}
+
+.sotaExportRange input {
+  margin: 0 0 0 4px;
+}
+
+.sotaExportCount {
+  color: #9cf;
+}
+
+.sotaExportNote {
+  color: #aaa;
+  font-style: italic;
+  white-space: normal;
+}
+
+.sotaExportList {
+  overflow: auto;
+  flex: 1;
+  padding: 0 12px;
+}
+
+.sotaExportList table {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.sotaExportList input {
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sotaExportDup {
+  background-color: #5a1a1a;
+}
+
+.sotaExportRemove {
+  cursor: pointer;
+  color: #f66;
+  font-weight: bold;
+}
+
+.sotaExportButtons {
+  padding: 8px 12px;
+  border-top: 1px solid #444;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.feedBands {
+  display: grid;
+  grid-template-columns: repeat(6, auto);
+  gap: 4px 14px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.feedBand {
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.feedBand input {
+  margin-right: 2px;
+}
+
+/* Settings -> Audio Alerts: Call Roster | Feed Roster sub-tabs (shown when a feed is enabled);
+   the Feed Roster's active tab is yellow, like its roster tab */
+#audioAlertsRosterTabs {
+  margin: 4px 0px 6px 0px;
+  border-bottom: 1px solid lightblue;
+}
+
+.audioAlertsRosterTab {
+  padding: 2px 10px;
+  margin-right: 3px;
+  border: 1px solid lightblue;
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background-color: black;
+  color: #eee;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.audioAlertsRosterTab.active {
+  background-color: cyan;
+  color: black;
+}
+
+#audioAlertsDiv.feedAudioAlerts .audioAlertsRosterTab.active {
+  background-color: yellow;
+}
+
+.bandColorsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 70px);
+  gap: 4px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.bandColorCell {
+  border: 1px inset #aaa;
+  border-radius: 4px;
+  padding: 2px;
+  text-align: center;
+}
+
+/* Style the tab content */
+.settingsTabcontent {
+  margin: 0;
+  display: block;
+  background-color: black;
+  padding: 6px;
+  padding-bottom: 10px;
+  text-align: center;
+  width: auto;
+  border: 1px solid blue;
+  vertical-align: top;
+  -webkit-border-radius: 6px;
+  white-space: normal;
+  max-height: 600px;
+  /* shrinks within rootSettingsDiv so overflow:auto scrolls in small windows */
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: auto;
+  /* animation: fadeEffect .3s;  Fading effect takes 1 second */
+}
+
+/* Go from zero to full opacity */
+@keyframes fadeInEffect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutEffect {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Style the tab */
+.infotab {
+  overflow: hidden;
+
+  background-color: black;
+}
+
+/* Style the buttons that are used to open the tab content */
+.infotab button {
+  border: 1px solid green;
+  padding: 3px;
+  font-weight: bold;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  margin-left: 0px;
+  margin-right: 0px;
+  color: #eee;
+  background: black;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom-style: none;
+  transition: 0.1s;
+}
+
+/* Create an active/current tablink class */
+.infotab button.active {
+  background-color: green;
+  color: yellow;
+}
+
+/* Style the tab content */
+.infoTabcontent {
+  margin: 0;
+  display: none;
+  background-color: black;
+  padding: 0;
+  text-align: center;
+  width: auto;
+  border-top: 1px solid green;
+  vertical-align: top;
+  white-space: normal;
+}
+
+/* Style the tab content */
+.lookupContent {
+  margin: 0;
+  display: none;
+  background-color: black;
+  padding: 0;
+  text-align: center;
+  width: auto;
+  vertical-align: top;
+
+  white-space: normal;
+
+  /* animation: fadeEffect .3s;  Fading effect takes 1 second */
+}
+
+.ackBadge {
+  padding: 0px;
+  margin: 0px;
+  height: 14px;
+  margin-bottom: -2px;
+}
+
+.lookupAckBadge {
+  padding: 0;
+  margin: 0px;
+  margin-bottom: -2px;
+  width: 1em;
+}
+
+table.darkTable {
+  border-collapse: collapse;
+  border: 1px solid #888;
+  text-align: center;
+}
+table.darkTable td,
+table.darkTable th {
+  border: 1px solid #888;
+  padding: 2px;
+}
+
+table.darkTable thead {
+  border-bottom: 2px solid #888;
+}
+table.darkTable thead th {
+  font-weight: bold;
+  text-align: center;
+  border-left: 2px solid #888;
+}
+table.darkTable thead th:first-child {
+  border-left: none;
+}
+
+.darkTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table.subtable {
+  border-collapse: collapse;
+  border: 0px;
+  background-color: black;
+  text-align: center;
+}
+
+table.subtable td,
+table.subtable th {
+  border: 0px;
+  padding: 2px;
+}
+
+table.subtable thead {
+  border-bottom: 0px;
+}
+
+table.subtable thead th {
+  font-weight: bold;
+  text-align: center;
+  border-left: 0px;
+}
+
+table.subtable thead th:first-child {
+  border-left: none;
+}
+
+table.subtable tr td {
+  box-shadow: none;
+}
+table.subtable tr:hover td {
+  box-shadow: none;
+}
+
+.DXCallBox {
+  font-weight: bold;
+  color: cyan;
+}
+
+.DXCallBoxWorked {
+  font-weight: bold;
+  background-color: yellow;
+  color: black;
+  animation: change-background-yellow 2s ease infinite;
+}
+
+.DXCallBoxConfirmed {
+  font-weight: bold;
+  background-color: red;
+  color: black;
+  animation: change-background-red 2s ease infinite;
+}
+
+/* .oneByOne {
+  background-clip: content-box;
+  box-shadow: 0 0 8px 3px inset #fff;
+} */
+
+.dxCaller {
+  background-clip: content-box;
+  box-shadow: 0 0 8px 3px inset lightgreen;
+}
+
+.dxCalling {
+  background-clip: content-box;
+  box-shadow: 0 0 8px 3px inset #f00;
+}
+
+@keyframes change-background-red {
+  0% {
+    background: black;
+    color: red;
+  }
+  50% {
+    background: red;
+    color: black;
+  }
+  100% {
+    background: black;
+    color: red;
+  }
+}
+
+@keyframes change-background-yellow {
+  0% {
+    background: black;
+    color: yellow;
+  }
+  50% {
+    background: yellow;
+    color: black;
+  }
+  100% {
+    background: black;
+    color: yellow;
+  }
+}
+
+.fill {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding-top: 15%;
+}
+
+.buttonScript {
+  overflow: hidden;
+  border: 1px outset #888;
+  padding: 1px;
+  padding-right: 2px;
+  -webkit-border-radius: 4px;
+  color: #000;
+  background: black;
+  text-align: center;
+  white-space: nowrap;
+  margin: 1px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  min-width: 90px;
+}
+
+.buttonScript:active {
+  border-style: inset;
+}
+
+.buttonScript:hover {
+  border-color: #fff;
+}
+
+table.bioTable {
+  border-collapse: collapse;
+  border: 1px solid #888;
+  background-color: black;
+  text-align: center;
+  table-layout: fixed;
+  width: 300px;
+}
+table.bioTable td,
+table.bioTable th {
+  border: 1px solid #888;
+  padding: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+table.bioTable thead {
+  border-bottom: 2px solid #888;
+}
+table.bioTable thead th {
+  font-weight: bold;
+  text-align: center;
+  border-left: 2px solid #888;
+}
+table.bioTable thead th:first-child {
+  border-left: none;
+}
+
+.bioTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+input[type="color"] {
+	-webkit-appearance: none;
+	border: 2px outset #888;
+  -webkit-border-radius: 2px;
+	width: 50px;
+	height: 25px;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.rotate-north {
+  top: 45px;
+  left: .5em;
+}
+.ol-touch .rotate-north {
+  top: 60px;
+}
+
+.button {
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0px;
+  padding: 2px;
+  padding-bottom: 0px;
+  border-width: 1px;
+  border-color: #999;
+  border-style: outset;
+  min-width: 40px;
+  display: inline-block;
+  color: #eee;
+  transition: border-style;
+}
+
+button:focus {
+  outline: none;
+}
+
+.button:active {
+  border-style: inset;
+}
+
+.button:hover {
+  border-color: #fff;
+}
+
+.flexButton {
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px outset #999;
+  color: #eee;
+  transition: border-style;
+  vertical-align: middle;
+  text-align: center;
+  width: fit-content;
+  padding: 2px;
+  padding-bottom: 0px;
+}
+
+.flexButton:active {
+  border-style: inset;
+}
+
+.flexButton:hover {
+  border-color: #fff;
+}
+
+#alertMatrixDiv {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+#SecondaryAudioAlertControls {
+  display: flex;
+  flex: auto;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-right: 1px;
+  margin-bottom: 4px;
+}
+
+#huntingMatrixDiv {
+  flex:auto;
+}
+
+#exceptionDiv {
+  flex:auto;
+}
+
+#exceptionDiv h3 {
+  color: rgb(206, 89, 89);
+  border-bottom: 2px solid rgb(206, 89, 89);
+  margin-bottom: 3px;
+}
+
+#audioAlertRulesDiv {
+  flex:auto;
+}
+
+#audioAlertRulesDiv h3 {
+  color: rgb(206, 204, 89);
+  border-bottom: 2px solid rgb(206, 204, 89);
+  margin-bottom: 3px;
+}
+
+.secondaryControlGroup {
+  flex: auto;
+  margin-left: 2px;
+  padding: 0px;
+  margin-bottom: 0px;
+}
+
+.secondaryControlGroup h3 {
+  text-align: left;
+  font-size: 12px;
+  margin: 0px;
+  margin-bottom: 2px;
+  padding: 0;
+}
+
+#huntingMatrixDiv h3 {
+  color: rgb(206, 134, 0);
+  border-bottom: 2px solid rgb(206, 134, 0);
+  margin-bottom: 3px;
+}
+
+
+
+#ReferenceAudioAlertControls h3 {
+  color: rgb(89, 206, 206);
+  border-bottom: 2px solid rgb(89, 206, 206);
+  margin-bottom: 3px;
+}
+
+.secondaryControlGroup .columns {
+  /* column-count: 2; */
+  /* max-height: 100px; */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: left;
+  align-items: flex-start;
+  padding-bottom: 15px;
+}
+
+.secondaryControlGroup .columns div {
+  text-align: left;
+  vertical-align: bottom;
+  margin-top: 3px;
+  margin-right: 0px;
+}
+
+.audioAlertsTable {
+  text-align: left;
+}
+
+.flexSettingDiv {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;     
+  max-width: 850px !important; 
+  margin: 0 auto !important;   
+  justify-content: center !important;
+  font-weight: bold;
+}
+
+/* Settings -> Map, Grids and Audio: labeled groups of rows */
+.mapGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 4px;
+  white-space: nowrap;
+}
+
+.mapGroup {
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 3px 6px 5px 6px;
+  background-color: #00000066;
+}
+
+.mapGroupTitle {
+  color: cyan;
+  /* The settings tab buttons' size (a button's default) */
+  font-size: 13.3333px;
+  font-weight: bold;
+  text-align: left;
+  border-bottom: 1px solid #444;
+  margin-bottom: 3px;
+  padding-bottom: 1px;
+}
+
+.mapGroup table {
+  border-collapse: collapse;
+}
+
+.mapGroup th {
+  color: #ccc;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 0 4px;
+}
+
+.mapGroup td {
+  padding: 2px 4px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.mapGroup td.mapRowLabel {
+  text-align: right;
+}
+
+/* The box under the mouse: its border inset and white, as .mapItem's */
+.mapGroup:hover {
+  border-color: #fff;
+  border-style: inset;
+}
+
+/* Row labels and the Display box's options, like the yellow values */
+.mapGroup td.mapRowLabel,
+.mapGroup .mapChecks td {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mapGroup .mapChecks td {
+  padding: 1px 4px;
+}
+
+.mapGroup .mapChecks label {
+  margin-left: 1px;
+  vertical-align: middle;
+}
+
+/* Level with the row's label; no background of its own, so the box (and Map Settings Transparency) shows through */
+/* A column header centered over the slider below it, not over the slider and its value (Settings -> Map -> Paths:
+   Width) */
+.mapGroup th.mapSliderHead {
+  text-align: left;
+}
+
+.mapGroup th.mapSliderHead > span {
+  display: inline-block;
+  width: 110px;
+  text-align: center;
+}
+
+/* A tick before a row's name (Settings -> Map -> Paths: Animate), centered on the name's capitals, not its line */
+.mapGroup td.mapRowLabel input[type="checkbox"] {
+  top: -1px;
+}
+
+/* A short dividing rule in a box's table (Settings -> Map -> Paths, above Animate) */
+.mapGroup tr.mapRuleRow > td {
+  padding: 1px 12px;
+}
+
+.mapGroup tr.mapRuleRow hr {
+  border: none;
+  border-top: 1px solid #555;
+  margin: 0;
+}
+
+.mapGroup input[type="range"] {
+  width: 110px;
+  height: 14px;
+  margin: 0;
+  vertical-align: middle;
+  background: transparent;
+}
+
+.mapGroup input[type="checkbox"] {
+  vertical-align: middle;
+}
+
+/* Long names (sound cards, voices) don't widen the box; the list itself shows them in full */
+.mapGroup select {
+  max-width: 240px;
+}
+
+.mapValue {
+  display: inline-block;
+  min-width: 50px;
+  margin-left: 6px;
+  color: yellow;
+  font-size: 12px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+/* Boxes stacked in one column of the row (Features) */
+.mapColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* An option that depends on the one above it, and one that depends on that */
+.mapGroup .mapChecks td.mapIndent {
+  padding-left: 18px;
+}
+
+.mapGroup .mapChecks td.mapIndent2 {
+  padding-left: 32px;
+}
+
+.mapGroup .mapInlineButton {
+  display: inline-block;
+  text-align: center;
+}
+
+.mapGroup .mapInline {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+/* A small note or status line across a box (General -> Receive / Forward UDP Messages) */
+.mapGroup td.mapNote {
+  color: #ccc;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* A status pill (General -> time since the last UDP message) */
+.mapGroup .roundBorderValue {
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* General -> Forward UDP Messages: "e.g." in the label column beside the examples, which read from the left */
+.mapGroup td.mapNote.mapEg {
+  text-align: right;
+  vertical-align: top;
+}
+
+.mapGroup td.mapNote.mapExample {
+  text-align: left;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* A warning under a field (a forward hostname that can't be found) */
+.mapGroup td.mapNote.mapWarn {
+  color: orange;
+  font-weight: bold;
+  text-align: left;
+  white-space: normal;
+  max-width: 260px;
+}
+
+/* Checkbox lines outside a table (General -> On QSO Reply) */
+.mapCheckLines {
+  font-size: 12px;
+  font-weight: bold;
+  text-align: left;
+  padding: 1px 4px;
+}
+
+.mapCheckLines label {
+  margin-left: 1px;
+  vertical-align: middle;
+}
+
+/* A stack of same-width buttons (General -> Settings) */
+.mapButtons {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin: 3px 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mapButtons .button {
+  text-align: center;
+}
+
+/* Controls that belong together, side by side in a frame (Export / Import; Clear All Settings! and "Yes, I'm sure!") */
+.mapButtons.mapFramed {
+  flex-direction: row;
+  align-items: center;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 3px;
+}
+
+/* A frame inside a stack: no extra side margin */
+.mapButtons .mapButtons.mapFramed {
+  margin: 0;
+}
+
+/* Two buttons sharing the frame equally */
+.mapButtons.mapPair .button {
+  flex: 1;
+}
+
+.mapButtons.mapFramed .mapCheckLines {
+  padding: 0;
+}
+
+.mapButtons label {
+  vertical-align: middle;
+}
+
+/* Settings -> Feeds -> Modes / Bands: the ticks in the boxes' option style */
+.mapGroup .feedBands {
+  font-size: 12px;
+  font-weight: bold;
+  margin: 2px 4px;
+}
+
+.mapGroup .feedBand input {
+  vertical-align: middle;
+  margin-right: 3px;
+}
+
+/* Settings -> Logging: the two local boxes share the first row, Online Logbooks spans the second */
+/* Sized from their narrowest layout (stacked header words), not their widest, so the two fit side by side (the right
+   one is a column: Logging Programs with PSK-Reporter under it) */
+.mapHalf {
+  flex: 1 1 0;
+  min-width: min-content;
+}
+
+.mapGroup.mapFull {
+  flex: 1 1 100%;
+}
+
+/* Wider than the other tabs: Logs On This PC and Logging Programs share a row on a normal-width window. A column as
+   wide as that row needs (no wider), up to the cap: Online Logbooks fills it and PSK-Reporter is centered under it */
+.mapGroups.mapLogging {
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: fit-content;
+  max-width: 1100px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+/* The top row: the two boxes side by side, or stacked when they don't fit */
+.mapLoggingTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  align-self: stretch;
+}
+
+/* Online Logbooks takes the top row's width rather than setting it (its own content would widen the tab) */
+.mapLogging > .mapGroup.mapFull {
+  flex: none;
+  align-self: stretch;
+  contain: inline-size;
+}
+
+/* A little less space under the boxes, so a full setup fits without scrolling */
+#logSettingsDiv {
+  padding-bottom: 6px;
+}
+
+/* Each box's own table, not the file lists the code builds inside it */
+.mapLogging .mapGroup > table {
+  width: 100%;
+}
+
+.mapLogging .mapGroup > table > tbody > tr + tr > td {
+  border-top: 1px solid #333;
+}
+
+/* Fields and lists without their 1px top / bottom margin: each row of them 2px shorter */
+.mapLogging .inputTextValue,
+.mapLogging select {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+/* Ticks centered on the middle of the text's capitals, not its line (which sits 1px lower) */
+.mapLogging input[type="checkbox"] {
+  top: -1px;
+}
+
+/* More room between the services' rows */
+.mapLogging .mapGroup > table > tbody > tr + tr > td {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* Logging -> App Log(s): the Enable ticks centered in their column (the list is built by adif.js, updateAppLogsUI) */
+#appLogsFilesDiv td:first-child {
+  text-align: center;
+}
+
+/* A note on a line of options (Logging -> PSK-Reporter's "24 Hour History") */
+.mapGroup span.mapNote {
+  color: #ccc;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+/* A note in the Details column reads from the left, like the fields */
+.mapGroup td.mapDetails.mapNote {
+  text-align: left;
+}
+
+/* The row under the mouse is shaded, as in the old table (.darkTable); not the header row */
+.mapLogging .mapGroup > table > tbody > tr + tr:hover > td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+
+
+/* Menu Button / At Startup / Log QSO / Connect: each word on its own line, so the tick columns stay narrow */
+.mapGroup th.mapFlagHead {
+  white-space: normal;
+  /* Chinese / Japanese break at their spaces too, not between every character */
+  word-break: keep-all;
+  /* As narrow as the longest word, also when a box works out its own width (a percentage only narrows a stretched
+     table, so boxes sized to their content had one-line headers) */
+  width: 1px;
+  line-height: 1.1;
+  vertical-align: bottom;
+}
+
+/* A service's name, first column */
+.mapGroup td.mapName {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* Logins and file lists: label + field pairs that wrap as whole pairs */
+.mapGroup td.mapDetails {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: normal;
+}
+
+.mapFieldLine {
+  display: inline-block;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+/* IP and Port on one line; a program's options (rig control, QSL by) on the lines below */
+.mapGroup td.mapAddr {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* A second test button under the first (LoTW: Test TQSL under Test Download) */
+.mapTestLine {
+  margin-top: 2px;
+}
+
+/* A Test button's result, under it (wraps rather than widen the column; takes no room until there is one) */
+.mapGroup .mapResult {
+  font-size: 11px;
+  font-weight: bold;
+  white-space: normal;
+  max-width: 120px;
+  margin: 2px auto 0px auto;
+}
+
+.mapGroup .mapResult:empty {
+  display: none;
+}
+/* A label kept for screen readers only (the column header names the field) */
+.mapSrOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Settings -> Map: two boxes to a row in a grid, each column as wide as its widest box, so the tab is no wider than its
+   boxes (wrapped flex rows kept the full one-row width); boxes in a column share their edges, a row its height */
+#mapSettingsGroups {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  /* The grid is already as wide as its two columns; the boxes' usual cap would only make it overflow by a pixel */
+  max-width: none;
+}
+
+/* The Day and Night map lists a little narrower, so Base Map (two of them with Auto Night Map on) stays compact; an
+   opened list shows the full names */
+.mapBoxBase select {
+  max-width: 200px;
+}
+
+/* Settings -> Map with Auto Night Map on: the Night column widens Base Map and Paths, so the boxes pair up as
+   Base Map + Grayline, Paths + Grids, Overlays + Display (three rows instead of four) */
+.mapNightOn > .mapBoxBase { order: 1; }
+.mapNightOn > .mapBoxGrayline { order: 2; }
+.mapNightOn > .mapBoxPaths { order: 3; }
+.mapNightOn > .mapBoxGrids { order: 4; }
+.mapNightOn > .mapBoxOverlays { order: 5; }
+.mapNightOn > .mapBoxDisplay { order: 6; }
+
+/* A box title with its button at the right (Colors -> Reset Colors) */
+.mapGroupTitle.mapTitleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 3px;
+}
+
+.mapTitleBar .button {
+  font-size: 11px;
+  font-weight: bold;
+  color: #eee;
+  min-width: 0;
+  padding: 1px 6px 0;
+}
+
+/* Settings -> Colors: both boxes the tab's full width */
+.mapColorsTab > .mapGroup {
+  flex: 1 1 100%;
+}
+
+/* Smaller swatches inside the settings boxes */
+.mapGroup input[type="color"] {
+  width: 32px;
+  height: 16px;
+  border: 1px solid #888;
+  border-radius: 3px;
+  padding: 0;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.mapGroup input[type="color"]:hover {
+  border-color: #fff;
+}
+
+/* Gridsquare colors: a swatch and its name, four to a row */
+.mapColorGrid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: 5px 18px;
+  padding: 3px 4px;
+}
+
+.mapColorItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Band colors: the band (in its color) and its swatch side by side, as many cells as fit a row */
+.mapGroup .bandColorsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 4px;
+  margin-top: 4px;
+  padding: 0 2px 2px;
+}
+
+.mapGroup .bandColorCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.mapGroup .bandColorCell:hover {
+  border-color: #aaa;
+}
+
+.mapGroup .bandColorCell br {
+  display: none;
+}
+
+/* Logbook -> Logbook Filters: the Enable? ticks and the date */
+.mapGroup .mapFilters td {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mapGroup .mapFilters label {
+  vertical-align: middle;
+}
+
+/* The callsign and grid fields as wide as the date row, so the fields line up */
+.mapGroup .mapFilters input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  /* A long found list (the placeholder) ends in "…" rather than running off the field */
+  text-overflow: ellipsis;
+}
+
+/* The callsigns / grids found in your logs, shown faintly while a field is empty (adif.js, setQsoFound) */
+.mapGroup .mapFilters input[type="text"]::placeholder {
+  color: #666;
+  font-style: italic;
+}
+
+.mapDatePill {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 1px 8px;
+}
+
+/* Apply Changes, at the box's bottom right once something changed */
+.mapApplyLine {
+  text-align: right;
+  padding: 2px 4px 0;
+}
+
+.mapApplyLine .button {
+  color: cyan;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 2px 8px 1px;
+}
+
+/* Settings -> About: an animated map header (aboutFx.js) with the logo and title over it, then the blurb and the
+   credits as callsign chips; .aboutPlay (added each time the tab opens) plays the entrance */
+.aboutWrap {
+  width: 820px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.aboutHero {
+  position: relative;
+  height: 210px;
+  border: 1px solid #2a4a7a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(0, 160, 255, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+#aboutCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.aboutHeroContent {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 100%;
+  padding: 0 22px;
+  text-align: left;
+}
+
+.aboutLogo {
+  height: 150px;
+  filter: drop-shadow(0 0 12px rgba(255, 166, 0, 0.45));
+  animation: aboutFloat 6s ease-in-out infinite;
+}
+
+.aboutTitle {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  background: linear-gradient(90deg, #ffffff 0%, #7ff6ff 35%, #ffffff 50%, #7ff6ff 65%, #ffffff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 220, 255, 0.55));
+  animation: aboutShine 6s linear infinite;
+}
+
+.aboutVersion {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  border: 1px solid rgba(255, 255, 0, 0.6);
+  border-radius: 999px;
+  background: rgba(0, 0, 60, 0.6);
+  color: #ffff00;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.aboutSupport {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.aboutUpdate {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.aboutBody {
+  padding: 10px 8px 4px;
+}
+
+.aboutBlurb {
+  margin: 4px 0;
+  font-size: 13px;
+  font-weight: bold;
+  color: #e8eef8;
+}
+
+.aboutLink {
+  margin: 4px 0 10px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.aboutLink a {
+  color: cyan;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted cyan;
+}
+
+.aboutLink a:hover {
+  text-shadow: 0 0 8px cyan;
+}
+
+.aboutCopyright {
+  color: #9fb3cc;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.aboutChips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.aboutChip {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid #355a8a;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0d1d36, #081226);
+  color: #dfe8f5;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.aboutChip b {
+  margin-left: 4px;
+  color: #ffff00;
+}
+
+.aboutChip:hover {
+  border-color: cyan;
+  box-shadow: 0 0 10px rgba(0, 220, 255, 0.45);
+}
+
+.aboutChip.aboutOrg {
+  color: cyan;
+  border-color: rgba(0, 220, 255, 0.6);
+}
+
+/* The entrance, each time the tab opens */
+.aboutPlay .aboutHero {
+  animation: aboutReveal 0.7s ease-out both;
+}
+
+.aboutPlay .aboutLogo {
+  animation: aboutLogoIn 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both, aboutFloat 6s ease-in-out 0.9s infinite;
+}
+
+.aboutPlay .aboutTitle {
+  animation: aboutRise 0.6s ease-out 0.25s both, aboutShine 6s linear 0.9s infinite;
+}
+
+.aboutPlay .aboutVersion {
+  animation: aboutRise 0.6s ease-out 0.4s both;
+}
+
+.aboutPlay .aboutSupport,
+.aboutPlay .aboutUpdate {
+  animation: aboutRise 0.6s ease-out 0.5s both;
+}
+
+.aboutPlay .aboutBlurb,
+.aboutPlay .aboutLink,
+.aboutPlay .aboutCopyright {
+  animation: aboutRise 0.6s ease-out 0.55s both;
+}
+
+.aboutPlay .aboutChip {
+  animation: aboutRise 0.5s ease-out both;
+  animation-delay: calc(0.65s + var(--i) * 55ms);
+}
+
+@keyframes aboutReveal {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes aboutRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes aboutLogoIn {
+  from { opacity: 0; transform: translateX(-30px) rotate(-8deg) scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes aboutFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes aboutShine {
+  from { background-position: 0% center; }
+  to { background-position: -200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aboutWrap *,
+  .aboutPlay * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Settings -> Map -> Paths -> Animate off: About stays still too (aboutFx.js) */
+.aboutStill .aboutWrap * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* A table of values (Lookups -> Callsign Databases) */
+.mapGroup td.mapCenter {
+  text-align: center;
+}
+
+.mapGroup td.mapCellValue {
+  color: yellow;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mapGroup td.mapCellDate {
+  color: lightgreen;
+}
+
+/* A line of fields under a box's table (Lookups -> Username / Password / Test) */
+.mapCredentials {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mapCredentials .button {
+  display: inline-block;
+}
+
+/* A color slider on its color (the map reads some of these backgrounds) */
+.mapSwatch {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 4px;
+  border: 1px solid #888;
+}
+
+.mapSwatch input[type="range"] {
+  background: transparent;
+}
+
+.mapSwatch label {
+  font-size: smaller;
+}
+
+.flexItem {
+  border-width: 1px;
+  border-color: #aaa;
+  border-style: inset;
+  border-radius: 4px;
+  transition: border-color;
+
+  height: fit-content;
+  width: fit-content;
+  margin: 2px;
+  padding: 2px;
+  padding-top: 3px;
+  min-width: 168px;
+  min-height: 44px;
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.flexItem input[type="checkbox"] {
+  margin-top: 3px;
+}
+
+.flexItem label {
+  margin-right: 3px;
+}
+
+.flexItem input[type="range"] {
+  margin-top: 6px;
+}
+
+.flexItem:hover {
+  border-color: #fff;
+}
+
+.password-wrapper {
+    position: relative;
+    display: inline-block; /* Hugs the natural width of the input */
+}
+
+.password-wrapper input {
+    box-sizing: border-box; 
+    padding-right: 30px; /* Gives the typed text room so it doesn't hit the emoji */
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    
+    /* This centers it vertically, then subtracts 2px to nudge it up! */
+    transform: translateY(calc(-50% - 2px)); 
+    
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    outline: none;
+    user-select: none;
+}
+
+.password-toggle-btn:hover {
+    opacity: 0.7;
+}
+
+.band-mode-indicator {
+  background-color: #bbb;
+  color: #000;
+  border-radius: 4px;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  font-size: 0.75em;
+  font-weight: bold;
+  
+  width: 1.3em; 
+  height: 1.3em;
+  
+  margin-left: 2px;
+  margin-bottom: 1px;
+  padding-top: 1px;
+
+  vertical-align: middle; 
+}
+
+#spotHistoryH::-webkit-inner-spin-button,
+#spotHistoryH::-webkit-outer-spin-button,
+#spotHistoryM::-webkit-inner-spin-button,
+#spotHistoryM::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

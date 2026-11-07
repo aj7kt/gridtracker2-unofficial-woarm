@@ -1,11 +1,30 @@
 const DEFAULT_COLUMN_ORDER = [
-  "Callsign", "Band", "Mode", "Calling", "Rig", "Wanted", "Grid", "Msg",
-  "POTA", "DXCC", "Flag", "DXM", "State", "County", "Cont",
-  "dB", "Freq", "DT", "Dist", "Azim", 
+  "Callsign", "Band", "Mode", "Calling", "Spotter", "CQ", "Rig", "Wanted", "Grid", "Msg",
+  "POTA", "SOTA", "DXCC", "DEDXCCv2", "Flag", "DXM", "State", "County", "Cont", "DEContv2",
+  "dB", "Freq", "DT", "Dist", "Azim",
   "CQz", "ITUz", "PX",
   "LoTW", "eQSL", "OQRS",
-  "Life", "Spot", "OAMS", "Age", "UTC"
+  "Life", "Spot",  "Age", "UTC"
 ]
+
+// Column colors (6-digit hex, no "#") are in each roster's own settings, CR.rosterSettings.colors, defaulting to
+// k_callRosterColumnColors / k_feedRosterColumnColors in defaults.js and edited in Settings -> Colors. Saved colors end up in HTML style attributes,
+// so only plain 6-digit hex is used; anything else falls back to the default
+const ROSTER_COLOR_REGEXP = /^[0-9A-Fa-f]{6}$/;
+
+// "#RRGGBB" for this roster's column
+function rosterColor(column)
+{
+  const saved = CR.rosterSettings.colors && CR.rosterSettings.colors[column];
+  if (typeof saved === "string" && ROSTER_COLOR_REGEXP.test(saved)) return "#" + saved;
+  return "#" + (window.opener.defaultRosterColors(CR.profile.name)[column] || "EEEEEE");
+}
+
+// Feed Roster: ▲ before the callsign when a rig on the spot's band and mode can work it
+function markWorkableFeed(callObj, html)
+{
+  return (isFeedRoster() && callObj.onRig) ? "&#9650;" + html : html;
+}
 
 const getterSimpleComparer = (getter) => (a, b) =>
 {
@@ -28,6 +47,26 @@ const callObjLocaleComparer = (attr) => (a, b) =>
   return a.callObj[attr].localeCompare(b.callObj[attr]);
 }
 
+const callObjLocaleComparerWithRR73 = (attr) => (a, b) =>
+{
+  let valA = a.callObj[attr];
+  if (a.callObj.CQ) valA = "0" + valA;
+  if (CR.activeExceptions.wantRRCQ && a.callObj.RR73) {
+    valA = "0CQ" + a.callObj.RR73;
+  }
+
+  let valB = b.callObj[attr];
+  if (b.callObj.CQ) valB = "0" + valB;
+  if (CR.activeExceptions.wantRRCQ && b.callObj.RR73) {
+    valB = "0CQ" + b.callObj.RR73;
+  }
+
+  if (valA == null) return 1;
+  if (valB == null) return -1;
+
+  return valA.localeCompare(valB);
+}
+
 const ROSTER_COLUMNS = {
 
   Callsign: {
@@ -41,14 +80,14 @@ const ROSTER_COLUMNS = {
         align: "left",
         onClick: `initiateQso("${callObj.hash}")`,
         rawAttrs: callObj.style.call,
-        html: html = formatCallsign((callObj.DEcallHTML || callObj.DEcall))
+        html: markWorkableFeed(callObj, formatCallsign((callObj.DEcallHTML || callObj.DEcall)))
       }
 
       let acks = GT.acknowledgedCalls || {};
       if (acks[callObj.DEcall])
       {
-        attrs.html = `${attrs.html} <span class='acknowledged'><img class='ackBadge' src='${acks[callObj.DEcall].badge}'></span>`
-        attrs.title = `${attrs.title} - ${acks[callObj.DEcall].message}`
+        attrs.html = `${attrs.html} <span class='acknowledged'><img class='ackBadge' src='img/emojis/${acks[callObj.DEcall].b}.png'></span>`
+        attrs.title = `${acks[callObj.DEcall].message}`
       }
 
       return attrs
@@ -58,6 +97,7 @@ const ROSTER_COLUMNS = {
   Rig: {
     compare: callObjSimpleComparer("instance"),
     tableData: (callObj) => ({
+      style: `color: ${rosterColor("Rig")};`,
       html: callObj.instance
     })
   },
@@ -65,7 +105,7 @@ const ROSTER_COLUMNS = {
   Band: {
     compare: callObjSimpleComparer("band"),
     tableData: (callObj) => ({
-      style: `color: #${GT.pskColors[callObj.band]};`,
+      style: `color: #${GT.bandColors[callObj.band]};`,
       html: callObj.band
     })
   },
@@ -73,27 +113,52 @@ const ROSTER_COLUMNS = {
   Mode: {
     compare: callObjSimpleComparer("mode"),
     tableData: (callObj) => ({
-      style: `color: #${CR.modeColors[callObj.mode] || "888888"};`,
+      style: `color: #${GT.modeColors[callObj.mode] || "FFFFFF"};`,
       html: callObj.mode
     })
   },
 
   Grid: {
     compare: callObjSimpleComparer("grid"),
-    tableData: (callObj) => ({
-      rawAttrs: callObj.style.grid,
-      onClick: `centerOn("${callObj.grid}")`,
-      name: "Grid",
-      html: (callObj.grid.length > 0 ? callObj.gridHTML || callObj.grid : "&nbsp;")
-    })
+    tableData: (callObj) => {
+      const grid = callObj.grid ? callObj.grid.substring(0, 4) : "";
+      return {
+        rawAttrs: callObj.style.grid,
+        onClick: `centerOn("${callObj.grid}")`,
+        name: "Grid",
+        html: (grid.length > 0 ? (!callObj.gridQualified ? `${grid} ◇` : (callObj.gridHTML ? callObj.gridHTML.replace(callObj.grid, grid) : grid)) : "&nbsp;")
+      };
+    }
   },
 
   Calling: {
-    compare: callObjLocaleComparer("DXcall"),
+    compare: callObjLocaleComparerWithRR73("DXcall"),
     tableData: (callObj) => ({
       rawAttrs: callObj.style.calling,
       name: callObj.CQ ? "CQ" : "Calling",
-      html: (CR.rosterSettings.wantRRCQ && callObj.RR73) ? "RR73" : formatCallsign(callObj.DXcallHTML || callObj.DXcall)
+      html: (CR.activeExceptions.wantRRCQ && callObj.RR73) ? callObj.RR73 : formatCallsign(callObj.DXcallHTML || callObj.DXcall)
+    })
+  },
+
+  // Feed Roster (in place of Calling): ✔ when the spot's comment says the station is calling CQ
+  CQ: {
+    compare: callObjSimpleComparer("CQ"),
+    tableData: (callObj) => ({
+      style: `color: ${rosterColor("CQ")};`,
+      align: "center",
+      html: callObj.CQ ? "&#10004;" : "&nbsp;"
+    })
+  },
+
+  // Station that reported a DX Cluster / CW Skimmer spot; blank for WSJT-X decodes
+  Spotter: {
+    label: () => I18N("rosterColumns.Spotter.header"),
+    compare: callObjLocaleComparer("spotter"),
+    tableHeader: () => ({ html: I18N("rosterColumns.Spotter.header"), title: I18N("rosterColumns.Spotter.title") }),
+    tableData: (callObj) => ({
+      name: "Spotter",
+      style: `color: ${rosterColor("Spotter")};`,
+      html: callObj.spotter ? formatCallsign(callObj.spotterHTML || callObj.spotter) : "&nbsp;"
     })
   },
 
@@ -101,17 +166,48 @@ const ROSTER_COLUMNS = {
     compare: callObjLocaleComparer("DXcall"),
     tableData: (callObj) => ({
       name: "Msg",
-      html: callObj.msgHTML || htmlEntities(callObj.msg)
+      // Shortened on screen only (a long feed spot comment ends in "…"), the whole message on hover; Watcher
+      // matches inside it keep their own highlight
+      class: "msgCol",
+      title: callObj.msg,
+      style: `color: ${rosterColor("Msg")};`,
+      // The width limit is on this wrapper: a table cell's max-width is only a hint to the table layout
+      html: `<div class="msgCut">${callObj.msgHTML || htmlEntities(callObj.msg)}</div>`
     })
   },
 
+  // The Feed Roster calls it "DX DXCC", next to its "DE DXCC" (the spotter's)
   DXCC: {
+    label: () => isFeedRoster() ? I18N("rosterColumns.DXCC.feedHeader") : "DXCC",
     compare: (a, b) => window.opener.myDxccCompare(a.callObj, b.callObj),
+    tableHeader: () => ({ html: isFeedRoster() ? I18N("rosterColumns.DXCC.feedHeader") : "DXCC" }),
+    tableData: (callObj) =>
+    {
+      const marks = dxccNewMarks(callObj);
+      return {
+        title: GT.dxccInfo[callObj.dxcc].pp + marks.title,
+        name: `DXCC (${callObj.dxcc})`,
+        rawAttrs: callObj.style.dxcc,
+        // Like Grid: click centers the map on the entity and dazzles it (not in compact mode, where the tile click starts a QSO)
+        onClick: CR.rosterSettings.compact ? null : `centerOnDxcc(${callObj.dxcc})`,
+        html: marks.before + GT.dxccToAltName[callObj.dxcc] + marks.after
+      };
+    }
+  },
+
+  // Feed Roster: DXCC entity of the station that reported the spot. The key has "v2" because its default changed to
+  // shown: saved settings for the old "DEDXCC" key are dropped at startup (GridTracker2.js)
+  DEDXCCv2: {
+    label: () => I18N("rosterColumns.DEDXCC.header"),
+    compare: getterSimpleComparer((elem) => elem.callObj.spotterDxcc > 0 ? GT.dxccToAltName[elem.callObj.spotterDxcc] : null),
+    tableHeader: () => ({ html: I18N("rosterColumns.DEDXCC.header"), title: I18N("rosterColumns.DEDXCC.title") }),
     tableData: (callObj) => ({
-      title: GT.dxccInfo[callObj.dxcc].pp,
-      name: `DXCC (${callObj.dxcc})`,
-      rawAttrs: callObj.style.dxcc,
-      html: GT.dxccToAltName[callObj.dxcc]
+      title: callObj.spotterDxcc > 0 ? GT.dxccInfo[callObj.spotterDxcc].pp : "",
+      name: "DEDXCC",
+      // Like DX DXCC: click centers the map on the spotter's entity and dazzles it (not in compact mode)
+      style: `color: ${rosterColor("DEDXCCv2")};` + ((CR.rosterSettings.compact || !(callObj.spotterDxcc > 0)) ? "" : " cursor: pointer;"),
+      onClick: (CR.rosterSettings.compact || !(callObj.spotterDxcc > 0)) ? null : `centerOnDxcc(${callObj.spotterDxcc})`,
+      html: callObj.spotterDxcc > 0 ? GT.dxccToAltName[callObj.spotterDxcc] : "&nbsp;"
     })
   },
 
@@ -154,7 +250,7 @@ const ROSTER_COLUMNS = {
         rawAttrs: callObj.style.cnty,
         html: callObj.cnty ? GT.cntyToCounty[callObj.cnty] : "&nbsp;"
       }
-      if (callObj.cnty && callObj.qual == false)
+      if (callObj.cnty && callObj.cntyQual == false)
       {
         attrs.title = I18N("rosterColumns.County.title")
         attrs.onClick = `window.opener.lookupCallsign("${callObj.DEcall}", "${callObj.grid}")`
@@ -164,8 +260,11 @@ const ROSTER_COLUMNS = {
     }
   },
 
+  // The Feed Roster calls it "DX Cont", next to its "DE Cont" (the spotter's)
   Cont: {
+    label: () => isFeedRoster() ? I18N("rosterColumns.Cont.feedHeader") : "Cont",
     compare: callObjSimpleComparer("cont"),
+    tableHeader: () => ({ html: isFeedRoster() ? I18N("rosterColumns.Cont.feedHeader") : "Cont" }),
     tableData: (callObj) => ({
       align: "center",
       rawAttrs: callObj.style.cont,
@@ -173,10 +272,24 @@ const ROSTER_COLUMNS = {
     })
   },
 
+  // Feed Roster: continent of the station that reported the spot ("v2": see DEDXCCv2)
+  DEContv2: {
+    label: () => I18N("rosterColumns.DECont.header"),
+    compare: callObjSimpleComparer("spotterCont"),
+    tableHeader: () => ({ html: I18N("rosterColumns.DECont.header"), title: I18N("rosterColumns.DECont.title") }),
+    tableData: (callObj) => ({
+      align: "center",
+      // Right-click: Ignore DE Cont
+      name: "DECont",
+      style: `color: ${rosterColor("DEContv2")};`,
+      html: callObj.spotterCont || "&nbsp;"
+    })
+  },
+
   dB: {
     compare: callObjSimpleComparer("RSTsent"),
     tableData: (callObj) => ({
-      style: "color:#CCC;",
+      style: `color: ${rosterColor("dB")};`,
       html: `<b>${callObj.RSTsent}</b>`
     })
   },
@@ -184,16 +297,16 @@ const ROSTER_COLUMNS = {
   Freq: {
     compare: callObjSimpleComparer("delta"),
     tableData: (callObj) => ({
-      style: "color: #00FF00;",
-      html: callObj.delta
+      style: `color: ${rosterColor("Freq")};`,
+      html: callObj.instance === GT.feedInstance ? (callObj.freq > 0 ? formatMhz(callObj.freq / 1000) : "&nbsp;") : callObj.delta
     })
   },
 
   DT: {
     compare: callObjSimpleComparer("dt"),
     tableData: (callObj) => ({
-      style: "color: #5caeff;",
-      html: callObj.dt
+      style: `color: ${rosterColor("DT")};`,
+      html: callObj.instance === GT.feedInstance ? "&nbsp;" : callObj.dt
     })
   },
 
@@ -201,7 +314,7 @@ const ROSTER_COLUMNS = {
     compare: callObjSimpleComparer("distance"),
     tableHeader: () => ({ html: `Dist (${window.opener.distanceUnit.value.toLowerCase()})` }),
     tableData: (callObj) => ({
-      style: "color: cyan;",
+      style: `color: ${rosterColor("Dist")};`,
       html: (callObj.distance > 0 ? Math.round(callObj.distance * MyCircle.validateRadius(window.opener.distanceUnit.value)) : "&nbsp;")
     })
   },
@@ -209,7 +322,7 @@ const ROSTER_COLUMNS = {
   Azim: {
     compare: callObjSimpleComparer("heading"),
     tableData: (callObj) => ({
-      style: "color: yellow;",
+      style: `color: ${rosterColor("Azim")};`,
       html: (callObj.distance > 0 ? Math.round(callObj.heading) : "&nbsp;")
     })
   },
@@ -246,10 +359,10 @@ const ROSTER_COLUMNS = {
     {
       if (callObj.DEcall in GT.lotwCallsigns)
       {
-        if (CR.rosterSettings.maxLoTW < 27)
+        if (CR.activeExceptions.maxLoTW < 27)
         {
           let months = (CR.day - GT.lotwCallsigns[callObj.DEcall]) / 30;
-          if (months > CR.rosterSettings.maxLoTW)
+          if (months > CR.activeExceptions.maxLoTW)
           {
             return {
               style: "color: yellow;",
@@ -261,7 +374,7 @@ const ROSTER_COLUMNS = {
           else
           {
             return {
-              style: "color: #0F0;",
+              style: `color: ${rosterColor("LoTW")};`,
               align: "center",
               title: `${I18N("rosterColumns.LoTW.LastUpdate")}${
                 window.opener.userDayString(GT.lotwCallsigns[callObj.DEcall] * 86400000)
@@ -273,7 +386,7 @@ const ROSTER_COLUMNS = {
         else
         {
           return {
-            style: "color: #0F0;",
+            style: `color: ${rosterColor("LoTW")};`,
             align: "center",
             title: `${I18N("rosterColumns.LoTW.LastUpdate")}${
               window.opener.userDayString(GT.lotwCallsigns[callObj.DEcall] * 86400000)
@@ -294,7 +407,7 @@ const ROSTER_COLUMNS = {
   eQSL: {
     compare: false,
     tableData: (callObj) => ({
-      style: "color: #0F0;",
+      style: `color: ${rosterColor("eQSL")};`,
       align: "center",
       html: (callObj.DEcall in GT.eqslCallsigns ? "&#10004;" : "&nbsp;")
     })
@@ -303,7 +416,7 @@ const ROSTER_COLUMNS = {
   OQRS: {
     compare: false,
     tableData: (callObj) => ({
-      style: "color: #0F0;",
+      style: `color: ${rosterColor("OQRS")};`,
       align: "center",
       html: (callObj.DEcall in GT.oqrsCallsigns ? "&#10004;" : "&nbsp;")
     })
@@ -312,52 +425,17 @@ const ROSTER_COLUMNS = {
   Life: {
     compare: callObjSimpleComparer("life"),
     tableData: (callObj) => ({
-      style: "color: #EEE;",
+      style: `color: ${rosterColor("Life")};`,
       class: "lifeCol",
       id: `lm${callObj.hash}`,
       html: toDHMS(timeNowSec() - callObj.life)
     })
   },
 
-  OAMS: {
-    tableHeader: () => ({ description: "Off-Air Message User" }),
-    compare: getterSimpleComparer((elem) => elem.callObj.gt != 0 ? 1 : 0),
-    tableData: (callObj) =>
-    {
-      if (callObj.gt != 0)
-      {
-        if (callObj.shouldOAMS)
-        {
-          return {
-            align: "center",
-            style: "margin: 0; padding: 0; cursor: pointer; background-clip: content-box; box-shadow: 0 0 4px 4px inset #2222FFFF;",
-            onClick: `openChatToCid("${callObj.gt}")`,
-            html: "<img height='13px' style='margin-bottom:-2px;' src='img/gt_chat.png' />"
-          }
-        }
-        else
-        {
-          return {
-            align: "center",
-            style: "margin: 0; padding: 0; cursor: pointer;",
-            onClick: `openChatToCid("${callObj.gt}")`,
-            html: "<img height='13px' style='margin-bottom:-2px;' src='img/gt_chat.png' />"
-          }
-        }
-      }
-      else
-      {
-        return {
-          html: "&nbsp;"
-        }
-      }
-    }
-  },
-
   UTC: {
     compare: callObjSimpleComparer("age"),
     tableData: (callObj) => ({
-      style: "color: #EEE;",
+      style: `color: ${rosterColor("UTC")};`,
       html: (callObj.even ? "<font style='text-decoration: underline'>" : "") + callObj.UTC + (callObj.even ? "</font>" : "")
     })
   },
@@ -365,7 +443,7 @@ const ROSTER_COLUMNS = {
   Age: {
     compare: callObjSimpleComparer("age"),
     tableData: (callObj) => ({
-      style: "color: #EEE;",
+      style: `color: ${rosterColor("Age")};`,
       class: "timeCol",
       id: `tm${callObj.hash}`,
       html: toDHMS(timeNowSec() - callObj.age)
@@ -392,7 +470,7 @@ const ROSTER_COLUMNS = {
       return 0;
     },
     tableData: (callObj) => ({
-      style: "color: #EEE;",
+      style: `color: ${rosterColor("Spot")};`,
       class: "spotCol",
       id: `sp${callObj.hash}`,
       html: getSpotString(callObj)
@@ -405,7 +483,23 @@ const ROSTER_COLUMNS = {
       name: "POTA",
       rawAttrs: callObj.style.pota,
       title: potaColumnHover(callObj),
+      // Feed Roster: log the QSO by hand, as for a summit (roster/sotaLogDialog.js)
+      onclick: callObj.pota && sotaLogOffered(callObj) ? `openSotaLogDialog("${callObj.hash}")` : null,
       html: potaColumnRef(callObj)
+    })
+  },
+
+  // While SOTA Chasing is on: the summit from a feed spot's note, or the one a decoded activator is spotted on
+  SOTA: {
+    compare: callObjSimpleComparer("sota"),
+    tableData: (callObj) => ({
+      name: "SOTA",
+      rawAttrs: callObj.style.sota,
+      title: sotaColumnHover(callObj),
+      // Feed Roster: log the chase by hand while no logger is connected and no WSJT-X / JTDX is on its band and mode
+      // (roster/sotaLogDialog.js)
+      onclick: callObj.sota && sotaLogOffered(callObj) ? `openSotaLogDialog("${callObj.hash}")` : null,
+      html: callObj.sota ? sotaColumnRef(callObj.sota) : "&nbsp;"
     })
   },
 
@@ -413,10 +507,39 @@ const ROSTER_COLUMNS = {
     compare: (a, b) => wantedColumnComparer(a.callObj, b.callObj),
     tableData: (callObj) => ({
       class: "wantedCol",
+      style: `color: ${rosterColor("Wanted")};`,
       title: wantedColumnParts(callObj).map(entry => `• ${entry}`).join("\n"),
       html: wantedColumnParts(callObj).join(" - ", { html: true })
     })
   }
+}
+
+// DXCC column marks, whatever the Logbook choice, from everything worked: a star each side of an entity never worked
+// (ATNO), else after it a diamond if it hasn't been worked on this band and a dot if not in this (exact) mode; the
+// hover says which
+function dxccNewMarks(callObj)
+{
+  if (!(callObj.dxcc > 0)) return { before: "", after: "", title: "" };
+  const worked = GT.tracker.worked.dxcc;
+  const base = callObj.dxcc + "|";
+  if (!(base in worked))
+  {
+    const star = "<span class='dxccNew'>★</span>";
+    return { before: star + " ", after: " " + star, title: "\n" + I18N("rosterColumns.DXCC.atno") };
+  }
+  let marks = "";
+  let title = "";
+  if (callObj.band && !((base + callObj.band) in worked))
+  {
+    marks += "◆";
+    title += "\n" + I18N("rosterColumns.DXCC.newBand").replace("{0}", callObj.band);
+  }
+  if (callObj.mode && !((base + callObj.mode) in worked))
+  {
+    marks += "●";
+    title += "\n" + I18N("rosterColumns.DXCC.newMode").replace("{0}", callObj.mode);
+  }
+  return { before: "", after: marks ? ` <span class='dxccNew'>${marks}</span>` : "", title };
 }
 
 function potaColumnRef(callObj)
@@ -438,11 +561,47 @@ function potaColumnHover(callObj)
   if (callObj.pota in GT.pota.parks)
   {
     value += callObj.pota + " - " + GT.pota.parks[callObj.pota].name + "\n";
-  }
-  
+  }  if (callObj.pota && sotaLogOffered(callObj)) value += I18N("sotaLog.hint");
+
   return value;
 }
-WANTED_ORDER = ["call", "qrz", "watcher", "cont", "dxcc", "cqz", "ituz", "dxm", "state", "pota", "grid", "cnty", "wpx", "oams"];
+
+// A summit reference with dots for what it's worth to you (from Matt's SOTA work): before it, two dots for an
+// association you've chased no summit in, one for an association with one; after it, a dot for a region you've chased
+// no summit in. A reference that doesn't parse gets none
+function sotaColumnRef(ref)
+{
+  const parts = window.opener.sotaRefParts(ref);
+  const worked = GT.tracker.worked;
+  if (!parts || !worked.sotaAssoc) return ref;
+  const assocChased = worked.sotaAssoc[parts.assoc] || 0;
+  const regionChased = worked.sotaRegion[parts.region] || 0;
+  const dots = (count) => count > 0 ? `<span class='sotaMark'>${"<i></i>".repeat(count)}</span>` : "";
+  const assocDots = dots(assocChased == 0 ? 2 : assocChased == 1 ? 1 : 0);
+  const regionDots = dots(regionChased == 0 ? 1 : 0);
+  return (assocDots ? assocDots + " " : "") + ref + (regionDots ? " " + regionDots : "");
+}
+
+// Like the POTA hover: "W7O/NC-039 - Clatskanie Mountain" then "2080 ft, Points: 1" (from SOTA's summit list; the height
+// in the main window's distance units), then how many summits you've chased in its association and region
+function sotaColumnHover(callObj)
+{
+  const summit = callObj.sota && GT.sota.summits[callObj.sota];
+  if (!summit) return "";
+  let text = callObj.sota + " - " + summit.name + "\n" + window.opener.sotaHeightText(summit.alt) + ", " + I18N("rosterColumns.SOTA.points").replace("{0}", summit.points);
+  const parts = window.opener.sotaRefParts(callObj.sota);
+  const worked = GT.tracker.worked;
+  if (parts && worked.sotaAssoc)
+  {
+    text += "\n" + I18N("rosterColumns.SOTA.chased")
+      .replace("{0}", worked.sotaAssoc[parts.assoc] || 0).replace("{1}", parts.assoc)
+      .replace("{2}", worked.sotaRegion[parts.region] || 0).replace("{3}", parts.region);
+  }
+  if (sotaLogOffered(callObj)) text += "\n" + I18N("sotaLog.hint");
+  return text;
+}
+
+WANTED_ORDER = ["call", "qrz", "watcher", "cont", "dxcc", "cqz", "ituz", "dxm", "state", "pota", "sota", "grid", "cnty", "wpx"];
 WANTED_LABELS = {};
 
 function wantedColumnParts(callObj, options)
@@ -464,7 +623,7 @@ function wantedColumnParts(callObj, options)
     if (wanted == "calling") { parts.push("Calling"); }
     // else if (wanted == "caller") { parts.push("Called"); }
     else if (wanted == "hunted" && field == "qrz") { parts.push("Caller"); }
-    else if (wanted == "hunted" && field == "oams") { parts.push("OAMS User"); }
+
     else if (wanted == "hunted" && field == "watcher") { parts.push(callObj.watcherKey); }
     else if (wanted == "hunted") { parts.push(`${options.html ? "<b>" : ""}New ${WANTED_LABELS[field]}${options.html ? "<b>" : ""}`); }
     else if (wanted == "worked") { parts.push(`Worked ${WANTED_LABELS[field]}`); }

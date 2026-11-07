@@ -17,7 +17,7 @@
   <head>
     <title>Current Conditions</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="./lib/style.css" />
+    <link rel="stylesheet" href="./lib/css/style.css" />
     <style type="text/css">
       body,
       html {
@@ -41,13 +41,13 @@
     <script>
 
       function timeNowSec() {
-        return parseInt(Date.now() / 1000);
+        return Math.trunc(Date.now() / 1000);
       }
 
       const C = {};
       C.refreshTimer = null;
 
-      function showConditionsBox() {
+      function refreshConditions() {
         var now = timeNowSec() % 86400;
 
         var images = document.getElementsByTagName("img");
@@ -61,17 +61,17 @@
         {
           nodeTimers.clearTimeout(C.refreshTimer);
         }
-        C.refreshTimer = nodeTimers.setTimeout(showConditionsBox, 1800000);
+        C.refreshTimer = nodeTimers.setTimeout(refreshConditions, 1800000);
 
       }
 
       function imageLoadFailed()
       {
-        nodeTimers.setTimeout(showConditionsBox, 60000);
+        nodeTimers.setTimeout(refreshConditions, 60000);
       }
 
       function init() {
-        showConditionsBox();
+        refreshConditions();
         GT.conditionsWindowInitialized = true;
       }
 

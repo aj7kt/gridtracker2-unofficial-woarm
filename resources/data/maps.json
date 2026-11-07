@@ -1,16 +1,8 @@
 {
-  "Mapnik by OpenStreetMap (Intl)": {
-    "sourceType" : "XYZ",
-    "url": "http://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    "attributions": "<a href=\"http://openstreetmap.org/\" target=\"_blank\">OpenStreetMap</a>",
-    "minZoom": 0,
-    "maxZoom": 19,
-    "offline": false
-  },
   "Mapnik by OpenStreetMap (Deutsch)": {
     "sourceType" : "XYZ",
     "url": "http://{a-c}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png",
-    "attributions": "<a href=\"http://openstreetmap.de/\" target=\"_blank\">OpenStreetMap DE</a>",
+    "attributions": "<a href=\"http://openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap DE</a>",
     "minZoom": 0,
     "maxZoom": 18,
     "offline": false
@@ -18,7 +10,7 @@
   "Mapnik by OpenStreetMap (français)": {
     "sourceType" : "XYZ",
     "url": "http://{a-c}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-    "attributions": "<a href=\"http://openstreetmap.fr/\" target=\"_blank\">OpenStreetMap FR</a>",
+    "attributions": "<a href=\"http://openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap FR</a>",
     "minZoom": 0,
     "maxZoom": 18,
     "offline": false
@@ -81,7 +73,7 @@
   "Humanitarian by OpenStreetMap (Intl)": {
     "sourceType" : "XYZ",
     "url": "http://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-    "attributions": "<a href=\"http://openstreetmap.org/\" target=\"_blank\">OpenStreetMap</a>",
+    "attributions": "<a href=\"http://openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap</a>",
     "minZoom": 0,
     "maxZoom": 19,
     "offline": false
@@ -109,43 +101,44 @@
   },
   "Voyager by Carto (English)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+
     "maxZoom": 19,
     "offline": false
   },
   "Positron by Carto (English)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
     "maxZoom": 19,
     "offline": false
   },
   "Dark Matter by Carto (English)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
     "maxZoom": 19,
     "offline": false
   },
   "Voyager by Carto (No Labels)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
     "maxZoom": 19,
     "offline": false
   },
   "Positron by Carto (No Labels)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
     "maxZoom": 19,
     "offline": false
   },
   "Dark Matter by Carto (No Labels)": {
     "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png",
-    "attributions": "Carto",
+    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
     "maxZoom": 19,
     "offline": false
   },
@@ -238,6 +231,73 @@
     "serverType" : "mapserver",
     "attributions": "<a href=\"https://www.gebco.net/about_us/overview/\" target=\"_blank\">GEBCO</a>",
     "crossOrigin": "Anonymous",
+    "offline": false
+  },
+  "AutoNavi(st6) by BI4IRZ (Chinese)": {
+    "sourceType": "XYZ",
+    "url": "https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+    "attributions": "AutoNavi",
+    "minZoom": 3,
+    "maxZoom": 19,
+    "offline": false
+  },
+  "AutoNavi(st8) by BI4IRZ (Chinese)": {
+    "sourceType": "XYZ",
+    "url": "https://webst01.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}",
+    "attributions": "AutoNavi",
+    "minZoom": 3,
+    "maxZoom": 19,
+    "offline": false
+  },
+  "AutoNavi(rd7) by BI4IRZ (Chinese)": {
+    "sourceType": "XYZ",
+    "url": "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}",
+    "attributions": "AutoNavi",
+    "minZoom": 3,
+    "maxZoom": 19,
+    "offline": false
+  },
+  "AutoNavi(rd8) by BI4IRZ (Chinese)": {
+    "sourceType": "XYZ",
+    "url": "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+    "attributions": "AutoNavi",
+    "minZoom": 3,
+    "maxZoom": 19,
+    "offline": false
+  },
+  "Topographical by OpenTopoMap (Intl)": {
+    "sourceType" : "XYZ",
+    "url": "https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    "attributions": "<a href=\"https://opentopomap.org\" target=\"_blank\">OpenTopoMap</a>, OpenStreetMap contributors",
+    "maxZoom": 17,
+    "offline": false
+  },
+  "Satellite by USGS (No Labels)": {
+    "sourceType" : "XYZ",
+    "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}",
+    "attributions": "U.S. Geological Survey",
+    "maxZoom": 16,
+    "offline": false
+  },
+  "Topographical by USGS (English)": {
+    "sourceType" : "XYZ",
+    "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
+    "attributions": "U.S. Geological Survey",
+    "maxZoom": 16,
+    "offline": false
+  },
+  "Satellite Topo by USGS (English)": {
+    "sourceType" : "XYZ",
+    "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
+    "attributions": "U.S. Geological Survey",
+    "maxZoom": 16,
+    "offline": false
+  },
+  "Satellite Firefly by Esri (No Labels)": {
+    "sourceType" : "XYZ",
+    "url": "https://fly.maptiles.arcgis.com/arcgis/rest/services/World_Imagery_Firefly/MapServer/tile/{z}/{y}/{x}",
+    "attributions": "Esri",
+    "maxZoom": 20,
     "offline": false
   }
 }

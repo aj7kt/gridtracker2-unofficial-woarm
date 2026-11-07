@@ -23,19 +23,37 @@ const { electronApp, optimizer } = require('@electron-toolkit/utils');
 const path = require('path');
 const { join } = require('path');
 const log = require('electron-log');
-
-const singleInstanceLock = app.requestSingleInstanceLock();
 const isMac = process.platform === 'darwin';
 const disableAutoUpdate = app.commandLine.hasSwitch("disable-auto-updates");
+
+let gtName = "";
+
+if (app.commandLine.hasSwitch("gt-name")) {
+  let appInstance = app.getPath('userData');
+  gtName = slugify(app.commandLine.getSwitchValue("gt-name"));
+  if (gtName.length > 0 ) {
+    app.setPath('userData', appInstance + " - " + gtName);
+  }
+  console.log("Running from: " + app.getPath('userData') + "\r\n");
+}
+
+const singleInstanceLock = app.requestSingleInstanceLock();
 
 if (!singleInstanceLock) {
   app.quit();
 }
 
 if (app.isPackaged) {
+  if (process.platform.toLowerCase().indexOf("win") == 0 && !("ELECTRON_NO_ATTACH_CONSOLE" in process.env)) {
+    console.log("To launch GridTracker2 from command line add the following before launching:");
+    console.log("\r\nset ELECTRON_NO_ATTACH_CONSOLE=true\r\n");
+  }
+  console.log("GridTracker2 starting up!\r\n");
   // we send to the log file instead
   console.log = log.error;
+  console.error = log.error;
 }
+
 // Needed for direct accsess to Menu and MenuItem
 remoteMain.initialize();
 
@@ -111,7 +129,7 @@ const allowedWindows = {
     options: { x: 40, y: 40, width: 860, height: 652, show: true, zoom: 0 },
     static: {
       minWidth: 217,
-      minHeight: 626,
+      minHeight: 398,
       icon: join(__dirname, '../renderer/img/gt-icon.png'),
     },
   },
@@ -163,18 +181,12 @@ const allowedWindows = {
       icon: join(__dirname, '../renderer/img/conditions.png'),
     },
   },
-  gt_chat: {
-    window: null,
-    honorVisibility: true,
-    options: { x: 55, y: 55, width: 640, height: 300, show: false, zoom: 0 },
-    static: { minWidth: 450, minHeight: 140 },
-  },
   gt_roster: {
     window: null,
     honorVisibility: true,
     options: { x: 55, y: 55, width: 760, height: 400, show: false, zoom: 0 },
     static: {
-      minWidth: 390,
+      minWidth: 150,
       minHeight: 250,
       icon: join(__dirname, '../renderer/img/roster-icon.png'),
     },
@@ -197,29 +209,65 @@ if (!fs.existsSync(gtScreenshotPath)) {
 
 // We will allow updating of this by the user, copy existing into Ginternal
 let dxccInfoPath = join(gtInternalPath, 'dxcc-info.json');
+let asarInfoPath = join(asarResourcesPath, 'data/dxcc-info.json');
 if (!fs.existsSync(dxccInfoPath)) {
   fs.copyFileSync(
-    join(asarResourcesPath, 'data/dxcc-info.json'),
+    asarInfoPath,
     dxccInfoPath,
     fs.constants.COPYFILE_EXCL,
   );
+}
+else {
+  try {
+    // Update gtInternal with newer version when found
+    const asarInfo = require(asarInfoPath);
+    const gtInternalInfo = require(dxccInfoPath);
+    if ("version" in asarInfo["1"] && "version" in gtInternalInfo["1"] && parseInt(asarInfo["1"].version) > parseInt(gtInternalInfo["1"].version)) {
+      fs.copyFileSync(
+        asarInfoPath,
+        dxccInfoPath,
+      );
+    }
+  }
+  catch (e)
+  {
+    console.log("Error checking dxcc-info files");
+  }
 }
 
 const windowIdToAllowedWindows = {};
 const windowSettingsPath = join(gtInternalPath, 'windows.json');
 
 if (fs.existsSync(windowSettingsPath)) {
-  const settings = require(windowSettingsPath);
-  for (let windowName in settings) {
-    allowedWindows[windowName].options = {
-      ...allowedWindows[windowName].options,
-      ...settings[windowName],
-    };
+  try {
+    const settings = require(windowSettingsPath);
+    for (let windowName in settings) {
+      if (windowName in allowedWindows) {
+        allowedWindows[windowName].options = {
+          ...allowedWindows[windowName].options,
+          ...settings[windowName],
+        };
+      }
+    }
+  }
+  catch (e)
+  {
+    log.error(e);
   }
 }
 
 let mainWindowClosing = false;
-let updateAvailable = null;
+
+let mapKeys = {};
+
+try {
+  const mapKeysPath = path.join(__dirname, 'map_keys.json');
+  if (fs.existsSync(mapKeysPath)) {
+    mapKeys = JSON.parse(fs.readFileSync(mapKeysPath, 'utf8'));
+  }
+} catch (error) {
+  console.error('Failed to load map keys', error);
+}
 
 ipcMain.on('getResourcesPath', (event) => {
   event.returnValue = asarResourcesPath;
@@ -229,13 +277,48 @@ ipcMain.on('getPath', (event, what) => {
   event.returnValue = app.getPath(what);
 });
 
+ipcMain.on('getAppName', (event) => {
+  event.returnValue = gtName;
+});
+
 ipcMain.on('appVersion', (event) => {
   event.returnValue = app.getVersion();
 });
 
-ipcMain.on('updateAvailable', (event) => {
-  event.returnValue = updateAvailable;
+// Saves text to a file the user picks (the SOTA chaser log export): { title, defaultPath, filters, content } ->
+// the saved path, null if cancelled, or { error }
+ipcMain.on('saveTextFile', (event, opts) => {
+  let result = null;
+  try {
+    const o = opts || {};
+    const parent = BrowserWindow.fromWebContents(event.sender);
+    const savePath = dialog.showSaveDialogSync(parent, {
+      title: o.title || "Save File",
+      defaultPath: o.defaultPath || "export.txt",
+      filters: o.filters || [{ name: "All Files", extensions: ["*"] }]
+    });
+    if (savePath) {
+      fs.writeFileSync(savePath, String(o.content || ""));
+      result = savePath;
+    }
+  } catch (e) {
+    result = { error: e.message };
+  }
+  event.returnValue = result;
 });
+
+ipcMain.on('mapKeys', (event) => {
+  event.returnValue = mapKeys;
+});
+
+ipcMain.on('updateAvailable', (event) => {
+    checkForUpdates();
+});
+
+ipcMain.on('downloadUpdate', (event) => {
+    downloadUpdate();
+});
+
 
 ipcMain.on('showWin', (event, what) => {
   if (allowedWindows[what]?.window) {
@@ -309,7 +392,7 @@ ipcMain.on('spawnScript', (event, scriptPath) => {
   try {
     const cp = require("child_process");
     let dirPath = path.dirname(scriptPath);
-    let child = cp.spawn(scriptPath, [], {
+    let child = cp.spawn(`"${scriptPath}"`, [], {
       detached: true,
       cwd: dirPath,
       shell: true,
@@ -321,27 +404,60 @@ ipcMain.on('spawnScript', (event, scriptPath) => {
   }
 });
 
-ipcMain.on('restartGridTracker2', (event, resetWindowPositions = false) => {
-  if (resetWindowPositions == true) {
-    if (fs.existsSync(windowSettingsPath))
-    {
-      fs.unlinkSync(windowSettingsPath);
+let isShuttingDown = false; 
+
+ipcMain.on('installAndRestart', (event, what) => {
+    if (isShuttingDown) {
+        event.returnValue = true;
+        return; // Ignore duplicate clicks
     }
-  }
-  else
-  {
-    saveWindowPositions();
-  }
-  app.relaunch();
-  app.exit();
+    isShuttingDown = true;
+
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.autoRunAppAfterInstall = true;
+    
+    saveWindowPositions(); 
+    
+    event.returnValue = true;
+    
+    timers.setTimeout(() => {
+        autoUpdater.quitAndInstall(true, true);
+    }, 100);
+});
+
+ipcMain.on('restartGridTracker2', (event, resetWindowPositions = false) => {
+    if (isShuttingDown) {
+        event.returnValue = true;
+        return;
+    }
+    isShuttingDown = true;
+
+    if (resetWindowPositions === true) {
+        if (fs.existsSync(windowSettingsPath)) {
+            fs.unlinkSync(windowSettingsPath);
+        }
+    } else {
+        saveWindowPositions();
+    }
+  
+    event.returnValue = true; 
+  
+    timers.setTimeout(() => {
+        app.relaunch();
+        app.exit();
+    }, 100);
 });
 
 ipcMain.on('log', (event, value) => {
   log.error(value);
 });
 
+let mainWindow = null;
+// frameName of the window being opened by setWindowOpenHandler, consumed in browser-window-created
+let pendingWindowFrameName = null;
+
 function createMainWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     //...allowedWindows['GridTracker2'].options,
     ...allowedWindows['GridTracker2'].static,
     tabbingIdentifier: 'GridTracker2',
@@ -350,6 +466,7 @@ function createMainWindow() {
     backgroundColor: 'black',
     autoHideMenuBar: true,
     enableLargerThanScreen: true,
+    acceptFirstMouse: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       backgroundThrottling: false,
@@ -382,6 +499,7 @@ function createMainWindow() {
         autoHideMenuBar: true,
         backgroundColor: 'black',
         enableLargerThanScreen: true,
+        acceptFirstMouse: true,
         show: false,
         // for macOS
         tabbingIdentifier: details.frameName,
@@ -398,6 +516,7 @@ function createMainWindow() {
         },
       };
 
+      pendingWindowFrameName = details.frameName;
       return { action: 'allow', overrideBrowserWindowOptions: options };
     } else {
       shell.openExternal(details.url);
@@ -408,7 +527,31 @@ function createMainWindow() {
   mainWindow.loadFile(join(__dirname, '../renderer/GridTracker2.html'));
 }
 
+let autoUpdateInitialized = false;
+let autoUpdateTimer = null;
+
 function checkForUpdates() {
+  if (!autoUpdateInitialized) {
+      if (process.env.DEBUG_AUTO_UPDATING === 'true') {
+      const log = require('electron-log');
+
+      log.transports.file.level = 'debug';
+
+      autoUpdater.logger = log;
+      autoUpdater.forceDevUpdateConfig = true;
+    }
+
+    if (disableAutoUpdate == true)
+    {
+      autoUpdater.autoDownload = false;
+    }
+
+    autoUpdater.on('update-available', notifyOnUpdate);
+    autoUpdater.on('update-downloaded', updateDownloaded);
+
+    autoUpdateInitialized = true;
+  }
+
   try {
     if (disableAutoUpdate == true) {
       autoUpdater.checkForUpdates();
@@ -421,8 +564,27 @@ function checkForUpdates() {
     log.error("Failed to update check");
     log.error(e.message);
   }
-  // Check every 12 hours
-  timers.setTimeout(checkForUpdates, 43200000);
+
+  if (autoUpdateTimer) timers.clearTimeout(autoUpdateTimer);
+  autoUpdateTimer = timers.setTimeout(checkForUpdates, 86400000);
+}
+
+function downloadUpdate() {
+  autoUpdater.autoDownload = true;
+  autoUpdater.checkForUpdatesAndNotify();
+}
+
+function notifyOnUpdate(info) {
+  if (mainWindow) {
+    info.autoDownload = autoUpdater.autoDownload;
+    mainWindow.webContents.send("versionInfo", info);
+  }
+}
+
+function updateDownloaded(info) {
+  if (mainWindow) {
+    mainWindow.webContents.send("updateDownloaded", info);
+  }
 }
 
 // This method will be called when Electron has finished
@@ -438,24 +600,12 @@ app.whenReady().then(() => {
   };
 
 
-  if (process.env.DEBUG_AUTO_UPDATING === 'true') {
-    const log = require('electron-log');
-
-    log.transports.file.level = 'debug';
-
-    autoUpdater.logger = log;
-    autoUpdater.forceDevUpdateConfig = true;
-  }
-
-  autoUpdater.on('update-available', (info) => {
-    updateAvailable = info;
-  });
-
-  checkForUpdates();
-
   app.on('browser-window-created', (_, window) => {
-    // window.title works on Windows, window.tabbingIdentifier works on macOS
-    const title = isMac ? window.tabbingIdentifier : window.title;
+    // window.title works on Windows, window.tabbingIdentifier works on macOS,
+    // except frameless windows (band activity) which get no tabbingIdentifier and an empty title,
+    // so fall back to the frameName captured in setWindowOpenHandler
+    const title = (isMac ? window.tabbingIdentifier : window.title) || pendingWindowFrameName;
+    pendingWindowFrameName = null;
 
     if (title in allowedWindows) {
       // save the window handle (not the dom handle);
@@ -565,7 +715,6 @@ app.whenReady().then(() => {
         return { action: 'deny' };
       });
     } else if (window.id !== 1) {
-      // we need to fix this for Mac, it's the band activity window which doesn't have a tabbing title
       // console.log(`WARNING: id: "${window.id}"  title: "${title}" not found in allowedWindows`);
     }
 
@@ -643,6 +792,13 @@ function padNumber(number, size) {
   }
   return s;
 };
+
+function slugify(string) {
+  return string
+    .trim()
+    .replace(/ +/g, '-')
+    .replace(/[^A-Za-z0-9\-_]/g, '');
+}
 
 process.on('uncaughtException', function (error) {
   log.error(error);
