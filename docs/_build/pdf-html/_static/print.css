@@ -52,7 +52,6 @@ img { max-width: 100%; height: auto; break-inside: avoid; }
 p > img:only-child, figure img { display: block; margin: 6pt auto; }
 img.gt-icon { display: inline; vertical-align: middle; margin: 0 2pt; }
 p > img.gt-float-right:only-child, img.gt-float-right { display: block; float: right; margin: 0 0 8pt 14pt; }
-img.gt-center { display: block; margin: 12pt auto; }
 h2 { clear: both; }
 
 /* Tables */

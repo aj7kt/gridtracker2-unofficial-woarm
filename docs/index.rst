@@ -75,3 +75,9 @@ GridTracker2 User Guide
    Appendices/Appendix-A-Installing-GridTracker
    Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker
    Appendices/Appendix-C-Hotkeys
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Happy Holidays
+
+   Happy-Holidays
