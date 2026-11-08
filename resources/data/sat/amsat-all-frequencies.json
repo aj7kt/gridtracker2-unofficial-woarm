@@ -1386,6 +1386,28 @@
     "satnogs_id":"REOO-2119-3738-4964-1579"
   },
   {
+    "name":"AO-129",
+    "norad_id":"A1098",
+    "uplink":null,
+    "downlink":"435.900",
+    "beacon":"435.900",
+    "mode":"9k6 GMSK CW",
+    "callsign":"DP0PQA",
+    "status":"active",
+    "satnogs_id":null
+  },
+  {
+    "name":"AO-130",
+    "norad_id":"A1095",
+    "uplink":null,
+    "downlink":"145.920",
+    "beacon":"145.920",
+    "mode":"9k6 GMSK CW",
+    "callsign":"DP0PQB",
+    "status":"active",
+    "satnogs_id":null
+  },
+  {
     "name":"APEX-ARIES-1",
     "norad_id":"59129",
     "uplink":null,
@@ -2218,7 +2240,7 @@
     "beacon":null,
     "mode":null,
     "callsign":null,
-    "status":"to be launched",
+    "status":"unknown",
     "satnogs_id":null
   },
   {
@@ -10484,7 +10506,7 @@
   },
   {
     "name":"GOMX-5",
-    "norad_id":null,
+    "norad_id":"A0932",
     "uplink":null,
     "downlink":"2247.320\/2250.240",
     "beacon":null,
@@ -10836,7 +10858,7 @@
   },
   {
     "name":"GYEONGGISat-2A",
-    "norad_id":null,
+    "norad_id":"A0950",
     "uplink":null,
     "downlink":null,
     "beacon":null,
@@ -12988,7 +13010,7 @@
     "mode":null,
     "callsign":null,
     "status":"unknown",
-    "satnogs_id":null
+    "satnogs_id":"YDAJ-8386-5549-4313-5754"
   },
   {
     "name":"ICEYE-X78",
@@ -15792,7 +15814,7 @@
     "beacon":null,
     "mode":null,
     "callsign":null,
-    "status":"to be launched",
+    "status":"unknown",
     "satnogs_id":null
   },
   {
@@ -17740,6 +17762,17 @@
     "mode":null,
     "callsign":null,
     "status":"unknown",
+    "satnogs_id":null
+  },
+  {
+    "name":"MOMIJI",
+    "norad_id":null,
+    "uplink":"145.825",
+    "downlink":"437.375",
+    "beacon":null,
+    "mode":"APRS 4k8_GMSK",
+    "callsign":null,
+    "status":"to be launched",
     "satnogs_id":null
   },
   {
@@ -19884,7 +19917,7 @@
     "beacon":null,
     "mode":"38k4 GFSK",
     "callsign":null,
-    "status":"unknown",
+    "status":"active",
     "satnogs_id":null
   },
   {
@@ -21472,7 +21505,7 @@
     "satnogs_id":null
   },
   {
-    "name":"Proves-Maia",
+    "name":"PROVES-Maia",
     "norad_id":null,
     "uplink":null,
     "downlink":"437.400\/2422.000",
@@ -21483,7 +21516,7 @@
     "satnogs_id":null
   },
   {
-    "name":"Proves-Taygeta",
+    "name":"PROVES-Taygeta",
     "norad_id":null,
     "uplink":null,
     "downlink":"437.400\/2422.000",
@@ -22446,7 +22479,7 @@
     "downlink":"400.500",
     "beacon":null,
     "mode":"9k6_GFSK",
-    "callsign":"SP5QNA",
+    "callsign":"SP5Q",
     "status":"active",
     "satnogs_id":null
   },
@@ -25802,7 +25835,7 @@
     "beacon":null,
     "mode":null,
     "callsign":null,
-    "status":"to be launched",
+    "status":"unknown",
     "satnogs_id":null
   },
   {
@@ -27177,7 +27210,7 @@
     "beacon":null,
     "mode":null,
     "callsign":null,
-    "status":"to be launched",
+    "status":"unknown",
     "satnogs_id":null
   },
   {
