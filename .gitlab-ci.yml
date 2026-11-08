@@ -5,6 +5,11 @@ variables:
   DL_SERVER_PASS: ""
   PACKAGE_REGISTRY_URL: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${APPNAME}/${VERSION}'
   PACKAGE_REGISTRY_URL_YML: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${APPNAME}'
+  # Electron and electron-builder download Electron and their tools from GitHub, which times out from the runners at times.
+  # Kept in .cache/ (cached even when a job fails), each download only has to get through once
+  ELECTRON_CACHE: '$CI_PROJECT_DIR/.cache/electron'
+  electron_config_cache: '$CI_PROJECT_DIR/.cache/electron'
+  ELECTRON_BUILDER_CACHE: '$CI_PROJECT_DIR/.cache/electron-builder'
 
   # nothing in this file will be allowed to run automatically except for:
   # 1. merge requests // MR should validate linting at the least
@@ -29,6 +34,9 @@ stages:
 # If it fails, the builds go on and package the committed resources/data/help-en.pdf instead.
 docs:pdf:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   tags:
     - win
   rules:
@@ -43,6 +51,7 @@ docs:pdf:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - npm install
     - python -m pip install -r docs/requirements.txt
@@ -51,6 +60,9 @@ docs:pdf:
 
 win:build:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -69,6 +81,7 @@ win:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - npm install
   script:
@@ -108,6 +121,9 @@ win:build:
 
 win7:build:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -126,6 +142,7 @@ win7:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - copy electron-builder.win7.yml electron-builder.yml
     - copy dev-app-update.win7.yml dev-app-update.yml
@@ -171,6 +188,9 @@ mac:build:
   tags:
     - saas-macos-medium-m1
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -190,6 +210,7 @@ mac:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - npm install
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
@@ -208,6 +229,9 @@ mac:build:
 
 lin:build:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -225,6 +249,7 @@ lin:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - npm install
     - apt update -y && apt install flatpak flatpak-builder -y
@@ -241,6 +266,9 @@ lin:build:
 
 arm64:build:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -260,6 +288,7 @@ arm64:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - dnf install gcc elfutils flatpak flatpak-builder make pacman ruby-devel rubygems rpm-build npm -y
     - npm install
@@ -285,6 +314,9 @@ arm64:build:
 
 arm32:build:
   stage: build
+  retry:
+    max: 2
+    when: script_failure
   needs:
     - job: docs:pdf
       artifacts: true
@@ -304,6 +336,7 @@ arm32:build:
     paths:
       - .cache/
       - node_modules/
+    when: always
   before_script:
     - dnf install gcc elfutils flatpak flatpak-builder make pacman ruby-devel rubygems rpm-build npm -y
     - npm install
