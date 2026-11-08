@@ -29,43 +29,11 @@ stages:
   - release
   - publish
 
-# User Guide PDF (docs/pdf/build.js), shipped in every build as resources/data/help-en.pdf.
-# Runs on the Windows runner (needs Python 3 on PATH) so it prints with the same fonts as a local build.
-# If it fails, the builds go on and package the committed resources/data/help-en.pdf instead.
-docs:pdf:
-  stage: build
-  retry:
-    max: 2
-    when: script_failure
-  tags:
-    - win
-  rules:
-    - if: $CI_COMMIT_TAG =~ '/(v|test_|win_|mac_|lin_|arm_).*/'
-  allow_failure: true
-  artifacts:
-    name: '$CI_COMMIT_REF_SLUG-help'
-    paths:
-      - resources/data/help-en.pdf
-    when: on_success
-  cache:
-    paths:
-      - .cache/
-      - node_modules/
-    when: always
-  before_script:
-    - npm install
-    - python -m pip install -r docs/requirements.txt
-  script:
-    - node docs/pdf/build.js resources/data/help-en.pdf
-
 win:build:
   stage: build
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   tags:
     - win
   rules:
@@ -124,9 +92,6 @@ win7:build:
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   tags:
     - win
   rules:
@@ -191,9 +156,6 @@ mac:build:
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   variables:
     CSC_LINK: .secure_files/mac-signing-certificate.p12
   image: macos-15-xcode-16
@@ -232,9 +194,6 @@ lin:build:
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   image: electronuserland/builder
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_).*/'
@@ -269,9 +228,6 @@ arm64:build:
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   tags:
    - saas-linux-medium-arm64
   image: arm64v8/fedora:40
@@ -317,9 +273,6 @@ arm32:build:
   retry:
     max: 2
     when: script_failure
-  needs:
-    - job: docs:pdf
-      artifacts: true
   tags:
    - saas-linux-medium-arm64
   image: arm64v8/fedora:40
