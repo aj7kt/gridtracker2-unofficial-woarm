@@ -9,6 +9,7 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!tools{,/**/*}'
   - '!docs{,/**/*}'
+  - '!.cache{,/**/*}'
 asar: true
 afterPack: "./electron-builder-afterpack.js"
 win:
