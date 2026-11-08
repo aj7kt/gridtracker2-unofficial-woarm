@@ -106,7 +106,7 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/projectionButton.png){width=32px} | Projection | Switches between the flat (Mercator) map and the azimuthal equidistant (AEQD) map centered on your grid. Each keeps its own view. | Ctrl+W |
 | ![](../img/buttons/callRosterButton.png){width=32px} | Call Roster | Opens the [Call Roster](../Making-GridTracker-Work-For-You/Using-Call-Roster.md) window. | Ctrl+F |
 | ![](../img/buttons/pushPinButton.png){width=32px} | Push-Pin Mode | Switches between colored grid squares and push pins. | Ctrl+P |
-| ![](../img/buttons/gridModeDiv.png){width=32px} | Maidenhead Width | In push-pin mode only: places pins by 4-character (MH4) or 6-character (MH6) grid. | |
+| ![](../img/buttons/gridModeDiv.png){width=32px} | Maidenhead Width | In push-pin mode only: MH6 places pins on the 6-character sub-square when a station sent one (otherwise on its 4-character square), MH4 places every pin on its 4-character square. | |
 | ![](../img/buttons/statsDiv.png){width=32px} | Statistics | Opens the [Statistics](../Making-GridTracker-Work-For-You/GridTracker-Statistics.md) window with your logbook and award progress. | Ctrl+I |
 | ![](../img/buttons/Grayline.png){width=32px} | Grayline | Shades the night side of the Earth. | Ctrl+N |
 | ![](../img/buttons/lunaButton.png){width=32px} | Moon | Shows the Moon's position. Hover over it for its azimuth and elevation, useful for EME. | Ctrl+D |

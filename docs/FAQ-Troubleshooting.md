@@ -5,7 +5,6 @@
 You have almost certainly limited what is shown:
 
 * Check the [Map View Filters](GridTracker-Overview/Control-Panel.md#map-view-filters). To see everything, set Band, Mode and Prop to **Mixed**, Data to **Logbook**, and Award to **None**.
-* In push-pin mode, check the **Maidenhead Width** button. With 6-character grids (MH6), stations that only sent a 4-character grid can't be placed. Switch back to MH4.
 * Check [Settings → Logbook](GridTracker-Overview/Settings-Sub-Menus.md#logbook-tab): are **Working Callsign(s)**, **Working Grid(s)** or **Working Date** enabled? If they leave QSOs out, the side panel shows **Log Entries Filtered**.
 * Check [Settings → Logging](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab): are all the logs you want ticked **Load At Startup**, including your WSJT-X logs under **App Log(s)**?
 

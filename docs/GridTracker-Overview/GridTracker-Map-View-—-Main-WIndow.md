@@ -23,7 +23,7 @@ Which grids are colored depends on the [Map View Filters](Control-Panel.md#map-v
 With **Split QSL Grids** on (Settings → Map), a grid that is both in your logbook and live is split diagonally: one half shows your logbook status, the other the live traffic. Live grids fade out after they were last heard, at the speed set by **Live Grid Decay**.
 
 ```{note}
-Switching to 6-character grids (MH6) in push-pin mode places stations by their exact sub-square. Stations that only sent a 4-character grid then can't be placed, so they disappear from the map. Switch back to MH4 to see them again.
+In push-pin mode, the **Maidenhead Width** button chooses how precisely pins are placed. With MH6, a station is pinned on its 6-character sub-square when its grid has 6 characters, and on its 4-character square when that's all it sent. With MH4, every station is pinned on its 4-character square, including those that sent 6 characters. No station is hidden in either mode.
 ```
 
 ### Grid details
