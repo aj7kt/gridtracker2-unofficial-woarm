@@ -23,6 +23,8 @@ Click the title "GridTracker2" at the top to hide the panel and give the whole w
 
 When more than one WSJT-X, JTDX, AC Log or Log4OM is sending to GridTracker2, a selector appears under the operating information. The ◀ and ▶ arrows step through them, and the panel and map follow the one you choose. Each WSJT-X instance appears under its name (WSJT-X started with `--rig-name=HF` shows as "HF").
 
+GridTracker2 remembers which one you were watching when you closed it. At the next start it shows the first one it hears, then switches back to the remembered one as soon as that one starts sending, within 30 seconds of the map appearing. That way an instance that starts first, such as the Multi-Mode Decoder's, doesn't take over the view. If you pick one with the arrows before then, your choice stays.
+
 ## Status Bar
 
 ![The status bar](../img/GT2_Panel_Status.png){width=260px}

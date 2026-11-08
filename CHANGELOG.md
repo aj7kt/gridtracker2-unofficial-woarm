@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261109.0]
+## [v2.261109.1]
 
 ### MD Markup Format
 #### Map / UI
@@ -134,6 +134,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Settings, Audio: Device is now Output Device
 - Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card
+- At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice
 
 ### HTML List
 
@@ -337,5 +338,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 <ul>
   <li>Settings, Audio: Device is now Output Device</li>
   <li>Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card</li>
+  <li>At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice</li>
 </ul>
 ```

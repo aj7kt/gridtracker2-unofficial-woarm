@@ -733,6 +733,12 @@ GT.instances = {};
 GT.instanceCount = 0;
 GT.activeInstance = "";
 GT.activeIndex = 0;
+// The instance shown at the last exit (settings.app.expectedInstance) is shown again if it comes back within EXPECTED_INSTANCE_MS of the
+// map's start and none was picked by hand meanwhile, though another (the Multi-Mode Decoder's MMD) was heard first: until (ms) is set
+// by initMap, 0 once it is over; picked by setRig; seen once the expected instance has been heard this session
+GT.expectedInstanceUntil = null;
+GT.instancePicked = false;
+GT.expectedInstanceSeen = false;
 
 GT.adifBroadcastServer = null;
 GT.adifBroadcastSocketReady = false;
@@ -1008,6 +1014,9 @@ function changeOffline()
 function saveAndCloseApp(shouldRestart = false)
 {
   GT.closing = true;
+  // The instance shown now, for the next start: not one shown only because the expected one never came back and none was picked
+  const expected = GT.settings.app.expectedInstance;
+  if (GT.activeInstance && (!expected || GT.instancePicked || GT.expectedInstanceSeen)) GT.settings.app.expectedInstance = GT.activeInstance;
   saveAllSettings();
   saveReceptionReports();
 

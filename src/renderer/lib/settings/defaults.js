@@ -217,6 +217,8 @@ const def_settings = {
     myRawGrid: "",
     // Settings -> General -> Station Callsign: used while no connected instance gives a callsign (applyStationCallsign)
     stationCallsign: "",
+    // The instance the map showed at the last exit, shown again when it comes back soon after the start (handleInstanceStatus)
+    expectedInstance: "",
     oamsBandActivity: true,
     oamsBandActivityNeighbors: false,
     pathWidthWeight: 1.0,

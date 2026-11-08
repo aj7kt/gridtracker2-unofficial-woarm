@@ -62,6 +62,14 @@ function handleInstanceStatus(newMessage)
     GT.activeInstance = newMessage.instance;
   }
 
+  // The instance shown at the last exit, back soon after the start with another shown meanwhile (none picked by hand): shown again
+  if (newMessage.instance == GT.settings.app.expectedInstance)
+  {
+    GT.expectedInstanceSeen = true;
+    if (GT.activeInstance != newMessage.instance && !GT.instancePicked && Date.now() <= GT.expectedInstanceUntil) GT.activeInstance = newMessage.instance;
+    GT.expectedInstanceUntil = 0;
+  }
+
   if (Object.keys(GT.instances).length > 1)
   {
     rigWrap.style.display = "";
@@ -461,6 +469,9 @@ function updateLastMsgTimeDiv(id)
   GT.updateLastMsgTimer = null;
 }
 
+// How long after the map's start the instance shown at the last exit may still take the view when it comes back (handleInstanceStatus)
+const EXPECTED_INSTANCE_MS = 30000;
+
 function rigChange(up)
 {
   if (GT.activeInstance == "") return;
@@ -488,8 +499,10 @@ function rigChange(up)
   setRig(indexInstances[targetIndex]);
 }
 
+// An instance picked by hand (◀ ▶, or a roster or feed spot worked with Switch View): the expected instance no longer takes the view
 function setRig(instanceId)
 {
+  GT.instancePicked = true;
   if (GT.instances[instanceId].valid)
   {
     if (GT.lastMapView != null)

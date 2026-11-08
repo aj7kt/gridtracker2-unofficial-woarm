@@ -175,7 +175,11 @@ function updateGTFlagViews()
     GT.rtsnCallsigns = {};
     clearFeedCallsigns();
 
-    conditionsButton.style.background = "";
+    // Its icon again, sized and growing as the other icons (the Kp's size, background and storm animation dropped; shown or hidden as it was)
+    const display = conditionsButton.style.display;
+    conditionsButton.style.cssText = "";
+    conditionsButton.style.display = display;
+    conditionsButton.classList.remove("kpShown");
     conditionsButton.innerHTML = "<img src=\"img/conditions.png\" class=\"buttonImg\" />";
 
   }

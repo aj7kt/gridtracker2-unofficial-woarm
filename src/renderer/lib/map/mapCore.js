@@ -287,6 +287,9 @@ function initMap()
     GT.mapEventsBound = true;
   }
 
+  // The expected instance's time to come back starts with the map, once (handleInstanceStatus)
+  if (GT.expectedInstanceUntil === null) GT.expectedInstanceUntil = Date.now() + EXPECTED_INSTANCE_MS;
+
   renderMap();
 }
 

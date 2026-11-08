@@ -518,22 +518,23 @@ html, body {
 }
 
 /* The Kp button is text, not an icon, and sized 32px by ui.js (inline): it grows as much, at the icons' pace (its size and its text
-   eased with the margin, the text scaled from the middle: zoom would jump) */
-#buttonsDiv #conditionsButton {
+   eased with the margin, the text scaled from the middle: zoom would jump). Only while it shows the Kp (kpShown): with its icon it
+   grows as the other icons do */
+#buttonsDiv #conditionsButton.kpShown {
   transition: margin 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
   place-items: center;
 }
 
-#buttonsDiv #conditionsButton > div {
+#buttonsDiv #conditionsButton.kpShown > div {
   transition: transform 0.12s ease-out;
 }
 
-#buttonsDiv #conditionsButton:hover {
+#buttonsDiv #conditionsButton.kpShown:hover {
   width: 48px !important;
   height: 48px !important;
 }
 
-#buttonsDiv #conditionsButton:hover > div {
+#buttonsDiv #conditionsButton.kpShown:hover > div {
   transform: scale(1.5);
 }
 

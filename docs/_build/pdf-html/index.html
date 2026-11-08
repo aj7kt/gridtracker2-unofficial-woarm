@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=38087347"></script>
+    <script src="_static/documentation_options.js?v=284d4b89"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261109.0</p>
+<p class="gt-cover-version">Version 2.261109.1</p>
 <p class="gt-cover-date">November 8, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -156,7 +156,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261109.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261109.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -599,6 +599,7 @@
 <h4>Several radios<a class="headerlink" href="#several-radios" title="Link to this heading">¶</a></h4>
 <p><a class="reference internal" href="_images/GT2_Panel_Rig.png"><img alt="The radio selector" src="_images/GT2_Panel_Rig.png" style="width: 260px;" /></a></p>
 <p>When more than one WSJT-X, JTDX, AC Log or Log4OM is sending to GridTracker2, a selector appears under the operating information. The ◀ and ▶ arrows step through them, and the panel and map follow the one you choose. Each WSJT-X instance appears under its name (WSJT-X started with <code class="docutils literal notranslate"><span class="pre">--rig-name=HF</span></code> shows as “HF”).</p>
+<p>GridTracker2 remembers which one you were watching when you closed it. At the next start it shows the first one it hears, then switches back to the remembered one as soon as that one starts sending, within 30 seconds of the map appearing. That way an instance that starts first, such as the Multi-Mode Decoder’s, doesn’t take over the view. If you pick one with the arrows before then, your choice stays.</p>
 </section>
 </section>
 <section id="status-bar">

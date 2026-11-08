@@ -403,6 +403,8 @@ function handleKpIndexJSON(json)
     let trend = (preK == curK ? "" : preK < curK ? "▲" : "▼");
 
     conditionsButton.style = geoStorm + "height:32px;width:32px;vertical-align:bottom;background:radial-gradient(" + GT.KColors[K] + ", #000)";
+    // It grows as text, not as an icon (style.css)
+    conditionsButton.classList.add("kpShown");
     conditionsButton.innerHTML = "<div style='display:block'><font style='text-shadow:1px 1px 2px #000;color: #0FF;'>Kp</font><br><font style='font-weight:bold;font-size:16px;text-shadow:1px 1px 1px #000;color: #FFF;'>" + K + "<font style='font-weight:normal;font-size:10px'>" + trend + "</font></font><div>";
   }
 }
