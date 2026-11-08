@@ -708,7 +708,7 @@
 	"gt.button.stats.hover": "Statistik anzeigen",
 	"gt.button.grayline.hover": "Graulinie umschalten",
 	"gt.button.moon.hover": "Mond umschalten",
-	"gt.button.help.hover": "Tastenkürzel-Liste umschalten",
+	"gt.button.help.hover": "Benutzerhandbuch öffnen",
 	"gt.button.mute.hover": "Audio-Stummschaltung umschalten",
 	"gt.button.adifLoad.hover": "ADIF-Log laden",
 	"gt.button.adifReload.hover": "Lokale ADIF-Dateien neu laden",
@@ -1732,5 +1732,6 @@
 	"cwViewer.picture.rotateRight.label": "90° Rechts",
 	"cwViewer.picture.rotateLeft.label": "90° Links",
 	"cwViewer.picture.rotateHalf.label": "180°",
-	"cwViewer.picture.rotateNone.label": "Wie Empfangen"
+	"cwViewer.picture.rotateNone.label": "Wie Empfangen",
+	"gt.userGuide.search.hover": "Benutzerhandbuch durchsuchen"
 }

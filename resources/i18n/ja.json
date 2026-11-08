@@ -707,7 +707,7 @@
 	"gt.button.stats.hover": "統計を表示",
 	"gt.button.grayline.hover": "グレイラインを切り替え",
 	"gt.button.moon.hover": "月を切り替え",
-	"gt.button.help.hover": "ホットキー一覧を切り替え",
+	"gt.button.help.hover": "ユーザーガイドを開く",
 	"gt.button.mute.hover": "音声ミュートを切り替え",
 	"gt.button.adifLoad.hover": "ADIF ログを読み込む",
 	"gt.button.adifReload.hover": "ローカルの ADIF ファイルを再読み込み",
@@ -1731,5 +1731,6 @@
 	"cwViewer.picture.rotateRight.label": "右に90°",
 	"cwViewer.picture.rotateLeft.label": "左に90°",
 	"cwViewer.picture.rotateHalf.label": "180°",
-	"cwViewer.picture.rotateNone.label": "受信したまま"
+	"cwViewer.picture.rotateNone.label": "受信したまま",
+	"gt.userGuide.search.hover": "ユーザーガイドを検索"
 }

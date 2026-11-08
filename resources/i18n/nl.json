@@ -707,7 +707,7 @@
   "gt.button.stats.hover": "Statistieken tonen",
   "gt.button.grayline.hover": "Grijze lijn schakelen",
   "gt.button.moon.hover": "Maan schakelen",
-  "gt.button.help.hover": "Sneltoetsenlijst schakelen",
+  "gt.button.help.hover": "Gebruikershandleiding openen",
   "gt.button.mute.hover": "Geluid dempen schakelen",
   "gt.button.adifLoad.hover": "ADIF-log laden",
   "gt.button.adifReload.hover": "Lokale ADIF-bestanden opnieuw laden",
@@ -1731,5 +1731,6 @@
   "cwViewer.picture.rotateRight.label": "90° rechtsom",
   "cwViewer.picture.rotateLeft.label": "90° linksom",
   "cwViewer.picture.rotateHalf.label": "180°",
-  "cwViewer.picture.rotateNone.label": "Zoals ontvangen"
+  "cwViewer.picture.rotateNone.label": "Zoals ontvangen",
+  "gt.userGuide.search.hover": "Zoeken in de gebruikershandleiding"
 }

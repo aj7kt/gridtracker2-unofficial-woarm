@@ -268,6 +268,9 @@ GT.baWindowHandle = null;
 GT.baWindowInitialized = false;
 GT.alertWindowHandle = null;
 GT.alertWindowInitialized = false;
+GT.userGuideWindowHandle = null;
+GT.userGuideWindowInitialized = false;
+GT.userGuideShowOnLoad = false;
 
 GT.callRoster = {};
 GT.rosterUpdateTimer = null;

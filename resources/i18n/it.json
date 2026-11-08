@@ -707,7 +707,7 @@
 	"gt.button.stats.hover": "Mostra statistiche",
 	"gt.button.grayline.hover": "Alterna linea grigia",
 	"gt.button.moon.hover": "Alterna Luna",
-	"gt.button.help.hover": "Alterna elenco tasti rapidi",
+	"gt.button.help.hover": "Apri la guida utente",
 	"gt.button.mute.hover": "Alterna silenziamento audio",
 	"gt.button.adifLoad.hover": "Carica log ADIF",
 	"gt.button.adifReload.hover": "Ricarica file ADIF locali",
@@ -1731,5 +1731,6 @@
 	"cwViewer.picture.rotateRight.label": "90° a destra",
 	"cwViewer.picture.rotateLeft.label": "90° a sinistra",
 	"cwViewer.picture.rotateHalf.label": "180°",
-	"cwViewer.picture.rotateNone.label": "Come ricevuta"
+	"cwViewer.picture.rotateNone.label": "Come ricevuta",
+	"gt.userGuide.search.hover": "Cerca nella guida utente"
 }

@@ -708,7 +708,7 @@
   "gt.button.stats.hover": "显示统计",
   "gt.button.grayline.hover": "切换晨昏线",
   "gt.button.moon.hover": "切换月亮",
-  "gt.button.help.hover": "切换快捷键列表",
+  "gt.button.help.hover": "打开用户指南",
   "gt.button.mute.hover": "切换静音",
   "gt.button.adifLoad.hover": "加载 ADIF 日志",
   "gt.button.adifReload.hover": "重新加载本地 ADIF 文件",
@@ -1732,5 +1732,6 @@
   "cwViewer.picture.rotateRight.label": "向右 90°",
   "cwViewer.picture.rotateLeft.label": "向左 90°",
   "cwViewer.picture.rotateHalf.label": "180°",
-  "cwViewer.picture.rotateNone.label": "按接收原样"
+  "cwViewer.picture.rotateNone.label": "按接收原样",
+  "gt.userGuide.search.hover": "搜索用户指南"
 }

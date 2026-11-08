@@ -707,7 +707,7 @@
   "gt.button.stats.hover": "Pokaż statystyki",
   "gt.button.grayline.hover": "Przełącz linię szarości",
   "gt.button.moon.hover": "Przełącz Księżyc",
-  "gt.button.help.hover": "Przełącz listę skrótów",
+  "gt.button.help.hover": "Otwórz podręcznik użytkownika",
   "gt.button.mute.hover": "Przełącz wyciszenie dźwięku",
   "gt.button.adifLoad.hover": "Wczytaj log ADIF",
   "gt.button.adifReload.hover": "Wczytaj ponownie lokalne pliki ADIF",
@@ -1731,5 +1731,6 @@
   "cwViewer.picture.rotateRight.label": "90° w prawo",
   "cwViewer.picture.rotateLeft.label": "90° w lewo",
   "cwViewer.picture.rotateHalf.label": "180°",
-  "cwViewer.picture.rotateNone.label": "Jak odebrano"
+  "cwViewer.picture.rotateNone.label": "Jak odebrano",
+  "gt.userGuide.search.hover": "Szukaj w podręczniku użytkownika"
 }

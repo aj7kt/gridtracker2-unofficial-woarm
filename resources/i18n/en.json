@@ -707,7 +707,7 @@
 	"gt.button.stats.hover": "Show Stats",
 	"gt.button.grayline.hover": "Toggle Grayline",
 	"gt.button.moon.hover": "Toggle Moon",
-	"gt.button.help.hover": "Toggle Hotkey List",
+	"gt.button.help.hover": "Open the User Guide",
 	"gt.button.mute.hover": "Toggle Audio Mute",
 	"gt.button.adifLoad.hover": "Load ADIF Log",
 	"gt.button.adifReload.hover": "Reload Local ADIF Files",
@@ -1731,5 +1731,6 @@
 	"cwViewer.picture.rotateRight.label": "90° Right",
 	"cwViewer.picture.rotateLeft.label": "90° Left",
 	"cwViewer.picture.rotateHalf.label": "180°",
-	"cwViewer.picture.rotateNone.label": "As Received"
+	"cwViewer.picture.rotateNone.label": "As Received",
+	"gt.userGuide.search.hover": "Search the User Guide"
 }

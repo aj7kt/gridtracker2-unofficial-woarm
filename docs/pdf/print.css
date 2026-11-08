@@ -1,0 +1,74 @@
+/* Print styles for the User Guide PDF (docs/pdf/build.js adds this to Sphinx's single-page HTML) */
+:root {
+  --gt-accent: #1f5fa8;
+  --gt-rule: #c9d3df;
+  --gt-tip-bg: #eef5ff;
+  --gt-note-bg: #fff6e0;
+}
+html, body {
+  background: #fff;
+  color: #1b1b1b;
+  font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+  margin: 0;
+}
+div.related, div.sphinxsidebar, div.footer, a.headerlink, div.clearer { display: none !important; }
+div.document, div.documentwrapper, div.bodywrapper, div.body { margin: 0 !important; padding: 0 !important; max-width: none !important; width: auto !important; float: none !important; }
+
+/* Cover */
+.gt-cover { height: 9.2in; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; break-after: page; }
+.gt-cover img { width: 3.2in; margin-bottom: 0.4in; }
+.gt-cover h1.gt-cover-title { font-size: 30pt; border: none; margin: 0 0 0.15in; color: var(--gt-accent); break-before: avoid; }
+.gt-cover-version { font-size: 14pt; margin: 0.05in; }
+.gt-cover-date, .gt-cover-site { font-size: 11pt; color: #555; margin: 0.03in; }
+
+/* Parts get a title page, chapters start on a new page.
+   A document's own headings land one level down in the single-page build: # is h2, ## is h3, ### is h4. */
+/* The part title fills its page instead of using break-after: the empty document anchor that follows it would
+   otherwise land alone on a blank page before the chapter's own page break */
+p.gt-part { break-before: page; box-sizing: border-box; height: 8.6in; font-size: 28pt; font-weight: bold; color: var(--gt-accent); text-align: center; padding-top: 3.2in; margin: 0; }
+section.gt-chapter { break-before: page; }
+h2, h3, h4, h5, h6 { break-after: avoid; }
+h2 { font-size: 20pt; color: var(--gt-accent); border-bottom: 2px solid var(--gt-accent); padding-bottom: 4pt; margin: 18pt 0 10pt; }
+section.gt-chapter > h2:first-child { margin-top: 0; }
+h3 { font-size: 15pt; color: var(--gt-accent); margin: 16pt 0 6pt; }
+h4 { font-size: 12.5pt; margin: 13pt 0 4pt; }
+h5, h6 { font-size: 11pt; margin: 11pt 0 3pt; }
+
+/* Contents page */
+nav.gt-toc { break-after: page; font-size: 9.5pt; column-count: 2; column-gap: 0.35in; }
+h1.gt-toc-title { column-span: all; font-size: 22pt; color: var(--gt-accent); border-bottom: 2px solid var(--gt-accent); padding-bottom: 4pt; margin: 0 0 10pt; }
+.gt-toc-part { font-weight: bold; font-size: 11pt; margin: 8pt 0 2pt; break-after: avoid; }
+nav.gt-toc ul { list-style: none; margin: 0; padding-left: 10pt; }
+nav.gt-toc li { margin: 1pt 0; }
+nav.gt-toc li li { font-size: 8.5pt; color: #444; break-inside: avoid; }
+nav.gt-toc li li a { color: #444; }
+p { margin: 0 0 7pt; orphans: 3; widows: 3; }
+a { color: var(--gt-accent); text-decoration: none; }
+
+/* Images: never wider than the page, never split */
+img { max-width: 100%; height: auto; break-inside: avoid; }
+p > img:only-child, figure img { display: block; margin: 6pt auto; }
+img.gt-icon { display: inline; vertical-align: middle; margin: 0 2pt; }
+p > img.gt-float-right:only-child, img.gt-float-right { display: block; float: right; margin: 0 0 8pt 14pt; }
+h2 { clear: both; }
+
+/* Tables */
+table { border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.5pt; break-inside: auto; }
+th, td { border: 1px solid var(--gt-rule); padding: 3pt 6pt; vertical-align: top; text-align: left; }
+th { background: #eef2f7; }
+tr { break-inside: avoid; }
+
+/* Code */
+pre, code { font-family: Consolas, "DejaVu Sans Mono", monospace; font-size: 9pt; }
+pre { background: #f5f7fa; border: 1px solid var(--gt-rule); padding: 6pt 8pt; white-space: pre-wrap; break-inside: avoid; }
+
+/* MyST admonitions (```{tip}, ```{note}, ```{warning}) */
+div.admonition { border-left: 4px solid var(--gt-accent); background: var(--gt-tip-bg); padding: 5pt 9pt; margin: 8pt 0; break-inside: avoid; }
+div.admonition.note, div.admonition.important, div.admonition.warning, div.admonition.caution { border-left-color: #d08a00; background: var(--gt-note-bg); }
+p.admonition-title { font-weight: bold; margin-bottom: 3pt; }
+
+
+/* Footnotes */
+aside.footnote, dl.footnote { font-size: 9pt; color: #333; }
