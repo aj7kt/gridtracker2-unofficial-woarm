@@ -1,45 +1,48 @@
-# Is it a bug?
-The first thing we need to know is actually a bug or some other nuence of GridTracker that is being overlooked because your trying to make it work while chasing that ultra DX. We recomend checking first the [FAQ-Troubleshooting](FAQ-Troubleshooting) section here first. If your issue isn't there you can also search the Groups.IO or prior Discord chats to see if it's an issue that has previously been discussed. Links to those are on the [Technical Support and Assistance](Technical-Support-and-Assistance) page. You can also look on the GridTracker [GitLab issues](https://gitlab.com/gridtracker.org/gridtracker2/-/issues) list to see if your issue has already been reported.
+# Submitting Bug Reports
 
-# It is a bug!
+## Is It a Bug?
 
-When filing a bug report after your sure it is in fact a bug and not previously reported, our issue reporting screen will have the following layout
+First check whether it is really a bug, or a setting that is easy to overlook while you are chasing that rare DX:
+
+* Read [FAQ and Troubleshooting](FAQ-Troubleshooting.md).
+* Search our [Discord server](https://discord.gg/gridtracker) for earlier discussions.
+* Look through the [GitLab issues](https://gitlab.com/gridtracker.org/gridtracker2/-/issues) to see whether it has already been reported.
+* Make sure you are running the latest version (Settings → About).
+
+## It Is a Bug!
+
+Open a new issue on [GitLab](https://gitlab.com/gridtracker.org/gridtracker2/-/issues). The issue form asks for:
 
 ```markdown
 ## Summary
-
-(Summarize the bug encountered concisely)
+(Summarize the bug concisely)
 
 ## Version
-(If you are not on latest current version, before filing a bug report, verify bug occurs in latest)
+(From Settings -> About. Please check the bug still happens in the latest version first.)
 
 ## Operating System and Platform
-(What operating system and platform, be specific with build versions, 
-ie `Win 11 24H2`, `Debian Bookworm Kernel 6.11.6-100-generic-x86_64`, `Fedora 39 6.11.6-100.fc39.x86_64`, `MacOS 15 Sequoia`.
-Linux users, please run uname -r and copy that value here behind the distro version 
+(Be specific, e.g. "Windows 11 24H2", "macOS 15 Sequoia", "Debian Bookworm, kernel 6.11.6".
+Linux users, please include the output of: uname -r)
 
 ## Steps to reproduce
-
-(How one can reproduce the issue - this is very important)
+(How we can make it happen - this is very important)
 
 ## What is the current bug behavior?
-
 (What actually happens)
 
 ## What is the expected correct behavior?
-
 (What you should see instead)
 
 ## Relevant logs and/or screenshots
-
-(Paste any relevant logs - use code blocks (```) to format console output, logs, and code, as it's very hard to read otherwise.)
+(Paste logs in code blocks (```), and attach screenshots)
 
 ## Possible fixes
-
-(If you can, link to the line of code that might be responsible for the problem)
-
+(If you can, link to the line of code that might be responsible)
 ```
 
-Please fill it out as completely as possible and include screenshots as needed.
+Please fill it in as completely as you can. Useful attachments:
 
-New bugs may not be acknowlowedged right away but all members of the development team will receive a notification as soon as you click **Create issue** and a notification is dropped into our Discord server so we'll know it's there.
+* a screenshot: **Ctrl+K** copies the main window to the clipboard and saves it in the Screenshots folder;
+* the error log, `main.log`, from the `logs` folder in GridTracker2's data folder (see [Files, Folders and Command-Line Options](GridTracker-File-Storage.md)).
+
+Everyone on the development team is notified of new issues, and a note is posted on our Discord server, although it may take a while to reply.

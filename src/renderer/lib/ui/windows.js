@@ -16,6 +16,21 @@ function openConditionsWindow(show = true)
   }
 }
 
+// The User Guide window: left click toggles it, right click (toggle false) only shows it. It's opened on first use
+// and shown once loaded (gt_guide.html), since whether it was showing isn't restored
+function openUserGuideWindow(toggle = true)
+{
+  if (GT.userGuideWindowHandle == null)
+  {
+    GT.userGuideShowOnLoad = true;
+    GT.userGuideWindowHandle = window.open("gt_guide.html", "gt_guide");
+  }
+  else if (GT.userGuideWindowInitialized)
+  {
+    electron.ipcRenderer.send(toggle ? "toggleWin" : "showWin", "gt_guide");
+  }
+}
+
 function toggleConditionsWindow()
 {
   if (GT.conditionsWindowInitialized)

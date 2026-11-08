@@ -1,71 +1,61 @@
-# GridTracker2 and N3FJP ACLog Integration
+# N3FJP AC Log
 
-[N3FJP Website](https://www.n3fjp.com/aclog.html)
+[N3FJP's Amateur Contact Log](https://www.n3fjp.com/aclog.html) (AC Log) works with GridTracker2 in two ways:
 
-GridTracker2 can interface with N3FJP’s ACLog software to pass QSO information from the WSJT-X UDP data stream to ACLog.
+* **Logging:** QSOs from WSJT-X and JTDX are sent to AC Log, and your AC Log logbook can be loaded into GridTracker2.
+* **Connected:** GridTracker2 follows AC Log's rig and entry tab, so the map and rosters follow your phone and CW operating too. Clicking a spot fills AC Log's entry tab, and can tune your rig.
 
-GridTracker2 can also connect to ACLog to have the map and info menu follow band, mode and frequency changes when ACLog is controlling your radio through it’s Rig Control function.
+## AC Log Settings
 
-## Logging
+In AC Log, open **Settings → Application Program Interface (API)...** and tick **TCP API Enabled (server)**. Note the **Port** (1100 by default).
 
-**WSJT-X:** 
+![AC Log API settings](../img/ACLog_API_Menu.png){width=300px}
 
-Settings > Reporting. Note the UDP server and port numbers under Network Services, and
-ensure all boxes under Network Services are checked.
+For the connected features, set up rig control in AC Log under **Settings → Rig Interface**. See the N3FJP website for details.
 
-![WSJT-X Reporting Settings](../img/WSJT-X_UDP_Settings.png)
+![AC Log rig interface settings](../img/ACLog_Rig_Interface.png){width=520px}
 
-**ACLog:** 
+## GridTracker2 Settings
 
-Settings> Application Program Interface (API)… Ensure “TCP API Enabled (server) Port” box is checked. Note the Port number.
+In [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab), on the **N3FJP Loggers** row of the **Logging Programs** box:
 
-![ACLog API Settings](../img/ACLog_API_Menu.png)
+* Enter AC Log's **IP** address (127.0.0.1 when it runs on the same computer) and the **Port** you noted.
+* **Log QSO:** sends each QSO logged in WSJT-X or JTDX to AC Log.
+* **Load At Startup:** loads your AC Log logbook when GridTracker2 starts. AC Log must already be running.
+* **Menu Button:** adds an N3FJP button to the button panel, to reload your AC Log logbook whenever you like.
+* **QSL By:** which confirmations in AC Log count as QSLs: Any, Card, eQSL, LoTW, QRZ.com or Clublog. Shown while Load At Startup or Menu Button is ticked.
+* **Connect:** links GridTracker2 to AC Log. A dot next to it shows green while connected, red while not.
+  * **Enable Rig Control:** clicking a spot tunes your rig through AC Log. Shown while Connect is ticked; needs rig control set up in AC Log.
 
-**GridTracker2:** 
+![The Logging tab](../img/GT2_Settings_Logging.png)
 
-Settings> General. Ensure the IP Address and Port Number in “Receive UDP Messages Received from
-WSJT-X “match the numbers you noted from WSJT-X, and that Multicast is checked.
+## Logging From WSJT-X
 
-![GridTracker2 General Settings](../img/GT2_General_UDP_Settings.png)
+For WSJT-X QSOs to reach AC Log, WSJT-X must send to GridTracker2 (see [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md)), and **Log QSO** must be ticked on the N3FJP row. Each QSO you log in WSJT-X is then added to AC Log, and "Logged to N3FJP" shows in the message list.
 
-Settings> Logging. Ensure the IP address and Port number on the “N3FJP Loggers” line match the numbers you noted from the ACLog API screen.
+## Connected Operation
 
-“QSL BY” should be set at your preferred source for valid QSLs as listed in N3FJP records.
+With **Connect** ticked:
 
-Ensure the “Log?” column box is checked to pass QSO data from WSJT-X to ACLog.
+* AC Log becomes one of your radios. Its frequency, band and mode show at the top of the side panel, and the status bar shows **CONNECTED** while AC Log is the active radio. When AC Log has no rig frequency, the band and mode follow its entry tab. With several radios, use the ◀ ▶ selector to choose AC Log.
+* The call and grid in AC Log's entry tab show in GridTracker2 as you type, even before you tab out of the call, and clear when you clear the entry tab.
+* QSOs you log in AC Log are added to GridTracker2's logbook, even several in quick succession.
+* A QSO logged in AC Log with a park in an Other field titled `POTA_REF` is spotted to POTA (with POTA Hunting on).
 
-Enabling the “Startup?” column box has GridTracker 2 check you ACLog to update QSO totals. (Note, ACLog must be running before starting GridTracker 2 or you will get an error message).
+Set the Map View Filters' Band and Mode to **Auto** so the map follows AC Log.
 
-Enabling the “Menu?” column box displays an N3FJP button on your main menu. This will allow you to query ACLog to update QSO counts as needed.
+![GridTracker2 connected to AC Log](../img/GT2_ACL_Connected_Main_Screen.png)
 
-![GridTracker2 Logging Settings](../img/GT2_Logging_N3FJP_settings.png)
+There is a short delay before frequency and band changes show, depending on the polling rate set in AC Log's Rig Interface settings.
 
-## GridTracker 2/ACLog Connected Mode
+### Working Spots Through AC Log
 
-GridTracker 2 can display status information from ACLog for non-digital modes such as SSB when ACLog is controlling your radio using it’s Rig Control option.
+When you click a callsign in the Feed Roster, or a POTA, SOTA or DX Feeds marker on the map, and no radio is already on that spot's band and mode, AC Log gets the spot on any band and mode:
 
-**ACLog Settings:**
+* Its entry tab is cleared and filled with the spot's frequency, band, mode, call and grid.
+* With **Enable Rig Control** on, AC Log also tunes your rig to the spot's frequency and mode.
+* If you have titled any of AC Log's Other fields `POTA_REF` or `SOTA_REF`, they are filled with the spot's park or summit.
 
-The API Settings under Settings>Application Program Interface (API)… are the same as for digital modes.
-
-Settings>Rig Interface: See the N3FJP website for full details on setting ACLog up for rig control.
-
-![ACLog Rig Control Settings](../img/ACLog_Rig_Interface.png)
-
-**GridTracker2 Settings:**
-
-Once your ACLog is controlling your radio, start GridTracker 2 go to Settings> Logging and check the “Connect?” column on the “N3FJP Loggers” Line.
-
-![GridTracker N3FJP Settings Detail](../img/GT2_Connected_Setting.png)
-
-Ensure that you have the Map View Filters set to Band Auto and Mode Auto.
-
-![Map View Filters](../img/GT2_Map_View_Filters.png)
-
-In GridTracker 2 you will now see the frequency/band and mode information at the top of the screen.
-
-If you have POTA enabled you will see any parks spotted on the pota.app website displayed on the map.
-
-![GridTracker2 Window in N3FJP Connected Mode](../img/GT2_ACL_Connected_Main_Screen.png)
-
-Please note that there will be slight delay in displaying frequency and band changes based on the Polling Rate selected in the ACLog Rig Interface settings.
+```{tip}
+To have parks and summits filled in automatically, open AC Log's Other field settings and title one field `POTA_REF` and another `SOTA_REF`. GridTracker2 notices the titles when it connects, and when you change them.
+```

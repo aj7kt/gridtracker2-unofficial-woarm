@@ -6,7 +6,7 @@ GridTracker2 is Licensed under the [**BSD 3-Clause "New" or "Revised" License**]
 
 Permission is granted to copy this site / information, at no charge for non-commercial purposes. The sources cited and present copyright notice is to be included in all copies. Recipients of copies are equally bound to abide by the present conditions. Prior written permission is required for any commercial use or publication of this document, in whole or in part.
 
-Copyright ® 2024 GridTracker.org
+Copyright © 2026 GridTracker.org
 
 All Rights Reserved Worldwide
 
@@ -31,8 +31,9 @@ Linux AMD/Intel -- \
     AMD is a registered trademark of Advanced Micro Devices, Inc.\
     Intel is a registered trademark of Intel Corporation
 
-Linux ARM 32 / Raspberry PI - Odroid -- add registered trademark info/stuff \
-Raspberry Pi is a registered trademark of the Raspberry Pi Foundation
+Raspberry Pi is a trademark of Raspberry Pi Ltd.
+
+Parks On The Air® is a registered trademark of Parks On The Air, LLC. Summits on the Air (SOTA) is a program of the SOTA Management Team.
 
 PSK-Reporter: Copyright 2024 Philip Gladstone
 

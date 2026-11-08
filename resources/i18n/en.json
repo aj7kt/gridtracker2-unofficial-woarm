@@ -708,7 +708,7 @@
 	"gt.button.stats.hover": "Show Stats",
 	"gt.button.grayline.hover": "Toggle Grayline",
 	"gt.button.moon.hover": "Toggle Moon",
-	"gt.button.help.hover": "Toggle Hotkey List",
+	"gt.button.help.hover": "Open the User Guide",
 	"gt.button.mute.hover": "Toggle Audio Mute",
 	"gt.button.adifLoad.hover": "Load ADIF Log",
 	"gt.button.adifReload.hover": "Reload Local ADIF Files",
@@ -996,5 +996,6 @@
 	"santa.days.label": "Days",
 	"santa.hours.label": "Hours",
 	"santa.minutes.label": "Minutes",
-	"santa.seconds.label": "Seconds"
+	"santa.seconds.label": "Seconds",
+	"gt.userGuide.search.hover": "Search the User Guide"
 }

@@ -1,79 +1,79 @@
-## GridTracker Program Files
+# Files, Folders and Command-Line Options
 
-### Windows
-In a nutshell, for Windows users who have done the default program installation your GridTracker program files are stored in
-```batch
-C:/Program Files (x86)/GridTracker
-``` 
-or
-```batch
-C:/Program Files/GridTracker
-```
-depending on if it's a 32 or 64 bit Windows installation.
+## The Data Folder
 
-### MacOS
+GridTracker2 keeps your settings, backup logs and other files in its data folder:
 
-GridTracker runs usually from the Applications directory (assuming it was dragged there when installed).
+| System | Data folder |
+| --- | --- |
+| Windows | `%APPDATA%\GridTracker2`, that is `C:\Users\<you>\AppData\Roaming\GridTracker2` |
+| macOS | `~/Library/Application Support/GridTracker2` |
+| Linux | `~/.config/GridTracker2` |
 
-### Linux
-
-This will depend a little on if you used an RPM on a Red Hat based sytem, or where you placed the de-compressed GridTracker tar.gz package in your file system.
-
-On RedHat based systems (RedHat, CentOS, Scientific Linux, Fedora) that used the RPM package. GridTracker's system directory lives at 
-```bash
-/usr/share/gridtracker/
+```{tip}
+On Windows, type `%APPDATA%\GridTracker2` into the File Explorer address bar to open the folder. **Backup Logs** in Settings → Logging opens the backup log folder directly.
 ```
 
-On any other system you have the option to copy the decompressed tar.gz package to `/usr/share/gridtracker` and the _gridtracker.desktop_ file into the appropriate directory for it to show up in your systems Application launcher menu. Alternatively you can just decompress the tar.gz into your choice of directory and execute the GridTracker executable from there. This makes for easy use of running GridTracker off removable storage such as a flashdrive.
+Inside it:
 
-## GridTracker Data Files
+* **Backup Logs:** GridTracker2's own backup log, one ADIF file for each callsign and grid you have operated from, such as `GridTracker2_N0TTL_CN84.adif`. See [The GridTracker2 Backup Log](Making-GridTracker-Work-For-You/GridTracker-Logging-Options-and-Functions.md#the-gridtracker2-backup-log).
+* **Screenshots:** the pictures saved by **Ctrl+K**.
+* **Extra Media:** put your own sound files here to use them in alerts. They are listed with the built-in sounds the next time GridTracker2 starts.
+* **Call Roster Scripts:** put a `cr-alert.bat` (Windows) or `cr-alert.sh` (macOS and Linux) script here to run it on roster alerts. See [Running a Script on Alerts](Making-GridTracker-Work-For-You/Using-Call-Roster.md#running-a-script-on-alerts).
+* **Ginternal:** GridTracker2's own files: your settings (`app-settings.json`), window positions (`windows.json`), and the downloaded callsign databases and logs. You shouldn't need to touch these; use **Export Settings** in Settings → General to back up your settings.
+* **logs:** the error log, `main.log`. On macOS it is in `~/Library/Logs/GridTracker2` instead. Include it when you report a problem.
 
-### The user _media_ directory
+Uninstalling GridTracker2 leaves the data folder in place, so your settings and backup logs are kept.
 
-Regardless of which Operating System is used, if you choose to add additional media files to use for alerts within GridTracker, there is a nifty place you can put them without having to dive deep into the guts of your file system. If you look in the data directory where your `GridTracker_QSO.adif` file is, you'll see a folder named media. Place your media files in there and restart GridTracker. On startup, GridTracker scans that directory for files and adds them to it's list of available media for alerts.
+### Backing Up
 
-### Windows
+Your real log should be in a logging program or online logbook, which have their own backups. To back up GridTracker2 itself:
 
-If you have done a default installation of GridTracker and you *DO NOT* have OneDrive, your data files are stored at 
-```batch
-C:/Users/%user%/Documents/GridTracker/
+* **Export Settings** in Settings → General saves all your settings to a file of your choice. **Import Settings** restores them, on this or another computer.
+* Copy the **Backup Logs** folder.
+
+Upload failures to LoTW are queued in your system's temporary folder, and sent with your next QSO.
+
+## Where Your Logs Are Found
+
+At startup, GridTracker2 looks for the logs of WSJT-X, WS – Digital Mode Suite and JTDX in their usual folders:
+
+| System | Searched folder |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%` |
+| macOS | `~/Library/Application Support` |
+| Linux | `~/.local/share` |
+
+The logs it finds are listed under **App Log(s)** in Settings → Logging, where you can untick them or add others.
+
+## The Program
+
+| System | Installed in |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%\Programs\GridTracker2` for a single-user installation (the default), or `C:\Program Files\GridTracker2` for all users |
+| macOS | your **Applications** folder, if you dragged it there |
+| Linux | `/opt/GridTracker2` for the deb, rpm and pacman packages; wherever you put the AppImage or the unpacked tar.gz |
+
+## Command-Line Options
+
+| Option | Effect |
+| --- | --- |
+| `--gt-name=Name` | Runs a separate copy of GridTracker2 with its own settings, logs and windows, in a data folder named `GridTracker2 - Name`. |
+| `--disable-auto-updates` | GridTracker2 still tells you when a new version is available, but doesn't download it until you click **Download**. |
+
+On Windows, to start GridTracker2 from a command prompt or batch file and see its messages there, first run `set ELECTRON_NO_ATTACH_CONSOLE=true`.
+
+### Running Several Copies
+
+Normally only one copy of GridTracker2 can run: starting a second one just exits. To run several, for example one for each radio, start each with its own name:
+
+```text
+GridTracker2.exe --gt-name=HF
+GridTracker2.exe --gt-name=VHF
 ```
 
-If you have done a default installation of GridTracker and you have OneDrive your data files are stored at 
-```batch
-C:/Users/%user%/OneDrive/Documents/GridTracker/
-```
+On Windows, add the option to a copy of the GridTracker2 shortcut (right-click it, choose **Properties**, and add it at the end of **Target**). Each copy has its own data folder and settings: set each one's UDP port to match its WSJT-X, and in Settings → Logging → **App Log(s)**, untick the logs another copy uses.
 
-Files stored in OneDrive are continually backed up **_but only one version is saved_**.  If you choose to delete a file from One Drive you will get a warning message asking if you're sure you want to take that step because once a file is deleted it is gone forever.  
+## Updates
 
-If you would like to maintain a _local_ backup for either your GridTracker logbook file (GridTracker_QSO.adif) or your WSJT-X log (wsjtx_log.adi) files you will have to do it by hand..  There's no provision in either program to create a backup.  What you can do, though, is use GridTracker's logging function ([**Settings>Logging**](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab)) to automatically send info on new QSOs to one of eleven different applications that are dedicated logging sites.
-
-#### Being Fooled into Thinking You've Deleted a File
-
-A Special Note for Windows Users:  
-
-You can _think_ that you have deleted your GridTracker_QSO.adif file because of the peculiarities of how Windows file directory windows operate.  You \[probably\] haven't.  
-
-Let's say you've clicked the **Clear Log** button in the main GridTracker control panel to clear out GridTracker's working database.  You next decide to load back in the GridTracker_QSO.adif file by clicking the ADIF button. Windows will show you a directory window from which you can select the file.
-
-!["The Open Dialog showing ADI files only"](img/GT_Files_WinOneDrive_ADIFOnly.png)
-
-Note:  the directory window is (by default) showing you **only** the files with an **.adi** file extension.  Since the extension for the the GridTracker_QSO.adif file is different it's not listed.  
-
-To find it just click on the down arrow  ˅ (see red arrow above) to have **All Files (\*.\*)** displayed and there's the GridTracker_QSO.adif file safe and sound.  
-
-!["The Open Dialog showing all files"](img/GT_Files_WinOneDrive_AllFiles.png)
-
-### MacOS
-
-User files on MacOS are stored in 
-```bash
-~/Documents/GridTracker/
-```
-
-### Linux
-
-If you are using Linux, data files are saved at 
-```bash
-/home/$USER/Documents/GridTracker/
-```
+GridTracker2 checks for a new version shortly after it starts and then once a day. A new version downloads by itself; the message list then shows **Install and Restart**, which saves your settings, installs the update and restarts GridTracker2. The About tab in Settings shows the same. With `--disable-auto-updates`, the message list shows an **About** button instead: click **Download** in Settings → About first.

@@ -709,7 +709,7 @@
   "gt.button.stats.hover": "显示统计",
   "gt.button.grayline.hover": "切换晨昏线",
   "gt.button.moon.hover": "切换月亮",
-  "gt.button.help.hover": "切换快捷键列表",
+  "gt.button.help.hover": "打开用户指南",
   "gt.button.mute.hover": "切换静音",
   "gt.button.adifLoad.hover": "加载 ADIF 日志",
   "gt.button.adifReload.hover": "重新加载本地 ADIF 文件",
@@ -997,5 +997,6 @@
   "santa.days.label": "天",
   "santa.hours.label": "小时",
   "santa.minutes.label": "分钟",
-  "santa.seconds.label": "秒"
+  "santa.seconds.label": "秒",
+  "gt.userGuide.search.hover": "搜索用户指南"
 }

@@ -708,7 +708,7 @@
 	"gt.button.stats.hover": "統計を表示",
 	"gt.button.grayline.hover": "グレイラインを切り替え",
 	"gt.button.moon.hover": "月を切り替え",
-	"gt.button.help.hover": "ホットキー一覧を切り替え",
+	"gt.button.help.hover": "ユーザーガイドを開く",
 	"gt.button.mute.hover": "音声ミュートを切り替え",
 	"gt.button.adifLoad.hover": "ADIF ログを読み込む",
 	"gt.button.adifReload.hover": "ローカルの ADIF ファイルを再読み込み",
@@ -996,5 +996,6 @@
 	"santa.days.label": "日",
 	"santa.hours.label": "時間",
 	"santa.minutes.label": "分",
-	"santa.seconds.label": "秒"
+	"santa.seconds.label": "秒",
+	"gt.userGuide.search.hover": "ユーザーガイドを検索"
 }

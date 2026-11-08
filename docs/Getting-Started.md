@@ -1,24 +1,33 @@
 # Getting Started
 
-Depending on your operating system, GridTracker can be started from the command line, the start menu or a shortcut.
+Start GridTracker2 from the Start menu or desktop (Windows), the Applications folder (macOS), or your applications menu or the command line (Linux).
 
-GridTracker does not require WSJT-X or WST-X derivitive to be installed on your computer or even running to operate.  However it does however automatically detect if WSJT-X or some derivitives are installed and if it is running when it starts up.
+GridTracker2 doesn't need WSJT-X or JTDX to be installed or running, but it finds them if they are. When it can read their settings, it uses your callsign, grid, band, mode and network settings from them. If no decoding program is connected, enter your callsign and grid in [Settings → General](GridTracker-Overview/Settings-Sub-Menus.md#general-tab) → Station.
 
-If GridTracker can locate the configuration file of your WSJT-X or WSJT-X derivitive  in your system, it will automatically read your callsign, Maidenhead grid square, operating band, operating mode and your network configuration.  If GridTracker discovers that WSJT-X or WSJT-X derivitive  is a running process on your computer during your initial startup of GridTracker it will attempt to configure itself to the network configuration details of the running program.
+## Connecting to WSJT-X or JTDX
 
-!["GridTracker Status Panel showing RECEIVE in a green box"](img/GT_Status_Receive.png)
+When GridTracker2 is receiving from WSJT-X, the top of the side panel shows your frequency, band and mode, and the status bar shows **RECEIVE**.
 
-When a connection between GridTracker and WSJT-X has been established the operating info section at the top of the control panel will indicate your frequency and time/date information the WSJT-X status bar is displaying "RECEIVE".
+![GridTracker2 receiving from WSJT-X](img/GT2_Panel_Info.png){width=260px}
 
-!["GridTracker Status Panel showing waiting for message in a green box"](img/GT_Status_Waiting.png)
+![The RECEIVE status](img/GT2_Panel_Status.png){width=260px}
 
-If GridTracker has not received status information from WSJT-X then the WSJT-X status bar will show waiting for message.  
+If the status bar shows "waiting for message", GridTracker2 hasn't heard from WSJT-X yet. It can take up to 15 seconds. If it stays that way:
 
-WSJT-X may not be running or configured in a way that allowed GridTracker to detect network settings, or GridTracker  may not have heard a message from WSJT-X yet (it could take up to 15 seconds.)  You may also be running other companion programs that have "taken over" the UDP[^udp] network connection.  If you are using another companion program, you may want to shut it down for now as you become familiar with GridTracker and its extensive features. If you decide to run other companion programs in parallel, you will want to configure WSJT-X and all other programs to use Multicast[^multicast].
+* WSJT-X may not be running, or may be set up to send somewhere else. See [Appendix B](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md).
+* Another companion program may be receiving WSJT-X's messages instead. To run several companion programs together, set them all up for multicast (see [Using Multicast](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md#using-multicast)).
+* A firewall may be blocking GridTracker2.
 
-If all this has gone according to plan, GridTracker should be receiving information from WSJT-X or WSJT-X derivitive  in real-time! If not see [Appendix B](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) for detailed instructions for how to configure WSJT-X or WSJT-X derivitive .
+## Your First Session
 
----
+Once decodes are arriving:
 
-[^udp]: UDP stands for User Datagram Protocol. It's a communications protocol that can be used as an alternative to TCP (transmission control protocol) to send messages (i.e., datagrams) between computing devices in a network.
-[^multicast]: Multicast is an IP network addressing class that allows computers, and applications to receive information to a group rather then only between individual assets. This also differs from Broadcast in that computers and applications can selectively join or leave the mulitcast group.
+1. **Look at the map.** Grids light up as stations are heard. Your logged QSOs are colored too; see [The Map](GridTracker-Overview/GridTracker-Map-View-—-Main-WIndow.md).
+2. **Open the Call Roster** (the Call Roster button, or **Ctrl+F**). Tick what you are hunting under **Wanted**, and click a highlighted callsign to call that station. See [The Call Roster](Making-GridTracker-Work-For-You/Using-Call-Roster.md).
+3. **Load your logbook.** In [Settings → Logging](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab), add your LoTW, QRZ.com or other logs so GridTracker2 knows what you have already worked and confirmed, and choose where new QSOs are sent.
+4. **Set up alerts** so you hear about wanted stations: see [Alerts](Making-GridTracker-Work-For-You/Setting-Up-Audio-and-Visual-Alerts.md).
+5. **Explore the Settings.** Turn on POTA Hunting, DX Feeds or SOTA Chasing in Settings → Features if you enjoy those.
+
+```{tip}
+Hold the mouse over almost any button or setting to see what it does.
+```

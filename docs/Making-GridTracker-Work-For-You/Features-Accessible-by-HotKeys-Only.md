@@ -1,19 +1,14 @@
-# Features Accessible by Hotkeys Only
+# Features Only on Hotkeys
 
-| **Hotkey** | **Action** |
+A few features have no button, only a hotkey. The full list of hotkeys is in [Appendix C](../Appendices/Appendix-C-Hotkeys.md).
+
+| Hotkey | Feature |
 | --- | --- |
-| **D** | 24 Hour Moon Trajectory |
-| **E** | Toggle Rx Spots Flight |
-| **H** | Toggle Rx Spots Heatmap |
-| **K** | Take a Screen Shot[^screenshots] |
-| **Right-click empty grid**<br>**M** | Add Map Center Alert |
-| **T** | Toggle Rx Spots over Grids |
-| **Right-click empty grid**<br>**T** | Add TTS Alert |
-| **Right-click empty grid**<br>**V** | Add Pop-up Alert |
-| **X** | Toggle Map Position Info |
-| **Y** | Toggle Global Lightning |
-| **Z** | Center Map on QTH Grid |
-
----
-[^screenshots]: Screenshots will automatically be saved in your GridTracker directory -- the same folder where your GridTracker_QSO.adif file is saved.  The following illustration is for a Windows 10 operating system: 
-!["screenshot of screenshots folder in Windows 10"](../img/GT_ScreenShots_win10.png)
+| F1 | Shows the list of hotkeys, with a **Print** button. |
+| Ctrl+K | Takes a screenshot of the main window. It is copied to the clipboard, ready to paste into an email or a support request, and saved as a PNG picture in the **Screenshots** folder in GridTracker2's data folder (see [Files and Folders](../GridTracker-File-Storage.md)). |
+| Ctrl+X | Hides or shows the latitude, longitude, distance, bearing and 6-character grid under the mouse pointer, in the top left corner of the map. |
+| Shift+F5 to Shift+F10 | Remembers the current map view (position and zoom) in one of six memories. |
+| F5 to F10 | Returns the map to a remembered view. |
+| Ctrl+T | Switches RX spots between drawn over your grids and drawn instead of them. This is also **Spots Over Grids** in Settings → Features. |
+| Ctrl+U | Keeps grids, paths and spots showing with an award layer. This is also **Keep Other Layers With Award View** in Settings → Map. |
+| Ctrl+Y | Turns Offline Mode on or off. This is also in Settings → Features. |

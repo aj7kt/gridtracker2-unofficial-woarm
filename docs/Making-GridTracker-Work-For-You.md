@@ -1,3 +1,3 @@
-# Making GridTracker Work For You
+# Making GridTracker2 Work For You
 
-This section of the User's Guide covers the use of Call Roster, an advanced discussion of GridTracker's logging options and functions, and the GridTracker Statistics page.
+This part of the guide covers the tools you will use while operating: the Call Roster and Feed Roster, POTA and SOTA, logging, alerts, the Statistics window and the other windows.

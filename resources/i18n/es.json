@@ -701,7 +701,7 @@
   "gt.button.stats.hover": "Mostrar estadísticas",
   "gt.button.grayline.hover": "Alternar línea gris",
   "gt.button.moon.hover": "Alternar Luna",
-  "gt.button.help.hover": "Alternar lista de atajos",
+  "gt.button.help.hover": "Abrir la guía del usuario",
   "gt.button.mute.hover": "Alternar silencio de audio",
   "gt.button.adifLoad.hover": "Cargar log ADIF",
   "gt.button.adifReload.hover": "Recargar archivos ADIF locales",
@@ -989,5 +989,6 @@
   "santa.days.label": "Días",
   "santa.hours.label": "Horas",
   "santa.minutes.label": "Minutos",
-  "santa.seconds.label": "Segundos"
+  "santa.seconds.label": "Segundos",
+  "gt.userGuide.search.hover": "Buscar en la guía del usuario"
 }

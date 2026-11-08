@@ -6,10 +6,16 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import json
+import os
+
 project = 'GridTracker2'
 copyright = '%Y, GridTracker.org'
 author = "Stephen “Tag” Loomis N0TTL\n Henry “atouk” Forte N2VFL\n And the GridTracker.org team"
-version = '2.24.1115.0'
+# The guide's version follows the app's package.json
+with open(os.path.join(os.path.dirname(__file__), '..', 'package.json'), encoding='utf-8') as f:
+    version = json.load(f)['version']
+release = version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,8 +23,10 @@ version = '2.24.1115.0'
 extensions = ['myst_parser']
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'pdf', 'Thumbs.db', '.DS_Store', 'Anti-Virus.md', 'Firewalls.md']
 myst_heading_anchors = 7
+# attrs_inline: ![icon](path){width=32px}; colon_fence: ::: blocks
+myst_enable_extensions = ['attrs_inline', 'colon_fence']
 
 
 # -- Options for LaTeX output -------------------------------------------------

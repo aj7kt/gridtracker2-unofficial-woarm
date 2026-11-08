@@ -1,236 +1,364 @@
-# GridTracker Settings
+# GridTracker2 Settings
 
-There are extensive menu options under the **Settings** that allow users to optimize GridTracker to suit their specific preferences.  Each of these submenus will be discussed in detail in this section.  
+Click the **Settings** button (the gear) in the button panel, or press **Ctrl+S**, to open the Settings panel over the map. Click the red **X** in the top right corner, press **Esc**, or click the gear again to close it.
+
+The tabs along the top are **General**, **Features**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Feeds** tab only appears while DX Feeds is turned on.
+
+Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.
+
+```{tip}
+Hotkeys don't work while the Settings panel is open, so they can't be triggered by accident while you type in a settings field.
+```
+
+```{note}
+The Call Roster and Feed Roster have their own settings, including the Watcher, Exceptions, Ignores and Columns tabs. They are in the roster window, see [The Call Roster](../Making-GridTracker-Work-For-You/Using-Call-Roster.md).
+```
 
 ## General Tab
 
-The basic settings for GridTracker operation are under the General Tab.
+![The General tab of the Settings panel](../img/GT2_Settings_General.png)
 
-* **Application Status:**  Status of WSJT-X and/or ????  and which IP address they're using ??
-* **Receive UDP messages:**  The box immediately below the text shows how long it has been since you've received a UDP message.  Colors change red, blue, yellow, depending on what ???  
-* **Multicast:**  If you choose to multicast then click on this button and enter the appropriate IP address in the box that appears.  The default IP value is 127.0.0.1
-* **Port:**  The default Port number for receiving UDP messages is 2237
-* **Forward UDP messages**, e.g. GridTracker or another host
-  * **IP:**  The default IP address is 127.0.0.1
-  * **Port:**  The default port for outgoing UDP messages is 2238.
-  * **Enabled?:**  self-explanatory
-* **Center Gridsquare:**  Since Gridtracker can retrieve information from WSJT-X it will automatically use the grid square you enter as "My Grid" in the Station Details setup for WSJT-X.  However if you would like to use another grid square as the default center of your GridTracker map then type it in this space.
-* **Distance Units:**  You can select kilometers, statute miles, nautical miles or degrees.
-* **Decode Traffic Waterfall:**  GridTracker will automatically decode traffic you are receiving in the WSJT-X waterfall.  Click this button to turn this option off.  
-* **Check for new version** of GridTracker
-* **Clear all Settings:**  Click here to reset all the GridTracker program settings to their defaults.
-* **Export Settings:**  This button allows you to export or import a set of specific Gridtracker user settings.  
+### Receive UDP Messages
 
-Why would you do this?  Possibly if you are allowing someone else to learn GridTracker on your computer and you want to save your preferred settings while they experiment with others.  Possibly as a backup if you change computers.  You could reinstall GridTracker and simply import your preferred settings instead of changing all of them by hand.  
+How GridTracker2 receives messages from WSJT-X, JTDX and similar programs. The line at the top shows how long ago the last message arrived.
 
-**Note:**  the default file name assigned to this settings file is:  **C:\\Users\\<span dir="">%</span>user%\\Documents\\gt_settings.json** in Windows or **/Home/$user/Documents/gt_settings.json** in Linux. That is the file name given to the export and _that specific file name_ will be retrieved for import.  If different people are using a single computer (say at a club) and each one wanted to export and import their own particular  Gridtracker settings then they'll have to fiddle around with exporting, saving and renaming files in some agreed fashion.  
+* **Multicast?** Turn this on if WSJT-X sends to a multicast address (224.0.0.0 to 239.255.255.255), then enter that address in **IP**. Multicast lets several programs receive the same WSJT-X messages at once.
+* **Port:** the UDP port WSJT-X sends to, 2237 by default. The first time GridTracker2 runs it reads the address and port from your WSJT-X or JTDX settings.
+
+See [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) for how to set up WSJT-X and JTDX to match.
+
+### Forward UDP Messages
+
+GridTracker2 can pass every message it receives on to other programs, for example GridTracker2 on another computer, HamClock, or an online service such as ft8battle.com.
+
+* **IP(s)/Hostname(s):** one or more addresses or hostnames, separated by commas, e.g. `192.168.1.20,ft8battle.com`. A hostname that can't be found (a typo, or no internet) is reported under the field.
+* **Port:** the port to send to, 2238 by default. It can't be the same as the receive port.
+* **Enabled?** turns forwarding on and off.
+
+### Receive ADIF UDP Broadcasts For Logging
+
+Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP. With **Enabled?** on, GridTracker2 receives them and logs them just like a QSO logged in WSJT-X: they are added to your logbook and sent to the logs you have chosen in the [Logging tab](#logging-tab). The default port is 2333. Turn on **Multicast?** and enter the **IP** if the program broadcasts to a multicast address.
+
+### Station
+
+* **Callsign:** your callsign, used while no WSJT-X, JTDX, AC Log or Log4OM is connected (for example when you only use DX Feeds). A callsign one of those programs reports is always used for that program. While this field is blank it takes the callsign WSJT-X or JTDX gives.
+* **Gridsquare:** your home grid. It centers the map and is used for distances and bearings. By default it is the grid from WSJT-X.
+
+### Display
+
+* **Language (requires restart):** the language of the interface. Choosing one saves your settings and restarts GridTracker2. See [What's New](../Introduction/Whats-New.md) for the list.
+* **Window Theme:** Dark, Light or System.
+* **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
+* **Map On Right Side:** puts the map on the right of the window and the panel on the left.
+
+### Settings
+
+* **Reset Button Panel:** puts the buttons in the button panel back in their default order.
+* **Export Settings** saves all your settings to a file (the suggested name is `GridTracker2 Settings.json`). **Import Settings** loads such a file and restarts GridTracker2. Use this as a backup, or to move your settings to another computer. Files from versions older than 2.241005 can't be imported.
+* **Clear All Settings!** returns every setting to its default. It only works while **Yes, I'm sure!** is ticked.
+
+### On QSO Reply
+
+This box only appears while more than one WSJT-X or JTDX is sending to GridTracker2.
+
+* **Halt Tx On All Other Instances:** when you reply to a station from one instance, transmitting is stopped on the others.
+* **Switch View to Transmitting Instance:** the main window follows the instance that is transmitting.
+
+## Features Tab
+
+![The Features tab of the Settings panel](../img/GT2_Settings_Features.png)
+
+### Operational
+
+* **Decode Traffic Waterfall:** lists the decodes that set off a Custom Alert in the message area of the side panel, with a 🚩. Turning it off empties the message list.
+* **Roster/Alert Band Memory:** the Call Roster's Logbook, Hunting and Wanted choices and your Audio Alerts are remembered separately for each band and mode. An **M** badge shows next to their headings while this is on. It works while a single WSJT-X or JTDX is running; with several, the same settings are used for all bands and modes.
+  * **... include Exceptions** also remembers the Exceptions for each band and mode.
+  * **... include Custom Alerts** also remembers the Custom Alerts for each band and mode.
+* **Clear WSJT-X / JTDX On CQ:** when you start calling CQ, the DX Call and DX Grid left over from your last QSO are cleared in WSJT-X or JTDX.
+
+### Service
+
+* **CatRotator / PstRotator:** turns your antenna rotator toward a station through CatRotator or PstRotator, over UDP. Enter the **IP** and **UDP Port** the rotator program listens on (127.0.0.1 and 12000 by default). An **Aim Rotator** choice is then added to the roster's right-click menu.
+
+### Online
+
+* **Offline Mode:** turns off every online service, for example for Field Day or a POTA activation without internet. The online maps are replaced by the offline maps, and the Conditions, Lookup, POTA and radar buttons and the online logbook buttons are hidden. **Ctrl+Y** also toggles it.
+* **POTA Hunting:** shows Parks On The Air activations on the map, and adds the POTA Wanted choice and POTA column to the Call Roster. See [Parks On The Air](../Third-Party-Integrations/GridTracker2-and-Parks-On-The-Air.md).
+* **Simplepu.sh** and **Pushover.net:** send roster alerts to your phone. Each shows its own box when turned on, see [Push Notifications](../Third-Party-Integrations/PushNotifications-Integrations.md).
+* **Off-Air Services:** GridTracker2's own online services. While it is off, the GridTracker Spotters, Spot Reports and DX Feed Spots buttons and the band activity graph are hidden. The options under it are:
+  * **Spotting:** shows where your signal has been heard (RX spots) on the map.
+    * **Spots Over Grids:** shows the spots over your grids instead of in their place.
+  * **Band Activity:** the band activity graph in the main panel, from the activity around your grid.
+    * **Neighboring Grids:** includes the activity in the grids around yours.
+  * **DX Feeds:** DX Cluster and CW Skimmer spots, for the Feed Roster and the map. Turning it on adds the Feeds tab, the Feed Roster and a DX Feed Spots button. See [The Feed Roster and DX Feeds](../Making-GridTracker-Work-For-You/Using-Feed-Roster.md).
+    * **SOTA Chasing:** Summits on the Air activators from the DX Feeds spots. See [Summits On The Air](../Third-Party-Integrations/GridTracker2-and-Summits-On-The-Air.md).
+
+```{note}
+Turning on POTA Hunting or SOTA Chasing also turns on **Load At Startup** and **Log QSO** for the GridTracker2 log in the Logging tab. GridTracker2 needs its own log to know which parks and summits you have already worked.
+```
 
 ## Lookups Tab
 
-The Lookups Tab controls which internet website is used for  callsign lookups as well as operation of the lookup function.  
+![The Lookups tab of the Settings panel](../img/GT2_Settings_Lookups.png)
 
-!["GridTracker Lookups Settings"](../img/GT_Settings_Lookups.png)
+### Callsign Lookup Service
 
-* **Callsign Lookup Service:** Clicking this button shows a dropdown list of four options:
-  * **CALLOOK**  -  This is the default but note it contains data for United States stations only
-  * **HamQth.com**
-  * **QRZ.com**
-  * **QRZCQ.com**
-* **Add Lookup Data to QSO Log Event**:  Choosing this option adds data to the GridTracker log only; it won't add it back to the  WSJT-X .adif file.
-* **Add Lookup Grid if QSO is Missing**:  This works pretty well for a "standard" U.S. callsign composed of four to six characters.  **_However_** **_note_**_:_  depending on which lookup service you select you may or may not be able to retrieve a grid ID.  Callook.com doesn't provide grid IDs for callsigns outside of the US. Neither can it handle callsigns that have a slash with a special designation.
-* **Open Lookup on Transmit:**  Automatically opens the Callsign Lookup window when you transmit a callsign.
-* **Close Lookup After Logging:**   Automatically closes the Callsign Lookup window when you click to confirm a QSO and add it to your WSJT-X log data.
-* **Use Callook before using another service:**  self-explanatory.
-* **Callsign Databases** -- you have the choice to enable or disable four databases
-  * **United States ULS:** Downloads a database of US Callsigns from GridTracker based on the FCC ULS Database. (This is required to show states and counties in the Call Roster). This database is updated approximately weekly.
-  * **Logbook of the World:** Downloads a database of LoTW users from the ARRL. This is enables the LoTW column in the Call Roster. This is updated weekly.
-  * **eQSL:** Downloads a database of eQSL users. This enables the eQSL column in the Call Roster.
-  * **ClubLog OQRS:** Downloads a database of OQRS users from ClubLog. This enables the OQRS column in the Call Roster.
+The website used for callsign lookups:
+
+* **CALLOOK (US Only):** the default. Free, no login, but US callsigns only.
+* **HamQTH:** free, login required.
+* **QRZ.com:** free and paid members.
+* **QRZCQ.com:** paid members only.
+
+For every service except CALLOOK, enter your **Username** and **Password** and click **Test**.
+
+### Lookups
+
+* **Add Lookup Data to QSO Log event:** when you log a QSO, details from the lookup (name, QTH and so on) are added to the QSO GridTracker2 logs.
+  * **Add Lookup Grid if QSO Grid Missing:** if the QSO has no grid, the grid from the lookup is used.
+* **Open Lookup on Transmit:** opens the Lookup window for the station whenever you start transmitting to it.
+* **Close Lookup After Logging:** closes the Lookup window after the QSO is logged.
+
+### Callsign Databases
+
+Databases GridTracker2 downloads and keeps up to date. The table shows when each was last downloaded and how many callsigns it holds.
+
+* **Big CTY:** the country (DXCC) prefix list. Always on.
+* **US Callsigns:** the FCC license database. Needed for the State and County columns in the rosters.
+* **Canada Callsigns:** the Canadian license database, for Canadian provinces.
+* **Logbook of The World:** which stations use LoTW, and when they last uploaded. Needed for the LoTW column and the Uses LoTW exception.
+* **eQSL:** which stations use eQSL.
+* **ClubLog OQRS:** which stations accept QSL requests through ClubLog OQRS.
 
 ## Audio Tab
 
-The Audio Tab has controls for the text-to-speech alert function and selection of the audio device GridTracker uses.  It also has controls for two of the optional alerts available in GridTracker:  the lightning alert and the option to get an audio notification whenever you log a new QSO with WSJT-X.
+![The Audio tab of the Settings panel](../img/GT2_Settings_Audio.png)
 
-!["GridTracker Settings Audio Tab"](../img/GT_Settings_Audio.png)
+### Audio
 
-Click on any of the green buttons  to get a drop down menu to choose your preferences.  
+* **Device:** the sound device GridTracker2 plays its alerts on.
+* **QSO Log Event Notification:** a sound played whenever a QSO is logged.
+* **File Audio Volume:** the volume of sound file alerts.
+* **Warning when audio devices change:** warns you when your sound devices have changed, for example when a USB headset is unplugged.
 
-**Note:**  when choosing the Audio Device, **DO NOT** select the sound card you are using with WSJT-X to interface with your radio.
+```{warning}
+Don't choose the sound card that connects your computer to your radio. GridTracker2's alerts would be transmitted.
+```
+
+### Text-To-Speech
+
+The **Voice**, **Speech Rate**, **Speech Pitch** and **Speech Volume** of spoken alerts. **Phonetics** speaks callsigns and grids phonetically (Kilo Seven...).
 
 ## Map Tab
 
-This is the submenu that controls the appearance of QRZ path overlays, PSK-Spot information and other overlay features that show what’s happening with active stations.  From left to right, and up to down:   
+![The Map tab of the Settings panel](../img/GT2_Settings_Map.png)
 
-!["GridTracker Map Settings"](../img/GT_Settings_Map1.png)
+### Base Map
 
-* **Current Map:**  There are over 30 alternatives for the base map layer.  (The default is Humanitarian by OpenStreetMap (Intl).
+* **Map:** the map drawn under everything else. There are more than 35 to choose from, including street, topographic, satellite and dark maps. In Offline Mode the offline maps are listed instead. A few maps need an **API Key**; its field appears when you pick one.
+* **Brightness:** dims the base map, so the grids stand out.
+* **Background Color:** the color shown where the map has no tiles, for example beyond the edge of a projection. It is kept for each map.
+* **Auto Night Map:** switches to a second map at night. While it is on, a **Night** column appears with its own map, brightness and path colors.
 
-   !["Example of a GridTracker Map with GridSquares and QSX pathes"](../img/GT_Settings_Map2.png)
-* **Animate Active Paths:**  GridTracker is set up to show "active paths", i.e., a line reflecting an attempt by one station to contact another.  You can choose to use an animated path line that shows the direction of the attempted contact.  The slider control under the enable button controls how fast the "running ants" in the animation move.   
-* **Map Setting Transparency:**  It's helpful to be able to see _some_ of the features (say, boundary lines between countries or States/Provinces) in the base map even though you've got a contact grid overlaid on top.  The slider for map transparency (actually it's the grid overlay transparency) to suit your preferences.
-* **QSX Path Color:** Change the path color
-* **QRZ Path Color:**  Change the path color
-* **Grayline Darkness:** Self-explanatory
-* **Brightness:** Adjusts the relative brightness of the underlying base map.
-* **Merge Award Overlay:** Clicking this box allows you to display award overlays on top of your base layer with its grid status map.  If you don't chose this option then the award layers will replace the base layer.
-* **Fit Map to QRZ:** This allows GT to automatically size your map and re-center it so that the map displays both your position and the grid of the other station. This activates when you Enable TX in WSJT-X. Once the transmit in WSJT-X has been disabled (either by the user or by the software, such as when a QSO is completed and logged) the map resets itself to the zoom and center you had it at prior to starting the QSO.  Calling CQ zooms the map in on your location until transmit is disabled.
-* **CQ Highlighting:**  Turn this option on or off to have a red border placed around the U.S. State or the country that is the subject of a CQ message in WSJT-X.  Examples:  CQ NA XXXXX for someone trying to reach North America or CQ AK  YYYYY for someone trying to reach any station in Alaska.
-* **QRZ Missing Grid - DXCC Fallback:**  If a gridsquare is not transmitted, uses the center of the DX Entity based on the callsign of the station to draw QSX paths.
-* **PSK Spot Color (PSK-Reporter Palette):**  Choose what color you want your PSK spots to be when you turn that feature on.
-* **PSK Spot Paths:** Choose whether or not you want to see the paths drawn between your home QTH and PSK spots.  The paths will be the same color you chose for the PSK Spot color.\*\*  
-* **PSK Spot Path Width:** Self-explanatory
-* **Auto Night Map:**  If you would prefer to work with a night map that automatically is substituted for the "Current Map" you've selected above as your base map this is where you make that change.  When you click the green button to turn this feature on you'll have over 30 choices for a base map as well as options for choices of night time path colors, PSK spot colors and map brightness.
+### Paths
 
-## Grids Tab
+The width and color of the lines drawn on the map:
 
-The color coding you choose here is repeated on the legend of GridTracker map.  However there are several other options that let you tailor how the map appears.
+* **QSX:** traffic between two other stations.
+* **QRZ:** traffic involving you.
+* **RX Spot:** paths to the stations that heard you (shown while Spotting is on). Its color can follow the band colors.
+* **Animate:** makes the paths move in the direction of the traffic, at the chosen speed. **Ctrl+J** also toggles it.
 
-!["GridTracker Grids Settings"](../img/GT_Settings_Grids.png)
+### Grayline
 
-* **PSK-Spots Over Grids:**  If you choose this option then when you click on the "Spots" feature in the GridTracker Feature Menu your PSK Reported Data will be overlaid on top of your Live, Logbook and/or Live & Logbook grids and/or any Award layers.  If you don't use this option then PSK data will replace the grid square overlay until you click on "Spots" to turn it off. 
+* **Darkness:** how dark the night side of the map is.
+* **Terminator:** where the line between day and night is drawn: Horizon, Civil, Nautical or Astronomical twilight.
 
-Here's an example of what PSK spot paths may look like.  The example on the left show PSK spots and path lines between them and your QTH if you choose **_not_**  to display the information on top of your grid map.  The example on the right shows PSK data superimposed on top of a grid map.
+### Overlays
 
- !["Example of spot pathes over grids"](../img/GT_Settings_GridsAndSpots.png) !["Example of spots and no grids"](../img/GT_Settings_GridsSpotsOnly.png)
+* **Range Rings Spacing:** the distance between the range rings around your QTH, and their color. Turn the rings on with the Range Rings button.
+* **Meridians & Parallels:** the color of the Equator, tropics, polar circles and prime meridian, turned on with their button in the button panel.
+* **Prediction Opacity:** how opaque the propagation prediction layers are.
 
-Again:  you have the choice to show those paths or not.  That's a button in the **Settings > Map** menu.
+### Grids
 
-* **Grid Opacity:**  This slider controls how opaque or transparent the grid color coding is.  
-* **Split QSL Grids:** This enables split grid mode. If a station is active in a grid that is already worked or confirmed, a diagnal line splits a grid with half indicating the worked/confirmed status, the other half shows QSX/CQ/CQ-DX/QRZ status.
-* **Auto Mouseover Grids:**  A nifty and useful feature.  If you click this button to turn it on and point your mouse to a grid you'll get a pop-up window that lists the station information for either (a) the active, live station(s) in that grid, or (b) a list of the stations in your log for that grid.  If you're operating in Logbook & Live mode and with Split QSL Grids and the grid square is divided diagonally the mouseover works for each triangle separately.
-* **Live Grid Decay:**  The opacity of _active grids_ diminishes over time.  This slider controls how quickly that happens. You can use this feature to be able to tell at a glance just how current the CQ calls are on your GridTracker Map.
+* **Grid Opacity:** how opaque the colored grids are.
+* **'All Grid Overlay' Opacity:** how opaque the Maidenhead grid lines overlay is.
+* **Live Grid Decay:** how fast live grids fade out after they were last heard. "No Decay" keeps them until they expire.
+* **Split QSL Grids:** a grid you have worked that is also live is split diagonally: one half shows your logbook status, the other half the live traffic.
+* **Auto Mouseover Grids:** shows a grid's details when you hold the mouse over it.
+
+### Display
+
+* **Fit Map to QRZ:** while you are transmitting, the map zooms to show you and the station you are working, then returns to your previous view.
+* **Outline Directed CQ Areas:** when a station calls a directed CQ (CQ NA, CQ EU, CQ JA...), the area they are calling is outlined on the map.
+* **Missing Grid DXCC Fallback:** a station that hasn't sent a grid is drawn at the center of its DXCC entity.
+* **Keep Other Layers With Award View:** with an Award picked in the Map View Filters, grids, paths and spots stay on the map. **Ctrl+U** toggles it.
+* **Group Overlapping Spots:** POTA, SOTA and DX Feeds markers that would overlap are shown as one marker. Hold the mouse over it to see them all.
+* **Map Settings Transparency:** how see-through this tab is, so you can watch the map while you change the settings.
+
+## Colors Tab
+
+![The Colors tab of the Settings panel](../img/GT2_Settings_Colors.png)
+
+### Gridsquare Colors
+
+The colors of the grids on the map, also shown in the map legend:
+
+* **QSO / Worked** and **QSL / Confirmed:** grids in your logbook.
+* **QSX / Station-2-Station:** live traffic between other stations.
+* **QTH / Home Gridsquare:** your grid.
+* **'CQ' Stations** and **'CQ DX' Stations:** stations calling CQ.
+* **QRZ / Your Traffic:** stations calling you.
+
+### Band Colors
+
+The color of each band. Band colors are used for map spots, pins and paths, in both rosters, in the Statistics window and in the Lookup window.
+
+Each box has a **Reset Colors** button in its title to return to the defaults.
+
+## Feeds Tab
+
+This tab appears while **DX Feeds** is turned on in the Features tab.
+
+![The Feeds tab of the Settings panel](../img/GT2_Settings_Feeds.png)
+
+### DX Feeds
+
+* **Feed Spots Max Age:** how long a feed spot stays on the map after it was last spotted, 1 to 60 minutes.
+* **Clear All Feeds:** clears all feed spots from the Feed Roster and the map. New spots keep arriving.
+* **Allow Alert Script:** lets feed spots run the roster alert script.
+* **Allow Notifications (Pushover, Simplepush):** lets feed spots send push notifications.
+
+### Modes and Bands
+
+One tick box for each mode seen in feed spots, and for each band. Untick a mode or band to hide its spots in the Feed Roster and on the map.
 
 ## Logging Tab
 
-The Logging Tab gives you extensive options for importing and exporting QSO data to external websites and software logging programs.  
+GridTracker2 is a log *viewer*, not a logging program. The Logging tab sets where your QSOs come from (which logs are loaded) and where new QSOs are sent. See [Logging Options and Functions](../Making-GridTracker-Work-For-You/GridTracker-Logging-Options-and-Functions.md) for how they fit together.
 
-**_Important Note_** Again:  while GridTracker maintains a file of your QSOs it should not be considered your _primary_ logging site.  **Gridtracker is a log viewer, not a logging program.**  WSJT-X maintains a text based and an ADIF file of your contacts but it is not a logging program either.  Use the GT Logging feature to automatically send contact information to your permanent, master log.
+![The Logging tab of the Settings panel](../img/GT2_Settings_Logging.png)
 
-!["GridTracker Logging Settings"](../img/GT_Settings_Logging.png)
+The columns are:
 
-Although this menu can look complicated at first glance it really is straightforward to use.  The Logging menu allows you to automatically send new QSO contact data to one (or more) local and web based sites.  In order to do this you'll have to have and enter the appropriate location and/or login data for the site.
+* **Connect:** a live, two-way connection to the program (Log4OM and N3FJP AC Log). A dot next to it shows green while connected, red while not.
+* **Menu Button:** adds a button for that log to the button panel, so you can load it whenever you like.
+* **Load At Startup:** loads that log when GridTracker2 starts.
+* **Log QSO:** sends every new QSO to it.
 
-When you install GridTracker in a **Windows system with OneDrive** your GridTracker QSO data is stored as .adif files that get saved within OneDrive. Otherwise GridTracker QSO data is stored as .adif files only on your local disk.  _See_ the[ **GridTracker Data File**](../GridTracker-File-Storage.md#gridtracker-data-files) Storage section in this manual for more details.   
+### Logbooks On This Computer
 
-## Alerts Tab
+* **App Log(s):** the log files of WSJT-X, JTDX and similar programs. GridTracker2 finds them automatically; use **Add File** to add others, and untick any you don't want loaded.
+* **GridTracker2:** GridTracker2's own backup log of the QSOs it logs. **Backup Logs** opens its folder. Keep this on if you use POTA Hunting or SOTA Chasing.
+* **Local File(s):** any other ADIF files you want loaded at startup. Click **Add File** (it also ticks **Load At Startup**). Files opened with the **Load ADIF Log** button are added here too.
 
-This tab has options to set automatic audio alerts for **_current traffic that you are receiving_**.  WSJT-X (and therefore GridTracker) "hears" what you tell it to hear in terms of frequency band and digital mode.  **_It has no way of knowing and alerting you if a station is active on a different band or mode other than one you are using._**  
+### Logging Programs
 
-You can set an alert for a variety of situations.  It can be anything from a “wanted” grid or country to your buddy's callsign or even your own callsign.  By default alerts are done with Text-to-Speech but you have the choice of using a sound effect instead.
+Logging programs on this or another computer, each with its **IP** address and **Port**:
 
-&#10148; **_Practice Tip:_**  If you tend to multitask while on the radio it's helpful to set up an \[audible\] alert for your own callsign so you get "pinged" when someone responds to your Tx.
+* **ADIF UDP / N1MM:** sends each QSO as ADIF over UDP, for N1MM Logger+, HRD Logbook 6.9 and later, and other programs that accept it.
+* **Log4OM:** **Connect** links to Log4OM's remote control. With **Enable Rig Control** on, clicking a spot also tunes your rig through Log4OM. See [Log4OM](../Third-Party-Integrations/Log4OM-Integration.md).
+* **N3FJP Loggers:** AC Log and the other N3FJP loggers. **QSL By** picks which confirmation counts as a QSL. With **Enable Rig Control** on, clicking a spot tunes your rig through AC Log. See [N3FJP AC Log](../Third-Party-Integrations/N3FJP-AC-Log-Integration.md).
+* **DXKeeper:** DXLab's logbook.
+* **HRD Logbook <= v6.8.x:** older versions of Ham Radio Deluxe's logbook. For version 6.9 and later use ADIF UDP / N1MM.
 
-!["GridTracker Alerts Settings"](../img/GT_Settings_Alerts.png)
+### Online Logbooks
 
-##### **_Setting Classes of Audio Alerts_**
+Enter your account details and click **Test** to check them.
 
- &#10148; _See settings outlined in blue in the illustration above._
+* **QRZ.com:** your logbook **API Key** (a QRZ.com subscription feature).
+* **ClubLog:** callsign, password and email.
+* **LoTW:** your LoTW website login and password, used to download your confirmations. To upload new QSOs, tick **Log QSO**, then choose the **TQSL Path** (not needed on macOS), your **TQSL Password** if your certificate has one, and the **Station Name** (your TQSL station location). Uploads that fail are queued and retried with the next QSO.
+* **eQSL.cc:** user, password, and optionally a **QTH Nickname**.
+* **HRDLOG.net:** callsign and upload code.
+* **Cloudlog/Wavelog:** the URL of your server, an API key, and the **Station Profile** (click **Test** to load the list).
+* **HamCQ.cn:** API key.
 
-* **_Reference_**
+### PSK-Reporter 24 Hour History
 
-Clicking on this button allows you to choose from a variety of combinations between band and mode. 
+Loads the stations that heard you on PSK-Reporter over the last 24 hours. These are reception reports, not QSOs.
 
-!["Alert Refernces Drop Down Menu"](../img/GT_Settings_AlertsRefs.png)
+## Audio Alerts Tab
 
-This is the logbook reference for checking if GridTracker should alert for new Callsigns, Grids, DXCC, CQ Zone, ITU Zone or US States.
+Audio Alerts speak or play a sound when a station you want is decoded. The alert ticks are separate from the roster's Wanted ticks, so the roster can highlight more than you are alerted for. The **Reference** and **Exceptions** are shared with the roster: changing them here changes them in the roster window, and the other way around.
 
-* **Current Band and Mode** references logged contacts on only the current band and mode.
-* **Current Band, Any Mode** references logged contacts on the current band but any mode.
-* **Current Band, Any Digi Mode** references logged contacts on the current band and any data mode. A DXCC logged in JT65 won't alert in FT8.
-* **Current Mode, Any Band** references logged contacts in the current mode but on any band.
-* **Any Band, Any Mode** references any logged contact in your log book without regard for the band or mode.
-* **Any Band, Any Digi Mode** references any data mode logged contacts in your logbook without regard for the band.
-* **_Audio Alert Criteria_** 
+![The Audio Alerts tab of the Settings panel](../img/GT2_Settings_AudioAlerts.png)
 
-The main box below the heading "Audio Alerts" has a list of standard criteria associated with a contact.   You can set up an alert if _you are receiving a signal_ from a callsign or grid that you haven't previously contacted. 
+While DX Feeds is on, **Call Roster** and **Feed Roster** sub-tabs appear at the top: each roster has its own alerts. In the roster, a 🔔 after a Wanted item means it has an audio alert; click it to open its sub-tab.
 
-First click on an open button next to "Callsign" or "CQ Zone", etc. to enable the alert.  Then click on any of the green buttons next to that criteria o see the options available for the contact status (new or new + ucomfirmed), type of notification (text-to-speech or media file), and the alert "value".  
+### Audio Alerts
 
-The alert _value_ depends on whether you choose a _text-to-speech_ or a _media file_ for the notification.  If you choose _text_ then a voice will tell you that one of your "wanted calls" is active.  If you choose a _media file_ then you will pick one from 200 plus sound effects to play.  The "value" will simply be the name of the sound effect.
+Tick what you want to be alerted for: **Callsign**, **Grid**, **DXCC**, **Marathon**, **WPX**, **POTA** (with POTA Hunting on), **SOTA** (with SOTA Chasing on), **CQz**, **ITUz**, **State**, **County**, **Continent** and **Watcher**. **Multiple** alerts when a station is wanted for more than one of them.
 
-### Setting Exceptions Classes of Alerts 
+For each one choose:
 
-&#10148; _See settings outlined in gold in the illustration above._  
+* **Type:** Text-To-Speech, or Media File (a sound).
+* **On Single:** what is said or played when one station is wanted.
+* **On Multiple:** what is said or played when several stations are wanted at once.
+* **On ATNO** (DXCC, POTA, SOTA and Multiple): played instead when the station is an All Time New One, an entity, park or summit you have never worked.
 
-The exception list is used to modify or refine one of the criteria in the blue box.    
+**Count** shows how many stations are alerting right now.
 
-**CQ Only**:  Limits alerts to only those stations where a wanted Callsign,  ITU zone, etc. is _sending out a CQ_.  You won't get an alert if the station is in the middle of a general FT-8 response.  
+### Reference
 
-**Require Grid:** Limits alerts to only those stations who have included their Grid location in their Tx. 
+* **Logbook:** which QSOs count as worked:
+  * **Live Band & Mode:** QSOs on the band and mode you are on now.
+  * **Live Band, Mix Modes:** QSOs on your current band, in any mode.
+  * **Live Band, Digi Modes:** QSOs on your current band in any digital mode.
+  * **Mix Band, Live Mode:** QSOs in your current mode, on any band.
+  * **Mix Band & Modes:** any QSO.
+  * **Mix Band & Digi Modes:** any digital QSO.
+  * **Award Tracker:** alerts for the awards you track in the roster's Award Tracker instead.
+  * The Feed Roster says "Spots" instead of "Live", and adds Phone and CW choices.
+* **Hunting:** **New** (never worked), **New+Unconfirmed** (never worked, or worked but not confirmed) or **Mixed**.
 
-**Min dB:** Limits alerts to only those stations that you are receiving above a certain sound floor.
+### Exceptions
 
-**Max DT:**  Limits alerts to only those stations that are transmitting within a fixed time difference from you.  
+Exceptions narrow down which stations alert: **CQ Only**, **RR73 as CQ** (a station ending a QSO counts as calling CQ), **New Calls**, **Has Grid**, **Not My DXCC** / **Only My DXCC**, **Spotted Me**, **Uses eQSL**, **Uses OQRS**. The Feed Roster adds **Hide Self-Spot**, **Auto Band** and **Auto Mode**. The **. . .** button opens the roster's Exceptions tab for the rest (signal strength, frequency, LoTW, and so on). See [The Call Roster](../Making-GridTracker-Work-For-You/Using-Call-Roster.md#exceptions).
 
-**Min or Max Freq:**  Limits alerts only those stations above or below a certain frequency.
+### Rules
 
-**Not my DXCC / Only my DXCC:**  Limits alerts to only those stations that are outside or inside your country.  For example setting up an alert to grids needed inside or outside the USA.
+* **Every Decode** (Call Roster only): alerts on every decode of a wanted station, not just the first.
 
-**Uses LoTW / Uses eQSL: :**  Click on this option to restrict alerts to only stations that use LoTW or eQSL. 
+## Custom Alerts Tab
 
-**No Round-Up / Only Round-Up:** Alerts should either ignore or be only _RTTY Round-Up_ contest messages. useful if you are working RTTY Round-UP and you want to be alerted if a station meets your alert criteria and is participating in the contest. Or if you want to ignore RTTY Round-Up participants even if they would otherwise meet your alert criteria.
+Custom Alerts watch for one particular callsign or grid, whatever your roster settings.
 
-### Custom Alerts 
+![The Custom Alerts tab of the Settings panel](../img/GT2_Settings_CustomAlerts.png)
 
- &#10148; _See settings outlined in red_
+To add one, pick:
 
-!["The Custom Alerts section of the Alerts Settings"](../img/GT_CustomAlerts.png)
+* **Type:**
+  * **QRZ:** your own callsign, when someone calls you.
+  * **Callsign (exact)**, **Callsign (partial)** or **Callsign (regex)**.
+  * **Gridsquare:** a 4-character grid.
+* **Value:** the callsign, part of a callsign, regular expression or grid.
+* **Notify:** **Text-To-Speech**, **Media File**, **Visual Popup** (a small alert window) or **Map Center** (the map moves to the station).
+* **Repeat:** **Until Deleted**, **Until Exit**, **Only Once** or **Never Repeat**.
 
-Here's where you can set up a non-standard alert for specific  things such as a specific callsign or DXCC (like when Svalbard finally shows up in your waterfall.)  The table outlined in white that appears directly below shows a list of the customer alerts you've set up.  
+Then click **ADD**. The list below shows your alerts, when each last went off and the message that set it off, with buttons to reset or delete each one. See [Setting Up Audio and Visual Alerts](../Making-GridTracker-Work-For-You/Setting-Up-Audio-and-Visual-Alerts.md) for examples.
 
-The screenshot above shows two custom alerts. The first provides an audio alert (a sound) whenever a decoded WSJT-X message includes the user's callsign. (A QRZ response.)  The second is a text-to-speech alert whenever a specific callsign (KG6MZS) is decoded in WSJT-X.  
+## Logbook Tab
 
-Notes:
+![The Logbook tab of the Settings panel](../img/GT2_Settings_Logbook.png)
 
-* You have to click the "Add" button to add a new alert
-* The table with custom alerts has buttons to reset an alert or delete (trash) them.
+### QSL Location Authority
 
-Please see the [Setting Up Alerts](../Making-GridTracker-Work-For-You/Setting-Up-Audio-and-Visual-Alerts.md) section of this manual for examples of how to set up various alerts.
+When the same QSO is in several logs, this picks the one whose location (grid, county and so on) is used: LoTW (the default), QRZ.com, eQSL, Clublog, N3FJP, Other, Last Loaded or None. Click **Apply Changes** to reload your logbooks with the new choice. Your log files aren't changed.
 
-## Call Roster Tab
+### Logbook Filters
 
-There are typically only three settings controls on this tab:
+Limit the logbook shown on the map, in the rosters and in Statistics:
 
-* The choice to always keep the Call Roster window (if you have it open) on top of any other GridTracker overlays.
-* The length of time that current traffic data is displayed in the Call Roster table from a minimum of 15 seconds to a maximum of 5 minutes.
-* Set up an audio alert if a transmission is heard from a "new, wanted" station. A "new, wanted" station is one that meets some selection criteria you've set up in Call Roster
+* **Working Callsign(s):** only QSOs made with these callsigns, separated by commas. Useful if you have operated under several callsigns, or portable (for example `N0TTL/7`). While the field is empty, it shows the callsigns found in your logs.
+* **Working Grid(s):** only QSOs made from these grids.
+* **Working Date:** only QSOs made after this date and time (UTC), for example the start of a contest or DXpedition.
 
-!["Call Roster Settings"](../img/GT_Settings_CallRoster.png)
-
-Setting up criteria for "wanted" stations is discussed in detail in the [Call Roster](../Making-GridTracker-Work-For-You/Using-Call-Roster.md) section of this guide.
-
-## OAMS Tab
-
-!["GridTracker OAMS Settings"](../img/GT_Settings_OAMS.png)
-
-OAMS - pronounced (Ohms) - is the "Off-Air message Service" of GridTracker and Log4OM.  It gives users the ability to share their "on-air" status with other users, allows user to user chat, and permits real-time spotting.  
-
-The OAMS tab has the settings that let you enable or disable the message service and spotting.  It also has the controls for how you receive an alert for an incoming message and how that message is handled.
-
-_"**Spotting**" as used here means spots are coming from other active OAMS users instead of PSK reporter._ This supplements the PSK Reporter spots for the first 5 minutes after your first transmission before GT pings the PSK Reporter server, and can provide updated spots during the 5 minute intervals between PSK Reporter updates while you are active. 
-
-## User Logbook Tab
-
-!["GridTracker Logbook Reference Settings"](../img/GT_Settings_Logbook.png)
-
-The controls on this page allow users to tailor the GridTracker logbook and its statistics to _individual callsigns_ and/or for a _specific period of time._
-
-You can make any of these choices singly or combine a Working Callsign choice with a Calendar choice.   **You must click on the "Apply Changes"**  button at the bottom of the screen for your choice(s) to take effect.
-
-1. If you leave the button to enable "Working Callsign" unchecked GT will interpret that to mean that _all the QSOs_ - regardless of which callsign made them and their date - should be shown in the Logbook grid overlays and Statistics. 
-2. If you do click the button to enable "Working Callsign" and enter a callsign into the box then GT Logbook and statistics functions will reflect data for that callsign only. You may choose to do this if you are traveling away from your home QTH and append an indicator to your call - something like "/4" - to indicate a temporary status.  _But make sure that the callsign you enter here matches the callsign you've entered into the settings for WSJT-X._ 
-3. Whether or not you enable "Working Callsign" you can enable "Working Date" to narrow contact data to a specific date.  You could use this to look at statistics for a contest for example.   
-
-**Note:** it isn't possible to limit "Working Date" to a range of dates. The "Working Date" just references the logbook after the specified date.
-
-## Update Tab
-
-!["GridTracker Update Tab"](../img/GT_Settings_Update.png)
-
-This tab provides update notes for the version of GridTracker that you are using. This is an important section to check after updating GridTracker. This is where the developer team tells you what they changed in the latest version of GridTracker and potentially of major on-going issues that are being worked on.
+Tick **Enable?** next to each filter you want to use, then click **Apply Changes**.
 
 ## About Tab
 
-!["GridTracker About Tab"](../img/GT_Settings_About.png)
+The About tab shows your GridTracker2 version and the versions of the components it is built on. Include them when you ask for help or report a bug.
 
-A standard software function that tells you which version of GridTracker you are using, etc.  This is the tab to reference when seeking help or reporting bugs. The entire version number and any beta names are needed so we know exactly which version of GridTracker you are using.
+When a new version has downloaded, it is announced here with an **Install and Restart** button. If you start GridTracker2 with `--disable-auto-updates`, a new version is announced with a **Download** button instead.

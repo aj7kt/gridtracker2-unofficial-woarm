@@ -1,22 +1,23 @@
-# GridTracker2 Support
-There are a number of great information sources and technical support mechanisms available for GridTracker2.
+# Getting Help
 
-![facebook128](img/facebook128.png) The Facebook® group provide tricks tips and quick discussion
+The GridTracker2 team answers questions on our Discord server only:
 
-![discord128](img/discord128.png) Join the live discussions on Discord here [https://discord.gg/j9Cv9XU](https://discord.gg/j9Cv9XU)
+* ![Discord](img/discord128.png){width=32px} **Discord:** join the discussion at [discord.gg/gridtracker](https://discord.gg/gridtracker).
+* **GitLab:** report a bug at [gitlab.com/gridtracker.org/gridtracker2/-/issues](https://gitlab.com/gridtracker.org/gridtracker2/-/issues). See [Submitting Bug Reports](Submitting-Bug-Reports.md).
 
-![groupsIO128](img/groupsIO128.png)Groups.IO Email Forum [https://groups.io/g/GridTrackerApp](https://groups.io/g/GridTrackerApp)
+When you ask for help, include your GridTracker2 version from Settings → About, your operating system, and a screenshot (**Ctrl+K** copies one to the clipboard).
 
-# Third-party support
+## Other Programs
 
-For technical support with applications other than GridTracker, please consult the respective applications support options. These are the support resources we are aware of, please consult their websites as there may be additional support avenues available.
+For help with other programs, please use their own support:
 
-| **App** | **Suport Option/Link** |
+| Program | Support |
 | --- | --- |
-| WSJT-X | [WSJT-X web page](https://physics.princeton.edu/pulsar/K1JT/wsjtx.html)<br>[WSJT-X groups.IO](https://groups.io/g/WSJTX) |
-| JTDX | [Main contact information](https://jtdx.tech/en/contacts)<br>[JTDX Groups.IO](https://jtdx.tech/en/contacts/3-groups-io) |
-| Log4OM | [Log4OM web page](https://www.log4om.com/)<br>[Log4OM Support Forum](https://forum.log4om.com/) |
-| N3FJP Loggers | [N3FJP web page](https://www.n3fjp.com/)<br>[Groups.IO Options](https://www.n3fjp.com/yahoogroups.html) |
-| N1MM+ Logger | [N1MM web page](https://n1mmwp.hamdocs.com/) |
-| DXKeeper | [DXKeeper web page](http://www.dxlabsuite.com/dxkeeper/)<br>[DXKeeper Groups.IO](https://groups.io/g/DXLab) |
-| HRD Logbook | [HRD Logbook web page](https://www.hamradiodeluxe.com/features/logbook/) |
+| WSJT-X | [WSJT-X web page](https://wsjt.sourceforge.io/), [WSJT-X groups.io](https://groups.io/g/WSJTX) |
+| JTDX | [JTDX contacts](https://jtdx.tech/en/contacts) |
+| Log4OM | [Log4OM web page](https://www.log4om.com/), [Log4OM forum](https://forum.log4om.com/) |
+| N3FJP Loggers | [N3FJP web page](https://www.n3fjp.com/) |
+| N1MM Logger+ | [N1MM web page](https://n1mmwp.hamdocs.com/) |
+| DXKeeper | [DXKeeper web page](https://www.dxlabsuite.com/dxkeeper/), [DXLab groups.io](https://groups.io/g/DXLab) |
+| HRD Logbook | [Ham Radio Deluxe web page](https://www.hamradiodeluxe.com/) |
+| Cloudlog / Wavelog | [Cloudlog](https://www.magicbug.co.uk/cloudlog/), [Wavelog](https://www.wavelog.org/) |

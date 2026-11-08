@@ -1,105 +1,84 @@
-# Windows
+# Appendix A: Installing GridTracker2
 
-1. Download the latest version from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/) being sure to use the file link under Windows. Save the file to your Downloads directory and then double click on `GridTracker-Installer.<verion>.exe` to start the installation process. \
-\
-You may be prompted with a “User Access Control” dialog. If so, click the **Yes** button to continue. 
+Download GridTracker2 from [gridtracker.org/downloads](https://gridtracker.org/downloads/). Choose the package for your system, as described below. When it is installed, continue with [Appendix B](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) to connect it to WSJT-X or JTDX.
 
-!["Windows UAC prompt to launch GridTracker installer"](../img/GT_InstallWin_UAC.png) 
+## Windows
 
-2. Click **Next** to continue.
+1. Download the Windows installer, `GridTracker2-<version>-setup.exe`. One installer works on both 64-bit and 32-bit Windows. (For Windows 7 and 8, download the separate Windows 7 installer.)
+2. Double-click the installer in your Downloads folder.
 
-![](../img/GT_InstallWin_Wiz1.png)
-
-3. GridTracker will present the default installation location. It is recommended that you use this, but you may select path if desired, but clicking the **Browse…** button. \
-\
-Click **Install** to continue.
-
-![](../img/GT_InstallWin_Wiz2.png)
-
-4. When the installation finishes click **Next** to continue.
-
-![](../img/GT_InstallWin_Wiz3.png)
-
-5. The installation is now complete. Click **Finish** to close the installer and launch GridTracker for the first time. \
-\
-You may uncheck “Launch GridTracker now” if you do not want to launch it after clicking the **Finish** button.
-
-![](../img/GT_InstallWin_Wiz4.png)
-
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
-
-
-# MacOS
-
-1. Download the latest version from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)\
-\
-Open a Finder window and navigate to the place that the download is in; likely the Downloads directory. It may need to be unzipped (double click the zip file) or your browser may have already done that for you.\
-\
-Once you have the GridTracker.app, drag it to your Applications folder:
-
-![](../img/GT_InstallMac_DragToApps.png)
-
-2. Next you need to open the Applications folder, **Command-Click** GridTracker, then Click **Open**. \
-\
-MacOS will present a security warning allowing you to decide to override system security settings, click **Open**. You should not see this warning after this.
-
-> Screen grab needed for MAC system security override screen.
-
-3. And another asking permission for notifications.
-
-![](../img/GT_InstallMac_Network.png)
-
-You will get two more pop-ups after the program has been running, one to allow incoming network traffic:
-
-4. And another asking permission for notifications.
-
-![](../img/GT_InstallMac_Notifications.png)
-
-You will want to Allow network notifications, and it is up to you if you want to Allow the Notifications.
-
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
-
-# Linux Intel/AMD Archs
-
-## Redhat based distros
-
-1. Download the latest version .rpm for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
-2. Install either by running from where you downloaded the .rpm
-   ```bash
-   sudo dnf install ./GridTracker2-2.xxxxxx.x-arch.rpm
+   ```{tip}
+   If Windows refuses to run the installer, right-click it, choose **Properties**, and on the **General** tab tick **Unblock** if it is there. Then run it again.
    ```
-   where arch is your system architecture (x86_64, aarch64 or armv7l) or by double clicking to launch Discover Software Center.
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
+3. Accept the license agreement.
+4. Choose whether to install for yourself only (the default, no administrator rights needed) or for everyone on the computer, and where to install it. The defaults are fine for most people.
+5. Click **Install**, then **Finish** to start GridTracker2.
 
-## Debian based distros
+The installer adds GridTracker2 to the Start menu and the desktop.
 
-1. Download the latest version .deb for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/)
-2. Install using dpkg from where you downloaded the .deb
-   ```bash
-   sudo dpkg -i ./GridTracker2-2.xxxxxx.x-arch.deb
-   ```
-   where arch is your system architecture (amd64, arm64, armv7l)
-
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
-
-## Arch linux
-
-> Need new instructions for .pacman file
-
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
-
-## All other Linuxes
-(or using the tar.gz packge)
-
-Download the tar.gz package for your architecture from [https://gridtracker.org/downloads/](https://gridtracker.org/downloads/), decompress and execute the GridTracker exectuable from the decompressed directory.
-
-```bash
-$ tar -xf GridTracker-<version>-linux-<arch>.tar.gz
+```{note}
+The first time GridTracker2 runs, Windows Firewall may ask whether to allow it on your network. Allow it on **private** networks at least, so it can receive messages from WSJT-X. After an update, check that the firewall still allows it.
 ```
 
-Run the GridTracker executable from the now decompressed package directory.
+## macOS
 
-> Need new instructions for .APK and .AppImage
+1. Download the macOS disk image, `GridTracker2-<version>.dmg`. It works on both Intel and Apple Silicon Macs.
+2. Open it, and drag **GridTracker2** to your **Applications** folder.
+3. Open GridTracker2 from the Applications folder.
+4. macOS asks whether GridTracker2 may find devices on your local network. Click **Allow**: GridTracker2 needs this to receive messages from WSJT-X.
 
-Proceed to the [Configuring WSJT-X and JTDX for GridTracker](Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) section for next steps.
+   ![The local network permission request](../img/GT_InstallMac_Network.png)
+
+5. macOS may also ask whether GridTracker2 may send notifications. That is up to you.
+
+   ![The notification permission request](../img/GT_InstallMac_Notifications.png)
+
+## Linux
+
+Packages are available for Intel and AMD (x86_64), 64-bit ARM (arm64 / aarch64) and 32-bit ARM (armv7l). Pick the one for your distribution and architecture; `<version>` and `<arch>` stand for the version and architecture in the file name.
+
+### Debian, Ubuntu, Raspberry Pi OS and other Debian-based distributions
+
+```bash
+sudo apt install ./GridTracker2-<version>-<arch>.deb
+```
+
+### Fedora, Red Hat and other RPM-based distributions
+
+```bash
+sudo dnf install ./GridTracker2-<version>-<arch>.rpm
+```
+
+### Arch Linux and other pacman-based distributions
+
+```bash
+sudo pacman -U ./GridTracker2-<version>-<arch>.pacman
+```
+
+### Alpine Linux
+
+```bash
+sudo apk add --allow-untrusted ./GridTracker2-<version>-<arch>.apk
+```
+
+### Any distribution: AppImage
+
+Make the AppImage executable and run it:
+
+```bash
+chmod +x GridTracker2-<version>-<arch>.AppImage
+./GridTracker2-<version>-<arch>.AppImage
+```
+
+### Any distribution: tar.gz
+
+Unpack the archive anywhere, even on a USB stick, and run `gridtracker2` from the unpacked folder:
+
+```bash
+tar -xf GridTracker2-<version>-<arch>.tar.gz
+```
+
+```{tip}
+If GridTracker2 starts on Linux but shows no text at all, the font cache may be out of date. Run `fc-cache -fv`, then start GridTracker2 again.
+```

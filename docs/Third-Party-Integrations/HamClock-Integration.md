@@ -1,19 +1,21 @@
 # HamClock
 
-[HamClock Website](https://www.clearskyinstitute.com/ham/HamClock/)
+[HamClock](https://www.clearskyinstitute.com/ham/HamClock/) can listen to WSJT-X and JTDX messages to show the station you are working. GridTracker2 can pass those messages on to HamClock, so HamClock and GridTracker2 can both follow WSJT-X. You need HamClock version 2.51 or later.
 
-HamClock can receive UDP broadcasts from WSJT-X and JTDX to update the DX location on HamClock. GridTracker can in turn provide the same DX / Grid information that WSJT-X or JTDX does.
+## GridTracker2
 
-You must be using HamClock version 2.51 or greater.
+In [Settings → General](../GridTracker-Overview/Settings-Sub-Menus.md#general-tab), in the **Forward UDP Messages** box:
 
-![HamCLock Settings Screen](../img/GT_3rdParty_HamClock1.jpg)
+1. Add the IP address of the computer running HamClock to **IP(s)/Hostname(s)**. Separate several addresses with commas if you forward to other programs too.
+2. Set the **Port** HamClock will listen on, for example 2238.
+3. Tick **Enabled?**.
 
-Enter WSJT-X for the “Cluster?Spider host:” and in “port:” enter the port number you configured in GridTracker to broadcast.
+## HamClock
 
-Click “Done” when finished.
+![HamClock settings](../img/GT_3rdParty_HamClock1.jpg){width=460px}
 
-HamClock will continue to load / launch.
+In HamClock's setup, enter **WSJT-X** for the "Cluster? Spider host:" and the port you set in GridTracker2 for "port:". Click **Done**.
 
-Once HamClock is up and running, when you initiate a QSO, if configured properly, the DX station will be 1) shown in the DX window, 2) the VOACAP DE-DX will be updated, 3) the DX placed on the map along with the DX legend (lower left) will be updated.
+When you start a QSO, HamClock shows the DX station in its DX window, updates its VOACAP DE-DX prediction, and places the DX station on its map.
 
-![Ham Clock Main Screen](../img/GT_3rdParty_HamClock2.jpg)
+![HamClock showing the DX station](../img/GT_3rdParty_HamClock2.jpg){width=460px}

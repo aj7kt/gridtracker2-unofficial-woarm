@@ -708,7 +708,7 @@
   "gt.button.stats.hover": "Statistieken tonen",
   "gt.button.grayline.hover": "Grijze lijn schakelen",
   "gt.button.moon.hover": "Maan schakelen",
-  "gt.button.help.hover": "Sneltoetsenlijst schakelen",
+  "gt.button.help.hover": "Gebruikershandleiding openen",
   "gt.button.mute.hover": "Geluid dempen schakelen",
   "gt.button.adifLoad.hover": "ADIF-log laden",
   "gt.button.adifReload.hover": "Lokale ADIF-bestanden opnieuw laden",
@@ -996,5 +996,6 @@
   "santa.days.label": "Dagen",
   "santa.hours.label": "Uren",
   "santa.minutes.label": "Minuten",
-  "santa.seconds.label": "Seconden"
+  "santa.seconds.label": "Seconden",
+  "gt.userGuide.search.hover": "Zoeken in de gebruikershandleiding"
 }

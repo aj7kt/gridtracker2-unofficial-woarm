@@ -1,30 +1,30 @@
-# GridTracker Overview
+# The Main Window
 
-The GridTracker Map is a visual representation of all of your radio contacts (QSOs) by Maidenhead grids.  You can move the map by clicking anywhere on it and dragging.  You can enlarge the map to look at all of the grids where you do or don't have contacts in a single country.  You can reduce the map size to look at all of the grids where you've made contacts across the globe.  
+GridTracker2's main window has two parts: the **map**, and the **side panel** next to it.
 
-**WSJT-X is loaded with grid squares and is the reason GridTracker exists!** 
+![The GridTracker2 main window](img/GT2_Main_Window.jpg)
 
-!["GridTracker main window showing most of the world in AEQD mode and the control panel with typical settings"](img/GT_Overview.png)
+The map shows your QSOs and the stations you are hearing by Maidenhead grid square, along with the paths between stations and any overlays you choose: grayline, award progress, POTA parks, SOTA summits, DX spots, propagation predictions and more.
 
-GridTracker loads your active **wsjtx_log.adi** file at every startup _automatically._ This "seeds" GridTracker with your "worked" QSOs. (But it also has options that allow you to load other log files from other sources.)
+A standard WSJT-X message carries the sender's grid:
 
-!["GridTracker Logbook status area showing 73213 QSOs logged and 54206 QSLs"](img/GT_Logbook_Counters.png)
+> **CQ N0TTL CN84**\
+> **N0TTL N2VFL FN20**
 
-Towards the top right corner of GridTracker is a label "QSO" with a number to the right: This is the number of QSOs also known as "Log Records" GridTracker was able to find in your **wsjtx_log.adi** log file (plus other log files if you choose to import them.)
+GridTracker2 reads the grid from each decode and colors that square on the map as it is heard. When two stations are in a QSO, it draws a path between them.
 
-Those QSOs will be highlighted with yellow boxes on a map that correspond to the standard Maidenhead grid system used in ham radio to locate contacts. Yyou can define the color coding for not only your contacts, but _confirmed_ contacts (red boxes) and live traffic in the settings menu.
+Your logbook is loaded when GridTracker2 starts: the log files of WSJT-X, JTDX and similar programs, GridTracker2's own backup log, and any other logs you choose in [Settings → Logging](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab). The grids you have worked are colored in your QSO color, and the confirmed ones in your QSL color.
 
-A standard WSJT-X message usually contains the sender's Maidenhead grid location. It's included in the standard \[default\] messages WSJT-X creates:
+The side panel shows what your radio is doing, your QSO and QSL counts, the Map View Filters, and the buttons that open the other windows and turn map layers on and off.
 
-> "**CQ N0TTL CN84**"\
-> **"N0TTL N2VFL FN20"**
+The next chapters describe:
 
-GridTracker will take grid locations from the live message decodes done in WSJT-X and map them on the GridTracker map in real time.  
+* [The Map](GridTracker-Overview/GridTracker-Map-View-—-Main-WIndow.md): grids, paths, pins, projections, overlays, award layers and spot markers.
+* [The Side Panel](GridTracker-Overview/Control-Panel.md): every part of the panel, including each button.
+* [Settings](GridTracker-Overview/Settings-Sub-Menus.md): every tab of the Settings panel.
 
-GridTracker also recognizes when two stations are in a QSO with each other.  It will draw a "Q-path" (geodesic line) between the grids of the two stations.  If you elect to enable animations the line will appear as "marching ants" in the direction of the traffic.  We call this "QSX" (traffic between two stations).
+Other windows open from the side panel: the [Call Roster](Making-GridTracker-Work-For-You/Using-Call-Roster.md), [Statistics](Making-GridTracker-Work-For-You/GridTracker-Statistics.md), and the [Lookup, Conditions and Band Activity windows](Making-GridTracker-Work-For-You/Other-Windows.md). Each window remembers its position and size. Closing one only hides it; the button opens it again.
 
-!["Close up of Grids in split-grid view"](img/GT_grids.png)
-
-After you've accumulated some confirmed stations in WSJT-X you will eventually see some grids are divided in half by a diagonal line.  These grids are what we term "split grids" (not to be confused with "rig split".)
-
-The GridTracker map will show a split grid when you select the option to show both _Logbook_ (or historical) data and _Live_ data. A _split grid_  is one where you have previously logged a QSO with a station in the grid (yellow triangle) but there is currenty live QSX traffic (blue triangle) occurring. You will also see green and  aqua triangles.  This means that a station in the grid is calling CQ.
+```{tip}
+Every window can be zoomed: **Ctrl** with **+** or **–**, or **Ctrl+Alt** with the mouse wheel. **Ctrl+0** resets it.
+```

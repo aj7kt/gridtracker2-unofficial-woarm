@@ -1,38 +1,57 @@
-# FAQ - Troubleshooting
+# FAQ and Troubleshooting
 
-[**Issue: GridTracker Map Doesn't Show all Your QSOs (or Live Data or even PSK data)**](#issue-gridtracker-map-doesnt-show-all-your-qsos)\
-[**Issue: GridTracker QSO Status (and Map) Shows an "Incorrect" Count of QSOs**](#issue-gridtracker-qso-status-and-map-shows-an-incorrect-count-of-qsos)\
-[**Issue: You're not hearing audio alerts from GridTracker**](#issue-youre-not-hearing-audio-alerts-from-gridtracker)\
-[**Issue: You can't seem to get the Call Roster feature to initiate transmissions (to answer a CQ.)**](#issue-you-can-t-seem-to-get-the-call-roster-feature-to-initiate-transmissions-to-answer-a-cq)\
-[**Issue: PSK Reporter spots are gone and now I'm seeing areas of various colors.**](#issue-psk-reporter-spots-are-gone-and-now-im-seeing-areas-of-various-colors)
+## The map doesn't show all my QSOs
 
-## Issue: GridTracker Map Doesn't Show all Your QSOs
+You have almost certainly limited what is shown:
 
-**(or Live Data grids or even PSK data)**
+* Check the [Map View Filters](GridTracker-Overview/Control-Panel.md#map-view-filters). To see everything, set Band, Mode and Prop to **Mixed**, Data to **Logbook**, and Award to **None**.
+* In push-pin mode, check the **Maidenhead Width** button. With 6-character grids (MH6), stations that only sent a 4-character grid can't be placed. Switch back to MH4.
+* Check [Settings → Logbook](GridTracker-Overview/Settings-Sub-Menus.md#logbook-tab): are **Working Callsign(s)**, **Working Grid(s)** or **Working Date** enabled? If they leave QSOs out, the side panel shows **Log Entries Filtered**.
+* Check [Settings → Logging](GridTracker-Overview/Settings-Sub-Menus.md#logging-tab): are all the logs you want ticked **Load At Startup**, including your WSJT-X logs under **App Log(s)**?
 
-Action:  You have almost certainly (inadvertently)  limited the display of your Logbook data.  
+## The QSO or QSL count looks wrong
 
-* Check Map View Filters to see if you have limited the band/mode/propagation/or data settings to limit the data the map shows
-* Check your **Settings>Logging** settings to see if you are automatically importing data you want from local and/or internet sources
-* Check the  **Settings>Logbook menu** to see if you have enabled the "Working Callsigns" and or \
-  "Calendar" options.  If you have enabled "Working Callsign(s)" then make sure your callsign is entered correctly in the box.
+The counts depend on which logs you load, and on the Logbook Filters. GridTracker2 combines all your loaded logs, so check Settings → Logging. Remember that WSJT-X's own log has no confirmations: load your LoTW log, or your logging program's log, to see QSLs.
 
-Action: You may have inadvertently pressed the MH4/MH6 button on the control Panel. You may have switched from MH4 (displaying a Maidenhead resolution of 4 digits such as EM79) to MH6 (6 digits such as EM79vq). Select the MH4/MH6 button and see if your “missing” grids return.
+## Nothing happens in GridTracker2 when WSJT-X decodes
 
-## Issue: GridTracker QSO Status (and Map) Shows an "Incorrect" Count of QSOs
+See [Connecting to WSJT-X or JTDX](Getting-Started.md#connecting-to-wsjt-x-or-jtdx). Check that the status bar isn't showing **IGNORE**: click it to resume reading messages.
 
-Action:  You have almost certainly selected an option that affects the display of your Logbook data.  
+## Clicking a callsign in the Call Roster doesn't call the station
 
-* Check your **Settings>Logging** settings to verify you are automatically importing data you want from local files and/or internet sources  
+Check the WSJT-X or JTDX settings in [Appendix B](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md), especially **Accept UDP requests**. If it works for stations calling CQ but not for others, untick **CQ only** and tick **Hold Tx Freq** in WSJT-X's main window. JTDX replies according to its **Accept UDP Reply Message** setting. JS8Call can't reply from GridTracker2.
 
-## Issue: You're not hearing audio alerts from GridTracker
+## I don't hear any alerts
 
-Action:  Check to make sure that you haven't inadvertently clicked the "Audio Mute" button in the GridTracker Features menu to turn mute the program sound.   
+* Is the **Audio Mute** button on? Press **Ctrl+M** to toggle it.
+* Is the right **Device** chosen in Settings → Audio? Don't use your radio's sound card.
+* Are the alerts ticked in Settings → Audio Alerts, and do your roster Exceptions let the station through?
 
-## Issue: You can't seem to get the Call Roster feature to initiate transmissions (to answer a CQ.)
+## My spots turned into colored areas
 
-Action:  Review the settings requirements listed in the [Configuring WSJT-X for GridTracker](Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md) and make sure all of them are turned on.
+The spot view is set to **RX Heatmap**. Click the Spot Reports button (or press **Ctrl+O**) to cycle to RX Spots, or right-click the button to choose.
 
-## Issue: PSK Reporter spots are gone and now I'm seeing areas of various colors.
+## The Feeds tab, Feed Roster or DX Feed Spots button is missing
 
-Action: You may have inadvertently pressed the “H” key on your keyboard and enabled the Heat Map mode. Press “H” again to toggle back to the spot mode.
+They only appear while **Off-Air Services** and **DX Feeds** are on in Settings → Features, and Offline Mode is off. The SOTA features also need **SOTA Chasing**.
+
+## A park shows "?-????"
+
+The station is calling CQ POTA but hasn't been spotted or scheduled on pota.app yet. The park appears as soon as GridTracker2 learns it. See [Parks On The Air](Third-Party-Integrations/GridTracker2-and-Parks-On-The-Air.md).
+
+## The hotkeys don't work
+
+Hotkeys only work while the main window is active and the Settings panel is closed, and letter hotkeys need **Ctrl**. See [Appendix C](Appendices/Appendix-C-Hotkeys.md).
+
+## GridTracker2 doesn't start
+
+* Only one copy can run at a time. If GridTracker2 is already running (check the taskbar), starting it again does nothing. To run more than one copy, see [Running Several Copies](GridTracker-File-Storage.md#running-several-copies).
+* On Linux, if the window opens but shows no text, run `fc-cache -fv` and start it again. If that doesn't help, try starting it with `--disable-gpu`.
+
+## Windows Firewall and antivirus software
+
+GridTracker2 receives WSJT-X's messages over your network, even when both run on the same computer, so firewalls and antivirus programs can block it. Allow GridTracker2 (and WSJT-X) on private and public networks. Check again after an update.
+
+## Where are my settings and logs?
+
+See [Files, Folders and Command-Line Options](GridTracker-File-Storage.md).

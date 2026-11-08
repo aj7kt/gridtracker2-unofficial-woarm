@@ -191,6 +191,17 @@ const allowedWindows = {
       icon: join(__dirname, '../renderer/img/roster-icon.png'),
     },
   },
+  // Its size and position are kept, but not whether it was showing
+  gt_guide: {
+    window: null,
+    honorVisibility: false,
+    options: { x: 80, y: 80, width: 900, height: 700, show: false, zoom: 0 },
+    static: {
+      minWidth: 400,
+      minHeight: 300,
+      icon: join(__dirname, '../renderer/img/help.png'),
+    },
+  },
 };
 
 const asarResourcesPath = join(__dirname, '../../resources');
@@ -513,6 +524,8 @@ function createMainWindow() {
           preload: join(__dirname, '../preload/index.js'),
           sandbox: false,
           devTools: !app.isPackaged,
+          // The User Guide window shows the PDF in a <webview>, so its search stays inside the guide
+          webviewTag: details.frameName == 'gt_guide',
         },
       };
 
@@ -525,6 +538,44 @@ function createMainWindow() {
   });
 
   mainWindow.loadFile(join(__dirname, '../renderer/GridTracker2.html'));
+}
+
+// The User Guide window (gt_guide) shows the PDF in a <webview>: only a local PDF, with no Node access or preload;
+// links clicked in it open in the browser, and Esc closes the window like its X, even while the PDF has the keyboard
+function setupUserGuideWindow(window) {
+  const escCloses = (inputEvent, input) => {
+    if (input.type === 'keyDown' && input.key === 'Escape') {
+      window.close();
+    }
+  };
+  window.webContents.on('before-input-event', escCloses);
+
+  window.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    if (!/^file:.*\.pdf(#.*)?$/i.test(params.src)) {
+      event.preventDefault();
+      return;
+    }
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.plugins = true;
+  });
+
+  window.webContents.on('did-attach-webview', (event, guest) => {
+    guest.on('before-input-event', escCloses);
+    guest.on('will-navigate', (navEvent, url) => {
+      navEvent.preventDefault();
+      if (/^(https?|mailto):/i.test(url)) {
+        shell.openExternal(url);
+      }
+    });
+    guest.setWindowOpenHandler((details) => {
+      if (/^(https?|mailto):/i.test(details.url)) {
+        shell.openExternal(details.url);
+      }
+      return { action: 'deny' };
+    });
+  });
 }
 
 let autoUpdateInitialized = false;
@@ -611,6 +662,10 @@ app.whenReady().then(() => {
       // save the window handle (not the dom handle);
       allowedWindows[title].window = window;
       windowIdToAllowedWindows[window.id] = title;
+
+      if (title == 'gt_guide') {
+        setupUserGuideWindow(window);
+      }
 
       // set up events here...
       window.on('ready-to-show', () => {

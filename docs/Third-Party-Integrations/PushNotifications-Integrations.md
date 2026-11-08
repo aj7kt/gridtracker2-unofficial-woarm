@@ -1,34 +1,43 @@
+# Push Notifications to Your Phone
 
-# Push Notification Forwarding to your phone
+GridTracker2 can send new wanted stations from the Call Roster to your phone through [Simplepu.sh](https://simplepu.sh/) or [Pushover](https://pushover.net/). Feed Roster stations are sent too when **Allow Notifications (Pushover, Simplepush)** is ticked in Settings → Feeds.
 
-GridTracker can forward unseen chat messages and hits on the Call Roster to your phone through third-party services. We currently support [SimplePush.io](https://simplepush.io/) and [Pushover.net](https://pushover.net/). Both services can be tested, SimplePush allows 10 free messages per month while Pushover has a 30-day free trial. After that you will need to either purchase a subscription for SimplePush for $13 per year or do a one time in-app purchase in Pushover for $5 to get 10,000 messages free each month, no subscription required.
+GridTracker2 must be running for notifications to be sent. Turn the services on in [Settings → Features](../GridTracker-Overview/Settings-Sub-Menus.md#features-tab), in the Online box; each one then shows its own settings box.
 
-## How-To SimplePush.io notifications ###
+Both services can follow a **Use Daily Schedule**: notifications are only sent between the **Start Time** and **End Time** you choose, for example not at night.
 
-Download the SimplePush.io app from the Apple Appstore or the Google Play store. Open the app and it will display a 6-letter code. This your API key:
-![SimplePush Settings in GridTracker](../img/GT_SimplePush_Settings.png)
-If you click the test button you should get a test message to your phone and GT should push CR hits and chat messages. Unfortunately you'll get only 10 messages per month for free.
+## Simplepu.sh
 
-## How-To Pushover.net notifications ###
+1. Install the Simplepush app on your phone from the App Store or Google Play, and create an **API Token**.
+2. In Settings → Features, tick **Simplepu.sh** and enter the token in **API Token**.
+3. Tick **Notification Only** if you want plain notifications rather than tasks.
+4. Click **Test**. A test message should arrive on your phone.
 
-Register on [pushover.net](https://pushover.net/) with a new user account. You'll get 30 days to test it out. Download the pushover.net app from the Apple Appstore or the Google Play store. Log in with your username/password. Go back to the [webpage](https://pushover.net) and create a new [Pushover application](https://pushover.net/apps/build). Call it GridTracker for example and check the terms of service box:
+```{note}
+Simplepush moved from Simplepush.io to Simplepu.sh. Keys from the old service no longer work: create a new API Token in the app.
+```
 
-![Pushover Webpage New Application Screen](../img/Pushover_NewApplication.png)
+## Pushover
 
-You'll see this screen with your API token:
-![Pushover Webpage New API Token](../img/Pushover_NewAPIToken.png)
+1. Register at [pushover.net](https://pushover.net/). Pushover has a 30-day free trial, then a one-time purchase per platform.
+2. Install the Pushover app on your phone and log in.
+3. On the Pushover website, [create an application](https://pushover.net/apps/build). Call it GridTracker2, for example.
 
-Copy that token to the API token field for Pushover:
-![GridTracker Pushover Settings API Token](../img/GT_Pushover_Cred_APIToken.png)
+   ![Creating a Pushover application](../img/Pushover_NewApplication.png){width=460px}
 
-Go to the [pushover.net](https://pushover.net/) home page and find your user key:
-![Pushover Webpage User Key](../img/Pushover_UserKey.png)
+4. Copy the application's **API Token**.
 
-Now add your user key and click the test button:
-![GridTracker Pushover Settings User Key](../img/GT_Pushover_Cred_UserKey.png)
+   ![The new application's API token](../img/Pushover_NewAPIToken.png){width=460px}
 
-You should now get notifications to your phone:
+5. Find your **User Key** on the Pushover home page.
 
-![PushOver Notification on Android Phone](../img/Android_PushoverNotification.jpg)
+   ![Your Pushover user key](../img/Pushover_UserKey.png){width=460px}
 
-If you run your station 24/7 you'll no longer miss incoming OAMS chat messages nor Call Roster hits. GridTracker has to be running though, no messages will be sent to your phone otherwise.
+6. In Settings → Features, tick **Pushover.net** and enter the **User Key** and **API Token**.
+7. Click **Test**. A test message should arrive on your phone.
+
+![A notification on an Android phone](../img/Android_PushoverNotification.jpg){width=300px}
+
+Each notification is titled "GT Alert" (or "Feed Alert" from the Feed Roster) and lists each new wanted station: callsign, DXCC entity, signal report, grid, band and state, with why it is wanted.
+
+For more control over what is sent, you can also run your own script on roster alerts: see [Running a Script on Alerts](../Making-GridTracker-Work-For-You/Using-Call-Roster.md#running-a-script-on-alerts).

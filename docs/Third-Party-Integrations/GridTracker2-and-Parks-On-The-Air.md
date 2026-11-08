@@ -1,120 +1,82 @@
-# GridTracker2 and Parks On The Air® (POTA).
+# Parks On The Air (POTA)
 
-Parks On the Air® (POTA) is a popular activity that involves hams all over the world operating from parks (Activators) and other hams known as Hunters making contacts with them. More information located at [https://parksontheair.com/](https://parksontheair.com/).
+Parks On the Air® (POTA) is an activity where amateurs operate from parks (Activators) while others (Hunters) contact them. See [parksontheair.com](https://parksontheair.com/) for more.
 
-GridTracker2 is a powerful tool for both Hunters looking to make contacts with parks, and Activators looking for other Activators for Park to Park (P2P) contacts.
+GridTracker2 helps Hunters find parks they haven't worked, and helps Activators find other Activators for Park to Park (P2P) contacts.
 
-## Setting GridTracker2 up for POTA
+## Setting Up
 
-Under Settings>Logging ensure that the “Log?” Box in the GridTracker2 line is checked.
+In [Settings → Features](../GridTracker-Overview/Settings-Sub-Menus.md#features-tab), tick **POTA Hunting** in the Online box. It is on by default in new installations.
 
-![GridTracker2 LOgging Settings tab with GridTracker2 logging area highlighted with a red box](../img/GT2_POTA_Logging_settings.png)
+Turning it on also turns on **Load At Startup** and **Log QSO** for the **GridTracker2** log in [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab). GridTracker2 uses its own log to know which parks you have worked, today, on which band and mode, because logging programs record POTA in different ways. Keep both ticked.
 
-GridTracker2 uses it’s local log to track POTA stations and determine if they have been
-worked today, at that park on that band and mode. This is necessary due to the variation of
-how POTA is handled by the various logging programs available.
+![The GridTracker2 log row in Settings → Logging](../img/GT2_Settings_Logging.png)
 
-Under Settings> Features, enable POTA Hunting in the Online box:
+## How Parks Are Counted
 
-![GridTracker2 Features Settings tab with red arrow pointed to POTA Hunting option](../img/GT2_POTA_Features_Online.png)
+GridTracker2 follows the POTA rules: each activator, park, band and mode is a new contact each UTC day, and the day starts again at midnight UTC.
 
-Enabling this will place a POTA button on the Main Menu. Use of this button will toggle between displaying and removing POTA icons from the map.
+For example, if you work N0TTL at park US-1234 on FT8 at 2330Z, then he switches to FT4, he is new again on FT4. If he goes back to FT8 at 0001Z, he is new again on FT8, because it is a new UTC day.
 
-![GridTracker2 POTA Button](../img/GT2_POTA_Button.png)
+## Where Park Information Comes From
 
-At this point GridTracker2’s map will display icons representing current POTA activations as listed at [https://pota.app/#/](https://pota.app/#/).
+* The **POTA spots** at [pota.app](https://pota.app/), downloaded every 5 minutes. A newly spotted activation may take up to 5 minutes to appear, and an activator who has gone QRT may stay on the map until the next download.
+* **Scheduled activations** posted on pota.app, for activators you decode.
+* **DX Feeds** spots, when [DX Feeds](../Making-GridTracker-Work-For-You/Using-Feed-Roster.md) is on: a park reference in a spot's comment gives that activator's park.
 
-The data from the pota.app site is refreshed every 5 minutes. So it is possible that there are new activations not displayed on the GT2 map, and that Activators that have gone QRT are still being displayed.
+You may hear activators who haven't posted their activation and haven't been spotted. They show "?-????" until their park becomes known.
 
-You may see/hear activations that do not appear on the map due to the Activator not posting their activation to the pota.app site.
+## POTA on the Map
 
-As with all other uses of the GridTracker2 map, the displayed parks will be dependent on the Map View Filter settings in the main menu (Mixed vs Auto etc.)
+The **POTA** button in the button panel shows or hides the parks on the map.
 
-Please also note that GridTracker2 follows the POTA standard of treating each operator/park/band/mode as a unique entity each day, and resets at Midnight UTC.
+| Icon | Meaning |
+| --- | --- |
+| ![](../img/markers/ParkOnInstance.png){width=28px} | An activator on your radio's band and mode that you haven't worked today. |
+| ![](../img/markers/ParkWorkedOnInstance.png){width=28px} | An activator you have worked today on this band and mode. It changes back to the tent if they change band or mode, or a new UTC day starts. |
+| ![](../img/markers/ParkOffInstance.png){width=28px} | An activator on a band or mode none of your radios is on. |
 
-For example if you work NØTTL at park US-1234 on FT8 at 2330Z, and then he switches to FT4, that will be treated as a new entity. If he then goes to back to FT8 at 0001Z, he will again be treated as a new entity.
+Like everything on the map, the parks follow the [Map View Filters](../GridTracker-Overview/Control-Panel.md#map-view-filters). For example, with Band on Auto and Mode on Mixed while you work 20 m FT8, an activator on 20 m SSB shows as a pine tree.
 
-## POTA Icons
+Hold the mouse over a park to see its reference and name, its location, the distance and bearing from you, and its spots: activator, grid, spotter, frequency, mode, how many times it was spotted, when, where the spot came from, and the comment.
 
-![Icon of a tent under a tree](../img/GT2_POTA_Tent.png) Tent/Tree: A POTA station active on your Band/Mode that you have not worked.
+![A park's tooltip](../img/GT2_Map_POTA_Tooltip.jpg)
 
-![Icon of a sunrise over a mountain](../img/GT2_POTA_Sunrise.png) Sunrise over a Mountain: A POTA Station you have worked on your currently active Band/Mode. Should the station change band or mode, or the time switches to a new UTC day, that Icon will switch back to the Tent/Tree Icon.
+* **Click** a park to work the activator: the spot goes to a radio on its band and mode, or to a connected AC Log or Log4OM (which can tune your rig), or to WSJT-X as Gen Msgs. See [Working a Spot](../Making-GridTracker-Work-For-You/Using-Feed-Roster.md#working-a-spot).
+* **Right-click** a park to pop its tooltip out into its own window. Callsigns there can be clicked to look them up.
+* A park whose activator is in your radio's DX Call is ringed.
+* Overlapping parks, summits and DX spots in the same DXCC entity are grouped into one marker while **Group Overlapping Spots** is on in Settings → Map.
 
-![Icon of a pine tree](../img/GT2_POTA_Tree.png) Pine Tree: POTA station on a Band or Mode other than the one on which you are currently active.
-For instance: if you are working 20M FT8, have your Band Map View Filter set to Auto and Mode set to Mixed, a POTA station working SSB on 20M would show as a Pine Tree.
+## POTA in the Rosters
 
-If you hover your mouse over a POTA Icon, the map will display a box with park information:
+In the Call Roster (and the Feed Roster), tick **POTA** under **Wanted**. This also shows the **POTA** column, which you can drag to where you want it.
 
-![Information box that appears when hovering over a POTA icon](../img/GT2_POTA_Map_Park_Info.png)
+The park in the POTA column is highlighted:
 
-The box gives you the number and name of the park, and information on the activator, band, mode, age and source of latest spot as provided the pota.app site.
+* with a **full background** when you have never worked that park, an All Time New One (ATNO);
+* with a **lighter background** when you have worked the park before, but not today on this band and mode;
+* with a **glow only** when you have already worked it today on this band and mode.
 
-## POTA Spotting
+A station calling CQ POTA whose park isn't known yet shows "?-????". The park appears as soon as GridTracker2 learns it.
 
-When operating Digital Modes with WSJT-X, GridTracker2 will spot a POTA station you have worked to the pota.app site when you log it from WSJT-X. A successful spot will be noted in the GridTracker2 menu message scroll:
+Once you have worked an activator, their further CQs may be hidden, depending on your Exceptions, until the UTC day changes, they change mode or park, or you change band and they are on that band too.
 
-![GridTracker2 events "waterfall" with red arrow pointed to "Spotted to POTA" message](../img/GT2_POTA_Spotted_message.png)
+To highlight every station calling CQ POTA, add a **Message** Watcher with the text `CQ POTA` (tick Regex to match it anywhere in the message). See [Watchers](../Making-GridTracker-Work-For-You/Using-Call-Roster.md#watcher).
 
-The message will appear on the worked stations listing on pota.app as follows
+In Settings → Audio Alerts you can choose a sound or spoken alert for wanted parks, and a different one, **On ATNO**, for parks you have never worked.
 
-![Screenshot of a POTA Spot report at POTA.app](../img/GT2_pota.app_spot.png)
+## Spotting to POTA
 
-1. Your Call
-2. Spot information
-3. Data from the comments section of the WSJT-X log screen
+When you log a QSO with a known activator, GridTracker2 spots them on pota.app for you. The message list shows "Spotted to POTA". This works for QSOs logged from WSJT-X or JTDX, logged in AC Log with a park in an Other field titled `POTA_REF`, and logged by hand from the Feed Roster.
 
-## Call Roster
+![The spot message in the message list](../img/GT2_POTA_Spotted_message.png)
 
-The GridTracker2 Call Roster can also provide useful information when POTA
-hunting. 
+The spot appears on pota.app with your callsign, the spot information, and the comment from the WSJT-X log window.
 
-In Call Roster, go to the More Controls Screen, and enable POTA under Wanted:
+![A POTA spot on pota.app](../img/GT2_pota.app_spot.png)
 
-![GridTracker2 Call Roster with POTA "Wanted" checkbox circled](../img/GT2_CR_Wanted_POTA.png)
+If the park wasn't known when you logged the QSO ("?-????"), GridTracker2 can't spot it, and that activator's later CQ POTA calls keep showing as wanted.
 
-You can then right click on the column headings in the Call Roster and select POTA to display a column for POTA information. You can then lift click on the column and drag it to where you want in the column list:
+## The Logbook
 
-![GridTracker2 Call Roster with POTA column circled](../img/GT2_CR_POTA_Column.png)
-
-With these settings there are three ways a park number can be displayed in the Call Roster:
-
-If you have never worked the park before, an All Time New One (ATNO), it will be brightly
-highlighted:
-
-![GridTracker2 Call Roster with a All Time New One park, KG4AFY in US-7402](../img/GT2_POTA_ATNO_Park.png)
-
-If you have previously worked that park on another day, band, mode etc., the highlighting of the number will be more subdued
-
-![GridTracker2 Call Roster with a previously worked park, W3VD in US-1915](../img/GT2_POTA_Previously_Worked.png)
-
-Here’s a screen shot where VE3IGX is calling from an ATNO park (CA-5535), and W3VD is calling from a park you have worked before (US-1915)
-
-![GridTracker2 Call Roster with an all time new park and a previously worked but new today park highlighted](../img/GT2_POTA_ATNO_and_Previously_Worked.png)
-
-
-Another way to highlight stations calling CQ POTA is to set up a watcher in the Call Roster Settings:
-
-![GridTracker2 Call Roster Watcher for "CQ POTA"](../img/GT2_CR_Watcher_POTA.png)
-
-With these settings, when K7CAR for instance, calls CQ POTA he will show in the Call Roster like this:
-
-![GridTracker2 Call Roster line showing K7CAR calling CQ POTA](../img/GT2_CR_CQ_POTA.png)
-
-The “CQ POTA” is highlighted in White due to the Watcher Settings.
-The POTA Column has the Park Number fully highlighted in pink.
-
-Once you have worked the station and it has been logged with WSJT-X, it will display like this until it drops off the call roster:
-
-![GridTracker2 Call Roster line showing that K7CAR is now worked by KA0AZS](../img/GT2_CR_worked_POTA.png)
-
-The Park number now has a partially highlighted box to show that you have worked that park today on the active Band.
-
-Further CQ POTA calls from that Activator will be filtered depending on your other Call Roster settings, and may not appear in the Call Roster until either the UTC day changes, they change Mode, they change parks, or you switch bands and they start working on that band.
-
-If an Activator that has not registered his activation on the pota.app site or been spotted there, and is calling CQ POTA, the Call Roster will display “?-????” in the POTA column.
-
-![GridTracker2 Call Roster line with a station calling CQ POTA from an unknown POTA entity](../img/GT2_CR_Unknown_POTA.png)
-
-This can also happen if the station only registered or been spotted on pota.app since the last time that GridTracker2 refreshed it’s information. In that case, the Park Number will be displayed as soon as the information is received by GridTracker2 from pota.app.
-
-Note: If you work a park without park information for either of the above reasons, GridTracker2 will not provide a spot to pota.app, and the POTA rules for displaying POTA stations will not apply, so future CQ POTA calls will continue to be displayed in the Call Roster.
+The [Statistics](../Making-GridTracker-Work-For-You/GridTracker-Statistics.md) window's Logbook tab has a **POTA** column, with its own search box, whenever your log has POTA QSOs. GridTracker2 reads a park from either `POTA_REF` or `SIG`=POTA with `SIG_INFO` in your ADIF logs, and writes `POTA_REF` when it logs a QSO with a known activator.

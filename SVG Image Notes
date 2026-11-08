@@ -325,3 +325,27 @@
   <circle cx="197" cy="33" r="1.5" fill="#111111" />
   <circle cx="205" cy="33" r="1.5" fill="#111111" />
 </svg>
+
+<!-- help.png (512x512): the button panel's help button, opens the User Guide: a life ring with a question mark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- The ring, lit from the upper left -->
+    <radialGradient id="shine" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="0.6" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <!-- Life ring: white, with four red bands on the diagonals (outer edge 244, inner edge 124) -->
+  <circle cx="256" cy="256" r="184" fill="none" stroke="#FFFFFF" stroke-width="120" />
+  <circle cx="256" cy="256" r="184" fill="none" stroke="#F21D1D" stroke-width="120"
+    stroke-dasharray="144.5 144.5" transform="rotate(22.5 256 256)" />
+  <circle cx="256" cy="256" r="184" fill="none" stroke="url(#shine)" stroke-width="120" />
+  <!-- Center: a bright blue disc -->
+  <circle cx="256" cy="256" r="124" fill="#0A6CFF" />
+  <!-- Dark edges round the ring -->
+  <circle cx="256" cy="256" r="244" fill="none" stroke="#5A0000" stroke-width="8" />
+  <circle cx="256" cy="256" r="124" fill="none" stroke="#5A0000" stroke-width="8" />
+  <!-- The question mark: bold yellow with a dark outline -->
+  <text x="256" y="352" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900"
+    font-size="270" fill="#FFE600" stroke="#002A66" stroke-width="14" stroke-linejoin="round" paint-order="stroke">?</text>
+</svg>
