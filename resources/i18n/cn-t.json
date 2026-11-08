@@ -1734,5 +1734,8 @@
   "cwViewer.picture.rotateLeft.label": "向左 90°",
   "cwViewer.picture.rotateHalf.label": "180°",
   "cwViewer.picture.rotateNone.label": "按接收原樣",
-  "gt.userGuide.search.hover": "搜尋使用者指南"
+  "gt.userGuide.search.hover": "搜尋使用者指南",
+  "birdWatch.credit.satnogs.label": "衛星和發射機資料：",
+  "birdWatch.credit.contributors.label": "Libre Space Foundation 及貢獻者",
+  "birdWatch.credit.amsat.label": "軌道根數 (TLE) 和頻率："
 }

@@ -67,7 +67,7 @@ In Settings → Audio Alerts you can choose a sound or spoken alert for wanted p
 
 ## Spotting to POTA
 
-When you log a QSO with a known activator, GridTracker2 spots them on pota.app for you. The message list shows "Spotted to POTA". This works for QSOs logged from WSJT-X or JTDX, logged in AC Log with a park in an Other field titled `POTA_REF`, and logged by hand from the Feed Roster.
+When you log a QSO with a known activator, GridTracker2 spots them on pota.app for you. The [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer) shows "Spotted to POTA". This works for QSOs logged from WSJT-X or JTDX, logged in AC Log with a park in an Other field titled `POTA_REF`, and logged by hand from the Feed Roster.
 
 ![The spot message in the message list](../img/GT2_POTA_Spotted_message.png)
 

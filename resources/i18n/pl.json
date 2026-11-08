@@ -1732,5 +1732,8 @@
   "cwViewer.picture.rotateLeft.label": "90° w lewo",
   "cwViewer.picture.rotateHalf.label": "180°",
   "cwViewer.picture.rotateNone.label": "Jak odebrano",
-  "gt.userGuide.search.hover": "Szukaj w podręczniku użytkownika"
+  "gt.userGuide.search.hover": "Szukaj w podręczniku użytkownika",
+  "birdWatch.credit.satnogs.label": "Dane satelitów i nadajników:",
+  "birdWatch.credit.contributors.label": "Libre Space Foundation i współtwórcy",
+  "birdWatch.credit.amsat.label": "Elementy orbitalne (TLE) i częstotliwości:"
 }

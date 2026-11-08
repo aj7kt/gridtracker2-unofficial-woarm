@@ -1138,7 +1138,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.general.DistanceUnits.label" for="distanceUnit">Distance Units</label></td>
               <td>
                 <select id="distanceUnit" value="KM" onchange="changeDistanceUnit();">
-                  <option data-i18n="settings.general.Distance.km" value="KM">Kilometres</option>
+                  <option data-i18n="settings.general.Distance.km" value="KM">Kilometers</option>
                   <option data-i18n="settings.general.Distance.mi" value="MI">Statute Miles</option>
                   <option data-i18n="settings.general.Distance.nm" value="NM">Nautical Miles</option>
                   <option data-i18n="settings.general.Distance.dg" value="DG">Degrees</option>
@@ -2592,8 +2592,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertAtAos" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertAtAos" data-i18n="birdWatch.alerts.atAos.label">Also When It Rises</label></td></tr>
               <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.hover" title="Uses the voice, rate and volume of Audio Alerts, and its mute" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.label">Speak</label></td></tr>
               <!-- The announcements' wording, the user's own ({N} {T} {D}); empty: the built-in one, shown as the placeholder -->
-              <tr><td class="mapIndent2"><label data-i18n="birdWatch.alerts.soonText.label" for="birdWatchAlertSoonText" style="display: inline-block; min-width: 90px;">Before AOS</label> <input type="text" id="birdWatchAlertSoonText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.soonText.hover" title="Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in grey" onchange="birdWatchAlertsChange()" /></td></tr>
-              <tr id="birdWatchAlertRisingTextTr"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.risingText.label" for="birdWatchAlertRisingText" style="display: inline-block; min-width: 90px;">When It Rises</label> <input type="text" id="birdWatchAlertRisingText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.risingText.hover" title="Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in grey" onchange="birdWatchAlertsChange()" /></td></tr>
+              <tr><td class="mapIndent2"><label data-i18n="birdWatch.alerts.soonText.label" for="birdWatchAlertSoonText" style="display: inline-block; min-width: 90px;">Before AOS</label> <input type="text" id="birdWatchAlertSoonText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.soonText.hover" title="Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
+              <tr id="birdWatchAlertRisingTextTr"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.risingText.label" for="birdWatchAlertRisingText" style="display: inline-block; min-width: 90px;">When It Rises</label> <input type="text" id="birdWatchAlertRisingText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.risingText.hover" title="Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
               <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertTraffic" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertTraffic" data-i18n="birdWatch.alerts.traffic.label">Show In Traffic List</label></td></tr>
               <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.hover" title="Sent with Pushover and Simplepush, as set up under Settings, Features, Online" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.label">Send With Pushover / Simplepush</label></td></tr>
               <tr><td class="mapIndent"><div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="birdWatch.alerts.test.label" onclick="birdWatchAlertTest();">Test Alert</div></td></tr>
@@ -2638,7 +2638,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </div>
             </div>
             <div class="mapItem birdTleBox" id="birdWatchTleAmsatBox">
-              <div class="birdTleBoxTitle">AMSAT.org</div>
+              <div class="birdTleBoxTitle"><a href="https://www.amsat.org" target="_blank">AMSAT.org</a></div>
               <div class="birdTleRow">
                 <!-- The same as the Enable of the lists' rows: the box inside the label and the word after it (its text is set by birdWatchTleRender) -->
                 <label class="birdTleEnable" id="birdWatchTleAmsatEnable"><input data-i18n="birdWatch.tle.amsat.hover" title="AMSAT's daily element sets of the amateur satellites, kept up to date" type="checkbox" id="birdWatchTleAmsat" onclick="birdWatchTleSetAmsat();"> Enable</label>
@@ -2682,6 +2682,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <div id="birdWatchSatResults" class="birdSatList"></div>
           </div>
         </div>
+        <!-- Where the satellite data comes from (also shown in the About tab, and copied into the transmitters window) -->
+        <div id="birdWatchSatCredit" class="birdWatchCredit"><span data-i18n="birdWatch.credit.satnogs.label">Satellite And Transmitter Data:</span> <a href="https://db.satnogs.org" target="_blank">SatNOGS DB</a> (<span data-i18n="birdWatch.credit.contributors.label">Libre Space Foundation And Contributors</span>), <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a> &middot; <span data-i18n="birdWatch.credit.amsat.label">Element Sets (TLE) And Frequencies:</span> <a href="https://www.amsat.org" target="_blank">AMSAT</a></div>
       </div>
     <div id="aboutDiv" class="settingsTabcontent">
       <div class="aboutWrap">
@@ -2718,6 +2720,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <span class="aboutChip aboutOrg" style="--i:11">GridTracker.org</span>
             </div>
           </div>
+          <!-- BirdWatch's satellite data (as in its Satellites tab) -->
+          <div class="birdWatchCredit"><span data-i18n="birdWatch.credit.satnogs.label">Satellite And Transmitter Data:</span> <a href="https://db.satnogs.org" target="_blank">SatNOGS DB</a> (<span data-i18n="birdWatch.credit.contributors.label">Libre Space Foundation And Contributors</span>), <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a> &middot; <span data-i18n="birdWatch.credit.amsat.label">Element Sets (TLE) And Frequencies:</span> <a href="https://www.amsat.org" target="_blank">AMSAT</a></div>
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@ When you log a QSO in WSJT-X or JTDX (or a program that broadcasts ADIF, or by h
 * logging programs: **ADIF UDP / N1MM**, **Log4OM**, **N3FJP Loggers**, **DXKeeper**, **HRD Logbook**;
 * online logbooks: **QRZ.com**, **ClubLog**, **LoTW**, **eQSL.cc**, **HRDLOG.net**, **Cloudlog/Wavelog**, **HamCQ.cn**.
 
-The message list shows the result for each one, for example "Logged to QRZ.com". Use **Test** next to each online logbook to check your login details.
+The [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer) shows the result for each one, for example "Logged to QRZ.com". Use **Test** next to each online logbook to check your login details.
 
 * **LoTW** uploads go through TQSL. Choose the TQSL program (**TQSL Path**, not needed on macOS), your certificate's **TQSL Password** if it has one, and your **Station Name** (the station location in TQSL). An upload that fails, for example while you are offline, is queued and sent with your next QSO.
 * With **Add Lookup Data to QSO Log event** on in Settings → Lookups, details from the callsign lookup (name, QTH, grid and so on) are added to the QSO before it is sent.

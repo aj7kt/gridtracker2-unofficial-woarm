@@ -180,7 +180,7 @@ See [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTr
 
 Right-click a cell for options:
 
-* **Callsign:** Lookup, Gen Msgs (fill in WSJT-X's messages without calling), Add Watcher, Copy, Aim Rotator (with CatRotator / PstRotator on), Ignore Call, Edit Ignores.
+* **Callsign:** Lookup, Gen Msgs (fill in WSJT-X's messages without calling), Add Watcher, Copy, Aim Rotator (with [Rotor Control](../Rig-and-Rotor-Control.md#rotor-control) on), Ignore Call, Edit Ignores.
 * **Calling:** Lookup, Gen Msgs, Add Watcher, Copy, Aim Rotator.
 * **A directed CQ** in the Calling column ("CQ DX", "CQ POTA"...): Add Watcher, **Ignore CQ from DXCC** (that CQ from this entity) and **Ignore CQ from All**.
 * **Msg:** Add Watcher for the whole message.

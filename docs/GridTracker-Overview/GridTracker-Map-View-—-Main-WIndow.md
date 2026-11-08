@@ -186,4 +186,4 @@ Press **Shift+F5** to **Shift+F10** to remember up to six map views, and **F5** 
 
 ## Rotator
 
-With **CatRotator / PstRotator** turned on in Settings → Features, **Ctrl**+click anywhere on the map to turn your antenna toward that point.
+With [Rotor Control](../Rig-and-Rotor-Control.md#rotor-control) turned on in Settings → Features, **Ctrl**+click anywhere on the map to turn your antenna toward that point.

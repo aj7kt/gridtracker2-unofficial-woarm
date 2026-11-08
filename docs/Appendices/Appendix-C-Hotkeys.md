@@ -53,10 +53,21 @@ Letter hotkeys use the **Ctrl** key, so that typing in text fields can't set the
 | Ctrl+I | Open the Statistics window |
 | Ctrl+E | Open the Current Conditions window |
 | Ctrl+S | Open the Settings panel |
-| Esc | Close the Settings panel or the hotkey list |
+| Esc | Close the Settings panel, the Event Viewer, BirdWatch's Pass Timeline or the hotkey list |
 | F1 | Show the hotkey list |
 | F11 | Full screen on or off |
 | F12 | Hide or show the side panel |
+
+## BirdWatch
+
+These work while BirdWatch is on, see [BirdWatch](../BirdWatch.md).
+
+| Key | Action |
+| --- | --- |
+| Ctrl+F12 | Satellite tracking on or off |
+| Ctrl+] | Select the next tracked satellite |
+| Ctrl+[ | Select the previous tracked satellite |
+| Ctrl+\ | Auto Select Next AOS Satellite on or off |
 
 ## Other
 

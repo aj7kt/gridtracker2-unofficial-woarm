@@ -5,6 +5,7 @@
 //   modes.json, satellites.json, transmitters.json     SatNOGS DB (db.satnogs.org/api), CC BY-SA 4.0
 //   amsat-active-frequencies.json, amsat-all-frequencies.json   AMSAT list as mirrored by github.com/palewire/amateur-satellite-database (MIT)
 //   dailytle.txt                                       AMSAT's daily element sets (TLE), amsat.org/tle/current
+// NOTICE.txt beside them (not written here) gives each source and its license: keep it up to date if a source changes.
 // Usage (repo root):
 //   node tools/sat_update.js            dry run: what changed since the shipped copy
 //   node tools/sat_update.js write      writes resources/data/sat/*.json (CRLF, like the rest of the repo) and version.json

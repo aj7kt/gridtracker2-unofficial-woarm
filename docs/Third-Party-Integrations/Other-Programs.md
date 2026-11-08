@@ -29,7 +29,7 @@ It can load your logbook from QRZ.com, ClubLog, LoTW, N3FJP AC Log and PSK-Repor
 
 ## Rotators
 
-With **CatRotator / PstRotator** turned on in [Settings → Features](../GridTracker-Overview/Settings-Sub-Menus.md#features-tab), GridTracker2 can turn your antenna through PstRotator or CatRotator, over UDP (port 12000 by default). Right-click a callsign in the Call Roster and choose **Aim Rotator**, or **Ctrl**+click a point on the map.
+Turn on **Rotor Control** in [Settings → Features](../GridTracker-Overview/Settings-Sub-Menus.md#features-tab) and pick the **CatRotator / PstRotator** protocol (or a controller on a serial port, or Hamlib's rotctld). Right-click a callsign in the Call Roster and choose **Aim Rotator**, or **Ctrl**+click a point on the map. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).
 
 ## Forwarding to Other Programs
 

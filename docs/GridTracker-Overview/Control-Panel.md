@@ -1,6 +1,6 @@
 # The Side Panel
 
-The side panel runs down the right side of the main window (or the left, with **Map On Right Side** in Settings → General). From top to bottom it has the operating information, the status bar, the band activity graph, the Quick Stats, the Map View Filters, the button panel and the message list.
+The side panel runs down the right side of the main window (or the left, with **Control Panel On Left Side** in Settings → General). From top to bottom it has the operating information, the status bar, the band activity graph, the Quick Stats, the Map View Filters and the button panel. What used to be the message list at the bottom is now the [Event Viewer](#event-viewer). The band activity graph, Quick Stats and Map View Filters can be moved above or below the buttons, see [Rearranging the Panel](#rearranging-the-panel).
 
 ![The GridTracker2 side panel](../img/GT2_Panel.png){width=150px .gt-float-right}
 
@@ -96,7 +96,7 @@ If QSOs seem to be missing from the map, check these filters first. To see every
 
 The buttons open windows and turn map layers on and off. A button that is turned off is drawn in gray. Some buttons only appear while the feature they belong to is turned on, so your panel may have fewer or more buttons than shown here.
 
-You can **drag a button** to another place in the panel to rearrange them. **Reset Button Panel** in Settings → General puts them back in their default order.
+You can **drag a button** to another place in the panel to rearrange them. **Reset Button Order** in Settings → General puts them back in their default order.
 
 Buttons that open a window toggle it: click once to open, again to close. **Right-click** one of them to bring its window forward without closing it.
 
@@ -134,6 +134,9 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/dxcwFeedButton.png){width=32px} | DX Feed Spots | Shows DX Cluster and CW Skimmer spots on the map. Shown while **DX Feeds** is on. | |
 | ![](../img/buttons/sotaMapButton.png){width=32px} | Summits on the Air | Shows SOTA activators on the map. Shown while **SOTA Chasing** is on. | |
 | ![](../img/buttons/santaButton.png){width=32px} | Santa Tracker | Follows Santa and his reindeer around the world. Shown from December 1st to 25th. | |
+| ![](../img/buttons/eventsButton.png){width=32px} | Event Viewer | Shows the [Event Viewer](#event-viewer). Right-click to choose whether it shows over the map or in a window of its own. | |
+| ![](../img/buttons/birdWatchButton.png){width=32px} | Toggle Satellite Tracking | Turns BirdWatch's satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while **BirdWatch** is on. See [BirdWatch](../BirdWatch.md). | Ctrl+F12 |
+| ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while **Multi-Mode Decoder** is on. | |
 
 The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you tick their **Menu Button** in [Settings → Logging](Settings-Sub-Menus.md#logging-tab). Online buttons are hidden in Offline Mode.
 
@@ -141,16 +144,29 @@ The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you
 
 From December 1st the Santa Tracker button appears. Turn the tracker on to see a countdown, at the top of the map, until Santa leaves at midnight on December 24th (your time). Then a box on the map shows where he is, his next stop and how many gifts he has delivered. Click where he is to center the map on him, and hover over a stop to see its DXCC entity and state or province. Shortly before he reaches you, contact with Santa is lost...
 
-## Messages
+## Rearranging the Panel
 
-![The message list](../img/GT2_Panel_Messages.png){width=260px}
+The band activity graph, the Quick Stats and the Map View Filters can each be moved above or below the others, and above or below the button panel. Move the mouse to the top border of a box: the cursor changes to a hand. Drag the box from there to where you want it; the space it will drop into is shown dimmed as you go. GridTracker2 remembers the order.
 
-The bottom of the panel lists what has happened, newest first:
+**Reset Panels** in Settings → General puts the boxes back in their usual order.
+
+## Event Viewer
+
+Click the **Event Viewer** button in the button panel to see what has happened, newest first. Each event has its **Time**, its **Source** (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor or SOTA) and the **Event** itself:
 
 * band and mode changes;
-* decodes that set off a Custom Alert, with the time and a 🚩 (while **Decode Traffic Waterfall** is on in Settings → Features);
+* decodes that set off a Custom Alert, with a 🚩;
 * each new QSO ("▲ New QSO *call* ▲"), and the result of sending it to each of your logs, for example "Logged to QRZ.com", or a failure;
 * "Spotted to POTA" when a park QSO was spotted;
-* screenshots, Call Roster script changes, callsign database updates and new versions of GridTracker2. When a new version has downloaded, an **Install and Restart** button here installs it and restarts.
+* BirdWatch's announcements and the rotator's moves;
+* screenshots, Call Roster script changes, callsign database updates and new versions of GridTracker2. When a new version has downloaded, an **Install and Restart** button in its event installs it and restarts.
 
-Your own callsign is shown in yellow, and the station you are working in cyan.
+![The Event Viewer](../img/GT2_Event_Viewer.png){width=440px}
+
+Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. **Clear**, in the list's header, empties the list.
+
+The Event Viewer opens over the map, like the Settings panel; click its red **X** or press **Esc** to close it. Drag it by its title bar to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.
+
+Right-click the Event Viewer button to choose where it shows: **View In Main** (the panel over the map) or **View As Window** (a window of its own, which you can put anywhere on your screen).
+
+With **Open Event Viewer On Error** on in [Settings → General](Settings-Sub-Menus.md#general-tab), an error, such as a log upload that failed, opens the Event Viewer by itself.

@@ -52,6 +52,15 @@ GridTracker2 User Guide
 
 .. toctree::
    :maxdepth: 2
+   :caption: Your Station: Rigs, Decoders and Satellites
+
+   Rig-and-Rotor-Control
+   Multi-Mode-Decoder/Multi-Mode-Decoder
+   Multi-Mode-Decoder/Decoder-Modes
+   BirdWatch
+
+.. toctree::
+   :maxdepth: 2
    :caption: Other Programs
 
    Third-Party-Integrations/N3FJP-AC-Log-Integration

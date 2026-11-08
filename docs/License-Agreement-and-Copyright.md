@@ -48,3 +48,11 @@ LotW : Copyright 2024 American Radio Relay League, Inc. All Rights Reserved
 Log4OM   :  (Copyright 2011-2014) by Daniele Pistollato
 
 N3FJP Loggers: (Copyright 1997-2024)Written by G. Scott Davis N3FJP
+
+# Satellite Data
+
+BirdWatch's satellite names, details, modes and transmitters come from [SatNOGS DB](https://db.satnogs.org), developed, hosted and maintained by the [Libre Space Foundation](https://libre.space) with data contributed by its volunteers. The data is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International license (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/).
+
+The amateur satellites' element sets (TLE) and frequency list come from [AMSAT](https://www.amsat.org), The Radio Amateur Satellite Corporation. The frequency list is gathered by the [amateur-satellite-database](https://github.com/palewire/amateur-satellite-database) project, Copyright (c) 2021 Los Angeles Times Data Desk, MIT License.
+
+The full notices ship with GridTracker2 in `resources/data/sat/NOTICE.txt`.

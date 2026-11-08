@@ -29,7 +29,7 @@ Custom Alerts are set in [Settings → Custom Alerts](../GridTracker-Overview/Se
 
 ![The Custom Alerts tab](../img/GT2_Settings_CustomAlerts.png)
 
-The alert list shows when each alert last went off and the message that set it off. The decodes that set off an alert are also listed, with a 🚩, in the main window's message list.
+The alert list shows when each alert last went off and the message that set it off. The decodes that set off an alert are also listed, with a 🚩, in the [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer).
 
 ### Examples
 

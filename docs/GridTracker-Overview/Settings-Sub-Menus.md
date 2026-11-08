@@ -2,7 +2,7 @@
 
 Click the **Settings** button (the gear) in the button panel, or press **Ctrl+S**, to open the Settings panel over the map. Click the red **X** in the top right corner, press **Esc**, or click the gear again to close it.
 
-The tabs along the top are **General**, **Features**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Feeds** tab only appears while DX Feeds is turned on.
+The tabs along the top are **General**, **Features**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Feeds** tab only appears while DX Feeds is turned on. While BirdWatch is turned on, its own tabs, **BirdWatch**, **Telemetry** and **Satellites**, appear too; see [BirdWatch](../BirdWatch.md#settings-birdwatch-tab).
 
 Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.
 
@@ -43,17 +43,20 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
 
 * **Callsign:** your callsign, used while no WSJT-X, JTDX, AC Log or Log4OM is connected (for example when you only use DX Feeds). A callsign one of those programs reports is always used for that program. While this field is blank it takes the callsign WSJT-X or JTDX gives.
 * **Gridsquare:** your home grid. It centers the map and is used for distances and bearings. By default it is the grid from WSJT-X.
+* **Elevation:** your station's height above sea level (in feet with miles or nautical miles as your distance unit, meters otherwise). BirdWatch uses it for where satellites are, their Doppler shift, and when they rise and set.
 
 ### Display
 
 * **Language (requires restart):** the language of the interface. Choosing one saves your settings and restarts GridTracker2. See [What's New](../Introduction/Whats-New.md) for the list.
 * **Window Theme:** Dark, Light or System.
 * **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
-* **Map On Right Side:** puts the map on the right of the window and the panel on the left.
+* **Control Panel On Left Side:** puts the side panel on the left of the window and the map on the right.
+* **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
 
 ### Settings
 
-* **Reset Button Panel:** puts the buttons in the button panel back in their default order.
+* **Reset Panels:** puts the boxes of the side panel (band activity, Quick Stats, Map View Filters) back in their usual order, see [Rearranging the Panel](Control-Panel.md#rearranging-the-panel).
+* **Reset Button Order:** puts the buttons in the button panel back in their default order.
 * **Export Settings** saves all your settings to a file (the suggested name is `GridTracker2 Settings.json`). **Import Settings** loads such a file and restarts GridTracker2. Use this as a backup, or to move your settings to another computer. Files from versions older than 2.241005 can't be imported.
 * **Clear All Settings!** returns every setting to its default. It only works while **Yes, I'm sure!** is ticked.
 
@@ -70,7 +73,6 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
 
 ### Operational
 
-* **Decode Traffic Waterfall:** lists the decodes that set off a Custom Alert in the message area of the side panel, with a 🚩. Turning it off empties the message list.
 * **Roster/Alert Band Memory:** the Call Roster's Logbook, Hunting and Wanted choices and your Audio Alerts are remembered separately for each band and mode. An **M** badge shows next to their headings while this is on. It works while a single WSJT-X or JTDX is running; with several, the same settings are used for all bands and modes.
   * **... include Exceptions** also remembers the Exceptions for each band and mode.
   * **... include Custom Alerts** also remembers the Custom Alerts for each band and mode.
@@ -78,7 +80,10 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
 
 ### Service
 
-* **CatRotator / PstRotator:** turns your antenna rotator toward a station through CatRotator or PstRotator, over UDP. Enter the **IP** and **UDP Port** the rotator program listens on (127.0.0.1 and 12000 by default). An **Aim Rotator** choice is then added to the roster's right-click menu.
+* **BirdWatch:** satellite tracking: passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See [BirdWatch](../BirdWatch.md).
+* **Multi-Mode Decoder:** decodes CW, FT8, FT4, PSK, RTTY, SSTV and many other modes from your rig's or an SDR's audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See [The Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md).
+* **Rotor Control:** turns your antenna rotator toward a station (the roster's **Aim Rotator**, or **Ctrl**+click on the map) or a BirdWatch satellite. The rotator can be on a serial port (Yaesu GS-232, Easycomm II, SPID), or reached through Hamlib's rotctld, CatRotator or PstRotator. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).
+* **Rig Control:** GridTracker2's own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
 
 ### Online
 
@@ -136,10 +141,10 @@ Databases GridTracker2 downloads and keeps up to date. The table shows when each
 
 ### Audio
 
-* **Device:** the sound device GridTracker2 plays its alerts on.
+* **Output Device:** the sound device GridTracker2 plays its alerts on.
 * **QSO Log Event Notification:** a sound played whenever a QSO is logged.
 * **File Audio Volume:** the volume of sound file alerts.
-* **Warning when audio devices change:** warns you when your sound devices have changed, for example when a USB headset is unplugged.
+* **Warning when audio devices change:** warns you when your sound devices have changed, for example when a USB headset is unplugged. It also warns when an input device the Multi-Mode Decoder listens to has changed or gone missing.
 
 ```{warning}
 Don't choose the sound card that connects your computer to your radio. GridTracker2's alerts would be transmitted.

@@ -1732,5 +1732,8 @@
 	"cwViewer.picture.rotateLeft.label": "左に90°",
 	"cwViewer.picture.rotateHalf.label": "180°",
 	"cwViewer.picture.rotateNone.label": "受信したまま",
-	"gt.userGuide.search.hover": "ユーザーガイドを検索"
+	"gt.userGuide.search.hover": "ユーザーガイドを検索",
+	"birdWatch.credit.satnogs.label": "衛星と送信機のデータ:",
+	"birdWatch.credit.contributors.label": "Libre Space Foundation と貢献者",
+	"birdWatch.credit.amsat.label": "軌道要素 (TLE) と周波数:"
 }

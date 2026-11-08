@@ -76,4 +76,4 @@ On Windows, add the option to a copy of the GridTracker2 shortcut (right-click i
 
 ## Updates
 
-GridTracker2 checks for a new version shortly after it starts and then once a day. A new version downloads by itself; the message list then shows **Install and Restart**, which saves your settings, installs the update and restarts GridTracker2. The About tab in Settings shows the same. With `--disable-auto-updates`, the message list shows an **About** button instead: click **Download** in Settings → About first.
+GridTracker2 checks for a new version shortly after it starts and then once a day. A new version downloads by itself; the [Event Viewer](GridTracker-Overview/Control-Panel.md#event-viewer) then shows **Install and Restart**, which saves your settings, installs the update and restarts GridTracker2. The About tab in Settings shows the same. With `--disable-auto-updates`, the message list shows an **About** button instead: click **Download** in Settings → About first.

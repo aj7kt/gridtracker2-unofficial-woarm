@@ -1224,6 +1224,28 @@ table.darkTable.birdDopplerTable td {
   padding-bottom: 2px;
 }
 
+.birdTleBoxTitle a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted #aaa;
+}
+
+/* Where BirdWatch's data comes from (SatNOGS DB, CC BY-SA 4.0; AMSAT): the Satellites tab, the About tab and the transmitters window */
+.birdWatchCredit {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #aaa;
+  white-space: normal;
+  text-align: center;
+}
+
+.birdWatchCredit a {
+  color: #8cf;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted #8cf;
+}
+
 .birdTleHeading {
   font-weight: bold;
   padding-top: 8px;

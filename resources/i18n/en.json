@@ -1266,8 +1266,8 @@
 	"birdWatch.hint.sunEl": "The sun's elevation at your location, measured from the map's Terminator setting (below 0: night)",
 	"birdWatch.alerts.soonText.label": "Before AOS",
 	"birdWatch.alerts.risingText.label": "When It Rises",
-	"birdWatch.alerts.soonText.hover": "Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in grey",
-	"birdWatch.alerts.risingText.hover": "Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in grey",
+	"birdWatch.alerts.soonText.hover": "Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in gray",
+	"birdWatch.alerts.risingText.hover": "Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in gray",
 	"gt.button.events.hover": "Event Viewer",
 	"events.title.label": "Events",
 	"events.menu.main.label": "View In Main",
@@ -1732,5 +1732,8 @@
 	"cwViewer.picture.rotateLeft.label": "90° Left",
 	"cwViewer.picture.rotateHalf.label": "180°",
 	"cwViewer.picture.rotateNone.label": "As Received",
-	"gt.userGuide.search.hover": "Search the User Guide"
+	"gt.userGuide.search.hover": "Search the User Guide",
+	"birdWatch.credit.satnogs.label": "Satellite And Transmitter Data:",
+	"birdWatch.credit.contributors.label": "Libre Space Foundation And Contributors",
+	"birdWatch.credit.amsat.label": "Element Sets (TLE) And Frequencies:"
 }

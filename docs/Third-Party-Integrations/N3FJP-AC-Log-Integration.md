@@ -31,7 +31,7 @@ In [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-
 
 ## Logging From WSJT-X
 
-For WSJT-X QSOs to reach AC Log, WSJT-X must send to GridTracker2 (see [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md)), and **Log QSO** must be ticked on the N3FJP row. Each QSO you log in WSJT-X is then added to AC Log, and "Logged to N3FJP" shows in the message list.
+For WSJT-X QSOs to reach AC Log, WSJT-X must send to GridTracker2 (see [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md)), and **Log QSO** must be ticked on the N3FJP row. Each QSO you log in WSJT-X is then added to AC Log, and "Logged to N3FJP" shows in the [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer).
 
 ## Connected Operation
 

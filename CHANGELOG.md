@@ -86,7 +86,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Written from the published WSPR protocol (K1JT's description and G4JNT's specification)
 - Olivia mode (Mode menu): an Olivia or Contestia signal decoded, its submode picked on the second line (4/250, 8/250, 8/500, 16/500, 16/1000, 32/1000); click the signal on the waterfall, or let an RSID heard set the submode and where it is; dashed lines on the waterfall show the band decoded, and its text is listed as PSK31's is
 - Follow BirdWatch (the window's Settings, Decoders; off unless turned on, and shown only while BirdWatch is on with its Satellite Tracking toggled on): as BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8, FT4)
-  - While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, greyed out
+  - While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, grayed out
 - RSID (the window's Settings, Decoders; on unless turned off): in every mode, a transmission whose sender starts it with an RSID (as fldigi, MultiPSK and others can) is named on the waterfall where it starts: Olivia 8/500, MT63-1000L, BPSK31, THOR16 and the rest of RSID's modes
   - Click an RSID of a mode decoded here (BPSK31, BPSK63, BPSK125, QPSK31, RTTY 45, MFSK16, MFSK32, DominoEX, THOR, Packet 1200, Olivia, Contestia) to switch to that mode and submode; its transmission is decoded from its start, and nothing already decoded is cleared
 - SSTV mode (Mode menu): receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robot 36 and 72, and PD 90, 120 and 180, each found by the VIS code that starts it
@@ -112,7 +112,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - FUNcube BPSK 1200 (AO-73 and its family, from SSB audio): its telemetry read (battery, photocurrent, sequence)
   - GomSpace AX.100 Modes 5 and 6, the common cubesat framing, at 1200 to 9600 baud (from a rig's flat 9600 data audio)
   - AMSAT-EA's GENESIS FSK at 800 and 200 bps (HADES-SA, HADES-L and the other HADES satellites, from SSB audio): telemetry, BBS and SSDV packets
-  - SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown grey), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it
+  - SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown gray), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it
   - With Follow BirdWatch, the transmitter followed picks which of them listen
 - Band Plans (the window's Settings, its own tab): each mode's usual frequencies (CW, FT8, FT4, SSTV, Packet, PSK31, RTTY, MFSK, DominoEX / THOR, Olivia, WSPR), which the Frequency menu lists, with their sources' notes (region, net, DXpedition)
   - Every row can be edited in place, added or deleted; your edited copy is used from then on, and Restore Shipped goes back to GridTracker's
@@ -121,12 +121,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Waterfall Style: Auto Level (as before), WSJT-X (levels as heard, with Gain and Zero sliders), or Crisp (the noise black, with Floor and Range sliders)
   - Resolution: sharper in time or in frequency; By Mode draws CW, PSK31 and RTTY sharp in time (crisp dots and dashes) and FT8 and FT4 sharp in frequency
   - Window (Hann or Blackman-Harris), and Sharp Pixels for crisp edges
-  - Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green colour blindness), Prism, Glacier, Phosphor, Moonlight and Paper
+  - Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green color blindness), Prism, Glacier, Phosphor, Moonlight and Paper
 - Test Signals (beside the levels): clears the window, then plays a recording of the mode's signals into the decoder, on its own over a band's noise floor (what the radio hears is silenced while it plays), to see what it decodes, often several stations at once, some starting with an RSID; FT8 and FT4 start on a period's boundary
   - Every mode has some: CW, FT8, FT4, PSK31 and RTTY with five stations each, PSK63, PSK125 and QPSK31, RTTY at other bauds and shifts, MFSK16 and MFSK32, DominoEX and THOR at several speeds, Olivia and Contestia, a mix of CW, PSK31, RTTY and Olivia, an SSTV picture, APRS packets, and satellite frames (FUNcube, AX100, and a GENESIS SSDV picture)
   - What they decode stays in the window: it isn't sent to the Call Roster, and pictures aren't saved by themselves
 - Detect Modes (beside Test Signals): listens for every mode here at once and names each signal it finds, once it decodes: CW (with its speed), PSK31, PSK63, PSK125, QPSK31, RTTY (with its baud and shift), MFSK16, MFSK32, DominoEX and THOR (with their speed), Packet, SSTV (with its mode), each FT8 and FT4 station (with its message), and any mode an RSID names
-  - Each one is labelled on the waterfall and listed in the mode's place with its frequency, its signal over the noise and what was heard; the mode you were in waits meanwhile
+  - Each one is labeled on the waterfall and listed in the mode's place with its frequency, its signal over the noise and what was heard; the mode you were in waits meanwhile
   - Click one, on the waterfall or in the list, to decode it: its mode and submode are chosen and Detect Modes turns off (a CW signal pinned, an HF packet station locked onto, the FT8 or FT4 focus put on the station)
 - PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts
 
@@ -260,7 +260,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>Olivia mode (Mode menu): an Olivia or Contestia signal decoded, its submode picked on the second line (4/250, 8/250, 8/500, 16/500, 16/1000, 32/1000); click the signal on the waterfall, or let an RSID heard set the submode and where it is; dashed lines on the waterfall show the band decoded, and its text is listed as PSK31's is</li>
   <li>Follow BirdWatch (the window's Settings, Decoders; off unless turned on, and shown only while BirdWatch is on with its Satellite Tracking toggled on): as BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8, FT4)
     <ul>
-      <li>While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, greyed out</li>
+      <li>While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO; each mode's VFO menu shows it, grayed out</li>
     </ul>
   </li>
   <li>RSID (the window's Settings, Decoders; on unless turned off): in every mode, a transmission whose sender starts it with an RSID (as fldigi, MultiPSK and others can) is named on the waterfall where it starts: Olivia 8/500, MT63-1000L, BPSK31, THOR16 and the rest of RSID's modes
@@ -301,7 +301,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>FUNcube BPSK 1200 (AO-73 and its family, from SSB audio): its telemetry read (battery, photocurrent, sequence)</li>
       <li>GomSpace AX.100 Modes 5 and 6, the common cubesat framing, at 1200 to 9600 baud (from a rig's flat 9600 data audio)</li>
       <li>AMSAT-EA's GENESIS FSK at 800 and 200 bps (HADES-SA, HADES-L and the other HADES satellites, from SSB audio): telemetry, BBS and SSDV packets</li>
-      <li>SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown grey), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it</li>
+      <li>SSDV pictures: a satellite's SSDV packets put together into its pictures above the frames, each filling in as its packets come (what hasn't come yet shown gray), with its image number and packets received and missing; right-click a picture to save it as a JPEG, copy it to the clipboard or delete it</li>
       <li>With Follow BirdWatch, the transmitter followed picks which of them listen</li>
     </ul>
   </li>
@@ -316,7 +316,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Waterfall Style: Auto Level (as before), WSJT-X (levels as heard, with Gain and Zero sliders), or Crisp (the noise black, with Floor and Range sliders)</li>
       <li>Resolution: sharper in time or in frequency; By Mode draws CW, PSK31 and RTTY sharp in time (crisp dots and dashes) and FT8 and FT4 sharp in frequency</li>
       <li>Window (Hann or Blackman-Harris), and Sharp Pixels for crisp edges</li>
-      <li>Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green colour blindness), Prism, Glacier, Phosphor, Moonlight and Paper</li>
+      <li>Palette: Classic, Ember, Twilight, Neon, Aurora, Clear Sight (easy to read with red-green color blindness), Prism, Glacier, Phosphor, Moonlight and Paper</li>
     </ul>
   </li>
   <li>Test Signals (beside the levels): clears the window, then plays a recording of the mode's signals into the decoder, on its own over a band's noise floor (what the radio hears is silenced while it plays), to see what it decodes, often several stations at once, some starting with an RSID; FT8 and FT4 start on a period's boundary
@@ -327,7 +327,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>Detect Modes (beside Test Signals): listens for every mode here at once and names each signal it finds, once it decodes: CW (with its speed), PSK31, PSK63, PSK125, QPSK31, RTTY (with its baud and shift), MFSK16, MFSK32, DominoEX and THOR (with their speed), Packet, SSTV (with its mode), each FT8 and FT4 station (with its message), and any mode an RSID names
     <ul>
-      <li>Each one is labelled on the waterfall and listed in the mode's place with its frequency, its signal over the noise and what was heard; the mode you were in waits meanwhile</li>
+      <li>Each one is labeled on the waterfall and listed in the mode's place with its frequency, its signal over the noise and what was heard; the mode you were in waits meanwhile</li>
       <li>Click one, on the waterfall or in the list, to decode it: its mode and submode are chosen and Detect Modes turns off (a CW signal pinned, an HF packet station locked onto, the FT8 or FT4 focus put on the station)</li>
     </ul>
   </li>
