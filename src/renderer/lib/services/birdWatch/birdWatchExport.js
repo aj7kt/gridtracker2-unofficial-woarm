@@ -14,12 +14,22 @@ function birdWatchExportPasses()
   if (!T || !T.worker) return;
   T.exporting = { wanted: new Set(GT.settings.BirdWatch.tracked), lists: new Map() };
   for (const norad of T.exporting.wanted) T.worker.postMessage({ type: "passes", id: "export", norad: norad, hours: BIRD_WATCH_EXPORT_HOURS });
+  // Then a request of no satellite: the tracker answers in order, so when its answer comes every satellite's has (one it couldn't work
+  // out, an element set that stops propagating part way, gets an error instead, and would hold the file up for ever)
+  T.worker.postMessage({ type: "passes", id: "exportEnd", norad: 0, hours: 0.1 });
 }
 
-// From the tracker: each satellite's passes arrive; with all of them the file is made
+// From the tracker: each satellite's passes arrive; with all of them the file is made (with the ones that came, once the end's answer is in)
 function birdWatchExportCollect(m)
 {
   const T = GT.birdWatchTrack;
+  if (m.id == "exportEnd" && T.exporting)
+  {
+    const lists = T.exporting.lists;
+    T.exporting = null;
+    birdWatchExportSave(lists);
+    return;
+  }
   if (m.id != "export" || !T.exporting || !T.exporting.wanted.has(m.norad)) return;
   T.exporting.lists.set(m.norad, m.passes || []);
   T.exporting.wanted.delete(m.norad);

@@ -93,12 +93,17 @@ const TX = {
   timer: null,
   watchdog: null,
   pttVfo: null, // the VFO whose rig was keyed (Rig Control), until it is unkeyed
+  unkey: null,  // the last sending's rig unkeyed once its tail is over (mmdSstvTxUnkey), while it waits; and its timer
+  unkeyTimer: null,
+  stops: 0,     // the stops so far (mmdSstvTxStop): a start waiting for its Output Device sees it was stopped meanwhile
+  starting: 0,  // the starts waiting for their network Output Device (mmdNetOutput) meanwhile
   netToken: null, // a network Output Device's, while it is sent to (mmdNetAudio.js)
   logo: null,   // the GridTracker logo, loaded once
   image: null,  // the image file chosen, loaded (its path in image.src)
   built: null,  // the picture as last built (a canvas at the mode's size)
   building: 0,
   sending: false, // Send under way (its build, then the start)
+  sends: 0,     // Send's clicks so far: one stopped and clicked again goes on as the newer one only (mmdSstvTxSend)
   zoomGrid: null, // the small place grid the zoom box is open for (mmdSstvTxZoomOpen)
   zoomTimer: null
 };
@@ -767,6 +772,13 @@ function mmdSstvTxActive()
   return !!TX.source;
 }
 
+// A picture being sent or built to be sent, or Tune: what keys the rig (Simulate Rx doesn't). Stopped when the mode changes, Detect Modes
+// starts or the window closes (mmdModeSet, mmdDetectStart, mmdVisible)
+function mmdSstvTxKeying()
+{
+  return !!TX.source || TX.starting > 0 || (TX.sending && !TX.simulating);
+}
+
 function mmdSstvTxStatus(text, error = false)
 {
   sstvTxStatus.textContent = text;
@@ -820,10 +832,13 @@ async function mmdSstvTxSend()
   if (!mmdSstvTxReady() || TX.sending) return;
   // (The Map refresh waits, so this build is the one kept)
   TX.sending = true;
+  const send = ++TX.sends;
   mmdSstvTxButtons();
   mmdSstvTxStatus(I18N("sstvTx.status.building"));
   // Built again as it is sent (the time stamp's time the current one), and shown as sent
   const picture = await mmdSstvTxBuild();
+  // (Stopped and Send clicked again meanwhile: TX.sending is the newer one's)
+  if (TX.sends != send) return;
   if (picture) mmdSstvTxDraw();
   // (Stopped while it was built: TX.sending let go, nothing sent)
   if (!picture || TX.source || !TX.sending)
@@ -842,7 +857,7 @@ async function mmdSstvTxSend()
     TX.lines = audio.lines;
     return audio;
   }, (seconds) => I18N("sstvTx.status.sent").replace("{mode}", mode.name).replace("{seconds}", Math.round(seconds)));
-  TX.sending = false;
+  if (TX.sends == send) TX.sending = false;
   mmdSstvTxButtons();
 }
 
@@ -914,11 +929,14 @@ function mmdSstvTxTune()
 
 // The audio path, a picture's or Tune's: the Output Device's context, the audio made full scale by make(rate, amp, method) ({ samples,
 // seconds }) played on it through the Power's gain (changed as it plays), the rig keyed first by its PTT Method (VOX: by the audio
-// itself), the decoder silenced meanwhile; ended(seconds) says what the status shows when it has all gone out
+// itself), the decoder silenced meanwhile; ended(seconds) says what the status shows when it has all gone out. The last sending's rig,
+// if it still waits for its tail, is unkeyed first (its tail would otherwise unkey this one's)
 async function mmdSstvTxStart(kind, make, ended)
 {
   const ready = mmdSstvTxReady();
   if (!ready || TX.source) return;
+  mmdSstvTxUnkey();
+  const stops = TX.stops;
   let ctx = null;
   try
   {
@@ -926,8 +944,18 @@ async function mmdSstvTxStart(kind, make, ended)
     let out = null;
     if (ready.device.netAudio)
     {
-      const net = await mmdNetOutput(ready.device);
-      if (TX.source)
+      let net;
+      TX.starting++;
+      try
+      {
+        net = await mmdNetOutput(ready.device);
+      }
+      finally
+      {
+        TX.starting--;
+      }
+      // (Another started meanwhile, or stopped: nothing sent)
+      if (TX.source || TX.stops != stops)
       {
         net.ctx.close().catch(() => {});
         mmdNetOutputStop(net.token);
@@ -1004,13 +1032,17 @@ function mmdSstvTxTick()
   mmdSstvTxStatus(I18N("sstvTx.status.sending").replace("{mode}", TX.mode.name).replace("{line}", line).replace("{lines}", TX.lines));
 }
 
-// Over (sent, stopped, failed, the window closing): the audio stopped, the rig unkeyed a moment after, the decoder hearing again
+// Over (sent, stopped, failed, the window closing): the audio stopped, the rig unkeyed a moment after (at once on an error), the decoder
+// hearing again
 function mmdSstvTxStop(text = "", error = false)
 {
+  TX.stops++;
   clearInterval(TX.timer);
   clearTimeout(TX.watchdog);
   TX.timer = null;
   TX.watchdog = null;
+  // The last sending's rig, still waiting for its tail: unkeyed now
+  mmdSstvTxUnkey();
   const source = TX.source, ctx = TX.ctx, netToken = TX.netToken;
   TX.netToken = null;
   TX.source = null;
@@ -1048,11 +1080,27 @@ function mmdSstvTxStop(text = "", error = false)
       TX.pttVfo = null;
     }
   };
-  if (TX.pttVfo && !error) setTimeout(unkey, SSTV_TX_PTT_TAIL_MS);
+  // (Kept while it waits: a new sending, or the window closing, has it done at once, mmdSstvTxUnkey)
+  if (TX.pttVfo && !error)
+  {
+    TX.unkey = unkey;
+    TX.unkeyTimer = setTimeout(mmdSstvTxUnkey, SSTV_TX_PTT_TAIL_MS);
+  }
   else unkey();
   mmdSwApply();
   // What the decoder had of the sending (little: it was silenced) let go
   if (DEC.mode == "sstv") mmdSstvReset();
   mmdSstvTxButtons();
   if (text) mmdSstvTxStatus(text, error);
+}
+
+// The last sending's rig unkeyed, if it waits for its tail (mmdSstvTxStop): when the tail is over, or at once as another sending starts
+// or the sending is stopped again
+function mmdSstvTxUnkey()
+{
+  clearTimeout(TX.unkeyTimer);
+  TX.unkeyTimer = null;
+  const unkey = TX.unkey;
+  TX.unkey = null;
+  if (unkey) unkey();
 }

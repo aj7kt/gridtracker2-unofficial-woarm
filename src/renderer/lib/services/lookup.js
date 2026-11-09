@@ -156,9 +156,10 @@ function continueWithLookup(callsign, gridPass)
   // Not in the cache: this needs the network, so stop here in offline mode
   if (GT.settings.map.offlineMode == true) return;
 
+  // (lookupWait: the window keeps its size until the answer comes, lookupFit)
   setLookupDiv(
     "lookupInfoDiv",
-    "Looking up <font color='cyan'>" + lookupHtml(callsign) + "</font>, please wait..."
+    "<span class='lookupWait'>Looking up <font color='cyan'>" + lookupHtml(callsign) + "</font>, please wait...</span>"
   );
 
   if (GT.settings.app.lookupService != "CALLOOK")
@@ -272,9 +273,9 @@ function callookResults(buffer, gridPass, useCache, requested)
         callObject.country = "United States";
         if (gridPass) callObject.gtGrid = gridPass;
         callObject.source =
-          "<tr><td>Source</td><td><font color='orange'><b><div style='cursor:pointer' onClick='window.opener.openSite(\"https://callook.info/" +
+          "<div class='lookupLink' onClick='window.opener.openSite(\"https://callook.info/" +
           encodeURIComponent(results.current.callsign) +
-          "\");'>C A L L O O K</div></b></font></td></tr>";
+          "\");'>C A L L O O K</div>";
         cacheLookupObject(callObject, gridPass, true, show);
       }
       else if (!show) return;
@@ -487,9 +488,9 @@ function hamQthLookupResults(buffer, gridPass, useCache, requested)
   const safeCall = encodeURIComponent(call);
 
   json.search.source =
-    "<tr><td>Source</td><td><font color='orange'><b><div style='cursor:pointer' onClick='window.opener.openSite(\"https://www.hamqth.com/" +
+    "<div class='lookupLink' onClick='window.opener.openSite(\"https://www.hamqth.com/" +
     safeCall +
-    "\");'>HamQTH</div></b></font></td></tr>";
+    "\");'>HamQTH</div>";
 
   if (gridPass) json.search.gtGrid = gridPass;
 
@@ -557,11 +558,11 @@ function qrzLookupResults(buffer, gridPass, useCache, requested)
   if (!isQRZ) json.Callsign.bioUrl = url;
 
   json.Callsign.source =
-    "<tr><td>Source</td><td><font color='orange'><b><div style='cursor:pointer' onClick='window.opener.openSite(\"" +
+    "<div class='lookupLink' onClick='window.opener.openSite(\"" +
     url +
     "\");'>" +
     label +
-    "</div></b></font></td></tr>";
+    "</div>";
 
   if (gridPass) json.Callsign.gtGrid = gridPass;
 
@@ -786,11 +787,12 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
   const lat = p("lat");
   const lon = p("lon");
 
-  const addRowIf = (arr, label, value, extra = "") =>
+  // A tile of the Details (lookupTile), when there is a value
+  const addRowIf = (arr, label, value, title = "") =>
   {
     if (value.length > 0)
     {
-      arr.push(`<tr${extra}><td>${label}</td><td>${lookupHtml(value)}</td></tr>`);
+      arr.push(lookupTile(label, lookupHtml(value), title));
     }
   };
 
@@ -800,92 +802,26 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
   if (email.length > 0) addressLines.push(email);
   GT.lastLookupAddress = addressLines.join("\n") + "\n";
 
-  const cardRows = [];
-
-  if (addrAttn.length > 0)
+  // The card: the photo at the left; the call and its flag, the name and the address (a click copies them)
+  const cardLines = [];
+  if (addrAttn.length > 0) cardLines.push(`<div class='lookupAddr'>${lookupHtml(addrAttn)}</div>`);
+  if (name.length > 0) cardLines.push(`<div class='lookupName'>${lookupHtml(name)}</div>`);
+  for (const line of [addr1, addr2, country])
   {
-    cardRows.push(`<tr><td>${lookupHtml(addrAttn)}</td></tr>`);
+    if (line.length > 0) cardLines.push(`<div class='lookupAddr'>${lookupHtml(line)}</div>`);
+  }
+  if (email.length > 0)
+  {
+    cardLines.push(`<div class='lookupEmail' onclick='window.opener.mailThem(${lookupJsArg(email)});'>${lookupHtml(email)}</div>`);
   }
 
-  cardRows.push(
-    `<tr><td><b>${lookupHtml(name)}</b></td></tr>`,
-    `<tr><td>${lookupHtml(addr1)}</td></tr>`,
-    `<tr><td>${lookupHtml(addr2)}</td></tr>`,
-    `<tr><td>${lookupHtml(country)}</td></tr>`,
-    `<tr><td>${
-      email.length > 0
-        ? `<div style='cursor:pointer;font-weight:bold;vertical-align:top' onclick='window.opener.mailThem(${lookupJsArg(email)});'>${lookupHtml(email)}</div>`
-        : ""
-    }</td></tr>`
-  );
-
-  const card = `
-    <div class='mapItem' id='callCard' style='top:0;padding:4px;'>
-      <table title='Click to copy address to clipboard' onclick='setClipboardFromLookup();' style='cursor:pointer'>
-        <tr>
-          <td style='font-size:36pt;color:cyan;font-weight:bold'>${lookupHtml(formatCallsign(call))}</td>
-          <td align='center' style='margin:0;padding:0'>
-            ${lookup.dxcc > 0 && lookup.dxcc in GT.dxccInfo
-              ? `<img style='padding-top:4px' src='img/flags/24/${GT.dxccInfo[lookup.dxcc].flag}'>`
-              : ""}
-          </td>
-          <td rowspan='6'>
-            ${image.length > 0
-              ? `<img style='border:1px solid gray' class='roundBorder' width='220px' src='${lookupHtml(image)}'>`
-              : ""}
-          </td>
-        </tr>
-        ${cardRows.join("")}
-      </table>
-    </div>`;
-
-  const detailsRows = ["<tr><th colspan='2'>Details</th></tr>"];
-
-  const website = url.length > 0 ? lookupWebsiteUrl(url) : "";
-  if (website.length > 0)
-  {
-    detailsRows.push(
-      `<tr><td>Website</td><td><font color='orange'><b><div style='cursor:pointer' onClick='window.opener.openSite(${lookupJsArg(website)});'>Link</div></b></font></td></tr>`
-    );
-  }
-
-  if (Number(p("bio")) > 0)
-  {
-    const bioUrl = p("bioUrl") || "https://www.qrz.com/db/" + p("call");
-    detailsRows.push(
-      `<tr><td>Biography</td><td><font color='orange'><b><div style='cursor:pointer' onClick='window.opener.openSite(${lookupJsArg(bioUrl)});'>Link</div></b></font></td></tr>`
-    );
-  }
-
-  detailsRows.push(
-    makeRow("Type", lookup, "type"),
-    makeRow("Class", lookup, "class"),
-    makeRow("Codes", lookup, "codes"),
-    makeRow("QTH", lookup, "qth")
-  );
-
-  const dates = joinIfBothWithDash(p("efdate"), p("expdate"));
-  addRowIf(detailsRows, I18N("gt.lookup.effectiveDates"), dates);
-
-  const aliases = joinCommaIf(p("aliases"), p("p_call"));
-  addRowIf(detailsRows, "Aliases", aliases, ` title='${lookupHtml(aliases)}'`);
-
-  detailsRows.push(
-    makeRow(I18N("gt.lookup.polishOT"), lookup, "plot"),
-    makeRow(I18N("gt.lookup.germanDOK"), lookup, "dok"),
-    makeYesNoRow(I18N("gt.lookup.sonderDOK"), lookup, "sondok"),
-    `<tr><td>DXCC</td><td>${lookupHtml(p("dxcc"))} - ${lookupHtml(GT.dxccToAltName[p("dxcc")] || "Unknown")}</td></tr>`,
-    makeRow(I18N("rosterColumns.Wanted.cqz"), lookup, "cqzone"),
-    makeRow(I18N("rosterColumns.Wanted.ituz"), lookup, "ituzone"),
-    makeRow("IOTA", lookup, "iota"),
-    makeRow("FIPS", lookup, "fips"),
-    makeRow("FRN", lookup, "frn"),
-    makeRow("Timezone", lookup, "TimeZone"),
-    makeRow(I18N("gt.lookup.gmtOffset"), lookup, "GMTOffset"),
-    makeRow("County", lookup, "county"),
-    makeRow("Latitude", lookup, "lat"),
-    makeRow("Longitude", lookup, "lon")
-  );
+  // Under them, the grid (a click copies it; highlighted when it is new to you), GridTracker's grid for the station when it is another
+  // one, and the distance and bearing from you
+  const chips = [];
+  const gridChip = (label, value) =>
+    `<span class='lookupChip' title='Copy to clipboard' onClick='addTextToClipboard(${lookupJsArg(value)})'><span class='lookupChipLabel'>${label}</span><span class='lookupGrid' style='${lookupGridCellStyle(value)}'>${lookupHtml(value)}</span></span>`;
+  if (grid.length > 0) chips.push(gridChip("Grid", grid));
+  if (gtGrid.length > 0 && gtGrid.toUpperCase() != grid.toUpperCase()) chips.push(gridChip("GT Grid", gtGrid));
 
   if (lat.length > 0 && lon.length > 0)
   {
@@ -903,18 +839,70 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
       MyCircle.bearing(GT.myLat, GT.myLon, Number(lat), Number(lon))
     );
 
-    detailsRows.push(
-      `<tr><td>Distance</td><td style='color:cyan'>${distance}${distanceUnit.value.toLowerCase()}</td></tr>`,
-      `<tr><td>Azimuth</td><td style='color:yellow'>${bearing}&deg;</td></tr>`
+    chips.push(
+      `<span class='lookupChip'><span class='lookupChipLabel'>Distance</span><span style='color:cyan'>${distance}${distanceUnit.value.toLowerCase()}</span></span>`,
+      `<span class='lookupChip'><span class='lookupChipLabel'>Azimuth</span><span style='color:yellow'>${bearing}&deg;</span></span>`
     );
   }
 
-  detailsRows.push(makeRow("Grid", lookup, "grid", true));
+  const flag = lookup.dxcc > 0 && lookup.dxcc in GT.dxccInfo ? `<img class='lookupFlag' src='img/flags/24/${GT.dxccInfo[lookup.dxcc].flag}'>` : "";
+  const photo = image.length > 0 ? `<img class='lookupPhoto' src='${lookupHtml(image)}'>` : "";
 
-  if (gtGrid.length > 0 && gtGrid.toUpperCase() != grid.toUpperCase())
+  const card = `
+    <div class='lookupHero'>
+      ${photo}
+      <div>
+        <div class='lookupCard' title='Click to copy address to clipboard' onclick='setClipboardFromLookup();'>
+          <div class='lookupCallLine'><span class='lookupCall'>${lookupHtml(formatCallsign(call))}</span>${flag}</div>
+          ${cardLines.join("")}
+        </div>
+        ${chips.length > 0 ? `<div class='lookupChips'>${chips.join("")}</div>` : ""}
+      </div>
+    </div>`;
+
+  const detailsRows = [];
+
+  const website = url.length > 0 ? lookupWebsiteUrl(url) : "";
+  if (website.length > 0)
   {
-    detailsRows.push(makeRow("GT Grid", lookup, "gtGrid", true));
+    detailsRows.push(lookupTile("Website", `<div class='lookupLink' onClick='window.opener.openSite(${lookupJsArg(website)});'>Link</div>`));
   }
+
+  if (Number(p("bio")) > 0)
+  {
+    const bioUrl = p("bioUrl") || "https://www.qrz.com/db/" + p("call");
+    detailsRows.push(lookupTile("Biography", `<div class='lookupLink' onClick='window.opener.openSite(${lookupJsArg(bioUrl)});'>Link</div>`));
+  }
+
+  detailsRows.push(
+    makeRow("Type", lookup, "type"),
+    makeRow("Class", lookup, "class"),
+    makeRow("Codes", lookup, "codes"),
+    makeRow("QTH", lookup, "qth")
+  );
+
+  const dates = joinIfBothWithDash(p("efdate"), p("expdate"));
+  addRowIf(detailsRows, I18N("gt.lookup.effectiveDates"), dates);
+
+  const aliases = joinCommaIf(p("aliases"), p("p_call"));
+  addRowIf(detailsRows, "Aliases", aliases, aliases);
+
+  detailsRows.push(
+    makeRow(I18N("gt.lookup.polishOT"), lookup, "plot"),
+    makeRow(I18N("gt.lookup.germanDOK"), lookup, "dok"),
+    makeYesNoRow(I18N("gt.lookup.sonderDOK"), lookup, "sondok"),
+    lookupTile("DXCC", `${lookupHtml(p("dxcc"))} - ${lookupHtml(GT.dxccToAltName[p("dxcc")] || "Unknown")}`),
+    makeRow(I18N("rosterColumns.Wanted.cqz"), lookup, "cqzone"),
+    makeRow(I18N("rosterColumns.Wanted.ituz"), lookup, "ituzone"),
+    makeRow("IOTA", lookup, "iota"),
+    makeRow("FIPS", lookup, "fips"),
+    makeRow("FRN", lookup, "frn"),
+    makeRow("Timezone", lookup, "TimeZone"),
+    makeRow(I18N("gt.lookup.gmtOffset"), lookup, "GMTOffset"),
+    makeRow("County", lookup, "county"),
+    makeRow("Latitude", lookup, "lat"),
+    makeRow("Longitude", lookup, "lon")
+  );
 
   detailsRows.push(
     makeRow("Born", lookup, "born"),
@@ -925,64 +913,66 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
     makeRow(I18N("gt.lookup.qslVia"), lookup, "qsl_via"),
     makeRow("QRZ Admin", lookup, "user"),
     makeRow("Prefix", lookup, "prefix"),
-    lookup.source
+    lookup.source ? lookupTile("Source", lookup.source) : ""
   );
+
+  const check = "<span class='lookupYes'>&#10004;</span>";
 
   if (GT.settings.callsignLookups.lotwUseEnable == true && call in GT.lotwCallsigns)
   {
-    detailsRows.push(
-      `<tr><td>${I18N("gt.lookup.lotwMember")}</td><td>&#10004; (${userDayString(GT.lotwCallsigns[call] * 86400 * 1000)})</td></tr>`
-    );
+    detailsRows.push(lookupTile(I18N("gt.lookup.lotwMember"), `${check} (${userDayString(GT.lotwCallsigns[call] * 86400 * 1000)})`));
   }
 
   if (GT.settings.callsignLookups.eqslUseEnable == true && call in GT.eqslCallsigns)
   {
-    detailsRows.push("<tr><td>" + I18N("gt.lookup.eqslMember") + "</td><td>&#10004;</td></tr>");
+    detailsRows.push(lookupTile(I18N("gt.lookup.eqslMember"), check));
   }
 
   if (GT.settings.callsignLookups.oqrsUseEnable == true && call in GT.oqrsCallsigns)
   {
-    detailsRows.push("<tr><td>ClubLog OQRS</td><td>&#10004;</td></tr>");
+    detailsRows.push(lookupTile("ClubLog OQRS", check));
   }
 
   if (fromCache)
   {
-    detailsRows.push("<tr><td>Cached</td><td>Yes</td></tr>");
+    detailsRows.push(lookupTile("Cached", "Yes"));
   }
 
   const details = `
-    <div class='mapItem' id='callDetails' style='padding:4px;'>
-      <table align='center' class='bioTable'>
-        ${detailsRows.join("")}
-      </table>
+    <div class='lookupDetails'>
+      <div class='lookupSectionTitle'>Details</div>
+      <div class='lookupTiles'>${detailsRows.join("")}</div>
     </div>`;
 
-  const genMessage = `
-    <tr>
-      <td colspan='2'>
-        <div title='Clear' class='button' onclick='window.opener.clearLookup();'>Clear</div>
-        <div title='Generate Messages' class='button' onclick='window.opener.setCallAndGrid(${lookupJsArg(p("call"))},${lookupJsArg(grid)});'>Generate Messages</div>
-      </td>
-    </tr>`;
+  const actions = `
+    <div class='lookupActions'>
+      <div title='Clear' class='lookupAction' onclick='window.opener.clearLookup();'>Clear</div>
+      <div title='Generate Messages' class='lookupAction lookupPrimary' onclick='window.opener.setCallAndGrid(${lookupJsArg(p("call"))},${lookupJsArg(grid)});'>Generate Messages</div>
+    </div>`;
 
-  setLookupDiv(
-    "lookupInfoDiv",
-    `<table align='center'><tr><td>${card}</td><td>${details}</td></tr>${genMessage}</table>`
-  );
-
-  setLookupDivHeight("lookupBoxDiv", getLookupWindowHeight() + "px");
+  // The card first: it takes the last result's buttons and Details away with it (setLookupDiv), and this result's go in after it
+  setLookupDiv("lookupInfoDiv", card);
+  setLookupDiv("lookupActionsDiv", actions);
+  setLookupDiv("lookupDetailsDiv", details);
 }
 
+// Back to the window's first look: an empty callsign and the hint
 function clearLookup()
 {
   if (GT.lookupWindowInitialized)
   {
     GT.lookupWindowHandle.window.lookupCallsignInput.value = "";
     lookupValidateCallByElement("lookupCallsignInput");
+    setLookupDiv("lookupAckDiv", "");
     setLookupDiv("lookupLocalDiv", "");
-    setLookupDiv("lookupInfoDiv", "");
-    setLookupDivHeight("lookupBoxDiv", getLookupWindowHeight() + "px");
+    setLookupDiv("lookupInfoDiv", I18N("lookup.noinfo"));
   }
+}
+
+// A tile of the lookup's Details: its label over its value (html); title: the whole value, under the mouse
+function lookupTile(label, valueHtml, title = "")
+{
+  return `<div class='lookupTile'${title ? ` title='${lookupHtml(title)}'` : ""}><div class='lookupTileLabel'>${label}</div><div class='lookupTileValue'>${valueHtml}</div></div>`;
 }
 
 function makeYesNoRow(first, object, key)
@@ -990,11 +980,13 @@ function makeYesNoRow(first, object, key)
   let value = getLookProp(object, key);
   if (value.length > 0)
   {
+    const yes = lookupTile(first, "<span class='lookupYes'>Yes</span>");
+    const no = lookupTile(first, "<span class='lookupNo'>No</span>");
     let test = value.toUpperCase();
-    if (test == "Y") return "<tr><td>" + first + "</td><td>Yes</td></tr>";
-    if (test == "N") return "<tr><td>" + first + "</td><td>No</td></tr>";
+    if (test == "Y") return yes;
+    if (test == "N") return no;
     if (test == "?") return "";
-    return ("<tr><td>" + first + "</td><td>" + (object[key] == 1 ? "Yes" : "No") + "</td></tr>");
+    return object[key] == 1 ? yes : no;
   }
   return "";
 }
@@ -1050,23 +1042,12 @@ function lookupGridCellStyle(gridLocator, band, mode)
     : "color:black;background-color:cyan;";
 }
 
-function makeRow(first, object, key, grid = false)
+function makeRow(first, object, key)
 {
   let value = getLookProp(object, key);
   if (value.length > 0)
   {
-    if (grid)
-    {
-      // only applies to grid at this point. we want to invert
-      // the background color of the grid cell if new or
-      // unconfirmed and leave as is if confirmed.
-      let style = lookupGridCellStyle(object[key]);
-      return ("<tr><td>" + first + "</td><td title='Copy to clipboard' style='cursor:pointer;font-weight:bold;" + style + "' onClick='addTextToClipboard(" + lookupJsArg(object[key]) + ")'>" + lookupHtml(object[key]) + "</td></tr>");
-    }
-    else
-    {
-      return ("<tr><td>" + first + "</td><td>" + lookupHtml(object[key].substr(0, 45)) + "</td></tr>");
-    }
+    return lookupTile(first, lookupHtml(object[key].substr(0, 45)));
   }
   return "";
 }
@@ -1125,29 +1106,19 @@ function changelookupOnTx()
   GT.settings.app.lookupCloseLog = lookupCloseLog.checked;
 }
 
+// The lookup window's info part holds a lookup's card, or a message in its place (please wait, an error): whatever is written there takes
+// the last result's Clear, Generate Messages and Details away with it (a result writes its own after it, displayLookupObject)
 function setLookupDiv(div, worker)
 {
   if (GT.lookupWindowInitialized && typeof GT.lookupWindowHandle.window[div].innerHTML != "undefined")
   {
     GT.lookupWindowHandle.window[div].innerHTML = worker;
+    if (div == "lookupInfoDiv")
+    {
+      GT.lookupWindowHandle.window.lookupActionsDiv.innerHTML = "";
+      GT.lookupWindowHandle.window.lookupDetailsDiv.innerHTML = "";
+    }
   }
-}
-
-function setLookupDivHeight(div, heightWithPx)
-{
-  if (GT.lookupWindowInitialized && typeof GT.lookupWindowHandle.window[div].style != "undefined")
-  {
-    GT.lookupWindowHandle.window[div].style.height = heightWithPx;
-  }
-}
-
-function getLookupWindowHeight()
-{
-  if (GT.lookupWindowInitialized && typeof GT.lookupWindowHandle.window.window != "undefined")
-  {
-    return GT.lookupWindowHandle.window.window.innerHeight;
-  }
-  return 300;
 }
 
 function lookupValidateCallByElement(elementString)
@@ -1187,8 +1158,19 @@ function toggleLookupWindow(toggle = true)
   }
 }
 
+// A band (or band and mode) as a chip in its band color, for the lookup's log: a faint dashed outline when only worked, filled when
+// confirmed
+function lookupBandChip(text, band, confirmed)
+{
+  const color = GT.bandColors[band] || "888888";
+  return `<span class='lookupBand${confirmed ? " lookupConf" : ""}' style='color:#${color};${confirmed ? "background:#" + color + "48" : "border-color:#" + color + "80"}'>${text}</span>`;
+}
+
+// Your log for the call (above the Details): the bands and modes worked and confirmed, the last QSO, and its DXCC entity's bands; and
+// GridTracker's acknowledgement of the call, at the top
 function searchLogForCallsign(call)
 {
+  setLookupDiv("lookupAckDiv", "");
   setLookupDiv("lookupLocalDiv", "");
   let list = Object.values(GT.QSOhash)
     .filter(function (value)
@@ -1200,11 +1182,9 @@ function searchLogForCallsign(call)
   let html = [];
   const ack = GT.acknowledgedCalls[call];
 
-  // If 'ack' exists, populate the HTML array using a single-allocation template literal
-  if (ack) {
-    html = [
-      `<h3>${I18N("gt.lookup.acks")} ${formatCallsign(call)} <img class="lookupAckBadge" src="img/emojis/${ack.b}.png"> ${ack.m}</h3>`
-    ];
+  if (ack)
+  {
+    setLookupDiv("lookupAckDiv", `<div class='lookupAck'>${I18N("gt.lookup.acks")} ${formatCallsign(call)} <img class="lookupAckBadge" src="img/emojis/${ack.b}.png"> ${ack.m}</div>`);
   }
   let work = {};
   let conf = {};
@@ -1227,45 +1207,35 @@ function searchLogForCallsign(call)
     }
     else if (!(what in conf)) work[what] = GT.bandColors[list[row].band];
   }
-  html.push("<div class='mapItemNoSize'><table align='center' class='darkTable'>");
+  // Each row its label, then its chips (band and mode, "17m,FT8": shown as 17m FT8)
+  const row = (label, color, content) => html.push(`<div class='lookupLogLabel' style='color:${color}'>${label}</div><div>${content}</div>`);
+  const chips = (keys, confirmed) => keys.sort().map((key) => lookupBandChip(key.replace(",", " "), key.split(",")[0], confirmed)).join("");
+  html.push("<div class='lookupLog'>");
   if (Object.keys(work).length > 0)
   {
-    html.push("<tr><th style='color:yellow'>Worked</th><td>");
-    let k = Object.keys(work).sort();
-    for (let key in k)
-    {
-      html.push("<font color='#" + work[k[key]] + "'>" + k[key] + " </font>");
-    }
-    html.push("</td></tr>");
+    row("Worked", "yellow", chips(Object.keys(work), false));
   }
   if (Object.keys(conf).length > 0)
   {
-    html.push("<tr><th style='color:lightgreen'>Confirmed</th><td>");
-    let k = Object.keys(conf).sort();
-    for (let key in k)
-    {
-      html.push("<font color='#" + conf[k[key]] + "'>" + k[key] + " </font>");
-    }
-    html.push("</td></tr>");
+    row("Confirmed", "lightgreen", chips(Object.keys(conf), true));
   }
   if (lastRow)
   {
-    html.push("<tr><th style='color:cyan'>" + I18N("gt.lookup.lastQSO") + "</th><td>");
-    html.push("<font color='#" + GT.bandColors[list[lastRow].band] + "'>" + list[lastRow].band + "," + list[lastRow].mode + " </font> " + userTimeString(list[lastRow].time * 1000));
-    html.push("</td></tr>");
+    const last = list[lastRow];
+    row(I18N("gt.lookup.lastQSO"), "cyan", "<span style='font-weight:bold;color:#" + (GT.bandColors[last.band] || "888888") + "'>" + last.band + " " + last.mode + "</span> <span class='lookupLogTime'>" + userTimeString(last.time * 1000) + "</span>");
   }
 
-  html.push("<tr><th style='color:orange'>" + GT.dxccToAltName[dxcc] + " (" + GT.dxccInfo[dxcc].pp + ")</th><td>");
+  // The entity's bands: confirmed ones filled
+  const bands = [];
   for (let band in GT.colorBands)
   {
     if (String(dxcc) + "|" + GT.colorBands[band] in GT.tracker.worked.dxcc)
     {
-      let strike = "";
-      if (String(dxcc) + "|" + GT.colorBands[band] in GT.tracker.confirmed.dxcc) { strike = "text-decoration: underline overline;"; }
-      html.push("<div style='" + strike + "display:inline-block;color:#" + GT.bandColors[GT.colorBands[band]] + "'>" + GT.colorBands[band] + "</div>&nbsp;");
+      bands.push(lookupBandChip(GT.colorBands[band], GT.colorBands[band], String(dxcc) + "|" + GT.colorBands[band] in GT.tracker.confirmed.dxcc));
     }
   }
+  row(GT.dxccToAltName[dxcc] + " (" + GT.dxccInfo[dxcc].pp + ")", "orange", bands.join(""));
 
-  html.push("</td></tr></table></div>");
+  html.push("</div>");
   setLookupDiv("lookupLocalDiv", html.join(""));
 }

@@ -5,7 +5,7 @@
 // Rig Control (Settings -> Features -> Service): each VFO's frequency and mode, read every second and set on request (rigTune), through
 // Hamlib's rigctld (TCP), flrig (XML-RPC over HTTP), SPY Server by Airspy and SDR++ Server (TCP, rigSpy.js and rigSdrpp.js: an SDR, its
 // I/Q for the Multi-Mode Decoder too, rigIq.js), SDR++'s Rigctl Server (plain rigctl, rigSdrpp.js),
-// or on a serial port (Web Serial, serialPorts.js) an Icom over CI-V, a Kenwood or a newer Yaesu over their CAT (rigCatProtocol). WSJT-X usually
+// or on a serial port (serialPorts.js: Node's serialport, else Web Serial) an Icom over CI-V, a Kenwood or a newer Yaesu over their CAT (rigCatProtocol). WSJT-X usually
 // holds the rig's serial port: a port that can't be opened says so under Choose Port, with the way to share the rig (rigctld or flrig).
 // The VFOs (settings.Rigs.vfos, VFO-A, VFO-B ... by their place in the list): each one a rig of its own with its own link, or the second
 // VFO (VFO B, or Sub) of one of those. The features each pick theirs: BirdWatch its downlink's and uplink's (rigRoleVfo), the Multi-Mode
@@ -48,6 +48,7 @@ function rigNewState(key)
     retryTimer: null,
     openTries: 0,       // serial: the opens tried again since it was last asked to connect (rigSerialRetry)
     connectedAt: 0,     // when its link opened (a rig that hasn't answered since a while after: rigNoAnswer)
+    freqAt: 0,          // when the rig last said its frequency (rigFreqSaid; quiet since a while: rigNoAnswer); 0 where it says it only as it changes
     generation: 0,      // a connect under way is the newest one; an older one that finishes is ignored
     pending: "",        // text received that isn't a whole line yet
     bytes: [],          // CI-V bytes that aren't a whole frame yet
@@ -61,6 +62,9 @@ function rigNewState(key)
     tuningStep: null,   // the rig's tuning step in Hz, when an answer tells it (CI-V 10, rigctld n; nothing asks it now)
     scope: null,        // CI-V: its band scope as read (rigScopeState), with Use Scope If Present
     waiting: null,      // serial: the timer for the reply to the frame out, after which the next goes anyway
+    closing: null,      // serial: its port's close under way (rigDisconnect), waited for by the next connect
+    pttKeyed: null,     // PTT: how rigPtt keyed it, { method ("cat", "dtr", "rts"), vfo (the VFO's id, or null: rigDisconnect), generation (the connection) }, until unkeyed
+    pttData: null,      // serial: the PTT command queued last, never the one the queue's cap lets go (rigWrite)
     tuneSeq: 0,         // how many times settings were sent (rigSend); never reset
     readSeq: 0,         // the tuneSeq the last whole poll was asked after: what was read reflects the settings up to it
     readCount: 0,       // how many whole polls have been read (a later read is a higher count); never reset
@@ -87,15 +91,18 @@ const RIG_CIV_STEPS = { 0: 10, 1: 100, 2: 500, 3: 1000, 4: 5000, 5: 6250, 6: 833
 const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: "RTTY", 0x05: "FM", 0x06: "WFM", 0x07: "CW-R", 0x08: "RTTY-R", 0x17: "DV" };
 
 // ---- The VFOs: each { id, name, connect, offset, source, of, and its rig's link: protocol, host, netPort, flrigPort, spyPort, sdrppPort
-// (and sdrppFreq: where an SDR++ Server was last tuned), port, baud, dataBits,
-// parity, stopBits, civAddress, forceVfo }. source "own": a rig of its own, its link as set; "of": the second VFO of the VFO of (one that
+// (and sdrppFreq: where an SDR++ Server was last tuned), port, baud, dataBits, parity, stopBits, dtr, rts (its lines: RIG_LINE_LEVELS),
+// civAddress, forceVfo }. source "own": a rig of its own, its link as set; "of": the second VFO of the VFO of (one that
 // is a rig of its own, and has no other second VFO), its link that one's. A VFO with its Connect unchecked is let go (its settings free
 // to change)
 
-const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, flexPort: 4992, icomLanPort: 50001, lanUser: "", lanPassword: "", lanRate: 16000, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false, ptt: "cat", useScope: false };
+const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, flexPort: 4992, icomLanPort: 50001, lanUser: "", lanPassword: "", lanRate: 16000, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, dtr: "low", rts: "low", civAddress: "", forceVfo: false, ptt: "cat", useScope: false };
 // PTT Method (each rig's box): how the Multi-Mode Decoder keys the rig to transmit. none: it isn't keyed; cat: the protocol's PTT
 // command; vox: the rig's own VOX, from the audio; dtr, rts: the serial port's line (a serial rig only)
 const RIG_PTT_METHODS = ["none", "cat", "vox", "dtr", "rts"];
+// DTR and RTS (a serial rig's box): its port's two lines while connected, low or high, set as the port opens (rigPttLineLevels); the one
+// PTT Method uses is low whatever it is set to, and raised only to key the rig
+const RIG_LINE_LEVELS = ["low", "high"];
 // VFO-A to VFO-H
 const RIG_VFOS_MAX = 8;
 
@@ -145,12 +152,13 @@ function rigVfoOn(v)
   return !!owner && !rigVfoIsSecond(owner) && owner.connect !== false;
 }
 
-// What a VFO reads now: { R: its rig, up, dial, mode }. Up while it is on, its rig connected and read (a second VFO: the rig has one
-// that answers); dial the rig's own frequency, its converter offset not taken off
+// What a VFO reads now: { R: its rig, up, dial, mode }. Up while it is on, its rig connected and read, and not No Answer (rigNoAnswer:
+// what it said last no longer taken for its frequency); a second VFO: the rig has one that answers. dial the rig's own frequency, its
+// converter offset not taken off
 function rigVfoRead(v)
 {
   const R = rigVfoLink(v);
-  if (!R || !rigVfoOn(v) || R.status != "connected") return { R: R, up: false, dial: null, mode: null };
+  if (!R || !rigVfoOn(v) || R.status != "connected" || rigNoAnswer(R)) return { R: R, up: false, dial: null, mode: null };
   const second = rigVfoIsSecond(v);
   const dial = second ? (R.dual === true ? R.freqB : null) : R.freq;
   return { R: R, up: dial > 0, dial: dial > 0 ? dial : null, mode: (second ? R.modeB : R.mode) || null };
@@ -174,7 +182,8 @@ function rigVfosNormalize()
   {
     if (typeof v.id != "string" || !v.id || ids.has(v.id)) v.id = rigVfoNewId(ids);
     ids.add(v.id);
-    for (const [key, value] of Object.entries(RIG_LINK_DEFAULTS)) if (v[key] === undefined) v[key] = value;
+    // (DTR and RTS: a VFO saved before they were there has neither, and gets its protocol's, below)
+    for (const [key, value] of Object.entries(RIG_LINK_DEFAULTS)) if (v[key] === undefined && key != "dtr" && key != "rts") v[key] = value;
     v.name = typeof v.name == "string" ? v.name.slice(0, 20) : "";
     // Not connected until the user checks Connect
     v.connect = v.connect === true;
@@ -182,6 +191,8 @@ function rigVfosNormalize()
     // SSB's Data (rigSsbDataChanged): off unless checked
     v.ssbData = v.ssbData === true;
     if (!RIG_PTT_METHODS.includes(v.ptt)) v.ptt = "cat";
+    // DTR and RTS: High or Low; neither set, as its protocol usually wants them (rigProtocolLine)
+    for (const line of ["dtr", "rts"]) if (!RIG_LINE_LEVELS.includes(v[line])) v[line] = rigProtocolLine(v.protocol, line);
     // Its satellite ranges (rigVfoSatRanges), those it can use; none set (left out): every frequency, receive only
     if (v.satRanges !== undefined)
     {
@@ -231,6 +242,8 @@ function rigLinksSync()
     delete GT.rigs[id];
     serialPortTell("rig_" + id, null);
   }
+  // (One let go still keyed, its link lost, no longer counts: rigPttTell)
+  rigPttTell();
 }
 
 // Whether a rig's second VFO is asked (its frequency where that isn't asked anyway, its mode): a VFO on it that is in use
@@ -510,7 +523,11 @@ const RIG_PROTOCOLS = {
       if (!/^\s/.test(line)) R.rangeSection = null;
       // In VFO mode an answer starts by naming its VFO ("get_freq: Sub"): VFO-B's frequency and mode are this rig's second VFO's
       if ((m = /^get_(?:freq|mode):\s*(\S*)/.exec(line))) R.answerB = R.vfoMode === true && m[1] == rigNetVfo(R, "b");
-      else if ((m = /^Frequency:\s*(\d+)/.exec(line))) R[R.answerB ? "freqB" : "freq"] = Number(m[1]);
+      else if ((m = /^Frequency:\s*(\d+)/.exec(line)))
+      {
+        if (R.answerB) R.freqB = Number(m[1]);
+        else rigFreqSaid(R, Number(m[1]));
+      }
       else if ((m = /^TX Frequency:\s*(\d+)/.exec(line))) R.freqB = Number(m[1]);
       else if ((m = /^TX Mode:\s*(\S+)/.exec(line))) R.modeB = m[1];
       else if ((m = /^VFO list:\s*(.*)/.exec(line)))
@@ -565,13 +582,14 @@ const RIG_PROTOCOLS = {
       const code = Number(Object.keys(RIG_CIV_MODES).find((key) => RIG_CIV_MODES[key] == String(mode).toUpperCase()));
       return Number.isFinite(code) ? rigCivFrame(rigCivAddress(R), 0x26, [0x01, code, 0x00, R.civFilterB || 0x01]) : null;
     },
-    // 1B 00 sets the repeater tone (00, then the tenths of a hertz as four BCD digits: 67.0 is 00 06 70), 16 42 turns it on (01) or off (00)
+    // 1B 00 sets the repeater tone (its tenths of a hertz as six BCD digits, the highest first: 67.0 is 00 06 70, as Hamlib sends it), 16 42
+    // turns it on (01) or off (00)
     setTone: (hz, R) =>
     {
       if (!(hz > 0)) return [rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x00])];
-      const digits = String(Math.round(hz * 10)).padStart(4, "0");
+      const digits = String(Math.round(hz * 10)).padStart(6, "0");
       const bcd = (i) => (Number(digits[i]) << 4) | Number(digits[i + 1]);
-      return [rigCivFrame(rigCivAddress(R), 0x1b, [0x00, bcd(0), bcd(2)]), rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x01])];
+      return [rigCivFrame(rigCivAddress(R), 0x1b, [0x00, bcd(0), bcd(2), bcd(4)]), rigCivFrame(rigCivAddress(R), 0x16, [0x42, 0x01])];
     },
     canTone: () => true,
     // 1C 00: PTT keyed (01) or not (00)
@@ -598,7 +616,7 @@ const RIG_PROTOCOLS = {
       if (frame[3] > 0 && frame[3] < 0xff) R.civFound = frame[3];
       const command = frame[4];
       const data = frame.slice(5, frame.length - 1);
-      if ((command == 0x03 || command == 0x00) && data.length >= 5) R.freq = rigCivBcdToHz(data.slice(0, 5));
+      if ((command == 0x03 || command == 0x00) && data.length >= 5) rigFreqSaid(R, rigCivBcdToHz(data.slice(0, 5)));
       else if ((command == 0x04 || command == 0x01) && data.length >= 1)
       {
         R.civMode = RIG_CIV_MODES[data[0]] || ("mode " + data[0]);
@@ -669,6 +687,9 @@ const RIG_PROTOCOLS = {
     // The newer Yaesus (FT-991, FT-891, FT-710, FTDX10, FTDX101 ...): FA / FB in Hz, 9 digits; MD0: the main receiver's mode, a hex
     // digit (Hamlib's newcat_mode_conv)
     digits: 9,
+    // Their CAT RTS menu is on as they come (CAT ignored while RTS is low; Hamlib opens them with RTS up): RTS High as the protocol is
+    // picked
+    lines: { rts: "high" },
     modeAsk: "MD0;",
     modeReply: /^MD0([0-9A-F])$/,
     modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 8: "PKT-L", 9: "RTTY-R", A: "PKT-FM", B: "FM-N", C: "PKT-U", D: "AM-N", E: "C4FM", F: "PKT-FM-N" },
@@ -743,7 +764,7 @@ const RIG_PROTOCOLS = {
       const nibbles = reply.slice(0, 4).flatMap((x) => [x >> 4, x & 0x0f]);
       if (nibbles.every((n) => n <= 9))
       {
-        R.freq = Number(nibbles.join("")) * 10;
+        rigFreqSaid(R, Number(nibbles.join("")) * 10);
         const modes = { 0x00: "LSB", 0x01: "USB", 0x02: "CW", 0x03: "CW-R", 0x04: "AM", 0x06: "WFM", 0x08: "FM", 0x0a: "DIG", 0x0c: "PKT" };
         R.mode = (modes[reply[4] & 0x7f] || "mode " + (reply[4] & 0x7f)) + (reply[4] & 0x80 ? "-N" : "");
         R.dual = false;
@@ -794,6 +815,7 @@ function rigCatProtocol(cat)
   return {
     name: cat.name,
     serial: true,
+    lines: cat.lines,
     split: /;/,
     caps: () => "ID;",
     // The second VFO's mode too where the CAT has it (modeBAsk), with a VFO on it in use, until refused
@@ -829,7 +851,7 @@ function rigCatProtocol(cat)
       let m;
       if ((m = freqReply.exec(text)))
       {
-        if (m[1] == "A") R.freq = Number(m[2]);
+        if (m[1] == "A") rigFreqSaid(R, Number(m[2]));
         else
         {
           R.freqB = Number(m[2]);
@@ -962,7 +984,7 @@ function rigVfoBoxRender(v)
   rigSatRender(v);
   if (second)
   {
-    for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "ScopeTr", "HostTr", "ForceVfoTr", "PttTr"]) el(name).style.display = "none";
+    for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "ScopeTr", "HostTr", "LanTr", "SdrppSourceTr", "SdrppDeviceTr", "SdrppRateTr", "ForceVfoTr", "PttTr", "LinesTr"]) el(name).style.display = "none";
     el("StatusTr").style.display = "";
     el("PortError").style.display = "none";
     rigVfoSecondStatusRender(v);
@@ -1183,8 +1205,25 @@ function rigSettingsRenderOne(R, on, locked = false)
     for (const [value, text] of pttChoices) pttSelect.appendChild(new Option(text, value));
   }
   pttSelect.value = pttChoices.some(([value]) => value == S.ptt) ? S.ptt : "none";
+  // DTR and RTS (a serial port's): High or Low as set, locked with the connection's settings; the line PTT Method uses shows PTT (low
+  // until the rig is keyed, whatever it is set to: rigPttLineDrop), and isn't changed here
+  for (const [name, line] of [["Dtr", "dtr"], ["Rts", "rts"]])
+  {
+    const select = rigEl(R, name);
+    const ptt = S.ptt == line;
+    const choices = ptt ? [["ptt", "PTT"]] : [["high", I18N("settings.rig.line.high.label")], ["low", I18N("settings.rig.line.low.label")]];
+    const key = choices.map(([value, text]) => value + "=" + text).join("|");
+    if (select.dataset.key != key)
+    {
+      select.dataset.key = key;
+      select.innerHTML = "";
+      for (const [value, text] of choices) select.appendChild(new Option(text, value));
+    }
+    select.value = ptt ? "ptt" : S[line] == "high" ? "high" : "low";
+    rigLockField(select, locked || ptt);
+  }
   const sdrpp = on && S.protocol == "sdrpp";
-  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && (S.protocol == "civ" || S.protocol == "icomlan"), ScopeTr: on && S.protocol == "civ", HostTr: on && !serial, LanTr: on && protocol.lanLogin === true, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, PttTr: on, StatusTr: on };
+  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && (S.protocol == "civ" || S.protocol == "icomlan"), ScopeTr: on && S.protocol == "civ", HostTr: on && !serial, LanTr: on && protocol.lanLogin === true, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, PttTr: on, LinesTr: on && serial, StatusTr: on };
   for (const [name, shown] of Object.entries(rows)) rigEl(R, name).style.display = shown ? "" : "none";
   serialLinuxRender(rigEl(R, "LinuxTr"), rigEl(R, "LinuxText"), S.port, on && serial);
   rigStatusRender(R);
@@ -1310,6 +1349,13 @@ function rigOffsetChanged(el)
   rigSettingsRender();
 }
 
+// A serial line's level ("dtr" or "rts") as a protocol usually wants it (its lines: a newer Yaesu's RTS high), else low
+function rigProtocolLine(protocol, line)
+{
+  const lines = RIG_PROTOCOLS[protocol] && RIG_PROTOCOLS[protocol].lines;
+  return lines && RIG_LINE_LEVELS.includes(lines[line]) ? lines[line] : "low";
+}
+
 // A rig's protocol, port settings, address or host changed: connected again with them
 function rigSettingsChanged(el)
 {
@@ -1325,11 +1371,15 @@ function rigSettingsChanged(el)
   S.dataBits = Number(rigEl(R, "DataBits").value);
   S.parity = rigEl(R, "Parity").value;
   S.stopBits = Number(rigEl(R, "StopBits").value);
+  // DTR and RTS: High or Low (the line PTT Method uses shows PTT, its own setting kept as it is)
+  for (const [name, line] of [["Dtr", "dtr"], ["Rts", "rts"]]) if (RIG_LINE_LEVELS.includes(rigEl(R, name).value)) S[line] = rigEl(R, name).value;
   S.civAddress = rigEl(R, "CivValue").value.trim().toUpperCase();
   S.host = rigEl(R, "Host").value.trim();
   S.forceVfo = rigEl(R, "ForceVfo").checked;
   S.lanUser = rigEl(R, "LanUser").value.trim();
   S.lanPassword = rigEl(R, "LanPassword").value;
+  // Another protocol: DTR and RTS as it usually wants them (rigProtocolLine)
+  if (!sameProtocol) for (const line of ["dtr", "rts"]) S[line] = rigProtocolLine(S.protocol, line);
   if (sameProtocol)
   {
     const protocol = rigProtocolChosen(R);
@@ -1341,8 +1391,8 @@ function rigSettingsChanged(el)
   rigConnect(R);
 }
 
-// PTT Method picked (changed with the rig connected too: it is read as the rig is keyed). The serial line it names dropped, so the rig
-// isn't left keyed by a line asserted before
+// PTT Method picked (changed with the rig connected too: it is read as the rig is keyed). A serial port's lines set again as its box
+// says (rigPttLineDrop): the one the method names low, so the rig isn't left keyed by a line asserted before, the other as it is set
 function rigPttChanged(el)
 {
   const v = rigVfoOfEl(el);
@@ -1388,14 +1438,26 @@ function rigFrequencyText(R)
 }
 
 // Its link is open but the rig hasn't said its frequency in the time it should have: shown as No Answer (a wrong baud rate, the rig's
-// CI-V USB port or CAT off)
+// CI-V USB port or CAT off). So is one that said it, then nothing for RIG_SILENT_MS (switched off behind its CI-V interface, rigctld
+// answering RPRT -5), where each poll asks it (R.freqAt; not SmartSDR, which says it only as it changes): what it said last is then no
+// longer taken for its frequency (rigVfoRead)
 const RIG_NO_ANSWER_MS = 3000;
+const RIG_SILENT_MS = 5000;
 
 function rigNoAnswer(R)
 {
   // A protocol that answers without saying a frequency (SDR++ Server, until it is tuned) says so itself
   if (R.protocol && R.protocol.answered && R.protocol.answered(R)) return false;
-  return R.status == "connected" && R.freq === null && Date.now() - R.connectedAt > RIG_NO_ANSWER_MS;
+  if (R.status != "connected") return false;
+  if (R.freq === null) return Date.now() - R.connectedAt > RIG_NO_ANSWER_MS;
+  return R.freqAt > 0 && Date.now() - R.freqAt > RIG_SILENT_MS;
+}
+
+// VFO-A's frequency as the rig said it (asked by a poll, or told as its dial turned), and when (rigNoAnswer)
+function rigFreqSaid(R, hz)
+{
+  R.freq = hz;
+  R.freqAt = Date.now();
 }
 
 // A rig's status, in short: "Error", "No Port Chosen", "No Answer" ...
@@ -1536,11 +1598,13 @@ function rigStatusRender(R)
   if (R.protocol && R.protocol.render) R.protocol.render(R);
   const statusEl = rigEl(R, "Status");
   if (!statusEl) return;
-  let text = rigNoAnswer(R) ? I18N("rig.status.noAnswer") : I18N("rotor.status." + R.status).replace("{0}", R.error);
+  // No Answer: what it said last isn't shown
+  const quiet = rigNoAnswer(R);
+  let text = quiet ? I18N("rig.status.noAnswer") : I18N("rotor.status." + R.status).replace("{0}", R.error);
   // A rig with a second VFO that can be read and set is said so
-  if (R.status == "connected" && R.dual) text += " (" + I18N("rig.twoVfos") + ")";
+  if (R.status == "connected" && R.dual && !quiet) text += " (" + I18N("rig.twoVfos") + ")";
   if (R.status == "connected" && rigModelName(R)) text += "  " + rigModelName(R);
-  if (R.status == "connected" && R.freq !== null) text += "  " + rigFrequencyText(R);
+  if (R.status == "connected" && R.freq !== null && !quiet) text += "  " + rigFrequencyText(R);
   // A serial port that couldn't be opened is said in full under Choose Port, with the way to share the rig; Status says it in short
   const portError = rigProtocolChosen(R).serial && (R.status == "error" || R.status == "notFound");
   const portErrorEl = rigEl(R, "PortError");
@@ -1548,7 +1612,7 @@ function rigStatusRender(R)
   portErrorEl.textContent = portError ? (R.status == "error" ? I18N("serial.inUse").replace("{0}", serialPortShortName(rigSettingsOf(R).port)) + "\n" + R.error : text) : "";
   if (portError) text = I18N("rotor.status.errorShort");
   statusEl.textContent = text;
-  statusEl.style.color = rigNoAnswer(R) ? "orange" : { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
+  statusEl.style.color = quiet ? "orange" : { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
   // The CI-V address the rig answered from, beside the field
   rigEl(R, "CivFound").textContent = R.civFound && R.status == "connected" ? I18N("rig.civ.found").replace("{0}", R.civFound.toString(16).toUpperCase().padStart(2, "0")) + (RIG_CIV_MODELS[R.civFound] ? "  ·  " + RIG_CIV_MODELS[R.civFound] : "") : "";
 }
@@ -1563,6 +1627,8 @@ function rigSetStatus(R, status, error = "")
 
 function rigInit()
 {
+  // Asked before GridTracker2 closes or restarts with a rig keyed (rigPttTell)
+  electron.ipcRenderer.on("rigPttUnkeyBeforeClose", rigPttUnkeyBeforeClose);
   rigVfosNormalize();
   rigLinksSync();
   for (const R of Object.values(GT.rigs)) serialPortTell(rigPurpose(R), rigSettingsOf(R).port);
@@ -1572,9 +1638,26 @@ function rigInit()
 
 // ---- The link (each rig its own)
 
-// The link let go; what it returns is settled once it is (a serial port takes a moment)
-function rigDisconnect(R)
+// The link let go; what it returns is settled once it is (a serial port takes a moment: R.closing). A rig keyed here is unkeyed first,
+// straight on the link (past the queue, let go here), and so is an unkey still waiting in the queue; a serial port is then closed only
+// once that has gone out (Node's: drained; Web Serial's: once it has had the time to, RIG_UNKEY_CLOSE_MS). lost (rigFail): the link may
+// not carry it, so the rig stays as keyed here, and is unkeyed again at the next connection's first read (rigReadWhole)
+function rigDisconnect(R, lost = false)
 {
+  let unkeyed = false;
+  if (R.pttKeyed && R.link)
+  {
+    unkeyed = rigPttUnkeyNow(R);
+    if (!lost) R.pttKeyed = null;
+  }
+  // An unkey still waiting in a serial rig's queue (rigPttRelease, behind frames not answered yet): with nothing keyed here, the PTT
+  // command queued last is one (a key is kept in R.pttKeyed until unkeyed). Lost: kept as a key is, for no VFO in particular
+  else if (R.writer && R.pttData !== null && R.queue.includes(R.pttData))
+  {
+    R.writer.write(typeof R.pttData == "string" ? new TextEncoder().encode(R.pttData) : R.pttData).catch(() => {});
+    unkeyed = true;
+    if (lost) R.pttKeyed = { method: "cat", vfo: null, generation: R.generation };
+  }
   R.generation++;
   nodeTimers.clearInterval(R.pollTimer);
   nodeTimers.clearTimeout(R.retryTimer);
@@ -1592,6 +1675,8 @@ function rigDisconnect(R)
   R.httpChain = Promise.resolve();
   nodeTimers.clearTimeout(R.waiting);
   R.waiting = null;
+  // (Told once its queue is let go: an unkey in it no longer waits there, rigPttUnkeyQueued)
+  rigPttTell();
   if (writer)
   {
     try { writer.releaseLock(); } catch (e) { /* closed already */ }
@@ -1602,28 +1687,47 @@ function rigDisconnect(R)
     link.destroy();
     return Promise.resolve();
   }
+  // Node's serialport (serialPorts.js): its close keeps what was written, and an unkey just written is drained (sent) first
+  if (link.node)
+  {
+    return (R.closing = (async () =>
+    {
+      if (unkeyed) await link.drain().catch(() => {});
+      await link.close().catch(() => {});
+    })());
+  }
   if (typeof link.getInfo == "function")
   {
-    return (async () =>
+    return (R.closing = (async () =>
     {
+      if (unkeyed) await new Promise((resolve) => nodeTimers.setTimeout(resolve, RIG_UNKEY_CLOSE_MS));
       try { if (reader) await reader.cancel(); } catch (e) { /* done already */ }
       try { await link.close(); } catch (e) { /* closed already, or gone */ }
-    })();
+    })());
   }
   return Promise.resolve();
 }
 
-// A serial rig that can't be opened (its port still held by a GridTracker just closed, or a USB port not there yet at startup) is tried
-// again this many times, this far apart, before its Connect is unchecked
+// A Web Serial port's close throws away what it hasn't sent yet (Chromium's close purges both ways; a write is done once its bytes are
+// handed on, not once they are sent): one an unkey was just written to is closed this much later, time for it to go out at the slowest
+// baud rate (a CI-V frame takes under 20 ms at 4800). (Node's serialport is drained instead: rigDisconnect)
+const RIG_UNKEY_CLOSE_MS = 250;
+
+// A serial rig that can't be opened (its port not there: the radio switched off or unplugged, a USB port not there yet at startup; or
+// held: by a GridTracker just closed, by another program) is tried again this many times this far apart, then every RIG_RETRY_MS, for
+// as long as its Connect is checked, so it connects by itself once its port is back. Its Connect is never unchecked here
 const RIG_SERIAL_TRIES = 5;
 const RIG_SERIAL_RETRY_MS = 2000;
 
-// retry: a serial rig tried again (rigSerialRetry); otherwise a connect of its own, which starts its tries again
+// retry: a serial rig tried again (rigSerialRetry), its status still saying why it couldn't be opened until this try is answered;
+// otherwise a connect of its own, which starts its tries again
 async function rigConnect(R, retry = false)
 {
   if (!retry) R.openTries = 0;
-  const closing = rigDisconnect(R);
+  // (A serial port's close still under way from before too: it can't be opened again until that is done)
+  const closing = Promise.all([R.closing, rigDisconnect(R)]);
   R.freq = R.mode = R.freqB = R.modeB = null;
+  R.freqAt = 0;
   R.modeBAsk = true;
   R.dual = null;
   R.mainSub = false;
@@ -1649,7 +1753,7 @@ async function rigConnect(R, retry = false)
   }
   R.protocol = rigProtocolChosen(R);
   const generation = R.generation;
-  rigSetStatus(R, "connecting");
+  if (!retry || !["error", "notFound"].includes(R.status)) rigSetStatus(R, "connecting");
   await closing;
   if (generation != R.generation) return;
   // A protocol with a transport of its own (Icom LAN's UDP streams) opens itself
@@ -1661,31 +1765,23 @@ async function rigConnect(R, retry = false)
 }
 
 // Lost, or rigctld / flrig not there (yet): tried again in a while, as long as the rig is wanted. A serial rig that never got there:
-// tried again a few times (rigSerialRetry), then its box's Connect unchecked, the error left showing and the settings free to change
+// tried again in a moment, then in a while (rigSerialRetry), its Connect left checked and why it failed showing meanwhile.
+// A rig keyed here is unkeyed as the link goes, and again once connected (rigDisconnect)
 function rigFail(R, message)
 {
   const retry = R.status == "connected" || !(R.protocol && R.protocol.serial);
-  rigDisconnect(R);
+  rigDisconnect(R, true);
   rigSetStatus(R, "error", message);
   if (retry) R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R), RIG_RETRY_MS);
-  else if (!rigSerialRetry(R)) rigConnectOff(R);
+  else rigSerialRetry(R);
 }
 
-// A serial rig's open tried again in a moment, while it has tries left: true when it will be
+// A serial rig's open tried again: in a moment for its first RIG_SERIAL_TRIES tries, then every RIG_RETRY_MS (rigConnect lets it go
+// once it is no longer wanted)
 function rigSerialRetry(R)
 {
-  if ((R.openTries || 0) >= RIG_SERIAL_TRIES) return false;
   R.openTries = (R.openTries || 0) + 1;
-  R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R, true), RIG_SERIAL_RETRY_MS);
-  return true;
-}
-
-// A serial rig that couldn't be connected: its VFO's Connect unchecked, its settings unlocked
-function rigConnectOff(R)
-{
-  const v = rigVfoById(R.key);
-  if (v) v.connect = false;
-  rigSettingsRender();
+  R.retryTimer = nodeTimers.setTimeout(() => rigConnect(R, true), R.openTries <= RIG_SERIAL_TRIES ? RIG_SERIAL_RETRY_MS : RIG_RETRY_MS);
 }
 
 async function rigOpenSerial(R, generation)
@@ -1701,24 +1797,41 @@ async function rigOpenSerial(R, generation)
   if (!port)
   {
     rigSetStatus(R, "notFound", serialPortShortName(S.port));
-    if (!rigSerialRetry(R)) rigConnectOff(R);
+    rigSerialRetry(R);
     return;
   }
-  await port.open({ baudRate: Number(S.baud) || 19200, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" });
+  const options = { baudRate: Number(S.baud) || 19200, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" };
+  // Node's serialport: both lines as its box says, the one PTT Method names low, set as it opens (it opens with them low)
+  const lines = rigPttLineLevels(R);
+  if (port.node) Object.assign(options, { dtr: lines.dataTerminalReady, rts: lines.requestToSend });
+  await port.open(options);
   if (generation != R.generation)
   {
     port.close().catch(() => {});
     return;
   }
   R.link = port;
-  R.writer = port.writable.getWriter();
-  // The line PTT Method names dropped (the port may open with it asserted), so the rig isn't keyed by connecting
-  rigPttLineDrop(R);
+  R.writer = port.node ? port.writer : port.writable.getWriter();
+  // Web Serial: both lines set as its box says (the port opens with them asserted), the one PTT Method names low, so the rig isn't keyed
+  // by connecting
+  if (!port.node) rigPttLineDrop(R);
   port.addEventListener("disconnect", () =>
   {
     if (generation == R.generation) rigFail(R, "disconnected");
   });
-  rigReadSerial(R, port, generation);
+  if (port.node)
+  {
+    // What comes in (Node's), and an error the port reports, as a Web Serial read's
+    port.ondata = (bytes) =>
+    {
+      if (generation == R.generation) rigReceive(R, bytes);
+    };
+    port.addEventListener("error", (e) =>
+    {
+      if (generation == R.generation) rigFail(R, e.message);
+    });
+  }
+  else rigReadSerial(R, port, generation);
   rigConnected(R);
 }
 
@@ -1806,6 +1919,8 @@ function rigHttpCall(R, method, paramsXml = "")
         if (fault || !m) reject(new Error(fault ? "fault" : "no answer"));
         else resolve(m[1].trim());
       });
+      // Closed before its end (flrig gone mid-answer: no end, and no error either): a failure, or the calls after it would wait for good
+      response.on("close", () => reject(new Error("closed")));
     });
     request.on("error", reject);
     request.on("timeout", () => request.destroy(new Error("timeout")));
@@ -1852,7 +1967,7 @@ async function rigHttpPollNow(R, generation, seq)
       }
     }
     if (generation != R.generation) return;
-    R.freq = Number(freq) || null;
+    rigFreqSaid(R, Number(freq) || null);
     R.mode = mode || null;
     if (R.dual !== false)
     {
@@ -1886,8 +2001,8 @@ function rigConnected(R)
 // settings sent before the poll (readSeq)
 function rigPoll(R)
 {
-  // Nothing in to show it, while the rig doesn't answer: its status shown as the poll goes (No Answer, rigNoAnswer)
-  if (R.freq === null) rigStatusRender(R);
+  // Nothing in to show it, while the rig doesn't answer (or has gone quiet): its status shown as the poll goes (No Answer, rigNoAnswer)
+  if (R.freq === null || rigNoAnswer(R)) rigStatusRender(R);
   const asks = R.protocol.poll(R);
   const seq = R.tuneSeq;
   for (const ask of Array.isArray(asks) ? asks : [asks]) rigWrite(R, ask, seq);
@@ -1986,10 +2101,12 @@ function rigNetAnswered(R)
 }
 
 // A whole poll read: counted, and BirdWatch's Doppler following is told at once, so what it sets next is decided on a read only moments
-// old (a turn of the rig's knob is less likely to be overwritten)
+// old (a turn of the rig's knob is less likely to be overwritten). A rig still keyed here from a connection before this one (lost while
+// keyed: rigDisconnect) is unkeyed now that this one reads
 function rigReadWhole(R)
 {
   R.readCount++;
+  if (R.pttKeyed && R.pttKeyed.generation != R.generation) rigPttRelease(R);
   if (typeof birdWatchDopplerFollow == "function") birdWatchDopplerFollow();
 }
 
@@ -1997,10 +2114,15 @@ function rigReadWhole(R)
 function rigWrite(R, data, pollSeq = null)
 {
   if (!R.link || data === null) return;
-  // A serial rig takes one command at a time: queued, sent as the one before is answered (a backlog, when it doesn't answer, is capped)
+  // A serial rig takes one command at a time: queued, sent as the one before is answered (a backlog, when it doesn't answer, is capped:
+  // the oldest let go, never the PTT command queued last, so an unkey isn't lost while the rig doesn't answer)
   if (R.writer)
   {
-    if (R.queue.length >= RIG_QUEUE_MAX) R.queue.shift();
+    if (R.queue.length >= RIG_QUEUE_MAX)
+    {
+      const at = R.queue.findIndex((item) => item !== R.pttData);
+      R.queue.splice(at < 0 ? 0 : at, 1);
+    }
     R.queue.push(data);
     rigDrain(R);
     return;
@@ -2046,6 +2168,8 @@ function rigDrain(R)
     rigDrain(R);
   }, answered ? RIG_REPLY_MS : R.protocol.gapMs || RIG_GAP_MS);
   R.writer.write(typeof data == "string" ? new TextEncoder().encode(data) : data).catch((e) => rigFail(R, e.message));
+  // The PTT command queued last, out now: the main process told, an unkey no longer waiting (rigPttUnkeyQueued)
+  if (data === R.pttData) rigPttTell();
 }
 
 function rigReplied(R)
@@ -2087,9 +2211,9 @@ function rigReceive(R, data)
       R.bytes = R.bytes.slice(end + 1);
       if (frame.length < 6 || frame[1] != 0xfe) continue;
       R.protocol.parse(frame, R);
-      // From the rig (not our own frame echoed): the command out is answered, the next can go. Not by the band scope's sweeps (27 00):
-      // they come by themselves, many a second, and answer nothing
-      if (frame[3] != 0xe0 && !(frame[4] == 0x27 && frame[5] == 0x00)) rigReplied(R);
+      // From the rig to us (E0: not our own frame echoed, nor its transceive broadcast to 00 as its dial turns): the command out is
+      // answered, the next can go. Not by the band scope's sweeps (27 00): they come by themselves, many a second, and answer nothing
+      if (frame[2] == 0xe0 && frame[3] != 0xe0 && !(frame[4] == 0x27 && frame[5] == 0x00)) rigReplied(R);
     }
     rigStatusRender(R);
     return;
@@ -2191,7 +2315,8 @@ function rigTune(spec)
   return sent;
 }
 
-// A rig's steps out: flrig's calls one after another, the others written (serial: queued); true when there were any
+// A rig's steps out: flrig's calls one after another (one that fails once its connection was let go is passed over), the others
+// written (serial: queued); true when there were any
 function rigSend(R, steps)
 {
   const sent = steps.filter((step) => step !== null && step !== undefined);
@@ -2199,9 +2324,10 @@ function rigSend(R, steps)
   R.tuneSeq++;
   if (R.protocol.http)
   {
+    const generation = R.generation;
     let chain = R.httpChain;
     for (const [method, params] of sent) chain = chain.then(() => rigHttpCall(R, method, params));
-    chain.catch((e) => rigFail(R, e.message));
+    chain.catch((e) => { if (generation == R.generation) rigFail(R, e.message); });
     R.httpChain = chain.catch(() => {});
     return true;
   }
@@ -2482,19 +2608,144 @@ function rigCanPtt(vfoId)
   return !!(R.link && typeof R.link.setSignals == "function");
 }
 
-// Keyed (on true) or unkeyed; true when done (VOX: nothing to do, true)
+// Keyed (on true) or unkeyed; true when done (VOX: nothing to do, true). Keyed here, it is kept how (R.pttKeyed), and unkeyed that way on
+// each rig keyed for the VFO, and on the VFO's rig if that is keyed: also with the VFO no longer in use (a second VFO's Connect unchecked,
+// its rig still connected), removed or made another rig's, or its PTT Method changed since. A rig not connected now is unkeyed once it
+// is again (rigReadWhole)
 function rigPtt(vfoId, on)
 {
+  if (!on)
+  {
+    // (One lost while keyed for it, still to be unkeyed, among them: never in place of the rig the VFO is on now)
+    const own = rigVfoLink(rigVfoById(vfoId));
+    const keyed = Object.values(GT.rigs).filter((x) => x.pttKeyed && (x.pttKeyed.vfo == vfoId || x === own));
+    if (keyed.length) return keyed.map((x) => rigPttRelease(x)).some(Boolean);
+  }
   if (!rigCanPtt(vfoId)) return false;
   const method = rigPttMethod(vfoId);
   if (method == "vox") return true;
   const R = rigVfoLink(rigVfoById(vfoId));
-  if (method == "cat") return rigSend(R, [R.protocol.setPtt(!!on, R)]);
-  rigPttLine(R, method, !!on);
+  if (method == "cat")
+  {
+    const data = R.protocol.setPtt(!!on, R);
+    R.pttData = data;
+    if (!rigSend(R, [data])) return false;
+  }
+  else rigPttLine(R, method, !!on);
+  R.pttKeyed = on ? { method: method, vfo: vfoId, generation: R.generation } : null;
+  rigPttTell();
   return true;
 }
 
-// The serial port's DTR or RTS line set (Web Serial's setSignals; its promise let be: a port gone away says so elsewhere)
+// A rig keyed here unkeyed the way it was keyed, through its queue, while it is connected (else it stays as keyed: unkeyed once it is
+// connected again): true when it was sent
+function rigPttRelease(R)
+{
+  const keyed = R.pttKeyed;
+  if (!keyed || R.status != "connected" || !R.link || !R.protocol) return false;
+  R.pttKeyed = null;
+  if (keyed.method != "cat")
+  {
+    rigPttTell();
+    rigPttLine(R, keyed.method, false);
+    return true;
+  }
+  const data = typeof R.protocol.setPtt == "function" ? R.protocol.setPtt(false, R) : null;
+  R.pttData = data;
+  const sent = rigSend(R, [data]);
+  // (Told once the unkey is queued: while it waits there, the rig still counts as keyed, rigPttUnkeyQueued)
+  rigPttTell();
+  return sent;
+}
+
+// A rig keyed here unkeyed at once, straight on its link and past its queue: the link is about to be let go (rigDisconnect), or the main
+// window is closing (rigPttUnkeyAll). Nothing waits for it to go out here; true when its CAT command was written (rigDisconnect then
+// gives a serial port the time to send it before closing it)
+function rigPttUnkeyNow(R)
+{
+  const keyed = R.pttKeyed;
+  if (!keyed || !R.link || !R.protocol) return false;
+  try
+  {
+    if (keyed.method != "cat")
+    {
+      rigPttLine(R, keyed.method, false);
+      return false;
+    }
+    const data = typeof R.protocol.setPtt == "function" ? R.protocol.setPtt(false, R) : null;
+    if (data === null || data === undefined) return false;
+    if (R.protocol.http) rigHttpCall(R, data[0], data[1]).catch(() => {});
+    else if (R.writer) R.writer.write(typeof data == "string" ? new TextEncoder().encode(data) : data).catch(() => {});
+    else R.link.write(data);
+    return true;
+  }
+  catch (e)
+  {
+    // The link gone already
+    return false;
+  }
+}
+
+// Every rig keyed here unkeyed at once, and an unkey still waiting in a queue written straight (rigPttUnkeyQueued), as GridTracker2 closes
+// or restarts (asked first by the main process, rigPttUnkeyBeforeClose, and again at the main window's beforeunload): the Multi-Mode
+// Decoder's window is destroyed with it, without its own unload, so it can't (main/index.js)
+function rigPttUnkeyAll()
+{
+  for (const R of Object.values(GT.rigs))
+  {
+    if (!rigPttUnkeyQueued(R))
+    {
+      rigPttUnkeyNow(R);
+      continue;
+    }
+    // An unkey still waiting in the queue: written now, past it (left queued too: a second one does no harm)
+    try
+    {
+      R.writer.write(typeof R.pttData == "string" ? new TextEncoder().encode(R.pttData) : R.pttData).catch(() => {});
+    }
+    catch (e)
+    {
+      // The link gone already
+    }
+  }
+}
+
+window.addEventListener("beforeunload", rigPttUnkeyAll);
+
+// Whether the main process was last told a rig is keyed here
+GT.rigPttTold = false;
+
+// An unkey still waiting in a serial rig's queue (rigPttRelease, behind frames not answered yet): nothing is keyed here any more, but the
+// rig still is until it goes out (with nothing keyed here, the PTT command queued last is an unkey)
+function rigPttUnkeyQueued(R)
+{
+  return !R.pttKeyed && !!R.writer && R.pttData !== null && R.queue.includes(R.pttData);
+}
+
+// The main process told whether a rig is keyed here, each time that changes (wherever R.pttKeyed does, as a rig is let go, and as an
+// unkey queued goes out: until then the rig counts as keyed, rigPttUnkeyQueued): while one is, GridTracker2's close, a restart and an
+// update's install wait for its unkey (main/index.js rigPttUnkeyThen)
+function rigPttTell()
+{
+  const keyed = Object.values(GT.rigs).some((R) => !!R.pttKeyed || rigPttUnkeyQueued(R));
+  if (keyed === GT.rigPttTold) return;
+  GT.rigPttTold = keyed;
+  electron.ipcRenderer.send("rigPttKeyed", keyed);
+}
+
+// The main process's ask before it closes or restarts GridTracker2 with a rig keyed: each one unkeyed at once (rigPttUnkeyAll), the
+// answer sent once that has had the time to go out (RIG_UNKEY_CLOSE_MS, as a serial port's close waits); at once when no rig keyed
+// has a link to unkey it on, and no unkey waits in a queue
+function rigPttUnkeyBeforeClose()
+{
+  const unkeying = Object.values(GT.rigs).some((R) => (R.pttKeyed && R.link) || rigPttUnkeyQueued(R));
+  rigPttUnkeyAll();
+  if (unkeying) nodeTimers.setTimeout(() => electron.ipcRenderer.send("rigPttUnkeyed"), RIG_UNKEY_CLOSE_MS);
+  else electron.ipcRenderer.send("rigPttUnkeyed");
+}
+
+// The serial port's DTR or RTS line set (its setSignals, Web Serial's or Node's: serialPorts.js; its promise let be: a port gone away
+// says so elsewhere)
 function rigPttLine(R, method, on)
 {
   if (!R.link || typeof R.link.setSignals != "function") return;
@@ -2502,9 +2753,19 @@ function rigPttLine(R, method, on)
   R.link.setSignals(signals).catch(() => {});
 }
 
-// The line the rig's PTT Method names dropped (as the port opens, and as the method is picked)
+// The serial port's DTR and RTS lines as the rig's box says (DTR, RTS: High or Low), as setSignals takes them: the line PTT Method names
+// low whatever it is set to (it is raised only to key the rig: rigPttLine)
+function rigPttLineLevels(R)
+{
+  const S = rigSettingsOf(R);
+  const high = (line) => S.ptt != line && S[line] == "high";
+  return { dataTerminalReady: high("dtr"), requestToSend: high("rts") };
+}
+
+// The serial port's DTR and RTS lines set as the rig's box says (rigPttLineLevels), in one setSignals call: as a Web Serial port opens
+// (Chromium asserts both as it opens it; Node's are set as it opens, rigOpenSerial) and as PTT Method is picked
 function rigPttLineDrop(R)
 {
-  const method = rigSettingsOf(R).ptt;
-  if (method == "dtr" || method == "rts") rigPttLine(R, method, false);
+  if (!R.link || typeof R.link.setSignals != "function") return;
+  R.link.setSignals(rigPttLineLevels(R)).catch(() => {});
 }

@@ -58,15 +58,16 @@ Enter the **Host** and **TCP Port** of flrig's XML-RPC server (127.0.0.1 and 123
 
 For a rig on a serial or USB port. The choices are **Icom CI-V**, **Kenwood CAT (TS-2000+)**, **Yaesu CAT (FT-991+)** and **Yaesu CAT (FT-817/818/857/897)**. A note under the Kenwood and Yaesu choices lists the other rigs that use them, for example Elecraft rigs and SDR programs with a TS-2000 port (SDR# CalicoCAT, SmartSDR CAT) under Kenwood.
 
-* **Port:** click **Choose Port** and pick the port from the list. Ports that another VFO or the rotator already has open are grayed out. The port's name shows beside the button, and on Windows also the rig's model when the USB driver gives it (for example COM3 — IC-7300).
+* **Port:** click **Choose Port** and pick the port from the list. Each port shows its name and, where the USB device has one, its serial number, so two rigs of the same model can be told apart (for example Silicon Labs CP210x USB to UART Bridge (COM3) — IC-7300_02018437). Ports that another VFO or the rotator already has open are grayed out. The port's name shows beside the button, and on Windows also the rig's model when the USB driver gives it (for example COM3 — IC-7300). GridTracker2 finds the rig's port again by its USB device, so it keeps working when the system gives it another port name.
 * **Baud:** the rig's CAT or CI-V baud rate, 4800 to 115200 (19200 by default), followed by the data bits, parity and stop bits (8 N 1). These must match the rig's own menu settings.
+* **DTR** and **RTS:** see [Other VFO Settings](#other-vfo-settings).
 * **CI-V Address** (Icom only): leave it blank. GridTracker2 asks the rig for its address and shows "found 94 · IC-7300" beside the field. Enter one only to insist on it, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88).
 * **Use Scope If Present** (Icom only): see [Band Scope](#band-scope).
 
 The FT-817, FT-818, FT-857 and FT-897 can only reach VFO B by swapping VFOs. For a satellite, use two of these rigs, each a VFO of its own.
 
 ```{warning}
-Only one program can open a serial port. If WSJT-X (or another program) already has the rig's port, the port can't be opened, and the message under **Choose Port** says so. To use the rig in both, set WSJT-X's **Rig** to **Hamlib NET rigctl** or **flrig**, and choose the same here.
+Only one program can open a serial port. If WSJT-X (or another program) already has the rig's port, the port can't be opened, and the message under **Choose Port** says so. GridTracker2 keeps trying while **Connect** is ticked, and connects as soon as the other program lets the port go (even for a moment, as WSJT-X does when its settings are changed), so untick **Connect** while the other program should keep the rig. To use the rig in both, set WSJT-X's **Rig** to **Hamlib NET rigctl** or **flrig**, and choose the same here.
 ```
 
 On Linux, if your user isn't allowed to open serial ports, a note under the port tells you the command to run.
@@ -116,7 +117,7 @@ An SDR has no mode of its own: a SPY Server or SDR++ (Server) VFO always shows U
 
 A new VFO starts with **Connect** unticked. Set it up, then tick **Connect** to connect it.
 
-While **Connect** is ticked, the VFO's connection settings (**Rig**, **Protocol**, port, **Baud**, **CI-V Address**, **Host**, **TCP Port**, **Force VFO Mode** and **Offset Hz**) are grayed out and can't be changed, so nothing half set reaches your rig. Untick **Connect** to disconnect the rig and change them. A second VFO's **Connect** only works while its rig's **Connect** is ticked too.
+While **Connect** is ticked, the VFO's connection settings (**Rig**, **Protocol**, port, **Baud**, **DTR**, **RTS**, **CI-V Address**, **Host**, **TCP Port**, **Force VFO Mode** and **Offset Hz**) are grayed out and can't be changed, so nothing half set reaches your rig. Untick **Connect** to disconnect the rig and change them. A second VFO's **Connect** only works while its rig's **Connect** is ticked too.
 
 **Status** shows how the VFO is doing:
 
@@ -124,16 +125,17 @@ While **Connect** is ticked, the VFO's connection settings (**Rig**, **Protocol*
 * **No port chosen:** pick one with **Choose Port**.
 * **Connecting** (yellow).
 * **Connected** (green), with the rig's name and its frequency and mode, e.g. "Connected (2 VFOs) IC-7300 14.074.000 MHz USB". The second VFO's frequency and mode are shown in brackets while its VFO is in use.
-* **No Answer** (orange): the connection is open, but the rig doesn't answer. Check the baud rate, and that the rig's CI-V or CAT port is turned on.
+* **No Answer** (orange): the connection is open, but the rig doesn't answer, or it stopped answering 5 seconds ago (switched off behind its CI-V interface, for example). Its last frequency isn't shown or used until it answers again. Check the baud rate, and that the rig's CI-V or CAT port is turned on. A Yaesu may need RTS High (see [Other VFO Settings](#other-vfo-settings)).
 * **Error** (red): the connection failed. A port that can't be opened is explained in full under **Choose Port**.
 
-A connection that fails or is lost is tried again after a short wait, as long as **Connect** is ticked.
+A connection that fails or is lost is tried again after a short wait, for as long as **Connect** is ticked. A rig that is switched off or unplugged, or whose port another program has open, connects by itself once its port is back or free, and **Connect** stays ticked until you untick it.
 
 If the rig doesn't go to a frequency GridTracker2 sent it, a warning is added to the Event Viewer.
 
 ### Other VFO Settings
 
-* **PTT Method:** how the Multi-Mode Decoder keys the rig when it transmits (Send Picture in SSTV): **CAT** (the rig's own PTT command), **VOX** (the rig's VOX, keyed by the audio), **DTR** or **RTS** (a line of the serial port, as the rig's PTT input is set up, serial rigs only), or **None** (it isn't keyed). Nothing else in GridTracker2 keys your rig.
+* **PTT Method:** how the Multi-Mode Decoder keys the rig when it transmits (Send Picture in SSTV): **CAT** (the rig's own PTT command), **VOX** (the rig's VOX, keyed by the audio), **DTR** or **RTS** (a line of the serial port, as the rig's PTT input is set up, serial rigs only), or **None** (it isn't keyed). Nothing else in GridTracker2 keys your rig. If GridTracker2 closes or restarts while it has your rig keyed, it unkeys it first.
+* **DTR** and **RTS** (serial rigs only): the serial port's two control lines while the rig is connected, **Low** (the default; RTS High for Yaesu CAT (FT-991+), below) or **High**. Leave a line Low unless your interface needs it High (an interface powered from the port's lines, for example). A rig set to transmit, or to send CW or RTTY, on DTR or RTS (an Icom's USB SEND or USB Keying setting, for example) needs that line Low. A newer Yaesu with **CAT RTS** turned on in its menu (the FT-991 and FT-991A come that way) doesn't answer while RTS is Low, so picking **Yaesu CAT (FT-991+)** sets RTS High; set it Low only if you turn **CAT RTS** off in the radio. The line **PTT Method** uses shows **PTT**: it is always low until GridTracker2 keys the rig, and goes low again when it unkeys it. On Windows both lines stay low as the port opens, and are then set as chosen. On Linux and macOS the system raises both for a moment as a port opens; they are set as chosen right after.
 * **Offset Hz:** for a converter between the antenna and the rig, such as an LNB, an upconverter or a transverter. It is added to the frequency sent to the rig, and taken off what the rig reads, so GridTracker2 always shows the frequency on the air. It can be negative: an LNB with a 9750 MHz LO is `-9750000000`. A VFO with an offset shows **LO** after its frequency.
 * **SSB** **Data:** the digital modes the Multi-Mode Decoder sets on this VFO in USB or LSB use the rig's data mode (USB-D, PKTUSB, DATA-U). Off unless ticked. BirdWatch's voice modes aren't affected. A second VFO doesn't have it.
 * **Satellites:** what BirdWatch may use this VFO for. Pick a band, **All Frequencies**, or **Custom** (enter its range in MHz), then **RX**, **TX** or **RX/TX**, and click **Add**. Each range shows in the list with a **✕** to remove it. Until you add a receive range, a VFO is used for receiving on every frequency, and never for transmitting. With every range removed, it says "Not used for satellites". See [BirdWatch](BirdWatch.md) for how the VFOs are picked.

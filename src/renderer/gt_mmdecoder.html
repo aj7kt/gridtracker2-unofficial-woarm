@@ -403,6 +403,34 @@
         position: relative;
         overflow: hidden;
       }
+      /* A tuning over its waterfall (mmdTuneToast): black on a raised white label, centered, 15% down; the frequency tuned to, the change
+         under it at twice the size; faded out after it */
+      .mmdTuneToast {
+        text-align: center;
+        line-height: 1.15;
+        position: absolute;
+        left: 50%;
+        top: 15%;
+        transform: translateX(-50%);
+        z-index: 5;
+        padding: 2px 10px;
+        border: 2px solid;
+        border-color: #fff #8a8a8a #8a8a8a #fff;
+        border-radius: 4px;
+        background: linear-gradient(#ffffff, #dcdcdc);
+        box-shadow: 0 1px 4px #000a;
+        color: #000;
+        font-weight: bold;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .mmdTuneToastFreq {
+        font-size: 1.5em;
+      }
+      .mmdTuneToastChange {
+        font-size: 2em;
+      }
       #cwFall {
         width: 100%;
         display: block;
@@ -448,9 +476,30 @@
       }
       /* FT8's, FT4's and WSPR's status (mmdStatusShow) and place in their period, at the divider's right: the place monospace, its spaces
          kept, so it doesn't move */
-      #cwFreqText {
+      #cwFreqBox {
         grid-column: 2;
         white-space: nowrap;
+      }
+      /* The tuning lock before the frequency (mmdTuneLockShow): gold while locked, grey while unlocked (the wheel tunes the rig) */
+      #cwTuneLock {
+        display: inline-block;
+        margin-right: 5px;
+        cursor: pointer;
+        vertical-align: -2px;
+      }
+      #cwTuneLock svg {
+        display: block;
+        width: 12px;
+        height: 14px;
+      }
+      #cwTuneLock.locked {
+        color: #ffd700;
+      }
+      #cwTuneLock.unlocked {
+        color: #999;
+      }
+      #cwTuneLock.held {
+        cursor: default;
       }
       #cwSplitRight {
         grid-column: 3;
@@ -1359,7 +1408,7 @@
                 <!-- Shown while Save Pictures is on (mmdSettingsRender) -->
                 <tr id="sstvFolderTr">
                   <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.sstvDecoder.folder.label">Folder</span></td>
-                  <td><span id="sstvFolderText" class="mapValue" style="cursor: pointer; white-space: normal; word-break: break-all;" data-i18n="settings.sstvDecoder.folder.hover" title="Where pictures are saved: click to open it" onclick="mmdSetSstvFolderOpen();"></span> <div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="settings.sstvDecoder.choose.hover" title="Pick another folder" onclick="mmdSetSstvFolderChoose();"><span data-i18n="settings.sstvDecoder.choose.label">Choose</span></div></td>
+                  <td><span id="sstvFolderText" class="mapValue" style="cursor: pointer; white-space: normal; word-break: break-all;" data-i18n="settings.sstvDecoder.folder.hover" title="Where pictures are saved: click to open it" onclick="mmdSetPicturesFolderOpen('sstv');"></span> <div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="settings.sstvDecoder.choose.hover" title="Pick another folder" onclick="mmdSetPicturesFolderChoose('sstv');"><span data-i18n="settings.sstvDecoder.choose.label">Choose</span></div></td>
                 </tr>
               </table>
             </div>
@@ -1376,6 +1425,14 @@
                 </tr>
                 <tr class="mmdRigRow">
                   <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="wefaxSetFreqValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="wefaxSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="wefaxSetModeValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="wefaxSetModeValue">Set Mode</label></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="wefaxSaveValue" data-i18n="settings.wefaxDecoder.save.hover" title="Each chart is saved as a PNG in the folder below when it ends, however much of it came" onclick="mmdSetWefaxSave();" /> <label for="wefaxSaveValue" data-i18n="settings.wefaxDecoder.save.label">Save Charts</label></td>
+                </tr>
+                <!-- Shown while Save Charts is on (mmdSettingsRender) -->
+                <tr id="wefaxFolderTr">
+                  <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.sstvDecoder.folder.label">Folder</span></td>
+                  <td><span id="wefaxFolderText" class="mapValue" style="cursor: pointer; white-space: normal; word-break: break-all;" data-i18n="settings.wefaxDecoder.folder.hover" title="Where charts are saved: click to open it" onclick="mmdSetPicturesFolderOpen('wefax');"></span> <div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="settings.sstvDecoder.choose.hover" title="Pick another folder" onclick="mmdSetPicturesFolderChoose('wefax');"><span data-i18n="settings.sstvDecoder.choose.label">Choose</span></div></td>
                 </tr>
               </table>
             </div>
@@ -1445,6 +1502,7 @@
       <span id="mmdScopeNarrow" class="cwButton mmdScopeButton">&minus;</span><span id="mmdScopeSpanLow" class="mmdScopeSpanText"></span>
       <span id="mmdScopeSpanHigh" class="mmdScopeSpanText"></span><span id="mmdScopeWider" class="cwButton mmdScopeButton">+</span>
       <div id="mmdScopeWarn" style="display: none;"></div>
+      <div id="mmdScopeToast" class="mmdTuneToast"></div>
     </div>
     <!-- The Hz of the [ or ] under the mouse, or being dragged (mmDecoder.js, mmdRangeTip) -->
     <div id="cwRangeTip"></div>
@@ -1452,9 +1510,10 @@
     <div id="cwFallBox">
       <canvas id="cwFall"></canvas>
       <canvas id="cwOverlay"></canvas>
+      <div id="cwTuneToast" class="mmdTuneToast"></div>
     </div>
     <!-- The divider: the rig's frequency, band and mode (mmdFreqsShow), centered; dragged up or down to size the waterfall -->
-    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="cwFreqText"></span><span id="cwSplitRight"><span id="cwSplitStatus"></span><span id="cwPeriodText"></span></span></div>
+    <div id="mmdSplit" data-i18n="cwViewer.split.hover" title="Drag up or down to give the waterfall or the decoded lines more room"><span id="cwFreqBox"><span id="cwTuneLock"></span><span id="cwFreqText"></span></span><span id="cwSplitRight"><span id="cwSplitStatus"></span><span id="cwPeriodText"></span></span></div>
     <div id="cwList">
       <table id="cwTable">
         <colgroup><col class="cwFreqCol" /><col class="cwDbCol" /><col class="cwWpmCol" /><col /></colgroup>

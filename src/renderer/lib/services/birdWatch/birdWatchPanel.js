@@ -7,6 +7,15 @@
 
 const BIRD_WATCH_PASS_HOURS = 24;
 const BIRD_WATCH_PASS_RETRY_MS = 10 * 60 * 1000;
+// A list this old is asked again, so the next 24 hours (the Pass Timeline's) stay in it: one satellite's at a time, this far apart, so
+// many tracked satellites don't hold up the tracker's ticks all at once
+const BIRD_WATCH_PASS_RENEW_MS = 60 * 60 * 1000;
+const BIRD_WATCH_PASS_RENEW_GAP_MS = 5000;
+// A pass worked out again is the same pass when its AOS and its LOS are this close to the one known (birdWatchPanelPasses)
+const BIRD_WATCH_PASS_SAME_MS = 2000;
+// A request not answered in this long never will be (the tracker couldn't work it out: an element set that stops propagating part way
+// through a pass, as a decaying satellite's does, gets an error without its id): let go, so it can be asked again
+const BIRD_WATCH_PASS_STALL_MS = 5 * 60 * 1000;
 
 // The twenty satellite icons (img/sat), picked by the catalog number (its remainder divided by 20)
 const BIRD_WATCH_ICONS = ["sat-01-classic", "sat-02-dish", "sat-03-cubesat", "sat-04-sputnik", "sat-05-station", "sat-06-telescope", "sat-07-flatsat", "sat-08-oscar", "sat-09-yagi", "sat-10-beacon",
@@ -358,7 +367,7 @@ function birdWatchColorsEnable()
   const colors = GT.settings.BirdWatch.colors;
   for (const [key, on] of [["footprint", colors.footprintOn], ["path", colors.pathOn]])
   {
-    for (const el of birdWatchGeneralDiv.querySelectorAll("[data-opt='" + key + "']"))
+    for (const el of birdWatchDisplayDiv.querySelectorAll("[data-opt='" + key + "']"))
     {
       el.style.opacity = on ? "1" : "0.45";
       for (const input of el.querySelectorAll("input")) input.disabled = !on;
@@ -476,17 +485,21 @@ function birdWatchTimeAzHtml(ms, az)
   return "<span class='birdInfoTime'>" + birdWatchTimeHtml(ms) + "</span>" + (az === undefined ? "" : " <span class='birdInfoAz'>" + birdWatchAzHtml(az) + "</span>");
 }
 
-// The next pass of a satellite, asked of the tracker when none is known (not more often than every few minutes). Up now:
-// the pass under way, its AOS only known when it was seen coming
+// The next pass of a satellite, asked of the tracker when none is known (not more often than every few minutes), and again once its
+// list is an hour old (the passes it had are kept: birdWatchPanelPasses). Up now: the pass under way, its AOS only known when it was
+// seen coming
 function birdWatchWantPasses(norad)
 {
   const T = GT.birdWatchTrack;
   let p = T.passes.get(norad);
   if (!p) T.passes.set(norad, p = { list: [], at: 0, pending: false });
   const now = Date.now();
+  if (p.pending && now - p.at > BIRD_WATCH_PASS_STALL_MS) p.pending = false;
   const pass = p.list.find((x) => x.los > now) || null;
-  if (!pass && !p.pending && now - p.at > BIRD_WATCH_PASS_RETRY_MS)
+  const renew = !!pass && now - p.at > BIRD_WATCH_PASS_RENEW_MS && now - (T.passRenewAt || 0) > BIRD_WATCH_PASS_RENEW_GAP_MS;
+  if (!p.pending && (renew || (!pass && now - p.at > BIRD_WATCH_PASS_RETRY_MS)))
   {
+    if (renew) T.passRenewAt = now;
     p.pending = true;
     p.at = now;
     T.worker.postMessage({ type: "passes", id: norad, norad: norad, hours: BIRD_WATCH_PASS_HOURS });
@@ -579,11 +592,14 @@ function birdWatchPanelUpdate(sats)
   birdWatchInfoUpdate(n);
 }
 
+// From the tracker: a satellite's passes. One it had already (the list asked again: the same pass worked out again is a second or so
+// off) is kept as it was, so what goes by it (its arc in the sky plot, Auto-Track's pick) carries on
 function birdWatchPanelPasses(m)
 {
   const p = GT.birdWatchTrack.passes.get(m.norad);
   if (!p) return;
-  p.list = m.passes || [];
+  const known = p.list;
+  p.list = (m.passes || []).map((pass) => known.find((x) => Math.abs(x.aos - pass.aos) < BIRD_WATCH_PASS_SAME_MS && Math.abs(x.los - pass.los) < BIRD_WATCH_PASS_SAME_MS) || pass);
   p.pending = false;
 }
 

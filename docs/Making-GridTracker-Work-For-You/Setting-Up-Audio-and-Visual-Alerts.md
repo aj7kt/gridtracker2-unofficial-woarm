@@ -27,7 +27,7 @@ To be alerted only for, say, new DXCC entities, while the roster still highlight
 
 Custom Alerts are set in [Settings → Custom Alerts](../GridTracker-Overview/Settings-Sub-Menus.md#custom-alerts-tab). Choose a **Type**, a **Value**, how to **Notify** you and how often to **Repeat**, then click **ADD**.
 
-![The Custom Alerts tab](../img/GT2_Settings_CustomAlerts.png)
+![The Custom Alerts tab](../img/GT2_Settings_CustomAlerts.jpg)
 
 The alert list shows when each alert last went off and the message that set it off. The decodes that set off an alert are also listed, with a 🚩, in the [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer).
 

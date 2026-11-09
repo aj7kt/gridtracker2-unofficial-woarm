@@ -183,13 +183,16 @@ function rigFlexReset(R)
     slices: {},           // by index: { index, letter, freq (Hz), mode, tx, active, client, dax }
     sliceA: null,         // VFO-A's slice index, and VFO-B's
     sliceB: null,
-    txDax: null,          // transmit's dax (DAX the TX audio's source), as the radio says it
-    daxForced: false,     // dax turned on here for a transmission (turned off again after it)
+    txDax: null,          // transmit's dax (DAX the TX audio's source), as the radio says it (turned on here for a transmission:
+                          // R.flexDaxForced, rigFlexPtt)
     daxAssigned: false,   // a DAX channel given to VFO-A's slice on this connection
     udpPort: null,        // the UDP port told to the radio (client udpport)
     udpRegistered: false
   };
   R.dual = null;
+  // DAX on for a transmission (rigFlexPtt) is put back on this connection only for a rig still keyed here (lost while keyed). Otherwise
+  // the putting back went out on the last link while it was up, with its unkey (rig.js unkeys a rig as it lets go of its link)
+  if (!R.pttKeyed) R.flexDaxForced = false;
   if (R.flexFound) R.model = rigFlexRadioName(R.flexFound);
 }
 
@@ -477,26 +480,31 @@ function rigFlexSetMode(R, slice, mode, data)
 }
 
 // PTT (xmit). With DAX TX audio open and the TX slice in a mode that doesn't take DAX by itself (not DIGU, DIGL), DAX is made the TX
-// audio's source for the transmission (transmit set dax=1), and put back after it
+// audio's source for the transmission (transmit set dax=1), and put back after it. That it was is kept on the rig (R.flexDaxForced),
+// not its connection, until the radio has answered the putting back: a connection lost while keyed has it put back by the next one's
+// unkey (rig.js unkeys a rig lost while keyed once it reads again), so the radio's microphone isn't left off. A connection that starts
+// with nothing keyed here lets it go (rigFlexReset): the putting back went out with the last unkey, on a link still up
 function rigFlexPtt(R, on)
 {
   const C = R.flexConn;
   if (!C) return null;
   let out = "";
-  if (on && R.flexAudio && R.flexAudio.out && C.txDax === false && !C.daxForced)
+  if (on && R.flexAudio && R.flexAudio.out && C.txDax === false)
   {
     const T = Object.values(C.slices).find((s) => s.tx) || rigFlexSliceA(R);
     if (T && !/^DIG/.test(T.mode || ""))
     {
       out += rigFlexCmd(R, "transmit set dax=1");
-      C.daxForced = true;
+      R.flexDaxForced = true;
     }
   }
   out += rigFlexCmd(R, "xmit " + (on ? 1 : 0));
-  if (!on && C.daxForced)
+  if (!on && R.flexDaxForced)
   {
-    out += rigFlexCmd(R, "transmit set dax=0");
-    C.daxForced = false;
+    out += rigFlexCmd(R, "transmit set dax=0", (code) =>
+    {
+      if (code == 0 && R.flexConn === C) R.flexDaxForced = false;
+    });
   }
   return out;
 }
@@ -685,7 +693,7 @@ function rigFlexAudioStop(R, h)
 // A handle's stream removed from the radio (while its connection is the one up)
 function rigFlexStreamRemove(R, h)
 {
-  if (h.streamId !== null && h.streamId >= 0 && h.conn && h.conn === R.flexConn && R.status == "connected") rigFlexSend(R, "stream remove 0x" + h.streamId.toString(16).padStart(8, "0"));
+  if (h.streamId !== null && h.streamId >= 0 && h.conn && h.conn === rigFlexConnUp(R)) rigFlexSend(R, "stream remove 0x" + h.streamId.toString(16).padStart(8, "0"));
   h.streamId = null;
 }
 
@@ -720,13 +728,21 @@ function rigFlexUdpEnsure(R)
   socket.bind(tried || 0);
 }
 
+// The rig's FlexRadio connection while it is up: none while it is down, or while the VFO is connected with another protocol (it was
+// set to one while the decoder used its DAX: R.flexConn is the last FlexRadio connection's still, and its link another protocol's)
+function rigFlexConnUp(R)
+{
+  return R.status == "connected" && R.protocol === RIG_PROTOCOLS.flex && R.flexConn ? R.flexConn : null;
+}
+
 // The streams made to follow what is: the connection (a new one has none), VFO-A's slice and its DAX channel; and each handle's status
 function rigFlexAudioSync(R)
 {
   const A = R.flexAudio;
   if (!A || (!A.in && !A.out)) return;
   rigFlexUdpEnsure(R);
-  const C = R.status == "connected" && R.flexConn && R.flexConn.slicesKnown ? R.flexConn : null;
+  const up = rigFlexConnUp(R);
+  const C = up && up.slicesKnown ? up : null;
   for (const h of [A.in, A.out])
   {
     if (!h) continue;
@@ -867,8 +883,10 @@ function rigFlexUdpRegister(R)
 // A UDP packet in: DAX RX audio of the "in" handle's stream (from the radio), to its sink; a gap filled with silence first. The gap is
 // told by the sample count timestamp where the radio keeps one (it goes up by each packet's frames), else by the 4-bit packet count;
 // past 16 packets the count wraps, so a silence of over FLEX_LONG_GAP_MS since the last packet (too long to be the network's jitter)
-// is measured by its time, the count picking the exact number. A gap over a second isn't filled. A packet a step behind (late, or
-// twice) is dropped
+// is measured by its time, the count picking the exact number, when the count says packets were lost in it (none: this computer was
+// busy, the packets waiting in its socket meanwhile, so nothing is filled). A gap over a second isn't filled. A packet a step behind
+// (late, or twice) is dropped: by the count, one up to 7 behind the last (or the same) that comes sooner than the 8 to 15 lost packets
+// its count could also mean would let it
 function rigFlexUdpIn(R, msg, rinfo)
 {
   const A = R.flexAudio;
@@ -895,8 +913,10 @@ function rigFlexUdpIn(R, msg, rinfo)
     {
       missing = (p.count - h.lastCount - 1) & 15;
       const elapsed = now - h.lastAt;
-      if (missing >= 8 && elapsed < FLEX_LONG_GAP_MS) return;
-      if (elapsed >= FLEX_LONG_GAP_MS)
+      // 8 to 15 lost, or up to 7 behind (or the same again): lost when it came as late as those packets would have taken (half that,
+      // for the jitter)
+      if (missing >= 8 && elapsed < FLEX_LONG_GAP_MS && elapsed < ((missing + 1) * packetMs) / 2) return;
+      if (elapsed >= FLEX_LONG_GAP_MS && missing > 0)
       {
         const guess = Math.round(elapsed / packetMs) - 1;
         missing += 16 * Math.max(0, Math.round((guess - missing) / 16));

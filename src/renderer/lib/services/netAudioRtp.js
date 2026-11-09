@@ -62,10 +62,9 @@ const SAP_PORT = 9875;
 const SAP_LISTEN_GROUPS = ["224.0.0.56", "224.2.127.254", "239.255.255.255"];
 const SAP_SEND_GROUPS = ["224.0.0.56", "224.2.127.254"];
 const SAP_MIME = "application/sdp";
-// Announcements: every 5 s for the first minute (as PipeWire and PulseAudio do), then every 20 s (well within PipeWire's 90 s)
-const SAP_FAST_MS = 5000;
-const SAP_FAST_FOR_MS = 60000;
-const SAP_SLOW_MS = 20000;
+// Announcements every 5 s, as PipeWire and PulseAudio send theirs: an output sends no RTP between pictures, so its announcements alone
+// keep it in PulseAudio's module-rtp-recv, which lets a session go 20 s after the last (one lost at a slower pace would drop it)
+const SAP_INTERVAL_MS = 5000;
 // A session heard of is forgotten after 10 of its intervals (within these), 5 minutes while its interval isn't known yet
 const SAP_EXPIRE_FIRST_MS = 300000;
 const SAP_EXPIRE_MIN_MS = 60000;
@@ -117,13 +116,6 @@ function rtpIsIpv4(text)
 function rtpPortValid(port)
 {
   return Number.isInteger(port) && port >= 1 && port <= 65535;
-}
-
-function rtpIsMulticast(ip)
-{
-  if (!rtpIsIpv4(ip)) return false;
-  const first = parseInt(ip, 10);
-  return first >= 224 && first <= 239;
 }
 
 // Every IPv4 address of this computer, loopback too (multicast sent from this computer can come back on it)
@@ -298,7 +290,7 @@ function rtpSdpParse(text)
       }
       else other = other || info.enc;
     }
-    return { port: item.port, host: c.host, multicast: rtpIsMulticast(c.host), ttl: c.ttl, formats: formats, fmt: fmt, unsupported: fmt ? null : other, ptime: item.ptime, name: session.name };
+    return { port: item.port, host: c.host, multicast: netAudioIsMulticast(c.host), ttl: c.ttl, formats: formats, fmt: fmt, unsupported: fmt ? null : other, ptime: item.ptime, name: session.name };
   }).filter((item) => item.host);
   return session;
 }
@@ -552,8 +544,8 @@ function rtpInOpen(stream, sink)
   const H = {
     sink: sink,
     port: stream.port || RTP_DEFAULT_PORT,
-    group: rtpIsMulticast(host) ? host : null,
-    filter: host && !rtpIsMulticast(host) ? host : null,
+    group: netAudioIsMulticast(host) ? host : null,
+    filter: host && !netAudioIsMulticast(host) ? host : null,
     rate: stream.rate || 48000,
     channels: stream.channels || 1,
     channel: stream.channel || "left",
@@ -1052,7 +1044,7 @@ function rtpOutOpen(stream, sink)
     sap: null,
     // Announced with SAP (the stream box's Announce): PipeWire and PulseAudio machines on the LAN pick it up by themselves. Unset (a
     // stream from before it was there): announced only to a multicast group
-    announce: stream.announce === true || (stream.announce !== false && rtpIsMulticast(host))
+    announce: stream.announce === true || (stream.announce !== false && netAudioIsMulticast(host))
   };
   if (!rtpPortValid(O.port))
   {
@@ -1110,7 +1102,7 @@ function rtpOutConnect(O)
       O.local = socket.address().address;
       if (!O.local || O.local == "0.0.0.0") O.local = rtpOwnAddress();
       socket.setBroadcast(true);
-      if (rtpIsMulticast(O.address))
+      if (netAudioIsMulticast(O.address))
       {
         socket.setMulticastTTL(rtpOutTtl(O.address));
         socket.setMulticastLoopback(true);
@@ -1251,7 +1243,7 @@ function rtpOutSend(O)
 // always given). A unicast stream's c= is its destination
 function rtpOutSdp(O)
 {
-  const multicast = rtpIsMulticast(O.address);
+  const multicast = netAudioIsMulticast(O.address);
   const ptime = Math.round((O.frames * 1000000) / O.rate) / 1000;
   const lines = [
     "v=0",
@@ -1273,7 +1265,7 @@ function rtpOutSapStart(O)
 {
   rtpOutSapStop(O, false);
   const socket = window.require("dgram").createSocket({ type: "udp4", reuseAddr: true });
-  O.sap = { socket: socket, id: Math.floor(Date.now() / 1000) + NTP_EPOCH_OFFSET, hash: 1 + Math.floor(Math.random() * 0xffff), started: Date.now(), timer: null, ready: false };
+  O.sap = { socket: socket, id: Math.floor(Date.now() / 1000) + NTP_EPOCH_OFFSET, hash: 1 + Math.floor(Math.random() * 0xffff), timer: null, ready: false };
   const sap = O.sap;
   socket.on("error", () =>
   {
@@ -1286,7 +1278,7 @@ function rtpOutSapStart(O)
     if (O.sap != sap) return;
     try
     {
-      socket.setMulticastTTL(rtpOutTtl(rtpIsMulticast(O.address) ? O.address : RTP_DEFAULT_GROUP));
+      socket.setMulticastTTL(rtpOutTtl(netAudioIsMulticast(O.address) ? O.address : RTP_DEFAULT_GROUP));
       socket.setMulticastLoopback(true);
       if (!O.local.startsWith("127.")) socket.setMulticastInterface(O.local);
     }
@@ -1324,12 +1316,11 @@ function rtpOutSapSend(O, deletion, done)
     }
   }
   if (deletion) return;
-  const wait = Date.now() - sap.started < SAP_FAST_FOR_MS ? SAP_FAST_MS : SAP_SLOW_MS;
   sap.timer = nodeTimers.setTimeout(() =>
   {
     sap.timer = null;
     if (O.sap == sap) rtpOutSapSend(O, false);
-  }, wait);
+  }, SAP_INTERVAL_MS);
 }
 
 // Announcements ended, with a deletion so receivers let the stream go at once (bye: the stream stopped, not just reconnecting)

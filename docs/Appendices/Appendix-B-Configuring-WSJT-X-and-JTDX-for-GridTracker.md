@@ -44,7 +44,7 @@ The first time it runs, GridTracker2 reads the address and port from your WSJT-X
 
 If it still shows "waiting for message" after 15 seconds or so, open [Settings → General](../GridTracker-Overview/Settings-Sub-Menus.md#general-tab) and check the **Receive UDP Messages** box:
 
-![The General tab](../img/GT2_Settings_General.png)
+![The General tab](../img/GT2_Settings_General.jpg)
 
 * The **Port** must match the port in WSJT-X's UDP Server setting.
 * If WSJT-X sends to a multicast address (224.0.0.0 to 239.255.255.255), tick **Multicast?** and enter the same address in **IP**.

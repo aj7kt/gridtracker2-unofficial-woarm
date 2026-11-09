@@ -79,6 +79,9 @@ function mmdSettingsRender()
   navtexSaveValue.checked = S.navtexSave === true;
   sstvFolderTr.style.display = S.sstvSave === true ? "" : "none";
   sstvFolderText.textContent = window.opener.mmDecoderSstvFolder();
+  wefaxSaveValue.checked = S.wefaxSave === true;
+  wefaxFolderTr.style.display = S.wefaxSave === true ? "" : "none";
+  wefaxFolderText.textContent = window.opener.mmDecoderWefaxFolder();
 }
 
 // Each mode's VFO menu, and Common VFO's: Rig Control's by their names, and None. With Follow BirdWatch, BirdWatch's downlink VFO, named so,
@@ -106,11 +109,14 @@ function mmdVfosRender()
     select.disabled = !!followed;
     select.title = opener.I18N(followed ? "settings.mmDecoder.vfo.birdWatch.hover" : mode == "common" ? "settings.mmDecoder.commonVfoSelect.hover" : "settings.mmDecoder.vfo.hover");
   }
-  // The SDR servers' VFOs among the Input Devices (added, removed, renamed, another server type)
+  // The SDR servers' VFOs among the Input Devices (added, removed, renamed, another server type), and the VFOs whose rig carries audio
+  // (FlexRadio, Icom LAN) among the Input and Output Devices (set to or from such a protocol, renamed, Rig Control turned on or off)
   const spies = typeof opener.rigIqVfos == "function" ? opener.rigIqVfos().map((v) => v.id + "=" + opener.rigVfoLabel(v) + "=" + v.protocol).join("|") : "";
-  if (spies !== DEC.spyKey)
+  const rigAudio = typeof opener.netAudioDevices == "function" ? opener.netAudioDevices("in").concat(opener.netAudioDevices("out")).filter((d) => d.id.startsWith("rig:")).map((d) => d.id + "=" + d.label).join("|") : "";
+  const key = rigAudio ? spies + "#" + rigAudio : spies;
+  if (key !== DEC.spyKey)
   {
-    DEC.spyKey = spies;
+    DEC.spyKey = key;
     mmdInputs();
   }
 }
@@ -289,19 +295,33 @@ function mmdSetNavtexSave()
   mmdSettingsRender();
 }
 
-function mmdSetSstvFolderChoose()
+// WEFAX's Save Charts: each chart as it ends (mmdSstv.js), into its own folder; its Folder shown while it is on
+function mmdSetWefaxSave()
 {
-  const remote = window.require("@electron/remote");
-  const folders = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), { defaultPath: window.opener.mmDecoderSstvFolder(), properties: ["openDirectory", "createDirectory"] });
-  if (!folders || !folders.length) return;
-  GT.settings.MMD.sstvFolder = folders[0];
+  GT.settings.MMD.wefaxSave = wefaxSaveValue.checked;
   mmdSettingsRender();
 }
 
-// The folder opened (made first, if no picture has been saved yet)
-function mmdSetSstvFolderOpen()
+// A mode's saving folder ("sstv": Save Pictures', "wefax": Save Charts')
+function mmdPicturesFolder(kind)
 {
-  const folder = window.opener.mmDecoderSstvFolder();
+  return kind == "wefax" ? window.opener.mmDecoderWefaxFolder() : window.opener.mmDecoderSstvFolder();
+}
+
+// Another folder picked for a mode's saving
+function mmdSetPicturesFolderChoose(kind)
+{
+  const remote = window.require("@electron/remote");
+  const folders = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), { defaultPath: mmdPicturesFolder(kind), properties: ["openDirectory", "createDirectory"] });
+  if (!folders || !folders.length) return;
+  GT.settings.MMD[kind == "wefax" ? "wefaxFolder" : "sstvFolder"] = folders[0];
+  mmdSettingsRender();
+}
+
+// A mode's saving folder opened (made first, if nothing has been saved yet)
+function mmdSetPicturesFolderOpen(kind)
+{
+  const folder = mmdPicturesFolder(kind);
   try
   {
     fs.mkdirSync(folder, { recursive: true });

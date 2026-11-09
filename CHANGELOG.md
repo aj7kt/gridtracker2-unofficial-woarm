@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - SPY Server by Airspy (a VFO's connection in Settings, Rig Control): an Airspy or RTL-SDR shared by SPY Server is a VFO of its own, its frequency read and tuned like a rig's, and its I/Q stream is in every mode's Input Device menu, decoded as the audio above that frequency (USB)
   - Frequency: the rig's frequency, band and mode are shown centered on the bar between the waterfall and the decoded lines (drag the bar to size the waterfall; in FT8, FT4 and WSPR its right end shows how far into the period it is, as [ 7 / 15 ]), and with Rig Control a menu on the second line lists each mode's usual frequencies, CW's QRP calling frequencies, FT8's and SSTV's; picking one sets the rig's frequency (Set Frequency) and its mode (Set Mode: CW's CW, SSTV's the sideband, FT8's USB), each allowed on its own for each mode in the window's Settings, Decoders (both on unless turned off)
   - SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are
+  - DTR and RTS (each serial VFO's, Settings, Rig Control; Low unless set High): the serial port's two lines while the rig is connected, High only for an interface that needs it; the line PTT Method uses stays low until the decoder keys the rig, and on Windows neither goes high for a moment as the port opens
   - Band scope: with Use Scope If Present (an Icom CI-V VFO's, Settings, Rig Control; off unless checked), the radio's own scope waterfall shows in a strip over the decoder's waterfall, its colors starting at the band's noise floor so it looks the same at every span (IC-7300 and other Icoms that send it over USB)
     - Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end), shown beside them as −500 kHz and +500 kHz
     - The radio needs its CI-V USB Baud Rate at 115200 (and Rig Control the same) and its CI-V USB Port set to Unlink from [REMOTE]; a yellow note under the checkbox and over the strip says which is missing, or that the radio's scope is turned off
@@ -64,7 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods
 - FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off
 - CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia: right-click a decoded line to delete it (a station still sending is listed again with what it sends next)
-- Every mode but FT8, FT4 and WSPR: with Rig Control, right-click the waterfall or the scale above it to tune the rig to the frequency there (in CW, so that signal is heard at the CW pitch)
+- With Rig Control, a lock before the rig's frequency on the divider: unlocked, the mouse wheel on the waterfall tunes the rig 10 Hz a step (Shift 100 Hz, Ctrl 1 Hz)
 - PSK and RTTY modes (Mode menu): every PSK signal in the passband (PSK31, PSK63, PSK125 or QPSK31, picked on the second line), or every RTTY signal (170, 425 or 850 Hz shift, at 45.45, 50 or 75 baud, each found by itself), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise, its baud and its text; the Frequency menu has each mode's usual frequencies
 - MFSK mode (Mode menu): every MFSK16 or MFSK32 signal in the passband (picked on the second line), each found by itself and decoded on its own, listed as PSK's are; MFSK16 copies down to about 13 dB below the noise (in 3 kHz)
   - Written from ZL1BPU's published MFSK16 specification and IZ8BLY's varicode
@@ -140,7 +141,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Click a station on the map, a pass in the list or a bar in the timeline to make it the active station: its satellite is selected, the panel shows its mutual pass, and Skeds First prefers it
   - Shown in the Pass Timeline (a row for each station), on the map (each station's marker, bright while a mutual pass is under way) and in the BirdWatch panel (the selected satellite's next mutual pass)
   - Announce Mutual Passes (BirdWatch settings, Alerts) announces them before they open
-- Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens) or Skeds Only; a satellite you select yourself stays selected until its LOS
+- Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens, and is kept until it ends) or Skeds Only; a satellite you select yourself stays selected until its LOS when it is up or rises within 15 minutes, else for 15 minutes
 - BirdWatch's settings are split into more tabs: BirdWatch, Skeds, Display (Panel View, Map), Alerts, Telemetry and Satellites
 - The selected satellite's name on the map is now black on light green, so it stands out
 
@@ -162,6 +163,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - In a narrow window, About moves up to the row above so the tabs fit on one line
 - Settings, Audio: Device is now Output Device
 - Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card
+- Lookup: the Callsign Lookup window has a new look, and resizes itself to fit each lookup
+  - Clear and Generate Messages are at the top, under GridTracker's acknowledgement of the station
+  - The grid, distance and bearing are under the station's card; in your log for the call, bands only worked have a dashed outline and confirmed ones are filled
+  - The Details are laid out in columns, so the window is shorter
 - At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice
 
 ### HTML List
@@ -218,6 +223,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>SPY Server by Airspy (a VFO's connection in Settings, Rig Control): an Airspy or RTL-SDR shared by SPY Server is a VFO of its own, its frequency read and tuned like a rig's, and its I/Q stream is in every mode's Input Device menu, decoded as the audio above that frequency (USB)</li>
       <li>Frequency: the rig's frequency, band and mode are shown centered on the bar between the waterfall and the decoded lines (drag the bar to size the waterfall; in FT8, FT4 and WSPR its right end shows how far into the period it is, as [ 7 / 15 ]), and with Rig Control a menu on the second line lists each mode's usual frequencies, CW's QRP calling frequencies, FT8's and SSTV's; picking one sets the rig's frequency (Set Frequency) and its mode (Set Mode: CW's CW, SSTV's the sideband, FT8's USB), each allowed on its own for each mode in the window's Settings, Decoders (both on unless turned off)</li>
       <li>SSB Data (each VFO's, Settings, Rig Control; off unless checked): the digital modes the decoder sets on that VFO in USB or LSB go to its data mode (USB-D, PKTUSB, DATA-U); BirdWatch's voice modes stay as they are</li>
+      <li>DTR and RTS (each serial VFO's, Settings, Rig Control; Low unless set High): the serial port's two lines while the rig is connected, High only for an interface that needs it; the line PTT Method uses stays low until the decoder keys the rig, and on Windows neither goes high for a moment as the port opens</li>
       <li>Band scope: with Use Scope If Present (an Icom CI-V VFO's, Settings, Rig Control; off unless checked), the radio's own scope waterfall shows in a strip over the decoder's waterfall, its colors starting at the band's noise floor so it looks the same at every span (IC-7300 and other Icoms that send it over USB)
         <ul>
           <li>Where the radio is tuned is marked, with the audio the decoder takes shaded; click the strip to tune there, and − and + in its top corners narrow and widen the radio's span (from ±2.5 kHz to ±500 kHz, going round at either end), shown beside them as −500 kHz and +500 kHz</li>
@@ -248,7 +254,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>FT8 and FT4: a yellow mark on the scale for each station decoded in the last two periods</li>
   <li>FT8 and FT4 time skew, for a station whose clock is off (as a DXpedition's with no time source): right-click the waterfall, then turn the scroll wheel (Shift: a second at a time) to move the decoding's timing until the orange lines, drawn across the whole waterfall in place of the usual gray ones with the skew and their UTC shown above them, line up with the station's transmissions. Every period is decoded on that timing, DT shown in orange from the usual timing; stations on time aren't decoded meanwhile. Right-click again to go back on time; the skew is kept until GridTracker closes (FT8's and FT4's each), so turning it on again comes back at it. Clear leaves it on; tuning the rig elsewhere turns it off</li>
   <li>CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia: right-click a decoded line to delete it (a station still sending is listed again with what it sends next)</li>
-  <li>Every mode but FT8, FT4 and WSPR: with Rig Control, right-click the waterfall or the scale above it to tune the rig to the frequency there (in CW, so that signal is heard at the CW pitch)</li>
+  <li>With Rig Control, a lock before the rig's frequency on the divider: unlocked, the mouse wheel on the waterfall tunes the rig 10 Hz a step (Shift 100 Hz, Ctrl 1 Hz)</li>
   <li>PSK and RTTY modes (Mode menu): every PSK signal in the passband (PSK31, PSK63, PSK125 or QPSK31, picked on the second line), or every RTTY signal (170, 425 or 850 Hz shift, at 45.45, 50 or 75 baud, each found by itself), each decoded on its own and listed as CW's are, with its frequency, its signal over the noise, its baud and its text; the Frequency menu has each mode's usual frequencies</li>
   <li>MFSK mode (Mode menu): every MFSK16 or MFSK32 signal in the passband (picked on the second line), each found by itself and decoded on its own, listed as PSK's are; MFSK16 copies down to about 13 dB below the noise (in 3 kHz)
     <ul>
@@ -375,7 +381,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Announce Mutual Passes (BirdWatch settings, Alerts) announces them before they open</li>
     </ul>
   </li>
-  <li>Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens) or Skeds Only; a satellite you select yourself stays selected until its LOS</li>
+  <li>Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens, and is kept until it ends) or Skeds Only; a satellite you select yourself stays selected until its LOS when it is up or rises within 15 minutes, else for 15 minutes</li>
   <li>BirdWatch's settings are split into more tabs: BirdWatch, Skeds, Display (Panel View, Map), Alerts, Telemetry and Satellites</li>
   <li>The selected satellite's name on the map is now black on light green, so it stands out</li>
 </ul>
@@ -406,6 +412,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>Settings, Audio: Device is now Output Device</li>
   <li>Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card</li>
+  <li>Lookup: the Callsign Lookup window has a new look, and resizes itself to fit each lookup
+    <ul>
+      <li>Clear and Generate Messages are at the top, under GridTracker's acknowledgement of the station</li>
+      <li>The grid, distance and bearing are under the station's card; in your log for the call, bands only worked have a dashed outline and confirmed ones are filled</li>
+      <li>The Details are laid out in columns, so the window is shorter</li>
+    </ul>
+  </li>
   <li>At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice</li>
 </ul>
 ```

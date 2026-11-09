@@ -96,7 +96,7 @@ function rigSdrppRigctlLine(line, R)
   const fits = { freq: /^\d+$/, mode: /^[A-Za-z]+$/, width: /^-?\d+$/, rprt: /^RPRT\s/ }[head.kind];
   if (!fits || !fits.test(text)) return null;
   R.plainQueue.shift();
-  if (head.kind == "freq") R.freq = Number(text);
+  if (head.kind == "freq") rigFreqSaid(R, Number(text));
   else if (head.kind == "mode") R.mode = text.toUpperCase();
   // A poll answered whole
   while (R.plainQueue.length && R.plainQueue[0].kind == "done")

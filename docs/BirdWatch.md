@@ -38,7 +38,7 @@ The last three only appear while satellite tracking is on. Like the other button
 
 ## The BirdWatch Panel
 
-![The BirdWatch panel with AO-91 selected, its Skybox and Earth views below](img/GT2_BirdWatch_Panel.png){width=200px .gt-float-right}
+![The BirdWatch panel with AO-91 selected, its Skybox and Earth views below](img/GT2_BirdWatch_Panel.jpg){width=200px .gt-float-right}
 
 The BirdWatch panel is as wide as the side panel and sits on the opposite side of the window, over the map's corner. It is only as tall as what it shows.
 
@@ -133,7 +133,7 @@ The **Pass Timeline** button opens a chart at the top of the map with the next 2
 
 ## The Transmitters Window
 
-![The transmitters window for RS-44, with the data credits under it](img/GT2_BirdWatch_Transmitters.png)
+![The transmitters window for RS-44](img/GT2_BirdWatch_Transmitters.png)
 
 The transmitters window lists the selected satellite's active transmitters, from the SatNOGS database. Open it with the **Doppler** button, a right-click on the satellite on the map, or a click on the rig box. It follows the selection: select another satellite and the window shows its transmitters.
 
@@ -168,7 +168,7 @@ The BirdWatch tabs sit in a row of their own above the other Settings tabs, in B
 The box in the title turns BirdWatch's use of your radio on or off. While it is ticked, your radio follows the selected satellite, whether you selected it or Auto-Track did. While it is off, BirdWatch sends your radio nothing. It is on by default; the radio itself is set up in Rig Control, see [Rig and Rotor Control](Rig-and-Rotor-Control.md).
 
 * The note under it is a reminder that each VFO's **Satellites** row in Rig Control says what it receives and transmits on, and that you can right-click a transmitter's downlink or uplink to pick its VFO.
-* **Lock VFOs:** turning one VFO's dial tunes the other with it, for a linear transponder. The change is scaled by the two frequencies, and goes the other way for an inverting transponder. Both keep following the Doppler shift. The lock in the rig box is the same setting.
+* **Lock VFOs:** turning one VFO's dial tunes the other with it, for a linear transponder. The other VFO moves by the same amount, the other way for an inverting transponder. Both keep following the Doppler shift. The lock in the rig box is the same setting.
 
 ### Auto-Track
 
@@ -198,7 +198,7 @@ The stations you share passes with, and your mutual passes with them. See [Skeds
 Each station is a row:
 
 * **Active:** the station counts for Auto-Track, the Mutual Passes, the Pass Timeline, the map and the alerts. Untick it to keep a station in the list without using it.
-* **Callsign** and **Grid:** a 6-character grid (CN87XX) puts the station within a few kilometers; a 4-character one only within about 100 km, which can move a low pass's start by up to a minute. A grid that isn't one is shown in orange.
+* **Callsign** and **Grid:** the other fields wait for a callsign (a callsign that isn't one is shown in orange). A moment after you stop typing it, it is looked up with your lookup service (Settings, Lookups), and the grid from the answer is filled in if **Grid** is empty. A 6-character grid (CN87XX) puts the station within a few kilometers; a 4-character one only within about 100 km, which can move a low pass's start by up to a minute. A grid that isn't one is shown in orange.
 * **Height:** the station's height above sea level, if you know it (feet with miles or nautical miles as your distance unit, meters otherwise). It changes little.
 * **Min El:** the lowest elevation the station can work, for its trees and buildings. Leave it blank to use your own.
 * **Notes:** anything you like, such as "FM satellites only".
@@ -331,7 +331,7 @@ With an active station in the Skeds tab, Auto-Track's **Mode** (BirdWatch tab of
 * **Skeds Only:** only mutual passes are selected; between them, the selection is left as it is.
 * **Next Pass:** mutual passes make no difference.
 
-In Skeds First and Skeds Only, a satellite you select yourself, even while a sked is under way, stays selected until its LOS; then Auto-Track picks again.
+In Skeds First and Skeds Only, a satellite you select yourself, even while a sked is under way, stays selected until its LOS if it is up or rises within 15 minutes, otherwise for 15 minutes; then Auto-Track picks again. A mutual pass Auto-Track has picked is kept until it ends, even if another one opens meanwhile. A satellite that is always up for both stations (a geostationary one such as QO-100) is listed, but Auto-Track doesn't select it and it isn't announced.
 
 ## Skeds: Passes With Another Station
 
@@ -345,7 +345,7 @@ You see them:
 * In the BirdWatch panel: a **Mutual Pass** row with the station and the time to the selected satellite's next mutual pass (`W1XYZ  AOS 55m 11s`), or to its end while it is under way (`LOS 4m 12s`). Made the featured item, the time goes on its own line under the callsign. Hold the mouse over it for the details; click it to open the Skeds tab.
 * As an announcement, with **Announce Mutual Passes** (Alerts tab).
 
-**The active station.** Click a station's diamond on the map, a pass in the Mutual Passes list, or a bar in its timeline row to make that station the active one. Its satellite (for the map, the one of its next mutual pass) is selected, as if you had clicked it, and stays selected until its LOS. The Mutual Pass row then shows that station's pass, Skeds First prefers its passes over the others', and the station is marked in yellow on the map, in the list and in the timeline. It is kept when GridTracker2 restarts. Click the active station's diamond again to have no active station (the satellite stays selected).
+**The active station.** Click a station's diamond on the map, a pass in the Mutual Passes list, or a bar in its timeline row to make that station the active one. Its satellite (for the map, the one of its next mutual pass) is selected, as if you had clicked it (kept until its LOS if it is up or rises within 15 minutes, else for 15 minutes). The Mutual Pass row then shows that station's pass, Skeds First prefers its passes over the others', and the station is marked in yellow on the map, in the list and in the timeline. It is kept when GridTracker2 restarts. Click the active station's diamond again to have no active station (the satellite stays selected).
 
 To arrange the sked, send the other station the pass: **Copy** (a line of text) or **ICS** (a calendar event) in the Mutual Passes list. If they use GridTracker2 too, **Copy My Sked Line** gives them your callsign, grid, height and lowest elevation to paste into their own list.
 
@@ -402,4 +402,4 @@ The Multi-Mode Decoder's **Follow BirdWatch** switches the decoder to the mode o
 * Satellite names, details, modes and transmitters come from [SatNOGS DB](https://db.satnogs.org), by the [Libre Space Foundation](https://libre.space) and its volunteer contributors, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 * The amateur satellites' element sets (TLE) and frequencies come from [AMSAT](https://www.amsat.org), The Radio Amateur Satellite Corporation. Thank you, AMSAT, for keeping the amateur satellites flying and their element sets up to date.
 
-These credits are also shown at the bottom of the Satellites tab, in the transmitters window and in Settings → About. See [License Agreement and Copyright](License-Agreement-and-Copyright.md#satellite-data) for the full notices.
+These credits are also shown at the bottom of the Satellites tab. See [License Agreement and Copyright](License-Agreement-and-Copyright.md#satellite-data) for the full notices.

@@ -16,7 +16,7 @@ The Call Roster and Feed Roster have their own settings, including the Watcher, 
 
 ## General Tab
 
-![The General tab of the Settings panel](../img/GT2_Settings_General.png)
+![The General tab of the Settings panel](../img/GT2_Settings_General.jpg)
 
 ### Receive UDP Messages
 
@@ -117,7 +117,7 @@ Turning on POTA Hunting or SOTA Chasing also turns on **Load At Startup** and **
 
 ## Lookups Tab
 
-![The Lookups tab of the Settings panel](../img/GT2_Settings_Lookups.png)
+![The Lookups tab of the Settings panel](../img/GT2_Settings_Lookups.jpg)
 
 ### Callsign Lookup Service
 
@@ -169,7 +169,7 @@ The **Voice**, **Speech Rate**, **Speech Pitch** and **Speech Volume** of spoken
 
 ## Map Tab
 
-![The Map tab of the Settings panel](../img/GT2_Settings_Map.png)
+![The Map tab of the Settings panel](../img/GT2_Settings_Map.jpg)
 
 ### Base Map
 
@@ -217,7 +217,7 @@ The width and color of the lines drawn on the map:
 
 ## Colors Tab
 
-![The Colors tab of the Settings panel](../img/GT2_Settings_Colors.png)
+![The Colors tab of the Settings panel](../img/GT2_Settings_Colors.jpg)
 
 ### Gridsquare Colors
 
@@ -239,7 +239,7 @@ Each box has a **Reset Colors** button in its title to return to the defaults.
 
 This tab appears while **DX Feeds** is turned on in the Features tab.
 
-![The Feeds tab of the Settings panel](../img/GT2_Settings_Feeds.png)
+![The Feeds tab of the Settings panel](../img/GT2_Settings_Feeds.jpg)
 
 ### DX Feeds
 
@@ -256,7 +256,7 @@ One tick box for each mode seen in feed spots, and for each band. Untick a mode 
 
 GridTracker2 is a log *viewer*, not a logging program. The Logging tab sets where your QSOs come from (which logs are loaded) and where new QSOs are sent. See [Logging Options and Functions](../Making-GridTracker-Work-For-You/GridTracker-Logging-Options-and-Functions.md) for how they fit together.
 
-![The Logging tab of the Settings panel](../img/GT2_Settings_Logging.png)
+![The Logging tab of the Settings panel](../img/GT2_Settings_Logging.jpg)
 
 The columns are:
 
@@ -301,7 +301,7 @@ Loads the stations that heard you on PSK-Reporter over the last 24 hours. These 
 
 Audio Alerts speak or play a sound when a station you want is decoded. The alert ticks are separate from the roster's Wanted ticks, so the roster can highlight more than you are alerted for. The **Reference** and **Exceptions** are shared with the roster: changing them here changes them in the roster window, and the other way around.
 
-![The Audio Alerts tab of the Settings panel](../img/GT2_Settings_AudioAlerts.png)
+![The Audio Alerts tab of the Settings panel](../img/GT2_Settings_AudioAlerts.jpg)
 
 While DX Feeds is on, **Call Roster** and **Feed Roster** sub-tabs appear at the top: each roster has its own alerts. In the roster, a 🔔 after a Wanted item means it has an audio alert; click it to open its sub-tab.
 
@@ -343,7 +343,7 @@ Exceptions narrow down which stations alert: **CQ Only**, **RR73 as CQ** (a stat
 
 Custom Alerts watch for one particular callsign or grid, whatever your roster settings.
 
-![The Custom Alerts tab of the Settings panel](../img/GT2_Settings_CustomAlerts.png)
+![The Custom Alerts tab of the Settings panel](../img/GT2_Settings_CustomAlerts.jpg)
 
 To add one, pick:
 
@@ -359,7 +359,7 @@ Then click **ADD**. The list below shows your alerts, when each last went off an
 
 ## Logbook Tab
 
-![The Logbook tab of the Settings panel](../img/GT2_Settings_Logbook.png)
+![The Logbook tab of the Settings panel](../img/GT2_Settings_Logbook.jpg)
 
 ### QSL Location Authority
 

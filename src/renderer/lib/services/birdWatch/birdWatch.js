@@ -223,7 +223,10 @@ function birdWatchWorkerMessage(event)
       if (T.predict) { T.predict.features.clear(); T.predict.paths.clear(); }
       T.hover = null;
     }
-    for (const sat of m.sats)
+    // A satellite no longer tracked (removed while this was on its way, sent before the tracker was told) isn't put back on the map
+    const tracked = new Set(GT.settings.BirdWatch.tracked);
+    const sats = m.sats.filter((sat) => tracked.has(sat.norad));
+    for (const sat of sats)
     {
       let marker = T.markers.get(sat.norad);
       if (sat.error)
@@ -249,7 +252,7 @@ function birdWatchWorkerMessage(event)
         marker.changed();
       }
     }
-    birdWatchPanelUpdate(m.sats);
+    birdWatchPanelUpdate(sats);
   }
   else if (m.type == "passes")
   {
@@ -258,6 +261,38 @@ function birdWatchWorkerMessage(event)
   }
   else if (m.type == "path" || m.type == "arc") birdWatchPredictMessage(m);
   else if (m.type == "scan") birdWatchSatScanResult(m);
+  else if (m.type == "tles") birdWatchTrackDropGone(m.bad);
+}
+
+// From the tracker, once it has the element sets sent (its answer comes after any positions that still had them): a satellite it no
+// longer has (its element set gone with its source, or one it can't use) isn't followed now, so its marker, footprint, path and last
+// numbers go, and the panel stops showing them. It stays tracked, and is followed again once there is an element set for it
+function birdWatchTrackDropGone(bad)
+{
+  const T = GT.birdWatchTrack;
+  const source = GT.layerSources.birdWatch;
+  const unusable = new Set((bad || []).map(Number));
+  for (const norad of new Set([...T.markers.keys(), ...T.last.keys()]))
+  {
+    if (birdWatchTleGet(norad) && !unusable.has(norad)) continue;
+    const marker = T.markers.get(norad);
+    const ring = T.rings.get(norad);
+    if (source)
+    {
+      if (marker) source.removeFeature(marker);
+      if (ring)
+      {
+        source.removeFeature(ring.fill);
+        source.removeFeature(ring.line);
+      }
+    }
+    T.markers.delete(norad);
+    T.rings.delete(norad);
+    T.last.delete(norad);
+    if (T.predict) birdWatchPathRemove(norad);
+    if (T.hover == norad) T.hover = null;
+    if (T.selected == norad) birdWatchInfoPos.style.visibility = "hidden";
+  }
 }
 
 // Main button panel: "Toggle Satellite Tracking"; toggling it on opens the panel even if it was collapsed

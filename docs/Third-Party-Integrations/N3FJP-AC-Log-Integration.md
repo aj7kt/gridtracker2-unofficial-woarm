@@ -9,11 +9,11 @@
 
 In AC Log, open **Settings → Application Program Interface (API)...** and tick **TCP API Enabled (server)**. Note the **Port** (1100 by default).
 
-![AC Log API settings](../img/ACLog_API_Menu.png){width=300px}
+![AC Log API settings](../img/ACLog_API_Menu.jpg){width=300px}
 
 For the connected features, set up rig control in AC Log under **Settings → Rig Interface**. See the N3FJP website for details.
 
-![AC Log rig interface settings](../img/ACLog_Rig_Interface.png){width=520px}
+![AC Log rig interface settings](../img/ACLog_Rig_Interface.jpg){width=520px}
 
 ## GridTracker2 Settings
 
@@ -27,7 +27,7 @@ In [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-
 * **Connect:** links GridTracker2 to AC Log. A dot next to it shows green while connected, red while not.
   * **Enable Rig Control:** clicking a spot tunes your rig through AC Log. Shown while Connect is ticked; needs rig control set up in AC Log.
 
-![The Logging tab](../img/GT2_Settings_Logging.png)
+![The Logging tab](../img/GT2_Settings_Logging.jpg)
 
 ## Logging From WSJT-X
 
@@ -44,7 +44,7 @@ With **Connect** ticked:
 
 Set the Map View Filters' Band and Mode to **Auto** so the map follows AC Log.
 
-![GridTracker2 connected to AC Log](../img/GT2_ACL_Connected_Main_Screen.png)
+![GridTracker2 connected to AC Log](../img/GT2_ACL_Connected_Main_Screen.jpg)
 
 There is a short delay before frequency and band changes show, depending on the polling rate set in AC Log's Rig Interface settings.
 

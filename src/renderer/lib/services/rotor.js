@@ -2,8 +2,8 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Rotor Control (Settings -> Features -> Service): an antenna rotator, on a serial port (Web Serial, built into Chromium: no native
-// module) or through Hamlib's rotctld over the network. Pointed at a heading (Ctrl-click on the map, the roster's Aim Rotator) and, with
+// Rotor Control (Settings -> Features -> Service): an antenna rotator, on a serial port (serialPorts.js: Node's serialport, else Web
+// Serial) or through Hamlib's rotctld over the network. Pointed at a heading (Ctrl-click on the map, the roster's Aim Rotator) and, with
 // Follow Satellite, at BirdWatch's selected satellite while it is up, and at where it will rise a few minutes before. Its position is
 // read every couple of seconds. Protocols: Yaesu GS-232A/B, Easycomm II, SPID Rot2Prog, rotctld, and CatRotator / PstRotator (UDP, the
 // <PST> messages; what was the service of its own before, its settings carried over: rotorMigrate)
@@ -20,6 +20,7 @@ GT.rotor = {
   sent: null,         // the last target sent: { az, el, at }
   pending: "",        // text received that isn't a whole line yet
   bytes: [],          // the same for a binary protocol
+  spid: null,         // SPID: the controller's resolution, { ph, pv } (pulses a degree), as its answers say it (null until one has come)
   pollTimer: null,
   retryTimer: null,
   generation: 0       // a connect under way is the newest one; an older one that finishes is ignored
@@ -31,22 +32,25 @@ const ROTOR_RETRY_MS = 10000;
 const ROTOR_FOLLOW_MS = 2000;
 // Before a pass: pointed at where the satellite will rise, this long before its AOS
 const ROTOR_PREAIM_MS = 5 * 60000;
-const ROTOR_BAUDS = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200];
+// (600: the SPID Rot2Prog's only one)
+const ROTOR_BAUDS = [600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200];
 
 function rotorPad3(n)
 {
   return String(Math.round(n)).padStart(3, "0");
 }
 
-// A Rot2Prog frame: 0x57, the azimuth as four ASCII digits of (360 + az) * PH, PH, the same for the elevation, PV, the command, 0x20
-function rotorSpidFrame(az, el, command)
+// A Rot2Prog frame: 0x57, the azimuth as four ASCII digits of (360 + az) * PH, PH, the same for the elevation, PV, the command, 0x20. PH
+// and PV are the controller's resolution (pulses a degree, as its answers say it): it reads the digits in its own, whatever the frame says
+function rotorSpidFrame(az, el, command, ph = 1, pv = 1)
 {
   const digits = (value) => [...String(Math.round(value)).padStart(4, "0")].map((d) => d.charCodeAt(0));
-  return new Uint8Array([0x57, ...digits(360 + az), 0x01, ...digits(360 + el), 0x01, command, 0x20]);
+  return new Uint8Array([0x57, ...digits((360 + az) * ph), ph, ...digits((360 + el) * pv), pv, command, 0x20]);
 }
 
 // Each protocol: serial or network, text lines or binary frames; what to send to point and to ask the position, and how the answer reads
-//   set(az, el): el is null for a controller without one (or not known yet: the azimuth alone is safe for every one)
+//   set(az, el, R): el is null for a controller without one (or not known yet: the azimuth alone is safe for every one); null when it
+//                   can't be said yet (SPID: until the controller's resolution is known)
 //   parse(line | bytes): { az, el } (el null when the answer has none) or null when it isn't a position
 const ROTOR_PROTOCOLS = {
   gs232: {
@@ -78,14 +82,17 @@ const ROTOR_PROTOCOLS = {
     name: "SPID Rot2Prog",
     serial: true,
     binary: true,
-    set: (az, el) => rotorSpidFrame(az, el === null ? 0 : el, 0x2f),
+    // In the controller's resolution, once an answer has said it (the poll goes first, as the link opens)
+    set: (az, el, R) => (R && R.spid ? rotorSpidFrame(az, el === null ? 0 : el, 0x2f, R.spid.ph, R.spid.pv) : null),
     poll: () => rotorSpidFrame(0, 0, 0x1f),
-    // 12 bytes: 0x57, H1 H2 H3 H4 (each 0 to 9), PH, V1 V2 V3 V4, PV, 0x20: the azimuth is H / PH - 360
-    parse: (bytes) =>
+    // 12 bytes: 0x57, H1 H2 H3 H4 (each 0 to 9), PH, V1 V2 V3 V4, PV, 0x20: the azimuth is H1 * 100 + H2 * 10 + H3 + H4 / 10 - 360, in
+    // tenths whatever the resolution (as Hamlib reads it); PH and PV the resolution, kept for the sets
+    parse: (bytes, R) =>
     {
       if (bytes.length < 12 || bytes[0] != 0x57) return null;
-      const value = (at, pulses) => (bytes[at] * 1000 + bytes[at + 1] * 100 + bytes[at + 2] * 10 + bytes[at + 3]) / (pulses || 1) - 360;
-      return { az: value(1, bytes[5]), el: value(6, bytes[10]) };
+      const value = (at) => bytes[at] * 100 + bytes[at + 1] * 10 + bytes[at + 2] + bytes[at + 3] / 10 - 360;
+      R.spid = { ph: bytes[5] || 1, pv: bytes[10] || 1 };
+      return { az: value(1), el: value(6) };
     }
   },
   rotctld: {
@@ -244,10 +251,18 @@ function rotorFollowChanged()
   GT.rotor.sent = null;
 }
 
-// The roster's Aim Rotator menu items show while the service is on
+// The roster's Aim Rotator menu items show while the service is on (a roster window reloading reads it as it loads)
 function rotorAimingChanged()
 {
-  if (GT.callRosterWindowInitialized) GT.callRosterWindowHandle.window.setPstrotatorEnable(GT.settings.rotor.enable);
+  if (!GT.callRosterWindowInitialized) return;
+  try
+  {
+    GT.callRosterWindowHandle.window.setPstrotatorEnable(GT.settings.rotor.enable);
+  }
+  catch (e)
+  {
+    console.error(e);
+  }
 }
 
 // The Settings window on Radios, where Rotor Control's and Rig Control's settings are (a click on the rotor's status, or the Rig box, in
@@ -293,7 +308,7 @@ function rotorSetStatus(status, error = "")
   rotorStatusRender();
 }
 
-// ---- The serial port: through serialPorts.js (the picker, the grant at each start, the Linux group check)
+// ---- The serial port: through serialPorts.js (the picker, finding the port kept at each start, the Linux group check)
 
 // The CatRotator / PstRotator service that was its own (settings.pstrotator: enable, ip, port) is Rotor Control with that protocol now:
 // carried over once, the old enable cleared so it isn't again. Its address and port are taken even when it was off, as long as
@@ -365,6 +380,8 @@ function rotorDisconnect()
     link.destroy();
     return Promise.resolve();
   }
+  // Node's serialport (serialPorts.js): closed once what was written is out; the promise is for whoever opens next, as below
+  if (link.node) return link.close().catch(() => {});
   if (typeof link.getInfo == "function")
   {
     // A serial port only closes once its reader has let go: the read loop is stopped first, then the port is closed. The promise
@@ -389,6 +406,7 @@ async function rotorConnect()
   const S = GT.settings.rotor;
   R.az = R.el = null;
   R.hasEl = null;
+  R.spid = null;
   if (!S.enable || S.connect === false)
   {
     rotorSetStatus("off");
@@ -434,19 +452,35 @@ async function rotorOpenSerial(generation)
     R.retryTimer = nodeTimers.setTimeout(rotorConnect, ROTOR_RETRY_MS);
     return;
   }
-  await port.open({ baudRate: Number(S.baud) || 9600, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" });
+  const options = { baudRate: Number(S.baud) || 9600, dataBits: Number(S.dataBits) == 7 ? 7 : 8, stopBits: Number(S.stopBits) == 2 ? 2 : 1, parity: ["none", "even", "odd"].includes(S.parity) ? S.parity : "none" };
+  // Node's serialport: DTR and RTS high, as a Web Serial port has them (Chromium asserts both as it opens it, and they stay so), as a
+  // controller or its interface may want them (one powered from them)
+  if (port.node) Object.assign(options, { dtr: true, rts: true });
+  await port.open(options);
   if (generation != R.generation)
   {
     port.close().catch(() => {});
     return;
   }
   R.link = port;
-  R.writer = port.writable.getWriter();
+  R.writer = port.node ? port.writer : port.writable.getWriter();
   port.addEventListener("disconnect", () =>
   {
     if (generation == R.generation) rotorFail("disconnected");
   });
-  rotorReadSerial(port, generation);
+  if (port.node)
+  {
+    // What comes in (Node's), and an error the port reports, as a Web Serial read's
+    port.ondata = (bytes) =>
+    {
+      if (generation == R.generation) rotorReceive(bytes);
+    };
+    port.addEventListener("error", (e) =>
+    {
+      if (generation == R.generation) rotorFail(e.message);
+    });
+  }
+  else rotorReadSerial(port, generation);
   rotorConnected();
 }
 
@@ -593,7 +627,8 @@ function rotorPosition(position)
 
 // ---- Pointing
 
-// The rotator turned to az (and el, where it has one); `follow` is the satellite tracking: not too often, and only for a change
+// The rotator turned to az (and el, where it has one); `follow` is the satellite tracking: not too often, and only for a change. False
+// when nothing was sent (not connected, too soon, or the protocol can't say it yet)
 function rotorPoint(az, el, follow = false)
 {
   const R = GT.rotor;
@@ -607,7 +642,9 @@ function rotorPoint(az, el, follow = false)
     if (Math.abs(az - R.sent.az) < 1 && Math.abs((el === null ? 0 : el) - (R.sent.el === null ? 0 : R.sent.el)) < 1) return false;
   }
   // Only an elevation the controller has (unknown yet: the azimuth alone, which every one takes)
-  rotorWrite(R.protocol.set(az, R.hasEl ? el : null));
+  const data = R.protocol.set(az, R.hasEl ? el : null, R);
+  if (data === null) return false;
+  rotorWrite(data);
   R.sent = { az: az, el: el, at: now };
   return true;
 }

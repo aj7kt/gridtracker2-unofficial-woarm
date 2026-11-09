@@ -9,8 +9,10 @@
 
 // How often the start looks again while it waits for a stream's first audio (its rate is known from it)
 const MMD_NET_WAIT_MS = 500;
-// The audio kept while the context is made (s): the queue starts from it
-const MMD_NET_EARLY_S = 1;
+// The audio kept while the context is made (s): the queue starts from it, so only the newest, as much as the worklet's pcm-in holds its
+// queue at (NET_TARGET_S). More (the rate is known only at the second look, MMD_NET_WAIT_MS in) would be read up to 0.5% fast for a
+// minute or two to come down to it, slanting a picture or a chart begun meanwhile
+const MMD_NET_EARLY_S = 0.2;
 // The pieces an output's samples are handed over in (s)
 const MMD_NET_OUT_CHUNK_S = 0.02;
 

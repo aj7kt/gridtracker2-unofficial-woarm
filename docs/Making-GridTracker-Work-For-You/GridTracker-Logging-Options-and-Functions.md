@@ -6,7 +6,7 @@ No. GridTracker2 *displays* your QSOs; it isn't meant to be the master record of
 
 All of this is set in [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab).
 
-![The Logging tab](../img/GT2_Settings_Logging.png)
+![The Logging tab](../img/GT2_Settings_Logging.jpg)
 
 ## Where Your Logbook Comes From
 

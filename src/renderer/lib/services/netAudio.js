@@ -61,7 +61,7 @@ function netAudioNormalize(s)
   return s;
 }
 
-// An IPv4 multicast address (224.0.0.0 to 239.255.255.255)
+// An IPv4 multicast address (224.0.0.0 to 239.255.255.255): the one check, the protocols' too (netAudioRtp.js)
 function netAudioIsMulticast(host)
 {
   const m = /^(\d{1,3})\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.exec(String(host).trim());
@@ -368,6 +368,9 @@ function netAudioRemove(el)
   netAudioSettingsRender();
 }
 
+// Connect checked or unchecked: the stream opened or closed. Checked, the decoder's device menus are made again (they list connected
+// ones only), and a decoder whose Input Device it is goes to it. Unchecked, the decoder isn't told: one on it hears silence until it is
+// checked again (told, it would go to the first device meanwhile, and its pick could be taken for good by a stream of the same name)
 function netAudioConnectChanged(el)
 {
   const s = netAudioOfEl(el);
@@ -375,6 +378,7 @@ function netAudioConnectChanged(el)
   s.connect = el.checked;
   netAudioBoxRender(s);
   netAudioSync(s);
+  if (s.connect === true) netAudioDevicesChanged();
 }
 
 // A field changed: kept, the stream opened again with it. Another protocol: its own port (and the defaults of the fields the stream

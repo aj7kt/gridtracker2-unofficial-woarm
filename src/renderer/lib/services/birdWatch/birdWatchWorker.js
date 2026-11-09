@@ -25,7 +25,8 @@
 //   best is when the lower of the two elevations is highest; my / their: { startAz, endAz, maxEl, maxElTime } over the window;
 //   myPass / theirPass: { aos, los, maxEl, clipped } the whole pass it is in (clipped: cut by the search's ends). Elevations to
 //   0.1 degree, azimuths to 1 degree, whole ms; start is the request time when both were already up (inProgress). Station
-//   alt in meters, minEl 0 by default; windows shorter than minSeconds are left out; hours as for "passes" (up to 72).
+//   alt in meters, minEl 0 by default; windows shorter than minSeconds are left out (one under way by its whole length, from the
+//   later of the two passes' AOS); hours as for "passes" (up to 72).
 
 importScripts("../../third-party/satellite.js");
 
@@ -386,7 +387,10 @@ function findMutual(m)
       if (pass.los <= from) continue;
       for (const span of stationSpans(sat, station, from, pass.los))
       {
-        if (span.end - span.start >= shortest) windows.push(mutualWindow(sat, station, pass, span, start, end));
+        // Its whole length: one under way began before now, when the later of the two passes rose (not just the time left of it)
+        const w = mutualWindow(sat, station, pass, span, start, end);
+        const began = w.inProgress ? Math.max(w.myPass.aos, w.theirPass.aos) : w.start;
+        if (w.end - began >= shortest) windows.push(w);
       }
     }
   }
@@ -576,8 +580,17 @@ function scanSats(m)
     {
       const sat = W.sats.get(Number(norad));
       if (!sat) continue;
-      // The first pass that is in AOS now for long enough, or begins within the window
-      const pass = computePasses(sat, start, start + window, W.minEl).filter((p) => p.los > start).find((p) => (p.aos <= start ? p.los >= start + stay : p.aos <= start + window));
+      // The first pass that is in AOS now for long enough, or begins within the window. One whose passes can't be worked out (its
+      // element set stops propagating part way through one, as a decaying satellite's does) is left out, not the whole scan with it
+      let pass = null;
+      try
+      {
+        pass = computePasses(sat, start, start + window, W.minEl).filter((p) => p.los > start).find((p) => (p.aos <= start ? p.los >= start + stay : p.aos <= start + window));
+      }
+      catch (e)
+      {
+        continue;
+      }
       if (pass) found.push({ norad: Number(norad), aos: pass.aos, los: pass.los, maxEl: pass.maxEl, aosAz: pass.aosAz, up: pass.aos <= start });
     }
   }

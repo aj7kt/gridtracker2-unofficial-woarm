@@ -178,8 +178,8 @@ function mmdSstvMessage(kind, m)
     if (SSTV.live == pic) SSTV.live = null;
     // Nothing of it ever drawn: off the strip
     if (pic.rows == 0) SSTV.pictures = SSTV.pictures.filter((p) => p != pic);
-    // Saved however much of it came (not a test signal's: mmdTest.js)
-    else if (GT.settings.MMD.sstvSave && !mmdTestHeard(pic.at, Date.now())) mmdSstvSave(pic, null);
+    // Saved however much of it came, with its mode's Save (SSTV's Save Pictures, WEFAX's Save Charts); not a test signal's (mmdTest.js)
+    else if (GT.settings.MMD[pic.kind == "wefax" ? "wefaxSave" : "sstvSave"] && !mmdTestHeard(pic.at, Date.now())) mmdSstvSave(pic, null);
     mmdSstvStrip();
     mmdSstvHead();
   }
@@ -355,7 +355,8 @@ function mmdSstvHead()
   sstvHeadText.textContent = text;
 }
 
-// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Delete
+// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Delete (From Session; its saved files to the Recycle Bin or
+// Trash; Both: those two only while a file it was saved to is still there)
 function mmdSstvMenu(event, pic)
 {
   event.preventDefault();
@@ -364,6 +365,7 @@ function mmdSstvMenu(event, pic)
   const remote = window.require("@electron/remote");
   // Rotate: turned from as it is now, or back as it was received
   const turn = (by) => ({ click: () => mmdSstvRotate(pic, by == null ? null : ((pic.rotate || 0) + by) % 360) });
+  const saved = mmdSstvSavedFiles(pic).length > 0;
   const menu = remote.Menu.buildFromTemplate([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdSstvSaveAs(pic) },
     { label: I18N("cwViewer.picture.copy.label"), click: () => mmdSstvCopy(pic) },
@@ -377,9 +379,44 @@ function mmdSstvMenu(event, pic)
       ]
     },
     { type: "separator" },
-    { label: I18N("cwViewer.picture.delete.label"), click: () => mmdSstvDelete(pic) }
+    {
+      label: I18N("cwViewer.picture.delete.label"),
+      submenu: [
+        { label: I18N("cwViewer.picture.deleteSession.label"), click: () => mmdSstvDelete(pic) },
+        { label: I18N(process.platform == "win32" ? "cwViewer.picture.deleteFile.label" : "cwViewer.picture.deleteFileTrash.label"), enabled: saved, click: () => mmdSstvTrash(pic) },
+        { label: I18N("cwViewer.picture.deleteBoth.label"), enabled: saved, click: () => mmdSstvTrash(pic).then(() => mmdSstvDelete(pic)) }
+      ]
+    }
   ]);
   menu.popup({ window: remote.getCurrentWindow() });
+}
+
+// The files a picture was saved to (by Save Picture... or Save Pictures) that are still there
+function mmdSstvSavedFiles(pic)
+{
+  return (pic.files || []).filter((file) => fs.existsSync(file));
+}
+
+// A picture's saved files to the Recycle Bin (Trash elsewhere: undone from there), the picture left in the session, not saved now
+async function mmdSstvTrash(pic)
+{
+  const shell = window.require("electron").shell;
+  for (const file of mmdSstvSavedFiles(pic))
+  {
+    try
+    {
+      await shell.trashItem(file);
+    }
+    catch (e)
+    {
+      mmdStatus(I18N("cwViewer.sstv.trashFailed") + " " + e.message, true);
+    }
+  }
+  pic.files = mmdSstvSavedFiles(pic);
+  pic.saved = pic.files.length ? pic.files[pic.files.length - 1] : null;
+  mmdSstvStrip();
+  mmdSstvDraw();
+  mmdSstvHead();
 }
 
 // A turned picture's thumbnail made again with the rows that have come since, at most every SSTV_THUMB_TURNED_MS
@@ -444,11 +481,17 @@ function mmdSstvDelete(pic)
   mmdSstvHead();
 }
 
+// The folder a picture is saved in by its mode: a WEFAX chart in WEFAX's Save Charts folder, an SSTV picture in Save Pictures'
+function mmdSstvFolderOf(pic)
+{
+  return pic.kind == "wefax" ? window.opener.mmDecoderWefaxFolder() : window.opener.mmDecoderSstvFolder();
+}
+
 function mmdSstvSaveAs(pic)
 {
   const remote = window.require("@electron/remote");
   const file = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
-    defaultPath: path.join(window.opener.mmDecoderSstvFolder(), mmdSstvFileName(pic)),
+    defaultPath: path.join(mmdSstvFolderOf(pic), mmdSstvFileName(pic)),
     filters: [{ name: "PNG", extensions: ["png"] }]
   });
   if (file) mmdSstvSave(pic, file);
@@ -467,12 +510,14 @@ function mmdSstvSave(pic, file)
 {
   try
   {
-    if (!file) file = path.join(window.opener.mmDecoderSstvFolder(), mmdSstvFileName(pic));
+    if (!file) file = path.join(mmdSstvFolderOf(pic), mmdSstvFileName(pic));
     // Its folder made first, whichever it is (one taken away since, or never made)
     fs.mkdirSync(path.dirname(file), { recursive: true });
     const data = mmdSstvPng(pic).split(",")[1];
     fs.writeFileSync(file, window.require("buffer").Buffer.from(data, "base64"));
     pic.saved = file;
+    // Every file it was saved to (Delete's File takes them all)
+    pic.files = (pic.files || []).filter((f) => f != file).concat(file);
     mmdSstvDraw();
   }
   catch (e)

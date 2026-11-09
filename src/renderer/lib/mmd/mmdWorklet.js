@@ -300,6 +300,11 @@ const NET_MAX_TRIM = 0.005;
 // How hard the fill's distance from the target trims the rate (per second of it), and the smoothing of the fill (s)
 const NET_TRIM_GAIN = 0.02;
 const NET_SMOOTH_S = 4;
+// The silence played since the queue ran dry while it played is counted (owed, at most this long, s): the protocols fill a stretch lost on
+// the network with as much silence once the stream is back (up to a second), which would have the gap heard twice and the timeline late
+// by it. So much of the silence that comes first is let go (all-zero pieces, before the stream's audio is back); audio ends the count,
+// so a stream that comes in bursts loses nothing
+const NET_OWED_MAX_S = 1;
 
 class PcmInProcessor extends AudioWorkletProcessor
 {
@@ -316,11 +321,32 @@ class PcmInProcessor extends AudioWorkletProcessor
     this.frac = 0;
     this.playing = false;
     this.fill = NET_TARGET_S;
+    // Run dry while it played, and the silence played since (in the stream's samples: NET_OWED_MAX_S)
+    this.dry = false;
+    this.owed = 0;
     this.port.onmessage = (event) => this.push(event.data);
   }
 
   push(samples)
   {
+    // Back after running dry: the silence the gap is filled with let go, as much as was played meanwhile; the stream's audio ends the count
+    if (this.dry)
+    {
+      let zeros = true;
+      for (let i = 0; i < samples.length && zeros; i++) if (samples[i] != 0) zeros = false;
+      if (!zeros)
+      {
+        this.dry = false;
+        this.owed = 0;
+      }
+      else
+      {
+        const skip = Math.min(samples.length, Math.floor(this.owed));
+        this.owed -= skip;
+        if (skip == samples.length) return;
+        samples = samples.slice(skip);
+      }
+    }
     const size = this.queue.length;
     for (let i = 0; i < samples.length; i++)
     {
@@ -362,7 +388,10 @@ class PcmInProcessor extends AudioWorkletProcessor
       // Four samples needed around where it reads: the one before, the two it is between, the one after
       if (!this.playing || this.count < 4)
       {
+        // (Run dry while it played: the silence from here on counted, until the stream's audio is back)
+        if (this.playing) this.dry = true;
         this.playing = false;
+        if (this.dry) this.owed = Math.min(this.owed + this.base, this.rate * NET_OWED_MAX_S);
         out[j] = 0;
         continue;
       }

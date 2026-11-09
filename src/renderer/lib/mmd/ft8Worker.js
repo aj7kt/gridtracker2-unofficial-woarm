@@ -11,7 +11,7 @@
 //   { type: "init", wasm, audio: [fmin, fmax], passes, prefixes }
 //   { type: "decode", start, samples, more, myCall, focus, deadline (Date.now() ms: candidates left untried after it), plain (Normal: ft8_lib
 //   as it comes, ft8wasm.c's ft8_set_plain), ft4 (FT4 instead of FT8: ft8_set_ft4), shift (the time skew, handed back) }  ->
-//   { type: "decoded", start, more, shift, count, text, ms, threads }
+//   { type: "decoded", start, more, shift, ft4 (handed back: the page drops a period of the mode it has left), count, text, ms, threads }
 // A helper's (role "helper"), each answered with { type: "done", id, recs? }:
 //   { type: "init", role: "helper", wasm, audio, passes }, { type: "begin", id, samples, more, myCall, focus, plain, ft4 },
 //   { type: "try", id, pass, from, step }, { type: "subtract", id, recs, count, subtract } (kept for guesses; taken out if subtract),
@@ -202,8 +202,8 @@ async function ft8Decode(data)
   const bytes = new Uint8Array(X.memory.buffer, X.ft8_output(), 6400);
   let text = "";
   for (let k = 0; bytes[k]; k++) text += String.fromCharCode(bytes[k]);
-  // ms: how long it took, on threads; the time skew (mmDecoder.js) handed back as it came
-  postMessage({ type: "decoded", start: data.start, more: data.more, shift: data.shift || 0, count: X.ft8_given(), text: text, ms: Math.round(performance.now() - began), threads: all, spent: Object.fromEntries(Object.entries(spent).map(([k, v]) => [k, Math.round(v)])) });
+  // ms: how long it took, on threads; the time skew (mmDecoder.js) and the mode handed back as they came
+  postMessage({ type: "decoded", start: data.start, more: data.more, shift: data.shift || 0, ft4: !!data.ft4, count: X.ft8_given(), text: text, ms: Math.round(performance.now() - began), threads: all, spent: Object.fromEntries(Object.entries(spent).map(([k, v]) => [k, Math.round(v)])) });
 }
 
 // This worker's failed readings of the decode just done

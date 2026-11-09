@@ -100,8 +100,10 @@ function mmdDetectStart()
   DETECT.channels = {};
   DETECT.sstvPics = {};
   mmdDetectResetAll();
-  // A test signal playing stops (it was the last mode's)
+  // A test signal playing stops (it was the last mode's); a picture being sent, or Tune, too (its Send tab is hidden meanwhile, and the
+  // status line is Detect Modes', mmdSstvTx.js)
   mmdTestStop();
+  if (mmdSstvTxKeying()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
   // The mode's own list hidden, the signals found listed in its place
   for (const el of [cwList, ft8List, packetList, sstvView, satList, hellView, navtexList, wsprList]) el.style.display = "none";
   detectList.style.display = "";

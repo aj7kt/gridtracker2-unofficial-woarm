@@ -110,16 +110,19 @@ function birdWatchSyncUpdate()
 // ---- Download
 
 // One HTTP or HTTPS request (a GET unless a method and body are given). Resolves { buffer }; rejects on anything else (with
-// retryAfter in ms when the server asks us to wait)
+// retryAfter in ms when the server asks us to wait). A login (Authorization) goes only to the server it was given for: not on to
+// another host, port or scheme a redirect points to (as browsers and curl do)
 function satRequest(url, { timeout = 60000, maxBytes = 64 * 1024 * 1024, method = "GET", headers: extra = {}, body = null } = {})
 {
   return new Promise((resolve, reject) =>
   {
     let redirects = 0;
+    const origin = new URL(url).origin;
     const go = (target) =>
     {
       const u = new URL(target);
       const headers = { "User-Agent": gtUserAgent, "Accept-Encoding": "gzip", ...extra };
+      if (u.origin != origin) delete headers.Authorization;
       const secure = u.protocol == "https:";
       const req = window.require(secure ? "https" : "http").request({ method: method, host: u.hostname, port: Number(u.port) || (secure ? 443 : 80), path: u.pathname + u.search, headers: headers }, (res) =>
       {

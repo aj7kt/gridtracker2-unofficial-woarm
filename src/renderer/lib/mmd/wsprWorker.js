@@ -498,6 +498,8 @@ function wsprCallOf(n)
   return [c1, c2, c3, c4, c5, c6].map((v) => WSPR_CHARS[v] || " ").join("");
 }
 
+// A Type 2 message's call with its prefix (n3 under 60000: up to three characters) or suffix (one character, or two digits 10 to 99 sent
+// as 26 more than their number, as WSJT-X packs them); null for none of these
 function wsprPrefixed(n3, call)
 {
   if (n3 < 60000)
@@ -512,7 +514,7 @@ function wsprPrefixed(n3, call)
   }
   const nc = n3 - 60000;
   if (nc < 36) return call + "/" + WSPR_CHARS[nc];
-  if (nc < 136) return call + "/" + String(nc - 36).padStart(2, "0");
+  if (nc <= 125) return call + "/" + String(nc - 26);
   return null;
 }
 
@@ -554,10 +556,10 @@ function wsprUnpack(bits)
     if (!full || !wsprCallOk(call)) return null;
     return { call: full, grid: "", power, message: full + " " + power };
   }
-  // Type 3: a hashed call, a 6-character locator (sent in the call's place, turned by one), its power
+  // Type 3: a hashed call, a 6-character locator (sent in the call's place, turned by one: its first character last), its power
   const power = -(ntype + 1);
   if (!WSPR_POWERS.has(power)) return null;
-  const grid = (call6.slice(1) + call6[0]).trim();
+  const grid = (call6[5] + call6.slice(0, 5)).trim();
   if (!/^[A-R]{2}[0-9]{2}[A-X]{2}$/.test(grid)) return null;
   return { call: "<...>", grid, power, message: "<...> " + grid + " " + power };
 }

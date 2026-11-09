@@ -73,6 +73,10 @@
         ValidateCallsign(lookupCallsignInput, null);
         loadChildWindowI18n();
         registerCutAndPasteContextMenu();
+        // What lookup.js writes here, and a photo or flag loaded (or not), changes the content's size: the window follows it
+        new MutationObserver(lookupFit).observe(lookupWrap, { childList: true, subtree: true, characterData: true });
+        lookupWrap.addEventListener("load", lookupFit, true);
+        lookupWrap.addEventListener("error", lookupFit, true);
         GT.lookupWindowInitialized = true;
       }
 
@@ -86,35 +90,42 @@
         }
       }
 
-      function Resize() {
-        if ( GT.lookupWindowInitialized == false) return;
-        
-        lookupBoxDiv.style.height = window.innerHeight + "px";
+      // The window fitted to what it shows, as the transmitters window is (birdWatchTransmitterWindowUpdate): the content's natural size,
+      // with a vertical scroll bar's room (it shows when the screen is too small for it all); the main process sets the window's content to
+      // that, no bigger than fits on the screen (fitWin). Each time the content changes, and the zoom. Not before the main process has
+      // placed the window (it puts the saved size back then), nor while a lookup is on its way (its "please wait" in place of the card),
+      // so the window doesn't shrink for that and grow again
+      let lookupPlaced = false;
+      let lookupFitRatio = 0;
+
+      function lookupFit() {
+        if (!lookupPlaced || lookupInfoDiv.querySelector(".lookupWait")) return;
+        lookupFitRatio = window.devicePixelRatio;
+        const box = lookupWrap.getBoundingClientRect();
+        const width = Math.ceil(box.width) + 16;
+        const height = Math.ceil(box.height);
+        if (Math.abs(window.innerWidth - width) > 1 || Math.abs(window.innerHeight - height) > 1) electron.ipcRenderer.send("fitWin", "gt_lookup", width, height, false);
       }
+
+      electron.ipcRenderer.on("windowPlaced", () => {
+        lookupPlaced = true;
+        lookupFit();
+      });
+
+      // Zoomed in or out (the content's size on the screen changes with it); not the user's own resizing, which is kept until the content
+      // changes
+      window.addEventListener("resize", () => {
+        if (window.devicePixelRatio != lookupFitRatio) lookupFit();
+      });
     </script>
   </head>
 
-  <body id="mainBody" onresize="Resize();" onload="init();">
-    <div
-      id="rootInfoDiv"
-      style="
-        margin: 0px;
-        right: 0px;
-        left: 0px;
-        bottom: 0px;
-        top: 3px;
-        display: block;
-        background-color: black;
-        padding: 0px;
-        text-align: center;
-        vertical-align: middle;
-        position: absolute;
-        z-index: 600;
-      "
-      class="roundBorder"
-    >
-      <div id="lookupBoxDiv" class="lookupContent" style="display: block; overflow: auto; overflow-x: hidden">
-        <div>
+  <body id="mainBody" onload="init();">
+    <!-- Fills the window, and scrolls what doesn't fit in it (a window made smaller than its content) -->
+    <div id="lookupBoxDiv">
+      <!-- The content at its natural size, which the window is fitted to (lookupFit) -->
+      <div id="lookupWrap">
+        <div class="lookupSearch">
           <label data-i18n="lookup.callsign.label" for="lookupCallsignInput">Callsign</label>
           <input
             id="lookupCallsignInput" type="text" class="inputTextValue" size="12" onkeyup="if (event.keyCode == 13) lookupButtonID.click();" oninput="ValidateCallsign(this,null);"/>
@@ -122,13 +133,18 @@
             data-i18n="lookup.callsign.button"
             id="lookupButtonID"
             title="Lookup Callsign"
-            class="button"
+            class="lookupGo"
             onclick="if ( ValidateCallsign(lookupCallsignInput,null) ) { lookupCallsign(lookupCallsignInput.value, null, false);}">
             Lookup
           </div>
         </div>
+        <!-- Written by lookup.js: the acknowledgement, Clear and Generate Messages, the station's card (or a message in its place), your log
+             for the call, and the Details -->
+        <div id="lookupAckDiv"></div>
+        <div id="lookupActionsDiv"></div>
+        <div data-i18n="lookup.noinfo" id="lookupInfoDiv">No Callsign information to display, try a lookup!</div>
         <div id="lookupLocalDiv"></div>
-        <div data-i18n="lookup.noinfo" id="lookupInfoDiv">No Callsign information to display<br />try a lookup!</div>
+        <div id="lookupDetailsDiv"></div>
       </div>
     </div>
   </body>

@@ -6,8 +6,8 @@ Pick a mode in the **Mode** menu on the window's second line. Each mode below ha
 
 A few things work the same way in most modes:
 
-* **Frequency menu:** each mode's usual frequencies, beside the **Mode** menu. It shows only when **Rig Control** is on (the window's **Settings** → **General**), the mode's VFO is connected, and the mode's **Set Frequency** or **Set Mode** is ticked (the window's **Settings** → **Decoders**; both are on unless you turn them off). Picking a frequency tunes the rig there (**Set Frequency**) and sets the rig's mode (**Set Mode**). For USB and LSB, a VFO with **SSB Data** ticked (Settings → Rig Control) is set to its data mode instead. The frequencies come from the window's **Band Plans** tab, where you can edit them.
-* **Right-click to tune:** in every mode except FT8, FT4 and WSPR, with **Rig Control** on, right-click the waterfall or the scale above it to tune the rig to that frequency.
+* **Frequency menu:** each mode's usual frequencies, beside the **Mode** menu. It shows only when **Rig Control** is on (the window's **Settings** → **General**), the mode's VFO is connected, and the mode's **Set Frequency** or **Set Mode** is ticked (the window's **Settings** → **Decoders**; both are on unless you turn them off). Picking a frequency tunes the rig there (**Set Frequency**) and sets the rig's mode (**Set Mode**). For USB and LSB, a VFO with **SSB Data** ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window's **Band Plans** tab, where you can edit them.
+* **Tuning lock:** with **Rig Control** on, a lock sits before the rig's frequency on the divider: gold and closed while tuning is locked (as it starts), grey and open while unlocked. Click it to unlock: the mouse wheel on the waterfall then tunes the rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz). In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock. A middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed and nothing is sent to the rig.
 * **Right-click a line:** in CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia, right-click a decoded line and pick **Delete** to remove it. A station that is still sending is listed again with what it sends next.
 
 ## CW
@@ -20,7 +20,6 @@ CW decodes every CW signal in the passband at once, each on its own line. It fol
 * A **CQ** and the call after it are highlighted, and the line is shaded green.
 * Text already decoded is corrected as the decoder learns an operator's timing, for example at the start of a transmission or after a change of speed. Corrected text glows for a moment.
 * Click a line, or a signal on the waterfall, to pin it.
-* **Right-click to tune** puts the signal you clicked at your rig's CW pitch.
 * **Frequency menu:** the QRP calling frequencies from 160 to 10 meters, the 6 meter CW calling frequency and the 2 meter CW center of activity. **Set Mode** sets the rig to CW.
 * With **Follow BirdWatch**, a satellite's CW beacon switches the decoder to CW.
 
@@ -155,7 +154,7 @@ WEFAX receives weather fax charts from the coast and weather stations that still
   * Click the chart's real left edge, on the chart coming in, to line it up there.
 * The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
 * Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways) or **Delete**. A rotated chart is saved and copied as shown.
-* **Save Pictures** (under **SSTV** in the window's **Settings** → **Decoders**) saves charts too, as SSTV's pictures are saved.
+* **Save Charts** (under **WEFAX** in the window's **Settings** → **Decoders**; off at first) saves each chart as a PNG when it ends, however much of it came. **Folder** shows where they go (`WEFAX Charts` at first, beside SSTV's `SSTV Pictures`; click it to open it); **Choose** picks another.
 * **Frequency menu:** the stations heard around the world (NOAA's, Germany's, Japan's, Korea's, Australia's, the UK's and others), each named with its assigned frequency and its hours where it has them. **Set Mode** sets the rig to USB.
 
 ### Auto-Tune

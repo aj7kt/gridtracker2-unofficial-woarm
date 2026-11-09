@@ -301,28 +301,36 @@ function icomLanStream(C, name)
   return T;
 }
 
-// The stream's socket to the rig's port, its id from the address and port it goes out from, and its hello begun
+// The stream's socket to the rig's port, its id from the address and port it goes out from, and its hello begun. A port out of range
+// (the VFO's box takes up to 99999) is refused by connect at once: said as a failure (rigFail), as the other protocols' are
 function icomLanStreamConnect(T, port)
 {
   const C = T.C;
   T.port = port;
-  T.socket.connect(port, C.host, (e) =>
+  try
   {
-    if (C.closed) return;
-    if (e)
+    T.socket.connect(port, C.host, (e) =>
     {
-      icomLanFail(C, e.message);
-      return;
-    }
-    const local = T.socket.address();
-    let ip = local.address.split(".").map(Number);
-    if (ip.length != 4 || ip.every((x) => x == 0)) ip = [C.localIp >>> 24, (C.localIp >>> 16) & 0xff, (C.localIp >>> 8) & 0xff, C.localIp & 0xff];
-    if (T.name == "ctl") C.localIp = ((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3]) >>> 0;
-    T.localPort = local.port;
-    T.myId = ((ip[2] << 24) | (ip[3] << 16) | (local.port & 0xffff)) >>> 0;
-    T.state = "hello";
-    icomLanHello(T);
-  });
+      if (C.closed) return;
+      if (e)
+      {
+        icomLanFail(C, e.message);
+        return;
+      }
+      const local = T.socket.address();
+      let ip = local.address.split(".").map(Number);
+      if (ip.length != 4 || ip.every((x) => x == 0)) ip = [C.localIp >>> 24, (C.localIp >>> 16) & 0xff, (C.localIp >>> 8) & 0xff, C.localIp & 0xff];
+      if (T.name == "ctl") C.localIp = ((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3]) >>> 0;
+      T.localPort = local.port;
+      T.myId = ((ip[2] << 24) | (ip[3] << 16) | (local.port & 0xffff)) >>> 0;
+      T.state = "hello";
+      icomLanHello(T);
+    });
+  }
+  catch (e)
+  {
+    icomLanFail(C, e.message);
+  }
 }
 
 function icomLanSend(T, b)

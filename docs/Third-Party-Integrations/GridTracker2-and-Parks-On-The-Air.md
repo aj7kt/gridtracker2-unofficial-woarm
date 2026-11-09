@@ -10,7 +10,7 @@ In [Settings → Features](../GridTracker-Overview/Settings-Sub-Menus.md#feature
 
 Turning it on also turns on **Load At Startup** and **Log QSO** for the **GridTracker2** log in [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab). GridTracker2 uses its own log to know which parks you have worked, today, on which band and mode, because logging programs record POTA in different ways. Keep both ticked.
 
-![The GridTracker2 log row in Settings → Logging](../img/GT2_Settings_Logging.png)
+![The GridTracker2 log row in Settings → Logging](../img/GT2_Settings_Logging.jpg)
 
 ## How Parks Are Counted
 

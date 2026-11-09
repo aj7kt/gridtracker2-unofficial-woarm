@@ -7,15 +7,33 @@
 // Online). Only passes that climb high enough are announced, and each only once
 
 const BIRD_WATCH_ALERT_KEEP_MS = 24 * 3600000;
+// Worked out again (the element sets rebuilt, the station moved), a pass's AOS can move by a second: one announced is the same pass when
+// its satellite matches and it rises within this long of it
+const BIRD_WATCH_ALERT_SAME_MS = 2 * 60000;
 
 function birdWatchAlertsUpdate()
 {
   const A = GT.settings.BirdWatch.alerts;
   if (!A.enable) return;
   const T = GT.birdWatchTrack;
+  // Each satellite's announcements of a kind ("norad|soon", "norad|rising"): [{ aos, at (when it was announced) }], kept a day
   const done = T.alerted || (T.alerted = new Map());
   const now = Date.now();
-  for (const [key, when] of done) if (now - when > BIRD_WATCH_ALERT_KEEP_MS) done.delete(key);
+  for (const [key, list] of done)
+  {
+    const kept = list.filter((x) => now - x.at <= BIRD_WATCH_ALERT_KEEP_MS);
+    if (kept.length) done.set(key, kept);
+    else done.delete(key);
+  }
+  // True the first time a pass is announced this way (it is noted then)
+  const first = (key, aos) =>
+  {
+    const list = done.get(key) || [];
+    if (list.some((x) => Math.abs(x.aos - aos) < BIRD_WATCH_ALERT_SAME_MS)) return false;
+    list.push({ aos: aos, at: now });
+    done.set(key, list);
+    return true;
+  };
 
   for (const norad of GT.settings.BirdWatch.tracked)
   {
@@ -24,16 +42,13 @@ function birdWatchAlertsUpdate()
     const pass = birdWatchWantPasses(norad);
     // A pass that was already under way when its list was made is not announced (BirdWatch was only just turned on)
     if (!pass || pass.inProgress || pass.maxEl < A.minElevation) continue;
-    const key = norad + "|" + Math.round(pass.aos / 1000);
     const toAos = pass.aos - now;
-    if (toAos > 0 && toAos <= A.minutes * 60000 && !done.has(key + "|soon"))
+    if (toAos > 0 && toAos <= A.minutes * 60000 && first(norad + "|soon", pass.aos))
     {
-      done.set(key + "|soon", now);
       birdWatchAlertSend(birdWatchAlertMessage("soon", birdWatchAlertName(norad), Math.max(1, Math.round(toAos / 60000)), Math.round(pass.maxEl)));
     }
-    if (A.atAos && toAos <= 0 && sat.up && !done.has(key + "|rising"))
+    if (A.atAos && toAos <= 0 && sat.up && first(norad + "|rising", pass.aos))
     {
-      done.set(key + "|rising", now);
       birdWatchAlertSend(birdWatchAlertMessage("rising", birdWatchAlertName(norad), null, Math.round(pass.aosAz)));
     }
   }

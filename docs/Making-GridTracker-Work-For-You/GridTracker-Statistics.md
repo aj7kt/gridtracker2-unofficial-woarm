@@ -20,7 +20,7 @@ The award tabs use the same highlighting as the rosters:
 
 ## Logbook
 
-![The Logbook tab](../img/GT2_Stats_Logbook.png)
+![The Logbook tab](../img/GT2_Stats_Logbook.jpg)
 
 Your whole logbook in one list, newest first. The heading shows how many QSOs are listed. It scrolls smoothly even for very large logs, and the search boxes and column headings stay at the top.
 
@@ -67,30 +67,30 @@ The **Confirmed Band Slots** table counts your confirmed DXCC entities for Mixed
 
 ## Zones / WAC
 
-![The Zones / WAC tab](../img/GT2_Stats_Zones.png)
+![The Zones / WAC tab](../img/GT2_Stats_Zones.jpg)
 
 Worked CQ Zones, Worked ITU Zones and Worked All Continents, each with its worked, confirmed and needed counts.
 
 ## WAS / WACP / US48
 
-![The WAS / WACP / US48 tab](../img/GT2_Stats_WAS.png)
+![The WAS / WACP / US48 tab](../img/GT2_Stats_WAS.jpg)
 
 Worked All US States, Worked All Canadian Provinces, and US Continental Grids (the grids of the 48 contiguous states). Click a worked grid to open the Logbook filtered to it.
 
 ## WPX / USC
 
-![The WPX / USC tab](../img/GT2_Stats_WPX.png)
+![The WPX / USC tab](../img/GT2_Stats_WPX.jpg)
 
 Your worked and confirmed prefixes, each with the callsign that earned it, and your US counties.
 
 ## Live
 
-![The Live tab](../img/GT2_Stats_Live.png)
+![The Live tab](../img/GT2_Stats_Live.jpg)
 
 Every callsign heard this session, with its grid, band, DXCC entity, zones, whether you have worked (QSO) and confirmed (QSL) it, and when it was heard. A second table counts the callsigns heard from each DXCC entity. **Clear Live** in the side panel starts the list again.
 
 ## Decodes
 
-![The Decodes tab](../img/GT2_Stats_Decodes.png)
+![The Decodes tab](../img/GT2_Stats_Decodes.jpg)
 
 The most recent decoded messages, with their time, signal report, time offset, frequency, mode, message and DXCC entity.

@@ -17,15 +17,25 @@ const BIRD_WATCH_SKED_REFRESH_MS = 10 * 60000;
 // Skeds First and Skeds Only move to a mutual window this long before it opens, so the rotator and the rig are there in time
 const BIRD_WATCH_SKED_LEAD_MS = 3 * 60000;
 const BIRD_WATCH_SKEDS_MAX = 50;
-// A satellite you select yourself holds Skeds First / Skeds Only off until its LOS; with no pass of it known, this long
+// A satellite you select yourself holds Skeds First / Skeds Only off until its LOS while it is up or rises within this long; else
+// for this long
 const BIRD_WATCH_SKED_HOLD_MS = 15 * 60000;
+// A slider's change asked for once it has stopped moving this long
+const BIRD_WATCH_SKED_SLIDER_MS = 700;
+// A request not answered in this long is let go and asked again (the worker started afresh)
+const BIRD_WATCH_SKED_STALL_MS = 3 * 60000;
+// A window longer than this is a satellite that is always up for both (geostationary, QO-100): listed, but Auto-Track doesn't
+// follow it (it would never move on), and it isn't announced
+const BIRD_WATCH_SKED_ALWAYS_MS = 3 * 3600000;
 // The Mutual Passes list drawn again this often while it shows
 const BIRD_WATCH_SKED_LIST_MS = 15000;
 const BIRD_WATCH_SKED_GRID = /^[A-R]{2}[0-9]{2}([A-X]{2})?$/i;
-const BIRD_WATCH_SKED_CALL = /^[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,4}(\/[A-Z0-9]{1,4})?$/i;
+// A callsign, with a prefix (KH6/K7ABC) or a suffix (K7ABC/P) if it has one
+const BIRD_WATCH_SKED_CALL = /^([A-Z0-9]{1,4}\/)?[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,4}(\/[A-Z0-9]{1,4})?$/i;
 
-// The windows worked out (sorted by start, each with its satellite's norad, name and rank added), and the request under way
-GT.birdWatchSkeds = { windows: [], pending: null, results: null, key: "", at: 0, generation: 0, markers: new Map(), source: null, alerted: new Map() };
+// The windows worked out (sorted by start, each with its satellite's norad, name and rank added), the request under way (pending: the
+// satellites still to answer; order: as they were asked), the window Auto-Track follows ({ norad, key }) and the windows announced
+GT.birdWatchSkeds = { windows: [], pending: null, order: [], results: null, key: "", at: 0, generation: 0, followed: null, markers: new Map(), source: null, alerted: new Map() };
 
 function birdWatchSkedList()
 {
@@ -74,22 +84,12 @@ function birdWatchSkedById(id)
   return birdWatchSkedList().find((s) => s.id == id) || null;
 }
 
+// A new station's id: one higher than any there is, never a removed station's again (the active station is kept by its id)
 function birdWatchSkedNewId()
 {
-  for (let i = 1; ; i++) if (!birdWatchSkedById("s" + i)) return "s" + i;
-}
-
-// A satellite's highest point above the ground (km), from its element set's second line as the panel's Apogee is (Kepler's third law);
-// null without one
-function birdWatchSkedApogeeKm(norad)
-{
-  const tle = birdWatchTleGet(norad);
-  if (!tle || !tle.line2) return null;
-  const eccentricity = Number("0." + tle.line2.slice(26, 33).trim());
-  const revolutions = Number(tle.line2.slice(52, 63));
-  if (!(revolutions > 0)) return null;
-  const axis = Math.cbrt(398600.4418 / ((revolutions * 2 * Math.PI / 86400) ** 2));
-  return axis * (1 + eccentricity) - EARTH_RADIUS_KM;
+  const highest = birdWatchSkedList().reduce((n, s) => Math.max(n, Number(String(s.id).slice(1)) || 0), Number(GT.settings.BirdWatch.skedLastId) || 0);
+  GT.settings.BirdWatch.skedLastId = highest + 1;
+  return "s" + (highest + 1);
 }
 
 // How far over the ground a satellite at a height (km) can be seen from, above an elevation (degrees): the angle at the Earth's center
@@ -115,7 +115,9 @@ function birdWatchSkedReach(s)
   for (const norad of GT.settings.BirdWatch.tracked)
   {
     if (birdWatchAutoRank(norad) >= BIRD_WATCH_AUTO_DEAF) continue;
-    const km = birdWatchSkedApogeeKm(norad);
+    // Its apogee, as the panel's Apogee (birdWatchTleOrbit)
+    const orbit = birdWatchTleOrbit(birdWatchTleGet(norad));
+    const km = orbit ? orbit.apogee : 0;
     if (km > 0) reach = Math.max(reach, birdWatchSkedCoverage(km, myEl) + birdWatchSkedCoverage(km, theirEl));
   }
   if (reach < 0) return null;
@@ -144,6 +146,8 @@ function birdWatchSkedsTick()
   const T = GT.birdWatchTrack;
   if (!T || !T.worker) return;
   const K = GT.birdWatchSkeds;
+  // A request that never came back (the worker stuck, or lost): let go, asked afresh
+  if (K.pending && Date.now() - K.at > BIRD_WATCH_SKED_STALL_MS) birdWatchSkedsReset();
   const stations = birdWatchSkedStations();
   const key = JSON.stringify([stations, GT.settings.BirdWatch.tracked, birdWatchSkedMyMinEl(), GT.settings.BirdWatch.skedMinSeconds, GT.myLat, GT.myLon, GT.settings.app.myElevation]);
   if (!K.pending && (key != K.key || Date.now() - K.at > BIRD_WATCH_SKED_REFRESH_MS)) birdWatchSkedsAsk(key, stations);
@@ -157,12 +161,19 @@ function birdWatchSkedsTick()
   }
 }
 
-// Forgotten (the element sets changed, the tracker started again): asked again at the next tick
+// Forgotten (the element sets changed, the tracker started again, the stations or settings changed): asked again at the next tick. The
+// worker is started afresh when it still had requests queued, so their now useless answers don't hold up the new ones
 function birdWatchSkedsReset()
 {
   const K = GT.birdWatchSkeds;
+  if (K.pending && K.worker)
+  {
+    K.worker.terminate();
+    K.worker = null;
+  }
   K.key = "";
   K.pending = null;
+  K.order = [];
   K.generation++;
 }
 
@@ -176,7 +187,11 @@ function birdWatchSkedWorker()
     K.worker = new Worker("./lib/services/birdWatch/birdWatchWorker.js");
     K.worker.onmessage = (event) =>
     {
-      if (event.data && event.data.type == "mutual") birdWatchSkedsMessage(event.data);
+      const m = event.data;
+      if (!m) return;
+      if (m.type == "mutual") birdWatchSkedsMessage(m);
+      // A request that failed (an element set that stops propagating part way): the oldest one asked, as the worker answers in order
+      else if (m.type == "error" && m.for == "mutual") birdWatchSkedsMessage({ type: "mutual", id: "skeds|" + K.generation, norad: K.order[0], windows: [] });
     };
   }
   const meters = Number(GT.settings.app.myElevation) || 0;
@@ -185,13 +200,16 @@ function birdWatchSkedWorker()
   return K.worker;
 }
 
-// Stopped with BirdWatch's tracker
+// Stopped with BirdWatch's tracker: its windows let go too (the list, the timeline and the panel say so; nothing old to click)
 function birdWatchSkedsStop()
 {
   const K = GT.birdWatchSkeds;
   if (K.worker) K.worker.terminate();
   K.worker = null;
   birdWatchSkedsReset();
+  K.windows = [];
+  K.results = [];
+  birdWatchSkedsListRender();
 }
 
 // Its tracker asked about every tracked satellite that has something to hear (the station and element sets sent first, as they are now);
@@ -206,10 +224,12 @@ function birdWatchSkedsAsk(key, stations)
   if (!norads.length)
   {
     K.pending = null;
+    K.order = [];
     birdWatchSkedsDone([]);
     return;
   }
   K.pending = new Set(norads);
+  K.order = norads.slice();
   K.results = [];
   const myMin = birdWatchSkedMyMinEl();
   const worker = birdWatchSkedWorker();
@@ -228,6 +248,7 @@ function birdWatchSkedsMessage(m)
   const K = GT.birdWatchSkeds;
   if (m.id != "skeds|" + K.generation || !K.pending || !K.pending.has(m.norad)) return;
   K.pending.delete(m.norad);
+  K.order = K.order.filter((n) => n != m.norad);
   const name = birdWatchAlertName(m.norad);
   const rank = birdWatchAutoRank(m.norad);
   for (const w of m.windows || []) K.results.push(Object.assign({ norad: m.norad, name: name, rank: rank }, w));
@@ -245,20 +266,35 @@ function birdWatchSkedsDone(windows)
   if (birdWatchTimelineDiv.style.display != "none") birdWatchTimelineDraw();
 }
 
-// The windows still to come or under way (one under way is still a window until it ends)
+// The windows still to come or under way (one under way is still a window until it ends), of the satellites still tracked and the
+// stations still active (until they are worked out again)
 function birdWatchSkedWindows(now = Date.now())
 {
-  return GT.birdWatchSkeds.windows.filter((w) => w.end > now && birdWatchSkedById(w.key));
+  const tracked = new Set(GT.settings.BirdWatch.tracked);
+  return GT.birdWatchSkeds.windows.filter((w) =>
+  {
+    const s = w.end > now && tracked.has(w.norad) ? birdWatchSkedById(w.key) : null;
+    return s && s.active && birdWatchSkedPlace(s);
+  });
+}
+
+// A satellite always up for both stations (birdWatchSkedAlways): its window lasts days
+function birdWatchSkedAlways(w)
+{
+  return w.end - w.start > BIRD_WATCH_SKED_ALWAYS_MS;
 }
 
 // ---- Auto-Track (birdWatchAutoUpdate): what the Skeds modes pick. { pick: norad } to follow, { idle: true } for Skeds Only between
-// windows (the selection is left as it is), or null to let Next Pass decide
+// windows and while a satellite you picked holds them off (the selection is left as it is), or null to let Next Pass decide.
+//   A window picked is kept until it ends, as Auto-Track keeps its own pick until it sets: another opening meanwhile doesn't take the
+//   rig and the rotator away part way through. A satellite always up for both (geostationary) isn't followed: it would never move on
 function birdWatchSkedAutoPick(now)
 {
   const mode = GT.settings.BirdWatch.autoMode || "skedsFirst";
   if (mode == "next" || !birdWatchSkedsActive()) return null;
-  // A satellite you selected yourself stays selected until its LOS, as with Auto-Track's own picks
   const T = GT.birdWatchTrack;
+  const K = GT.birdWatchSkeds;
+  // A satellite you selected yourself: kept until its LOS (or a while, when it isn't up)
   const hold = T.skedHold;
   if (hold && hold.norad == T.selected && now < hold.until) return { idle: true };
   if (hold)
@@ -266,15 +302,21 @@ function birdWatchSkedAutoPick(now)
     // Over (its LOS, or another satellite selected since): Auto-Track picks afresh, the sked's satellite again if its window is still open
     T.skedHold = null;
     T.autoPick = null;
+    K.followed = null;
   }
-  const windows = birdWatchSkedWindows(now);
-  // Under way now, or opening within the lead: the active station's first, then two-way before listen-only, then the one that lasts
-  // longest from now
+  const windows = birdWatchSkedWindows(now).filter((w) => !birdWatchSkedAlways(w));
+  // The window followed, while it lasts
+  const kept = K.followed ? windows.find((w) => w.norad == K.followed.norad && w.key == K.followed.key && w.start <= now) : null;
+  if (kept) return { pick: kept.norad };
+  K.followed = null;
+  // Else one under way, or opening within the lead: the active station's first, then two-way before listen-only, then the one that
+  // opened (or opens) first
   const soon = windows.filter((w) => w.start - BIRD_WATCH_SKED_LEAD_MS <= now);
   if (soon.length)
   {
     const focus = birdWatchSkedFocus();
-    soon.sort((a, b) => (a.key == focus ? 0 : 1) - (b.key == focus ? 0 : 1) || (a.rank == 0 ? 0 : 1) - (b.rank == 0 ? 0 : 1) || b.end - a.end);
+    soon.sort((a, b) => (a.key == focus ? 0 : 1) - (b.key == focus ? 0 : 1) || (a.rank == 0 ? 0 : 1) - (b.rank == 0 ? 0 : 1) || a.start - b.start);
+    K.followed = { norad: soon[0].norad, key: soon[0].key };
     return { pick: soon[0].norad };
   }
   return mode == "skedsOnly" ? { idle: true } : null;
@@ -289,12 +331,17 @@ function birdWatchSkedFocus()
   return GT.settings.BirdWatch.skedFocus || "";
 }
 
-// A mutual window picked: its station made the active one, its satellite selected (by you: held until its LOS)
+// A mutual window picked: its station made the active one, its satellite selected (by you: held as birdWatchSkedSelected says). With
+// the tracker stopped (Satellite Tracking off), only the station: there is no satellite to select
 function birdWatchSkedPick(w)
 {
   GT.settings.BirdWatch.skedFocus = w.key;
-  if (GT.birdWatchTrack.selected != w.norad) birdWatchSelect(w.norad);
-  else birdWatchSkedSelected(w.norad, false);
+  const T = GT.birdWatchTrack;
+  if (T && T.worker)
+  {
+    if (T.selected != w.norad) birdWatchSelect(w.norad);
+    else birdWatchSkedSelected(w.norad, false);
+  }
   birdWatchSkedFocusShow();
 }
 
@@ -333,18 +380,21 @@ function birdWatchSkedFocusFirst(windows)
   return windows.filter((w) => w.key == focus).concat(windows.filter((w) => w.key != focus));
 }
 
-// A satellite selected (birdWatchSelect): one you picked yourself holds the Skeds modes off until its LOS (the pass under way, else its
-// next one); Auto-Track's own pick, or none, lets them go on
+// A satellite selected (birdWatchSelect): one you picked yourself holds the Skeds modes off until its LOS while it is up, or rises within
+// BIRD_WATCH_SKED_HOLD_MS (picked to be ready for that pass); one further off holds them only that long (not until a pass hours away:
+// Auto-Track would stop meanwhile). Auto-Track's own pick, or none, lets them go on
 function birdWatchSkedSelected(norad, auto)
 {
   const T = GT.birdWatchTrack;
-  if (!norad || auto)
+  if (!norad || auto || !T.worker)
   {
     T.skedHold = null;
     return;
   }
+  const now = Date.now();
   const pass = birdWatchWantPasses(norad);
-  T.skedHold = { norad: norad, until: pass && pass.los > Date.now() ? pass.los : Date.now() + BIRD_WATCH_SKED_HOLD_MS };
+  const near = pass && pass.los > now && pass.aos - now <= BIRD_WATCH_SKED_HOLD_MS;
+  T.skedHold = { norad: norad, until: near ? pass.los : now + BIRD_WATCH_SKED_HOLD_MS };
 }
 
 // ---- The Skeds tab
@@ -358,44 +408,127 @@ function birdWatchSkedsRender()
   birdWatchSkedMinMinutes.value = Math.round((Number(B.skedMinSeconds) || 0) / 60);
   birdWatchSkedMinMinutesText.textContent = birdWatchSkedMinutesText(Number(B.skedMinSeconds) || 0);
   birdWatchSkedRows.innerHTML = "";
-  const unit = birdWatchSkedHeightUnit();
   for (const s of birdWatchSkedList())
   {
     const row = birdWatchSkedRowTemplate.content.firstElementChild.cloneNode(true);
     row.dataset.sked = s.id;
     renderI18n(row);
-    const el = (f) => row.querySelector("[data-f='" + f + "']");
-    el("Active").checked = s.active === true;
-    el("Call").value = s.call || "";
-    el("Grid").value = s.grid || "";
-    el("Grid").classList.toggle("birdSkedBad", !!s.grid && !birdWatchSkedPlace(s));
-    el("Height").value = s.height ? Math.round(unit.from(s.height)) : "";
-    el("Height").placeholder = unit.name;
-    el("MinEl").value = s.minEl === null || s.minEl === undefined || s.minEl === "" ? "" : s.minEl;
-    el("MinEl").placeholder = birdWatchSkedMyMinEl() + "°";
-    el("Notes").value = s.notes || "";
+    const call = row.querySelector("[data-f='Call']");
+    call.addEventListener("input", () => birdWatchSkedCallInput(call));
     birdWatchSkedRows.appendChild(row);
-    // Too far apart for any tracked satellite: said under its row
-    const reach = birdWatchSkedReach(s);
-    if (reach && !reach.possible)
-    {
-      const note = document.createElement("tr");
-      note.className = "birdSkedNever";
-      note.innerHTML = "<td></td><td colspan='6'></td>";
-      note.lastChild.textContent = birdWatchSkedNeverText(reach);
-      birdWatchSkedRows.appendChild(note);
-    }
+    birdWatchSkedRowFill(row, s);
   }
   birdWatchSkedEmpty.style.display = birdWatchSkedList().length ? "none" : "";
   birdWatchSkedAddButton.style.display = birdWatchSkedList().length < BIRD_WATCH_SKEDS_MAX ? "" : "none";
   birdWatchSkedsListRender();
 }
 
-// Height in the user's units: feet with miles (or nautical miles), meters otherwise, as the station's own Elevation is
-function birdWatchSkedHeightUnit()
+// A station's row filled from it (the height in the station Elevation's units: feet with miles or nautical miles, else meters), and the
+// note under it when it is too far away for any tracked satellite
+function birdWatchSkedRowFill(row, s)
 {
-  const feet = ["MI", "NM"].includes(GT.settings.app.distanceUnit);
-  return feet ? { name: "ft", from: (m) => m * 3.28084, to: (v) => v / 3.28084 } : { name: "m", from: (m) => m, to: (v) => v };
+  const el = (f) => row.querySelector("[data-f='" + f + "']");
+  const feet = stationElevationFeet();
+  el("Active").checked = s.active === true;
+  el("Call").value = s.call || "";
+  el("Grid").value = s.grid || "";
+  el("Grid").classList.toggle("birdSkedBad", !!s.grid && !birdWatchSkedPlace(s));
+  el("Height").value = s.height ? Math.round(feet ? s.height * FEET_PER_METER : s.height) : "";
+  el("Height").placeholder = feet ? "ft" : "m";
+  el("MinEl").value = s.minEl === null || s.minEl === undefined || s.minEl === "" ? "" : s.minEl;
+  el("MinEl").placeholder = birdWatchSkedMyMinEl() + "°";
+  el("Notes").value = s.notes || "";
+  let note = row.nextElementSibling && row.nextElementSibling.classList.contains("birdSkedNever") ? row.nextElementSibling : null;
+  const reach = birdWatchSkedReach(s);
+  if (reach && !reach.possible)
+  {
+    if (!note)
+    {
+      note = document.createElement("tr");
+      note.className = "birdSkedNever";
+      note.innerHTML = "<td></td><td colspan='6'></td>";
+      row.after(note);
+    }
+    note.lastChild.textContent = birdWatchSkedNeverText(reach);
+  }
+  else if (note) note.remove();
+  birdWatchSkedCallShow(row);
+}
+
+// A station's callsign: letters and digits, at least one of each, and "/" for a portable one
+function birdWatchSkedCallValid(call)
+{
+  return /^[A-Z0-9/]{3,16}$/.test(call) && /\d/.test(call) && /[A-Z]/.test(call);
+}
+
+// The row's Call box says whether it holds a callsign (orange while it doesn't, as the other callsign boxes), and the row's other fields
+// wait for one (disabled until then): true when it does
+function birdWatchSkedCallShow(row)
+{
+  const call = row.querySelector("[data-f='Call']");
+  const value = call.value.trim().toUpperCase();
+  const valid = birdWatchSkedCallValid(value);
+  call.style.backgroundColor = value && !valid ? "rgb(199, 113, 0)" : "";
+  call.style.color = value && !valid ? "#FFF" : "";
+  for (const f of ["Grid", "Height", "MinEl", "Notes"]) row.querySelector("[data-f='" + f + "']").disabled = !valid;
+  return valid;
+}
+
+// A station's callsign settled this long after the last key, then kept and looked up; an answer waited for this long at most (offline,
+// no lookup login: none comes)
+const BIRD_WATCH_SKED_CALL_SETTLE_MS = 1000;
+const BIRD_WATCH_SKED_LOOKUP_WAIT_MS = 20000;
+
+// Typing in a station's Call box: in capitals, shown as it goes (birdWatchSkedCallShow); once it has settled, a callsign is kept and
+// looked up (birdWatchSkedLookup)
+function birdWatchSkedCallInput(el)
+{
+  const row = el.closest("[data-sked]");
+  if (!row) return;
+  const upper = el.value.toUpperCase();
+  if (upper != el.value)
+  {
+    const at = el.selectionStart;
+    el.value = upper;
+    el.setSelectionRange(at, at);
+  }
+  birdWatchSkedCallShow(row);
+  nodeTimers.clearTimeout(row.skedSettle);
+  row.skedSettle = nodeTimers.setTimeout(() =>
+  {
+    if (!row.isConnected || !birdWatchSkedCallShow(row)) return;
+    birdWatchSkedFieldChanged(el);
+    birdWatchSkedLookup(row.dataset.sked);
+  }, BIRD_WATCH_SKED_CALL_SETTLE_MS);
+}
+
+// A station's callsign looked up (the Lookup's service, as any lookup of it): its grid put in the station's Grid while that is empty,
+// once the answer is in (GT.lookupCache: the call's, or a portable call's base call's). Nothing if the call or the grid changed meanwhile
+function birdWatchSkedLookup(id)
+{
+  const s = birdWatchSkedById(id);
+  if (!s || !birdWatchSkedCallValid(s.call) || s.grid) return;
+  const call = s.call;
+  const cached = () => GT.lookupCache[call] || GT.lookupCache[lookupBaseCallsign(call)];
+  if (!cached()) lookupCallsign(call, null);
+  const started = Date.now();
+  const look = () =>
+  {
+    const now = birdWatchSkedById(id);
+    if (!now || now.call != call || now.grid) return;
+    const answer = cached();
+    const grid = answer && typeof answer.grid == "string" ? answer.grid.trim().slice(0, 6).toUpperCase() : "";
+    if (/^[A-R]{2}[0-9]{2}([A-X]{2})?$/.test(grid))
+    {
+      now.grid = grid;
+      const row = birdWatchSkedRows.querySelector("[data-sked='" + id + "']");
+      if (row) birdWatchSkedRowFill(row, now);
+      birdWatchSkedsChanged();
+      return;
+    }
+    if (Date.now() - started < BIRD_WATCH_SKED_LOOKUP_WAIT_MS) nodeTimers.setTimeout(look, 500);
+  };
+  look();
 }
 
 function birdWatchSkedMinutesText(seconds)
@@ -404,7 +537,8 @@ function birdWatchSkedMinutesText(seconds)
 }
 
 // A row's field changed: kept (a grid and a callsign upper-cased: 6-character grids are all capitals, as the Maidenhead conference of
-// 2018 has it), the windows asked again at the next tick
+// 2018 has it), its row filled again where it is (the other rows, and the field the focus is moving to, left alone), the windows asked
+// again
 function birdWatchSkedFieldChanged(el)
 {
   const row = el.closest("[data-sked]");
@@ -415,11 +549,11 @@ function birdWatchSkedFieldChanged(el)
   s.call = get("Call").value.trim().toUpperCase().slice(0, 16);
   s.grid = get("Grid").value.trim().slice(0, 6).toUpperCase();
   const height = Number(get("Height").value);
-  s.height = height > 0 ? Math.round(birdWatchSkedHeightUnit().to(height)) : 0;
+  s.height = height > 0 ? Math.round(stationElevationFeet() ? height / FEET_PER_METER : height) : 0;
   const minEl = get("MinEl").value.trim().replace("°", "");
   s.minEl = minEl === "" || !Number.isFinite(Number(minEl)) ? null : Math.max(0, Math.min(60, Number(minEl)));
   s.notes = get("Notes").value.trim().slice(0, 60);
-  birdWatchSkedsRender();
+  birdWatchSkedRowFill(row, s);
   birdWatchSkedsChanged();
 }
 
@@ -432,23 +566,36 @@ function birdWatchSkedAdd()
   if (rows.length) rows[rows.length - 1].focus();
 }
 
+// A station removed; the active station's removal leaves none active
 function birdWatchSkedRemove(el)
 {
   const row = el.closest("[data-sked]");
   if (!row) return;
-  GT.settings.BirdWatch.skeds = birdWatchSkedList().filter((s) => s.id != row.dataset.sked);
+  const id = row.dataset.sked;
+  GT.settings.BirdWatch.skeds = birdWatchSkedList().filter((s) => s.id != id);
+  if (birdWatchSkedFocus() == id) GT.settings.BirdWatch.skedFocus = "";
   birdWatchSkedsRender();
   birdWatchSkedsChanged();
 }
 
-// The stations changed: their windows asked again now, the panel's row and Auto-Track with them
+// The stations changed: their windows asked again now (any still being worked out let go), the panel's row and Auto-Track with them
 function birdWatchSkedsChanged()
 {
   const K = GT.birdWatchSkeds;
+  nodeTimers.clearTimeout(K.changeTimer);
+  K.changeTimer = null;
   K.key = "";
   if (K.pending) birdWatchSkedsReset();
   if (typeof birdWatchInfoBuilt != "undefined" && birdWatchInfoBuilt) birdWatchInfoRebuild();
   birdWatchSkedsTick();
+}
+
+// The same, once a slider has stopped moving (each of its steps would ask for every satellite's three days again)
+function birdWatchSkedsChangedSoon()
+{
+  const K = GT.birdWatchSkeds;
+  nodeTimers.clearTimeout(K.changeTimer);
+  K.changeTimer = nodeTimers.setTimeout(birdWatchSkedsChanged, BIRD_WATCH_SKED_SLIDER_MS);
 }
 
 function birdWatchSkedMyMinElChange()
@@ -456,81 +603,177 @@ function birdWatchSkedMyMinElChange()
   GT.settings.BirdWatch.skedMyMinEl = Number(birdWatchSkedMyMinElValue.value);
   birdWatchSkedMyMinElText.textContent = birdWatchSkedMyMinEl() + "°";
   for (const input of birdWatchSkedRows.querySelectorAll("[data-f='MinEl']")) input.placeholder = birdWatchSkedMyMinEl() + "°";
-  birdWatchSkedsChanged();
+  birdWatchSkedsChangedSoon();
 }
 
 function birdWatchSkedMinMinutesChange()
 {
   GT.settings.BirdWatch.skedMinSeconds = Number(birdWatchSkedMinMinutes.value) * 60;
   birdWatchSkedMinMinutesText.textContent = birdWatchSkedMinutesText(GT.settings.BirdWatch.skedMinSeconds);
-  birdWatchSkedsChanged();
+  birdWatchSkedsChangedSoon();
 }
 
 // The Mutual Passes list: each window with its satellite, its time (UTC), how long it lasts, the station and both elevations at its best
-// moment, and its own ICS and Copy; a click on its satellite selects it
+// moment, and its own ICS and Copy; a click on its row picks it. Drawn only while it shows (Settings open on the Skeds tab), and only
+// when something in it changed (a window added, gone or under way, the status, the active station), so a click isn't lost to a redraw.
+// Only the rows in view are in the page (birdWatchSkedsListDraw, virtual scrolling as in the Call Roster): with many satellites tracked,
+// the next 72 hours hold hundreds of windows
 function birdWatchSkedsListRender()
 {
-  if (typeof birdWatchSkedMutualList == "undefined" || birdWatchSkedsDiv.style.display == "none") return;
+  if (typeof birdWatchSkedMutualList == "undefined" || birdWatchSkedsDiv.style.display == "none" || rootSettingsDiv.style.display != "inline-flex") return;
   const K = GT.birdWatchSkeds;
   const windows = birdWatchSkedWindows();
-  birdWatchSkedMutualList.innerHTML = "";
+  const now = Date.now();
   let status = "";
   if (!birdWatchSkedsActive()) status = I18N("birdWatch.skeds.noStations");
   else if (!GT.birdWatchTrack || !GT.birdWatchTrack.worker) status = I18N("birdWatch.skeds.notTracking");
   else if (K.pending) status = I18N("birdWatch.skeds.working");
   else if (!windows.length) status = I18N("birdWatch.skeds.none");
+  const look = status + "|" + birdWatchSkedFocus() + "|" + windows.map((w) => w.norad + ":" + w.key + ":" + (birdWatchSkedById(w.key) || {}).call + ":" + w.start + ":" + w.end + ":" + (w.start <= now)).join(",");
+  if (look == K.listLook && K.listView && (birdWatchSkedMutualList.children.length > 0) == (windows.length > 0)) return;
+  K.listLook = look;
   birdWatchSkedMutualStatus.textContent = status;
   birdWatchSkedMutualStatus.style.display = status ? "" : "none";
   birdWatchSkedAllButtons.style.display = windows.length ? "" : "none";
+  K.listView = { items: windows, widths: birdWatchSkedsListWidths(windows), first: -1, last: -1, queued: false };
+  birdWatchSkedsListDraw(true);
+}
+
+// The list's rows: one line each, of one height (measured from those drawn: K.listRowPx); a few more than are in view are drawn above
+// and below, so a little scrolling doesn't draw them again
+const BIRD_WATCH_SKED_ROW_PX = 21;
+const BIRD_WATCH_SKED_ROWS_EXTRA = 8;
+
+// The rows in view drawn, spacer rows above and below them holding the height of the rest, so the list (.birdSkedMutualScroll) scrolls
+// the whole of it. force: drawn even if those in view are drawn already (the windows changed)
+function birdWatchSkedsListDraw(force)
+{
+  const K = GT.birdWatchSkeds;
+  const V = K.listView;
+  const scroller = birdWatchSkedMutualList.closest(".birdSkedMutualScroll");
+  if (!V || !scroller) return;
+  if (!scroller.birdSkedHooked)
+  {
+    scroller.birdSkedHooked = true;
+    scroller.addEventListener("scroll", () =>
+    {
+      const W = GT.birdWatchSkeds.listView;
+      if (!W || W.queued) return;
+      W.queued = true;
+      requestAnimationFrame(() =>
+      {
+        W.queued = false;
+        birdWatchSkedsListDraw(false);
+      });
+    }, { passive: true });
+  }
+  const rowPx = K.listRowPx || BIRD_WATCH_SKED_ROW_PX;
+  const top = scroller.scrollTop;
+  const shownFirst = Math.floor(top / rowPx);
+  const shownLast = Math.min(V.items.length, Math.ceil((top + (scroller.clientHeight || 260)) / rowPx));
+  if (!force && shownFirst >= V.first && shownLast <= V.last) return;
+  V.first = Math.max(0, shownFirst - BIRD_WATCH_SKED_ROWS_EXTRA);
+  V.last = Math.min(V.items.length, shownLast + BIRD_WATCH_SKED_ROWS_EXTRA);
+  const spacer = (px) =>
+  {
+    const tr = document.createElement("tr");
+    tr.className = "birdSkedSpacer";
+    tr.style.height = px + "px";
+    tr.style.cursor = "default";
+    const td = document.createElement("td");
+    td.colSpan = 6;
+    td.style.cssText = "padding: 0; border: 0; background: none;";
+    tr.appendChild(td);
+    return tr;
+  };
   const now = Date.now();
+  const focus = birdWatchSkedFocus();
+  birdWatchSkedMutualList.innerHTML = "";
+  if (V.first > 0) birdWatchSkedMutualList.appendChild(spacer(V.first * rowPx));
+  for (let i = V.first; i < V.last; i++) birdWatchSkedMutualList.appendChild(birdWatchSkedsListRow(V.items[i], V.widths, now, focus));
+  if (V.last < V.items.length) birdWatchSkedMutualList.appendChild(spacer((V.items.length - V.last) * rowPx));
+  // The rows' height as drawn (another font size or zoom than the guess): kept, and the spacers drawn again with it
+  const rows = birdWatchSkedMutualList.querySelectorAll("tr:not(.birdSkedSpacer)");
+  if (rows.length > 1)
+  {
+    const measured = (rows[rows.length - 1].offsetTop - rows[0].offsetTop) / (rows.length - 1);
+    if (measured > 0 && Math.abs(measured - rowPx) > 0.5)
+    {
+      K.listRowPx = measured;
+      birdWatchSkedsListDraw(true);
+    }
+  }
+}
+
+// Each column's width (the satellite, the time, how long, the station, the elevations): the widest of its text over every window, not
+// only the rows drawn, so the columns don't change width as the list scrolls
+function birdWatchSkedsListWidths(windows)
+{
+  const font = getComputedStyle(birdWatchSkedMutualList).font;
+  const context = (birdWatchSkedsListWidths.canvas || (birdWatchSkedsListWidths.canvas = document.createElement("canvas"))).getContext("2d");
+  const widths = [0, 0, 0, 0, 0];
   for (const w of windows)
   {
-    const s = birdWatchSkedById(w.key);
-    const row = document.createElement("tr");
-    const up = w.start <= now;
-    // Under way: shaded; the active station's: its callsign marked out (.birdSkedFocus)
-    row.className = (up ? "birdSkedUp" : "") + (w.key == birdWatchSkedFocus() ? " birdSkedFocus" : "");
-    const cells = [
-      [w.name + (w.rank > 0 ? " " + I18N("birdWatch.skeds.rxOnly") : ""), "birdSkedSat"],
-      [birdWatchSkedWhen(w), ""],
-      [toDHMS(w.seconds), "birdSkedDur"],
-      [s.call || s.grid, "birdSkedCall"],
-      [Math.round(w.best.myEl) + "° / " + Math.round(w.best.theirEl) + "°", "birdSkedEl"]
-    ];
-    for (const [text, className] of cells)
+    const texts = birdWatchSkedsListTexts(w);
+    for (let i = 0; i < texts.length; i++)
     {
-      const td = document.createElement("td");
-      td.textContent = text;
-      if (className) td.className = className;
-      row.appendChild(td);
+      // (The active station's callsign is bold: measured so)
+      context.font = i == 3 ? "bold " + font : font;
+      widths[i] = Math.max(widths[i], context.measureText(texts[i]).width);
     }
-    // A click picks it: its satellite selected, its station the active one
-    row.onclick = () => birdWatchSkedPick(w);
-    row.title = birdWatchSkedTip(w) + "\n\n" + I18N("birdWatch.skeds.pick.hover");
-    const actions = document.createElement("td");
-    actions.className = "birdSkedActions";
-    const ics = document.createElement("span");
-    ics.className = "button birdTleButton";
-    ics.textContent = "ICS";
-    ics.title = I18N("birdWatch.skeds.ics.hover");
-    ics.onclick = (event) =>
-    {
-      event.stopPropagation();
-      birdWatchSkedSaveIcs([w]);
-    };
-    const copy = document.createElement("span");
-    copy.className = "button birdTleButton";
-    copy.textContent = I18N("birdWatch.skeds.copy.label");
-    copy.title = I18N("birdWatch.skeds.copy.hover");
-    copy.onclick = (event) =>
-    {
-      event.stopPropagation();
-      birdWatchSkedCopy([w]);
-    };
-    actions.append(ics, " ", copy);
-    row.appendChild(actions);
-    birdWatchSkedMutualList.appendChild(row);
   }
+  return widths.map((px) => Math.ceil(px) + 2);
+}
+
+// A window's text in each column
+function birdWatchSkedsListTexts(w)
+{
+  const s = birdWatchSkedById(w.key) || {};
+  return [w.name + (w.rank > 0 ? " " + I18N("birdWatch.skeds.rxOnly") : ""), birdWatchSkedWhen(w), toDHMS(w.seconds), s.call || s.grid || "", Math.round(w.best.myEl) + "° / " + Math.round(w.best.theirEl) + "°"];
+}
+
+// A window's row in the list
+function birdWatchSkedsListRow(w, widths, now, focus)
+{
+  const row = document.createElement("tr");
+  // Under way: shaded; the active station's: its callsign marked out (.birdSkedFocus)
+  row.className = (w.start <= now ? "birdSkedUp" : "") + (w.key == focus ? " birdSkedFocus" : "");
+  const texts = birdWatchSkedsListTexts(w);
+  const classes = ["birdSkedSat", "", "birdSkedDur", "birdSkedCall", "birdSkedEl"];
+  for (let i = 0; i < texts.length; i++)
+  {
+    const td = document.createElement("td");
+    td.textContent = texts[i];
+    if (classes[i]) td.className = classes[i];
+    td.style.minWidth = widths[i] + "px";
+    row.appendChild(td);
+  }
+  // A click picks it: its satellite selected, its station the active one
+  row.onclick = () => birdWatchSkedPick(w);
+  row.title = birdWatchSkedTip(w) + "\n\n" + I18N("birdWatch.skeds.pick.hover");
+  const actions = document.createElement("td");
+  actions.className = "birdSkedActions";
+  const ics = document.createElement("span");
+  ics.className = "button birdTleButton";
+  ics.textContent = "ICS";
+  ics.title = I18N("birdWatch.skeds.ics.hover");
+  ics.onclick = (event) =>
+  {
+    event.stopPropagation();
+    birdWatchSkedSaveIcs([w]);
+  };
+  const copy = document.createElement("span");
+  copy.className = "button birdTleButton";
+  copy.textContent = I18N("birdWatch.skeds.copy.label");
+  copy.title = I18N("birdWatch.skeds.copy.hover");
+  copy.onclick = (event) =>
+  {
+    event.stopPropagation();
+    birdWatchSkedCopy([w]);
+  };
+  actions.append(ics, " ", copy);
+  row.appendChild(actions);
+  return row;
 }
 
 // A window's day and times in UTC: "Thu 18:42–18:49 UTC"
@@ -723,8 +966,8 @@ function birdWatchSkedPaste()
   birdWatchSkedsChanged();
 }
 
-// "W1XYZ FN31PR 30m min 15°" (the height in m or ft, the lowest elevation as "min 15°", "min15" or "15°"); null when there's no
-// callsign and grid
+// "W1XYZ FN31PR 30m min 15°", in any order (the height in m or ft, the lowest elevation as "min 15°", "min15" or "15°"); null when
+// there's no callsign and grid. The grid, the height and the elevation are read first, so "120m" isn't taken for a callsign
 function birdWatchSkedParse(line)
 {
   // (A callsign written with a slashed zero, as GridTracker2 shows them, read as the digit)
@@ -735,14 +978,14 @@ function birdWatchSkedParse(line)
     const w = words[i];
     let m;
     if (!grid && BIRD_WATCH_SKED_GRID.test(w)) grid = w.toUpperCase();
-    else if (!call && BIRD_WATCH_SKED_CALL.test(w) && /[0-9]/.test(w) && /[A-Z]/i.test(w)) call = w.toUpperCase();
-    else if ((m = /^(\d+(?:\.\d+)?)(m|ft)$/i.exec(w))) height = m[2].toLowerCase() == "ft" ? Math.round(Number(m[1]) / 3.28084) : Math.round(Number(m[1]));
+    else if ((m = /^(\d+(?:\.\d+)?)(m|ft)$/i.exec(w))) height = m[2].toLowerCase() == "ft" ? Math.round(Number(m[1]) / FEET_PER_METER) : Math.round(Number(m[1]));
     else if (/^min$/i.test(w) && words[i + 1] && (m = /^(\d+(?:\.\d+)?)°?$/.exec(words[i + 1])))
     {
       minEl = Math.min(60, Number(m[1]));
       i++;
     }
     else if ((m = /^(?:min)?(\d+(?:\.\d+)?)°$/i.exec(w)) || (m = /^min(\d+(?:\.\d+)?)$/i.exec(w))) minEl = Math.min(60, Number(m[1]));
+    else if (!call && BIRD_WATCH_SKED_CALL.test(w) && /[0-9]/.test(w) && /[A-Z]/i.test(w)) call = w.toUpperCase();
   }
   return call && grid ? { call: call, grid: grid, height: height, minEl: minEl } : null;
 }
@@ -781,7 +1024,8 @@ function birdWatchSkedMarkers()
     K.markers.clear();
   }
   const now = Date.now();
-  const open = new Set(birdWatchSkedWindows(now).filter((w) => w.start <= now).map((w) => w.key));
+  // (A satellite always up for both doesn't keep a station bright for days)
+  const open = new Set(birdWatchSkedWindows(now).filter((w) => w.start <= now && !birdWatchSkedAlways(w)).map((w) => w.key));
   const want = new Map();
   for (const s of birdWatchSkedList())
   {
@@ -872,7 +1116,11 @@ function birdWatchSkedMarkersClear()
   K.markers.clear();
 }
 
-// ---- Alerts (BirdWatch settings, Alerts, Announce Mutual Passes): a mutual window announced the Alerts' minutes before it opens
+// ---- Alerts (BirdWatch settings, Alerts, Announce Mutual Passes): a mutual window announced the Alerts' minutes before it opens, once.
+// Worked out again every few minutes, a window's start can move by a second or two: one announced is the same window when its satellite
+// and station match and it starts within BIRD_WATCH_SKED_SAME_MS of it. One always up for both (geostationary) isn't announced
+
+const BIRD_WATCH_SKED_SAME_MS = 2 * 60000;
 
 function birdWatchSkedAlerts()
 {
@@ -880,14 +1128,22 @@ function birdWatchSkedAlerts()
   if (!A.mutual) return;
   const K = GT.birdWatchSkeds;
   const now = Date.now();
-  for (const [key, when] of K.alerted) if (now - when > BIRD_WATCH_ALERT_KEEP_MS) K.alerted.delete(key);
+  // Each announced window by its satellite and station: { start, at } (when it was announced), kept a day
+  for (const [key, list] of K.alerted)
+  {
+    const kept = list.filter((x) => now - x.at <= BIRD_WATCH_ALERT_KEEP_MS);
+    if (kept.length) K.alerted.set(key, kept);
+    else K.alerted.delete(key);
+  }
   for (const w of birdWatchSkedWindows(now))
   {
     const toStart = w.start - now;
-    if (w.inProgress || toStart <= 0 || toStart > A.minutes * 60000) continue;
-    const key = w.norad + "|" + w.key + "|" + Math.round(w.start / 60000);
-    if (K.alerted.has(key)) continue;
-    K.alerted.set(key, now);
+    if (w.inProgress || birdWatchSkedAlways(w) || toStart <= 0 || toStart > A.minutes * 60000) continue;
+    const key = w.norad + "|" + w.key;
+    const list = K.alerted.get(key) || [];
+    if (list.some((x) => Math.abs(x.start - w.start) < BIRD_WATCH_SKED_SAME_MS)) continue;
+    list.push({ start: w.start, at: now });
+    K.alerted.set(key, list);
     birdWatchAlertSend(birdWatchSkedAlertMessage(w, Math.max(1, Math.round(toStart / 60000))));
   }
 }

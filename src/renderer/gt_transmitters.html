@@ -43,10 +43,12 @@
       // selected
       function init()
       {
-        document.getElementById("birdTxCredit").innerHTML = window.opener.birdWatchSatCredit.innerHTML;
-        // A click on a transmitter's name, downlink or uplink tunes the rig to it (birdWatchDopplerClick), while Rig Control is connected
-        document.getElementById("birdTx").addEventListener("click", (event) =>
+        // A click on a transmitter's name, downlink or uplink tunes the rig to it (birdWatchDopplerClick), while Rig Control is connected.
+        // Taken as the button goes down: the table is drawn again with each tracker tick (its frequencies move), and a click whose press
+        // was on a cell drawn over since is never sent
+        document.getElementById("birdTx").addEventListener("mousedown", (event) =>
         {
+          if (event.button != 0) return;
           const cell = event.target.closest("[data-part]");
           const row = cell && cell.closest("tr[data-uuid]");
           if (row) window.opener.birdWatchDopplerClick(row.dataset.uuid, cell.dataset.part);
@@ -88,8 +90,6 @@
           <span id="birdTxFollowing" style="color: lightgreen; font-weight: bold;"></span>
         </div>
         <div id="birdTx"></div>
-        <!-- Where the transmitters come from: the Satellites tab's credit, translated there -->
-        <div id="birdTxCredit" class="birdWatchCredit"></div>
       </div>
     </div>
   </body>

@@ -12,15 +12,16 @@ Type in the search box at the top to find a word: matches are highlighted and co
 
 Click the **Lookup** button in the side panel to open the Callsign Lookup window. Type a callsign and press **Enter** or click **Lookup**. Clicking a callsign almost anywhere in GridTracker2 (the rosters, the Logbook, the map's tooltips, the station you are working in the side panel) also looks it up.
 
-![The Callsign Lookup window](../img/GT2_Lookup.png)
+![The Callsign Lookup window](../img/GT2_Lookup.jpg)
 
-The lookup service is chosen in [Settings → Lookups](../GridTracker-Overview/Settings-Sub-Menus.md#lookups-tab): Callook (US callsigns only, no login), HamQTH, QRZ.com or QRZCQ.com. What is shown depends on the service:
+The lookup service is chosen in [Settings → Lookups](../GridTracker-Overview/Settings-Sub-Menus.md#lookups-tab): Callook (US callsigns only, no login), HamQTH, QRZ.com or QRZCQ.com. What is shown depends on the service. From the top:
 
-* first, your own log for that call: the bands and modes you have worked and confirmed it on, and your last QSO;
-* a card with the station's name, address and photo. Click the card to copy the address;
-* a **Details** table: license class, DXCC entity, zones, IOTA, time zone, county, latitude and longitude, the distance and bearing from you, the grid (click to copy it; highlighted when it is new to you), QSL information, and whether the station uses LoTW, eQSL and ClubLog OQRS.
+* **Generate Messages** puts the call and grid into WSJT-X or JTDX without calling. **Clear** empties the window. When GridTracker acknowledges the station, that is shown above these buttons;
+* a card with the station's photo, name and address. Click the card to copy the address. Under it are the grid (click to copy it; highlighted when it is new to you) and the distance and bearing from you;
+* your own log for that call: the bands and modes you have worked and confirmed it on, your last QSO, and the bands you have worked its DXCC entity on. A band with a dashed outline is worked but not yet confirmed; a filled one is confirmed;
+* the **Details**: license class, DXCC entity, zones, IOTA, time zone, county, latitude and longitude, QSL information, and whether the station uses LoTW, eQSL and ClubLog OQRS.
 
-**Generate Messages** puts the call and grid into WSJT-X or JTDX without calling. **Clear** empties the window.
+The window resizes itself to fit each lookup. If you make it smaller, the rest scrolls.
 
 With **Open Lookup on Transmit** on in Settings → Lookups, the station you start calling is looked up automatically. The Lookup window isn't available in Offline Mode.
 

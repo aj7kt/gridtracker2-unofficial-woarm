@@ -110,6 +110,12 @@ function mmDecoderSstvFolder()
   return GT.settings.MMD.sstvFolder || path.join(path.dirname(GT.appData), "SSTV Pictures");
 }
 
+// WEFAX's Save Charts folder: the one chosen, else "WEFAX Charts" beside "SSTV Pictures"
+function mmDecoderWefaxFolder()
+{
+  return GT.settings.MMD.wefaxFolder || path.join(path.dirname(GT.appData), "WEFAX Charts");
+}
+
 // ---- Input Devices: each mode's own (the window's Input Device menu), { id, name } in MMD.inputs, found by its id, else by its
 // name (ids can change), as the Output Device is. inputCards: the audio inputs last seen ({ id: name }), so a change is warned of as the
 // Output Device's are (Settings -> Audio, Warning On Change)
@@ -442,7 +448,8 @@ const MMD_INSTANCE_HEARTBEAT_MS = 15000;
 GT.mmdInstance = { live: false, mode: "", hidden: false, sentAt: 0, key: "", decoding: false };
 
 // Each Multi-Mode Decoder mode's names, from its submode's own to its parent mode's: the first in data/modes.json is the instance's mode.
-// S: the decoder's settings (the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...)
+// S: the decoder's settings (the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...; DominoEX / THOR's and Olivia's not
+// picked yet: the one the window decodes then, mmdKey.js's and mmdOlivia.js's default)
 const MMD_INSTANCE_MODES = {
   cw: () => ["CW"],
   ft8: () => ["FT8"],
@@ -456,9 +463,9 @@ const MMD_INSTANCE_MODES = {
   psk31: (S) => [S.pskSubmode, "PSK"],
   rtty: () => ["RTTY"],
   mfsk: (S) => [S.mfskSubmode, "MFSK"],
-  thor: (S) => [String(S.thorSubmode).replace(" ", ""), String(S.thorSubmode).split(" ")[0]],
+  thor: (S) => [String(S.thorSubmode || "dominoex 11").replace(" ", ""), String(S.thorSubmode || "dominoex 11").split(" ")[0]],
   navtex: () => ["NAVTEX", "TOR"],
-  olivia: (S) => [S.oliviaSubmode, String(S.oliviaSubmode).split(" ")[0]],
+  olivia: (S) => [S.oliviaSubmode || "olivia 8/500", String(S.oliviaSubmode || "olivia 8/500").split(" ")[0]],
   wspr: () => ["WSPR"]
 };
 

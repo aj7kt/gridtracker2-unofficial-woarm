@@ -1243,7 +1243,7 @@ table.darkTable.birdDopplerTable td {
   border-bottom: 1px dotted #aaa;
 }
 
-/* Where BirdWatch's data comes from (SatNOGS DB, CC BY-SA 4.0; AMSAT): the Satellites tab, the About tab and the transmitters window */
+/* Where BirdWatch's data comes from (SatNOGS DB, CC BY-SA 4.0; AMSAT): the Satellites tab */
 .birdWatchCredit {
   margin-top: 6px;
   font-size: 11px;
@@ -1573,6 +1573,17 @@ table.darkTable.birdDopplerTable td {
   color: yellow;
 }
 
+/* The tabs of the group the page doesn't belong to (BirdWatch's, or the others: by group, wherever a tab wraps to) dimmed, so it is
+   plain which row the page is from; one under the mouse at full strength again */
+.settingstab:has(button.settingsTablinks.birdWatchTab.active) button.settingsTablinks:not(.birdWatchTab),
+.settingstab:has(button.settingsTablinks.active:not(.birdWatchTab)) button.settingsTablinks.birdWatchTab {
+  opacity: 0.55;
+}
+
+.settingstab button.settingsTablinks:hover {
+  opacity: 1;
+}
+
 /* Settings -> Colors, Band Colors: as many 70px columns as fit, adding rows as the window narrows */
 #bandColorsBox {
   display: block;
@@ -1875,19 +1886,303 @@ table.darkTable.birdDopplerTable td {
   white-space: normal;
 }
 
-/* Style the tab content */
-.lookupContent {
-  margin: 0;
-  display: none;
-  background-color: black;
-  padding: 0;
-  text-align: center;
-  width: auto;
-  vertical-align: top;
+/* The Callsign Lookup window (gt_lookup.html; its parts written by lookup.js). The content at its natural size in the middle, the window
+   fitted to it (lookupFit); a window made smaller scrolls */
+#lookupBoxDiv {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+}
 
-  white-space: normal;
+#lookupWrap {
+  width: max-content;
+  margin: 0 auto;
+  padding: 8px 10px;
+  color: #ccd6da;
+}
 
-  /* animation: fadeEffect .3s;  Fading effect takes 1 second */
+/* Each part a little below the one above it, while it has something to show */
+#lookupWrap > div:not(.lookupSearch):not(:empty) {
+  margin-top: 8px;
+}
+
+/* The search line: Callsign, its box and Lookup */
+.lookupSearch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1c3440;
+  color: #8fb3c0;
+  font-size: 13px;
+}
+
+.lookupSearch .inputTextValue {
+  width: 8em;
+  padding: 3px 10px;
+  border: 1px solid #3a6070;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.lookupGo {
+  cursor: pointer;
+  padding: 3px 14px;
+  border: 1px solid #2cc;
+  border-radius: 14px;
+  background: linear-gradient(#0a8a9a, #05606c);
+  color: #fff;
+  font-weight: bold;
+}
+
+.lookupGo:hover {
+  background: linear-gradient(#0bb, #078);
+}
+
+.lookupGo:active {
+  transform: translateY(1px);
+}
+
+/* "GridTracker would like to acknowledge": a gold pill */
+.lookupAck {
+  display: inline-block;
+  padding: 3px 12px;
+  border: 1px solid #806a20;
+  border-radius: 12px;
+  background: #2a2208;
+  color: #ffd75e;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.lookupActions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.lookupAction {
+  cursor: pointer;
+  padding: 2px 14px;
+  border: 1px solid #456;
+  border-radius: 12px;
+  background: #0d1418;
+  color: #ddd;
+}
+
+.lookupAction:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+.lookupAction:active {
+  transform: translateY(1px);
+}
+
+.lookupPrimary {
+  border-color: #2aa;
+  color: cyan;
+}
+
+/* A lookup on its way */
+.lookupWait {
+  color: #9ab;
+  animation: lookupPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes lookupPulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+
+/* The station's card: the photo at the left, the call, name and address beside it, and the chips under them */
+.lookupHero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px 10px 10px;
+  border: 1px solid #1f4656;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0c2a36 0%, #06141a 55%, #000 100%);
+  box-shadow: inset 0 1px 0 #ffffff14;
+  text-align: left;
+}
+
+.lookupPhoto {
+  display: block;
+  max-width: 200px;
+  max-height: 150px;
+  border: 1px solid #2a4a58;
+  border-radius: 8px;
+}
+
+.lookupCard {
+  cursor: pointer;
+}
+
+.lookupCallLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lookupCall {
+  color: #3ff;
+  font-size: 36px;
+  font-weight: bold;
+  line-height: 1.1;
+  letter-spacing: 1px;
+  text-shadow: 0 0 14px #00ffff50;
+}
+
+.lookupName {
+  margin: 2px 0 3px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.lookupAddr {
+  color: #b8c8ce;
+  line-height: 1.4;
+}
+
+.lookupEmail {
+  display: inline-block;
+  margin-top: 3px;
+  border-bottom: 1px dotted #8cf;
+  color: #8cf;
+}
+
+.lookupChips {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.lookupChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid #2a4a58;
+  border-radius: 10px;
+  background: #0a1a20;
+  font-weight: bold;
+}
+
+.lookupChip[onClick] {
+  cursor: pointer;
+}
+
+.lookupChip[onClick]:hover {
+  border-color: #fff;
+}
+
+.lookupChipLabel {
+  color: #7f98a2;
+  font-size: 10px;
+  font-weight: normal;
+}
+
+/* The grid in its chip, highlighted when it is new to you (lookupGridCellStyle) */
+.lookupGrid {
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+/* Your log for the call, and the Details: dark boxes the card's width */
+.lookupLog,
+.lookupDetails {
+  padding: 7px 12px;
+  border: 1px solid #1d2a30;
+  border-radius: 8px;
+  background: #070b0d;
+  text-align: left;
+}
+
+.lookupLog {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px 12px;
+}
+
+.lookupLogLabel {
+  font-weight: bold;
+}
+
+.lookupLogTime {
+  color: #9ab;
+}
+
+/* A band (and mode) in its band color: a faint dashed outline while only worked, filled when confirmed (lookupBandChip) */
+.lookupBand {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 6px;
+  border: 1px dashed;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.lookupBand.lookupConf {
+  border-style: solid;
+  font-weight: bold;
+}
+
+.lookupSectionTitle {
+  margin-bottom: 6px;
+  color: cyan;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* The Details: tiles of a label over its value, four to a row */
+.lookupTiles {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 7px 20px;
+}
+
+.lookupTileLabel {
+  color: #7f98a2;
+  font-size: 10px;
+}
+
+.lookupTileValue {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #eee;
+}
+
+.lookupYes {
+  color: lightgreen;
+}
+
+.lookupNo {
+  color: #888;
+}
+
+.lookupLink {
+  display: inline-block;
+  cursor: pointer;
+  color: orange;
+  font-weight: bold;
+}
+
+.lookupLink:hover {
+  text-decoration: underline;
 }
 
 .ackBadge {
@@ -2064,39 +2359,6 @@ table.subtable tr:hover td {
 
 .buttonScript:hover {
   border-color: #fff;
-}
-
-table.bioTable {
-  border-collapse: collapse;
-  border: 1px solid #888;
-  background-color: black;
-  text-align: center;
-  table-layout: fixed;
-  width: 300px;
-}
-table.bioTable td,
-table.bioTable th {
-  border: 1px solid #888;
-  padding: 2px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-table.bioTable thead {
-  border-bottom: 2px solid #888;
-}
-table.bioTable thead th {
-  font-weight: bold;
-  text-align: center;
-  border-left: 2px solid #888;
-}
-table.bioTable thead th:first-child {
-  border-left: none;
-}
-
-.bioTable tr:hover td {
-  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
 }
 
 input[type="color"] {

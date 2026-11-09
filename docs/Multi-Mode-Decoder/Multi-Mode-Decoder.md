@@ -97,9 +97,9 @@ These work in CW and in the modes listed the same way: PSK, RTTY, MFSK, DominoEX
 
 In FT8 and FT4, a click on the waterfall or a message sets the focus instead, and a right-click on the waterfall turns the time skew on or off. Other modes have clicks of their own (Packet, Feld-Hell, Olivia). See [Decoder Modes](Decoder-Modes.md).
 
-### Right-Click to Tune
+### Tuning Lock
 
-With Rig Control on, right-click the waterfall or the scale to tune your rig to the frequency there. In CW the rig is tuned so that signal is heard at the CW pitch. This works in every mode but FT8, FT4 and WSPR.
+With Rig Control on, a lock sits before the rig's frequency on the divider. Gold and closed, tuning is locked (as it starts); grey and open, it is unlocked. Click the lock to unlock it: the mouse wheel on the waterfall then tunes your rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz), each step landing on that step's round number. A label over the waterfall shows the frequency tuned to and the change (its total while you keep turning the wheel), then fades; a click on the band scope shows one over the scope the same way. In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock it; a middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed: the decoder sends nothing to the rig then.
 
 ## Test Signals
 
@@ -172,7 +172,7 @@ The right-click menus of pictures, charts and messages (copy, save, delete, rota
 The decoder works on its own, from audio alone. Rig Control is optional. It lets the decoder:
 
 * read the rig's frequency and mode, so signals are shown at their frequency on the air and the frequency bar shows the band;
-* tune the rig, from the Frequency menu, a right-click on the waterfall or a click on the band scope;
+* tune the rig, from the Frequency menu, the mouse wheel on the waterfall (unlocked) or a click on the band scope;
 * set the rig's mode when you pick a frequency;
 * give FT8, FT4 and WSPR decodes their band in GridTracker2.
 
@@ -314,6 +314,7 @@ Some modes have settings of their own here, described in [Decoder Modes](Decoder
 * **FT4:** **Send Decodes To Call Roster**.
 * **NAVTEX:** **Save Messages**.
 * **SSTV:** **Save Pictures**, and its **Folder** (click it to open it, **Choose** to pick another).
+* **WEFAX:** **Save Charts**, and its own **Folder**, the same way.
 
 Running one sound card for several radios? Turn off **Common Input Device** and **Common VFO**, and give each mode its own. For example, FT8 can listen to an SDR on a VFO of its own while CW listens to your HF rig.
 

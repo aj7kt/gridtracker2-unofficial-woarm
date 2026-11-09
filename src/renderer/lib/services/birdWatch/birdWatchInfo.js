@@ -464,27 +464,39 @@ function birdWatchInfoExtras(norad, sat, pass, now)
   // From the horizon the map's Terminator setting says (Settings, Map): 0 is on the terminator line, below it is night
   extras.sunEl = (birdWatchSunElevation(GT.myLat, GT.myLon, now) - GT.terminatorDegrees[GT.settings.map.terminatorDegreeIndex]).toFixed(1) + "°";
   extras.period = extras.inclination = extras.apogee = extras.perigee = extras.revolution = "-";
-  // The element set's second line: inclination (degrees), eccentricity (decimal point implied), revolutions a day and the revolution
-  // number at its epoch. The orbit's size from the revolutions a day (Kepler's third law)
+  // The orbit, from the element set (birdWatchTleOrbit)
   const tle = birdWatchTleGet(norad);
-  if (tle && tle.line2)
+  const orbit = birdWatchTleOrbit(tle);
+  if (orbit)
   {
-    const inclination = Number(tle.line2.slice(8, 16));
-    const eccentricity = Number("0." + tle.line2.slice(26, 33).trim());
-    const revolutions = Number(tle.line2.slice(52, 63));
-    const epochRevolution = Number(tle.line2.slice(63, 68));
-    if (revolutions > 0)
-    {
-      const axis = Math.cbrt(398600.4418 / ((revolutions * 2 * Math.PI / 86400) ** 2));
-      extras.period = (1440 / revolutions).toFixed(1) + " min";
-      extras.inclination = inclination.toFixed(2) + "°";
-      extras.apogee = birdWatchDistance(axis * (1 + eccentricity) - EARTH_RADIUS_KM);
-      extras.perigee = birdWatchDistance(axis * (1 - eccentricity) - EARTH_RADIUS_KM);
-      // The number at the epoch plus the orbits since (it can be one off close to a revolution's start)
-      if (tle.epoch && Number.isFinite(epochRevolution)) extras.revolution = String(epochRevolution + Math.floor(revolutions * (now - tle.epoch) / 86400000));
-    }
+    extras.period = (1440 / orbit.revolutions).toFixed(1) + " min";
+    extras.inclination = orbit.inclination.toFixed(2) + "°";
+    extras.apogee = birdWatchDistance(orbit.apogee);
+    extras.perigee = birdWatchDistance(orbit.perigee);
+    // The number at the epoch plus the orbits since (it can be one off close to a revolution's start)
+    if (tle.epoch && Number.isFinite(orbit.epochRevolution)) extras.revolution = String(orbit.epochRevolution + Math.floor(orbit.revolutions * (now - tle.epoch) / 86400000));
   }
   return extras;
+}
+
+// An element set's orbit, from its second line: inclination (degrees), eccentricity (decimal point implied), revolutions a day and the
+// revolution number at its epoch; its size from the revolutions a day (Kepler's third law), apogee and perigee above the ground (km).
+// Null without one (also for the Skeds' reach, birdWatchSkeds.js)
+function birdWatchTleOrbit(tle)
+{
+  if (!tle || !tle.line2) return null;
+  const revolutions = Number(tle.line2.slice(52, 63));
+  if (!(revolutions > 0)) return null;
+  const eccentricity = Number("0." + tle.line2.slice(26, 33).trim());
+  const axis = Math.cbrt(398600.4418 / ((revolutions * 2 * Math.PI / 86400) ** 2));
+  return {
+    inclination: Number(tle.line2.slice(8, 16)),
+    eccentricity: eccentricity,
+    revolutions: revolutions,
+    epochRevolution: Number(tle.line2.slice(63, 68)),
+    apogee: axis * (1 + eccentricity) - EARTH_RADIUS_KM,
+    perigee: axis * (1 - eccentricity) - EARTH_RADIUS_KM
+  };
 }
 
 // Left click on the satellite's name: the map centered on it

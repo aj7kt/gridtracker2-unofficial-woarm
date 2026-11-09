@@ -292,7 +292,12 @@ function birdWatchTransmitterWindowUpdate(fit = false, showing = false, show = f
   {
     const doc = handle.window.document;
     const target = doc.getElementById("birdTx");
-    if (target.innerHTML != html) target.innerHTML = html;
+    // Written only when it changed: compared with what was written (innerHTML reads back in the browser's own form)
+    if (target.birdTxHtml !== html)
+    {
+      target.birdTxHtml = html;
+      target.innerHTML = html;
+    }
     doc.getElementById("birdTxName").textContent = tle ? tle.name : "";
     doc.getElementById("birdTxHead").style.display = norad ? "" : "none";
     doc.getElementById("birdTxFollowing").textContent = GT.rigDoppler && GT.rigDoppler.norad == norad ? I18N("rig.following") : "";
@@ -573,12 +578,13 @@ function birdWatchSideTarget(D, side, doppler)
   // Not read since it was set: waited for, but not without end (a rig whose reads can't be told apart)
   if (R.readSeq < sentSeq) return Date.now() - (D.sentAt[side] || 0) < BIRD_WATCH_READ_WAIT_MS ? null : doppler + D.offset[side];
   const base = D.base[side];
-  if (!base || base.seq < sentSeq)
+  // (A baseline read on another rig, the side's VFO being another rig's now, is none: each rig counts its own reads)
+  if (!base || base.R !== R || base.seq < sentSeq)
   {
     // The first read since it was set: what the rig made of it, which later reads are measured from. Not set again before the next
     if (Math.abs(read.hz - sent) > BIRD_WATCH_TUNE_LIMIT_HZ) return birdWatchSideFar(D, side, read, sent);
     D.farCount[side] = 0;
-    D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount };
+    D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount, R: R };
     return null;
   }
   // No newer read yet
@@ -591,7 +597,7 @@ function birdWatchSideTarget(D, side, doppler)
     D.offset[side] += moved;
     birdWatchLockFollow(D, side, moved);
   }
-  D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount };
+  D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount, R: R };
   return doppler + D.offset[side];
 }
 
@@ -602,8 +608,9 @@ function birdWatchTransponder(t)
 }
 
 // Lock VFOs (BirdWatch settings, General, and the BirdWatch panel's rig box): the user's tuning of one side (moved Hz) is given to the other
-// side too, scaled by the two frequencies (the other's over this one's), the other way for an inverting transponder; both keep following
-// the Doppler. Only for a transponder followed on both sides
+// side too, the same amount (a linear transponder's passband is as wide on its uplink as on its downlink, so the same spot of it moves by
+// as much on both), the other way for an inverting transponder; both keep following the Doppler. Only for a transponder followed on both
+// sides
 function birdWatchLockFollow(D, side, moved)
 {
   if (GT.settings.BirdWatch.lockVfos !== true || !D.rx || !D.tx) return;
@@ -611,7 +618,7 @@ function birdWatchLockFollow(D, side, moved)
   const tuning = D.tuning;
   if (!birdWatchTransponder(t) || !tuning || !(tuning.rx > 0 && tuning.tx > 0)) return;
   const other = side == "rx" ? "tx" : "rx";
-  D.offset[other] += (t.invert ? -1 : 1) * moved * (tuning[other] / tuning[side]);
+  D.offset[other] += (t.invert ? -1 : 1) * moved;
 }
 
 // Lock VFOs turned on or off (from either checkbox)
@@ -747,12 +754,13 @@ function birdWatchDopplerFollow(setModes = false)
 
 // A side wanted followed but not (its rig wasn't connected, or it wouldn't tune there: birdWatchSideTarget) is followed again once its
 // rig is connected, and for one that wouldn't, connected anew (another connection, or another rig); its offset starts again and its mode
-// is set with it
+// is set with it, and the uplink's CTCSS tone with the uplink (as when it is followed from the start)
 function birdWatchRefollow()
 {
   const D = GT.rigDoppler;
   if (!D || !D.wanted) return;
   let again = false;
+  let uplink = false;
   for (const side of ["rx", "tx"])
   {
     if (!D.wanted[side] || D[side]) continue;
@@ -766,10 +774,13 @@ function birdWatchRefollow()
     if (D.offset) D.offset[side] = 0;
     D[side == "rx" ? "sentRx" : "sentTx"] = null;
     again = true;
+    if (side == "tx") uplink = true;
   }
   if (!again) return;
   D.clash = 0;
   if (D.mode) D.pendingMode = true;
+  const t = uplink ? birdWatchStickyPrevious() : null;
+  if (t) D.pendingTone = birdWatchTransmitterTone(t) || 0;
   birdWatchFollowEvent(D);
   birdWatchTransmitterWindowUpdate();
 }

@@ -94,7 +94,7 @@ If QSOs seem to be missing from the map, check these filters first. To see every
 
 ## The Button Panel
 
-![The button panel](../img/GT2_Panel_Buttons.png){width=260px}
+![The button panel](../img/GT2_Panel_Buttons.jpg){width=260px}
 
 The buttons open windows and turn map layers on and off. A button that is turned off is drawn in gray. Some buttons only appear while the feature they belong to is turned on, so your panel may have fewer or more buttons than shown here.
 

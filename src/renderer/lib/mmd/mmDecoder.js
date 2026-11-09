@@ -267,21 +267,31 @@ function mmdInit()
     const over = event.clientY >= box.top && event.clientY <= box.bottom ? mmdBracketAt(event.clientX - box.left) : null;
     mmdRangeTip(over);
   });
-  // A right-click on the scale or the waterfall, in every mode but FT8, FT4 and WSPR: the rig's dial tuned to the frequency on the air
-  // there (mmdTuneAt). FT8 and FT4: a right-click on the waterfall turns the time skew on or off, the wheel moves it while it's on
-  // (mmdSkewWheel)
-  cwScale.addEventListener("contextmenu", (event) =>
-  {
-    event.preventDefault();
-    if (!mmdFtx() && !mmdWsprMode()) mmdTuneAt(cwScale, event);
-  });
+  // A right-click on the scale or the waterfall tunes nothing (the rig is tuned by the wheel on the waterfall, unlocked: mmdTuneWheel).
+  // FT8 and FT4: a right-click on the waterfall turns the time skew on or off, the wheel moves it while it's on (mmdSkewWheel, before
+  // the tuning)
+  cwScale.addEventListener("contextmenu", (event) => event.preventDefault());
   cwOverlay.addEventListener("contextmenu", (event) =>
   {
     event.preventDefault();
     if (mmdFtx()) mmdSkewToggle();
-    else if (!mmdWsprMode()) mmdTuneAt(cwOverlay, event);
   });
   cwOverlay.addEventListener("wheel", mmdSkewWheel, { passive: false });
+  // The tuning lock on the divider (a click locks or unlocks it, and doesn't drag the divider), and the wheel on the waterfall
+  cwTuneLock.addEventListener("mousedown", (event) => event.stopPropagation());
+  cwTuneLock.addEventListener("click", mmdTuneLockClick);
+  cwOverlay.addEventListener("wheel", mmdTuneWheel, { passive: false });
+  // A middle-click on the waterfall locks or unlocks it too (its press kept from starting the browser's autoscroll)
+  cwOverlay.addEventListener("mousedown", (event) =>
+  {
+    if (event.button == 1) event.preventDefault();
+  });
+  cwOverlay.addEventListener("auxclick", (event) =>
+  {
+    if (event.button != 1) return;
+    event.preventDefault();
+    mmdTuneLockClick(event);
+  });
   // A click on a row: FT8 and FT4, the focus on its signal (its lowest tone is its Freq; centred on its middle); CW, PSK31 and RTTY, its
   // signal pinned (the pinned one's: let go). Not when the mouse selected text in it (to copy)
   const selecting = () => String(window.getSelection()).length > 0;
@@ -384,9 +394,12 @@ async function mmdInputSink(device)
   }
 }
 
+// Shown or hidden by the main process. Hidden is the window closed (main/index.js hides it): a picture being sent, or Tune, stops and the
+// rig is unkeyed, as their Stop is in this window (mmdSstvTx.js)
 function mmdVisible(visible)
 {
   DEC.shown = !!visible;
+  if (!DEC.shown && mmdSstvTxKeying()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
   mmdListen();
 }
 
@@ -725,6 +738,8 @@ async function mmdStart()
     if (!DEC.wasm) DEC.wasm = fs.readFileSync(NodeURL.fileURLToPath(new URL("lib/mmd/cwdecoder.wasm", location.href)));
     // This mode's Input Device by its id, else by its name (ids can change), else the default
     const devices = await mmdInputDevices();
+    // (Stopped or started again meanwhile: nothing opened for it, so it can't take an SDR server's I/Q from the newer start)
+    if (generation != DEC.generation) throw null;
     const device = mmdInputFind(devices);
     if (!device) throw new Error(I18N("cwViewer.status.noDevice"));
     let rate = null;
@@ -820,9 +835,13 @@ async function mmdStart()
   {
     if (stream) stream.getTracks().forEach((track) => track.stop());
     if (ctx) ctx.close().catch(() => {});
-    mmdSpyStop();
-    // (Stopped meanwhile: mmdStop let go of its stream, and one started since is the new start's)
-    if (generation == DEC.generation) mmdNetStop();
+    // (Stopped meanwhile: mmdStop let go of its SDR server's I/Q and its network stream, and one started since is the new start's: an
+    // SDR server's rig has one listener, rigIq.js)
+    if (generation == DEC.generation)
+    {
+      mmdSpyStop();
+      mmdNetStop();
+    }
     // Stopped (or started again) while starting: nothing to say
     if (generation != DEC.generation) return;
     DEC.running = false;
@@ -1850,14 +1869,15 @@ function mmdTop()
   DEC.dirty = true;
 }
 
-// Frequency: the rig's frequency with its band and its mode, read only (14.230.00 (20m) USB: the frequency light green, the band yellow, the
+// Frequency: the rig's frequency with its band and its mode, read only (14.230.000 (20m) USB: the frequency light green, the band yellow, the
 // mode orange); no rig (VFO-A not connected): the audio decoded, from the [ to the Bandwidth, in cyan. Beside it the Frequencies menu,
 // each as the viewer shows them with its band: the one the rig is on picked, else -
 function mmdFreqsShow(connected)
 {
   const mode = window.opener.mmDecoderVfoRead().mode;
   const dial = mmdDial(), band = connected ? mmdBandOf(dial) : null;
-  const parts = connected ? [[mmdFreq(dial), "cwFreqHz"], [band ? " (" + band + ")" : "", "cwFreqBand"], [mode ? " " + mode : "", "cwFreqMode"]] : [[mmdMinHz() + " Hz - " + mmdBandwidth() / 1000 + " kHz", ""]];
+  const parts = connected ? [[window.opener.formatDialFreq(dial), "cwFreqHz"], [band ? " (" + band + ")" : "", "cwFreqBand"], [mode ? " " + mode : "", "cwFreqMode"]] : [[mmdMinHz() + " Hz - " + mmdBandwidth() / 1000 + " kHz", ""]];
+  mmdTuneLockShow(connected);
   const text = parts.map(([t]) => t).join("");
   if (cwFreqText.textContent != text)
   {
@@ -2168,16 +2188,91 @@ function mmdRetune(keepSkew = false)
   DEC.dirty = true;
 }
 
-// A right-click across the scale or the waterfall (el): the rig's dial tuned to the frequency on the air at that audio frequency
-// (mmDecoderAirHz: in CW, so the signal there is heard at the CW pitch). Only with Rig Control, and not while BirdWatch has the rig
-// (mmdTuneDial)
-function mmdTuneAt(el, event)
+// The tuning lock before the frequency on the divider: there with a rig read and Rig Control on (the window's Settings, Decoders). Gold
+// and closed while locked (GT.settings.MMD.tuneLocked, or held so while BirdWatch follows a satellite with the rig: mmDecoderRigLocked),
+// grey and open while unlocked: the wheel on the waterfall then tunes the rig (mmdTuneWheel)
+const MMD_LOCK_CLOSED_SVG = "<svg viewBox='0 0 12 14' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M3.5 6.5V4.3a2.5 2.5 0 0 1 5 0v2.2'/><rect x='1.5' y='6.5' width='9' height='6.8' rx='1.2' fill='currentColor' stroke='none'/></svg>";
+const MMD_LOCK_OPEN_SVG = "<svg viewBox='0 0 12 14' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M3.5 6.5V3.3a2.5 2.5 0 0 1 5 0v0.6'/><rect x='1.5' y='6.5' width='9' height='6.8' rx='1.2' fill='currentColor' stroke='none'/></svg>";
+
+function mmdTuneLockShow(connected)
 {
-  const box = el.getBoundingClientRect();
-  if (!(box.width > 0) || !(DEC.bins > 0)) return;
-  const hz = mmdAudioAt(Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)));
-  const air = window.opener.mmDecoderAirHz(hz);
-  if (air != null && air > 0) mmdTuneDial(air);
+  const shown = connected && GT.settings.MMD.rigControl === true;
+  const held = shown && window.opener.mmDecoderRigLocked();
+  const locked = held || GT.settings.MMD.tuneLocked !== false;
+  const state = shown ? (locked ? "locked" : "unlocked") + (held ? " held" : "") : "";
+  if (cwTuneLock.dataset.state === state) return;
+  cwTuneLock.dataset.state = state;
+  cwTuneLock.style.display = shown ? "" : "none";
+  cwTuneLock.className = state;
+  cwTuneLock.innerHTML = locked ? MMD_LOCK_CLOSED_SVG : MMD_LOCK_OPEN_SVG;
+  cwTuneLock.title = I18N(held ? "cwViewer.freqs.locked.hover" : locked ? "cwViewer.tuneLock.locked.hover" : "cwViewer.tuneLock.unlocked.hover");
+}
+
+// The lock clicked: locked or unlocked (not while BirdWatch holds it)
+function mmdTuneLockClick(event)
+{
+  event.stopPropagation();
+  if (GT.settings.MMD.rigControl !== true || window.opener.mmDecoderRigLocked()) return;
+  GT.settings.MMD.tuneLocked = GT.settings.MMD.tuneLocked === false;
+  mmdTuneLockShow(mmdDial() != null);
+}
+
+// The wheel on the waterfall, unlocked: the rig's dial up (wheel up) or down MMD_WHEEL_HZ a step, on that step's grid (Shift: ten
+// times as far, Ctrl: a tenth), counted from where it was last sent while the rig hasn't caught up yet (DEC.expect). Not while FT8's or
+// FT4's time skew is on: the wheel moves that (mmdSkewWheel)
+const MMD_WHEEL_HZ = 10;
+
+function mmdTuneWheel(event)
+{
+  const S = GT.settings.MMD;
+  if (S.tuneLocked !== false || S.rigControl !== true || window.opener.mmDecoderRigLocked() || !event.deltaY) return;
+  if (DEC.offTime && mmdFtx()) return;
+  const dial = mmdDial();
+  if (dial == null) return;
+  event.preventDefault();
+  const step = event.shiftKey ? MMD_WHEEL_HZ * 10 : event.ctrlKey ? MMD_WHEEL_HZ / 10 : MMD_WHEEL_HZ;
+  const from = DEC.expect && Date.now() < DEC.expect.until ? DEC.expect.freq : dial;
+  const to = Math.round((from + (event.deltaY < 0 ? step : -step)) / step) * step;
+  if (mmdTuneDial(to)) mmdTuneToast(cwTuneToast, to - from, to, true);
+}
+
+// A tuning shown over its waterfall (el: the wheel's on the waterfall, a click's on the band scope) on a raised white label: the
+// frequency tuned to (to, Hz on the air: 7.074.000), and under it, twice the size, the change ("+30 Hz"); add: the wheel's, counted on
+// from the change still shown (its running total while the wheel goes on). Held MMD_TOAST_HOLD_MS after the last change, then faded
+// out over MMD_TOAST_FADE_MS
+const MMD_TOAST_HOLD_MS = 400;
+const MMD_TOAST_FADE_MS = 1000;
+
+function mmdTuneToast(el, hz, to, add)
+{
+  el.toastTotal = (add && el.toastShown ? el.toastTotal : 0) + hz;
+  el.toastShown = true;
+  const freq = document.createElement("div");
+  freq.className = "mmdTuneToastFreq";
+  freq.textContent = window.opener.formatDialFreq(to);
+  const change = document.createElement("div");
+  change.className = "mmdTuneToastChange";
+  change.textContent = mmdHzChange(el.toastTotal);
+  el.replaceChildren(freq, change);
+  el.style.transition = "none";
+  el.style.opacity = "1";
+  clearTimeout(el.toastTimer);
+  el.toastTimer = setTimeout(() =>
+  {
+    el.style.transition = "opacity " + MMD_TOAST_FADE_MS + "ms";
+    el.style.opacity = "0";
+    el.toastTimer = setTimeout(() =>
+    {
+      el.toastShown = false;
+    }, MMD_TOAST_FADE_MS);
+  }, MMD_TOAST_HOLD_MS);
+}
+
+// A change of frequency with its sign: "+30 Hz", "-850 Hz"; a kHz or more in kHz, "+12.35 kHz"
+function mmdHzChange(hz)
+{
+  const size = Math.abs(Math.round(hz));
+  return (hz < 0 ? "-" : "+") + (size < 1000 ? size + " Hz" : (size / 1000).toFixed(3).replace(/\.?0+$/, "") + " kHz");
 }
 
 // The rig's dial to dial (Hz on the air) through Rig Control, in mode when given (data: its data variant, true, or plain, false);
@@ -2266,11 +2361,12 @@ function mmdModeSet(mode)
     NAVTEX.listKey = null;
     mmdNavtexRender();
   }
-  // Another mode: the SSTV view back on Receive, and a picture being sent stopped (mmdSstvTx.js); WEFAX has no Send
+  // Another mode: the SSTV view back on Receive, and a picture being sent (or still being built to be) stopped (mmdSstvTx.js); WEFAX has
+  // no Send
   sstvTxTab.style.display = sstvRxTab.style.display = DEC.mode == "wefax" ? "none" : "";
   if (DEC.mode != "sstv")
   {
-    if (mmdSstvTxActive()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
+    if (mmdSstvTxKeying()) mmdSstvTxStop(I18N("sstvTx.status.stopped"));
     mmdSstvTxShow(false);
   }
   satList.style.display = sat ? "" : "none";
@@ -2508,13 +2604,23 @@ function mmdFt8Decode(F, start, heard)
 // A period's messages back from the worker (one line each, ft8wasm.c's ft8_decode)
 function mmdFt8Decoded(F, data)
 {
+  // (Not one to go on with: GridTracker's instance no longer decoding it, its Status says so)
+  const dropped = () =>
+  {
+    if (GT.mmdInstance && GT.mmdInstance.decoding) window.opener.mmDecoderInstanceDecoding(false);
+  };
   if (data.type == "error")
   {
+    dropped();
     mmdStatus(I18N("cwViewer.status.failed") + " FT8: " + data.message, true);
     return;
   }
-  // Switched to CW meanwhile, or cleared: not shown
-  if (DEC.ft8 != F || !mmdFtx()) return;
+  // Switched to CW meanwhile, or cleared, or from FT8 to FT4 or back (the period is the other mode's): not shown, nor sent on
+  if (DEC.ft8 != F || !mmdFtx() || !!data.ft4 != (DEC.mode == "ft4"))
+  {
+    dropped();
+    return;
+  }
   F.periodCount = (data.more ? F.periodCount : 0) + Math.max(0, data.count);
   const lines = data.text.split("\n").filter(Boolean).map((line) => line.split("\t"));
   // Decoded skewed (shift ms): DT from the usual timing, shown orange
@@ -2539,6 +2645,8 @@ function mmdFt8Decoded(F, data)
     if (!mmdTestHeard(data.start, data.start + periodMs)) window.opener.mmDecoderInstanceDecodes(DEC.mode, data.start - shift, fresh.map(([snr, dt, freq, message]) => [Number(snr), Number(dt) - FT8_DT_ZERO + shift / 1000, Number(freq), message || ""]));
     window.opener.mmDecoderInstanceDecoding(false);
   }
+  // (Not listening any more, the mode the same: stopped meanwhile, a restart that failed)
+  else dropped();
   const utc = new Date(data.start).toISOString().slice(11, 19);
   // (FT4's the same, the mode's name in it swapped)
   const status = I18N("cwViewer.ft8.status").replace("{count}", F.periodCount).replace("{utc}", utc);

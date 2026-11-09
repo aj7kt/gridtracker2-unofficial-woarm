@@ -219,7 +219,8 @@ function birdWatchTleSetsOf(entry)
   }
 }
 
-// The list again, from the sources in order: the first to have a satellite has it. Only while BirdWatch is on
+// The list again, from the sources in order: the first to have a satellite has it. Only while BirdWatch is on. The same as before
+// (most renders of the Telemetry tab change nothing): the listeners aren't told, so the tracker keeps the passes and the Skeds it has
 function birdWatchTleRebuild()
 {
   const L = GT.birdWatchTles;
@@ -236,11 +237,17 @@ function birdWatchTleRebuild()
       }
     }
   }
-  L.map = map;
-  L.version++;
+  const same = map.size == L.map.size && [...map.values()].every((e) =>
+  {
+    const known = L.map.get(e.norad);
+    return !!known && known.line1 == e.line1 && known.line2 == e.line2 && known.name == e.name && known.group == e.group && known.source == e.source && known.amsat == e.amsat;
+  });
   L.built = Date.now();
 
   if (typeof birdWatchTleListStatus != "undefined") birdWatchTleListStatus.textContent = I18N("birdWatch.tle.sets.label").replace("{n}", map.size);
+  if (same) return;
+  L.map = map;
+  L.version++;
   for (const listener of L.listeners)
   {
     try

@@ -295,7 +295,7 @@ function mmdScopeScale(ctx, sweep, w, A, scaleH, ratio, x)
   }
 }
 
-// A click: the rig tuned so what was clicked is in the middle of the audio decoded
+// A click: the rig tuned so what was clicked is in the middle of the audio decoded, the change shown over the scope (mmdTuneToast)
 function mmdScopeClick(event)
 {
   const sweep = SCOPE.sweep;
@@ -309,5 +309,6 @@ function mmdScopeClick(event)
   const hz = sweep.low + ((at - A.left) / A.width) * (sweep.high - sweep.low);
   const middle = window.opener.mmDecoderAirHz((mmdMinHz() + mmdMaxHz()) / 2);
   if (middle == null) return;
-  mmdTuneDial(dial + (hz - middle));
+  const to = Math.round(dial + (hz - middle));
+  if (mmdTuneDial(to)) mmdTuneToast(mmdScopeToast, to - dial, to, false);
 }

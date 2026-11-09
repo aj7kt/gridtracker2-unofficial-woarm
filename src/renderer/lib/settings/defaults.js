@@ -111,6 +111,8 @@ const def_settings = {
     // The active station's id (picked on the map, in the Mutual Passes list or on the timeline): the panel's Mutual Pass row shows its
     // pass, Skeds First prefers it; "" none
     skedFocus: "",
+    // The highest station id given ("s7" is 7): a new station gets the next, so a removed one's id is never given again
+    skedLastId: 0,
     // A transmitter's own VFOs, picked in the transmitters window (a right-click on its downlink or uplink): { uuid: { rx, tx } }, by the
     // VFOs' ids; the others go to the first VFO whose Satellites ranges fit (settings.Rigs.vfos[].satRanges, rig.js rigRoles)
     vfoPins: {},
@@ -577,12 +579,14 @@ const def_settings = {
   // sstvSetMode, packetSetMode set its mode (each on its own; FT8 USB, its data mode with the VFO's SSB Data; CW CW; SSTV its sideband; Packet FM,
   // HF packet LSB), on unless turned off.
   // rigControl off: nothing is sent unless turned on.
+  // WEFAX's own the same way: wefaxSave each chart saved as it ends, into wefaxFolder ("": WEFAX Charts beside it, mmDecoderWefaxFolder).
   // The SSTV Decoder's: sstvSave each picture saved as it ends, into sstvFolder ("": SSTV Pictures in
   // GridTracker's own folder, mmDecoderSstvFolder). inputs: each mode's Input Device, { cw: { id, name } } (its menu in the window);
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
-  // a mode not in it: the first VFO)
-  MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", wefaxTrim: 0, pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
+  // a mode not in it: the first VFO). tuneLocked: the lock on the divider beside the frequency (mmdTuneLockClick): unlocked, the mouse
+  // wheel over the frequency tunes the rig (mmdTuneWheel); locked unless unlocked
+  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", wefaxTrim: 0, pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", wefaxSave: false, wefaxFolder: "", inputs: {}, inputCards: null, swGain: {} },
   // Network Audio (Settings -> Features -> Service, its streams in the Radios tab; netAudio.js): audio streams on the LAN, each an Input Device or an Output Device of the
   // Multi-Mode Decoder. streams: [{ id ("n1" ...), name (the user's own), connect (unchecked: not opened, its settings free to change),
   // protocol ("vban", "rtp", "pulse": NET_AUDIO_PROTOCOLS), dir ("in", "out"), host, port, streamName, rate, channels, channel ("left",

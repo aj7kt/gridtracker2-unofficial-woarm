@@ -1560,6 +1560,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     <td class="mapRowLabel mapIndent"><label data-for="Ptt" data-i18n="settings.rig.ptt.label">PTT Method</label></td>
                     <td><select data-f="Ptt" data-i18n="settings.rig.ptt.hover" title="How the Multi-Mode Decoder keys this rig to transmit: CAT (the protocol's PTT command), VOX (the rig's own, from the audio), DTR or RTS (the serial port's line, as the rig's PTT input is set up), or None (it isn't keyed)" onchange="rigPttChanged(this);"></select></td>
                   </tr>
+                  <!-- A serial port's DTR and RTS lines while connected (rig.js, rigPttLineDrop): High or Low, set as the port opens; the line PTT
+                       Method uses shows PTT (low until the rig is keyed) -->
+                  <tr data-f="LinesTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Dtr" data-i18n="settings.rig.dtr.label">DTR</label></td>
+                    <td><select data-f="Dtr" data-i18n="settings.rig.dtr.hover" title="The serial port's DTR line while connected: Low, or High for an interface that needs it" onchange="rigSettingsChanged(this);"></select> <label data-for="Rts" data-i18n="settings.rig.rts.label">RTS</label> <select data-f="Rts" data-i18n="settings.rig.rts.hover" title="The serial port's RTS line while connected: Low, or High for an interface that needs it" onchange="rigSettingsChanged(this);"></select></td>
+                  </tr>
                   <tr data-f="StatusTr">
                     <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
                     <td><span data-f="Status" class="mapValue" style="margin-left: 0;"></span></td>
@@ -2614,7 +2620,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchAutoRigValue" style="margin: 0;" data-i18n="birdWatch.auto.rig.hover" title="A satellite Auto-Track selects is followed by the rig too (with Rig Control), as a satellite you select is; off, Auto-Track only selects it" onclick="birdWatchAutoRigChange()" /><label for="birdWatchAutoRigValue" data-i18n="settings.rig.label">Rig Control</label></div>
             <table class="mapChecks">
               <tr><td colspan="2" style="white-space: normal; max-width: 300px; color: #ccc;" data-i18n="birdWatch.rig.vfos.note">Each VFO's Satellites row (Settings, Rig Control) says what it receives and transmits on; the first in the list that fits is used. Right-click a transmitter's downlink or uplink to pick its own VFO</td></tr>
-              <tr><td colspan="2"><input type="checkbox" id="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.hover" title="Turning one VFO's dial tunes the other with it, for a linear transponder: the change scaled by the two frequencies, the other way for an inverting one. Both keep following the Doppler" onclick="birdWatchLockVfosSet(this.checked)" /> <label for="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.label">Lock VFOs</label></td></tr>
+              <tr><td colspan="2"><input type="checkbox" id="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.hover" title="Turning one VFO's dial tunes the other with it, for a linear transponder: by the same amount, the other way for an inverting one. Both keep following the Doppler" onclick="birdWatchLockVfosSet(this.checked)" /> <label for="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.label">Lock VFOs</label></td></tr>
             </table>
           </div>
           <div class="mapGroup">
@@ -2861,7 +2867,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <div id="birdWatchSatResults" class="birdSatList"></div>
           </div>
         </div>
-        <!-- Where the satellite data comes from (also shown in the About tab, and copied into the transmitters window) -->
+        <!-- Where the satellite data comes from -->
         <div id="birdWatchSatCredit" class="birdWatchCredit"><span data-i18n="birdWatch.credit.satnogs.label">Satellite And Transmitter Data:</span> <a href="https://db.satnogs.org" target="_blank">SatNOGS DB</a> (<span data-i18n="birdWatch.credit.contributors.label">Libre Space Foundation And Contributors</span>), <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a> &middot; <span data-i18n="birdWatch.credit.amsat.label">Element Sets (TLE) And Frequencies:</span> <a href="https://www.amsat.org" target="_blank">AMSAT</a></div>
       </div>
     <div id="aboutDiv" class="settingsTabcontent">
@@ -2899,8 +2905,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <span class="aboutChip aboutOrg" style="--i:11">GridTracker.org</span>
             </div>
           </div>
-          <!-- BirdWatch's satellite data (as in its Satellites tab) -->
-          <div class="birdWatchCredit"><span data-i18n="birdWatch.credit.satnogs.label">Satellite And Transmitter Data:</span> <a href="https://db.satnogs.org" target="_blank">SatNOGS DB</a> (<span data-i18n="birdWatch.credit.contributors.label">Libre Space Foundation And Contributors</span>), <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a> &middot; <span data-i18n="birdWatch.credit.amsat.label">Element Sets (TLE) And Frequencies:</span> <a href="https://www.amsat.org" target="_blank">AMSAT</a></div>
         </div>
       </div>
     </div>

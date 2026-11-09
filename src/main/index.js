@@ -24,6 +24,7 @@ const path = require('path');
 const { join } = require('path');
 const log = require('electron-log');
 const { inputLevel, inputLevelQuit, inputLevelFolder } = require('./inputLevel');
+const { serialInit, serialCloseAll } = require('./serial');
 const isMac = process.platform === 'darwin';
 const disableAutoUpdate = app.commandLine.hasSwitch("disable-auto-updates");
 
@@ -166,9 +167,10 @@ const allowedWindows = {
     window: null,
     honorVisibility: true,
     options: { x: 75, y: 75, width: 680, height: 200, show: false, zoom: 0 },
+    // Small enough for the window to fit its content (gt_lookup.html, lookupFit)
     static: {
-      minWidth: 680,
-      minHeight: 200,
+      minWidth: 200,
+      minHeight: 60,
       icon: join(__dirname, '../renderer/img/lookup-icon.png'),
     },
   },
@@ -496,6 +498,60 @@ ipcMain.on('spawnScript', (event, scriptPath) => {
 
 let isShuttingDown = false; 
 
+// A rig keyed here (the Multi-Mode Decoder's transmit: rig.js rigPtt) is unkeyed before GridTracker2 closes or restarts. The main window
+// says whenever its rigs' keying changes (rigPttKeyed); while one is keyed, the main window's close, a restart and an update's install
+// wait until it answers that the unkey has had the time to go out (rig.js rigPttUnkeyBeforeClose), but never longer than
+// RIG_PTT_UNKEY_WAIT_MS. Nothing keyed: nothing waits
+const RIG_PTT_UNKEY_WAIT_MS = 2000;
+let rigPttKeyed = false;
+// The ask under way: { waiting: what goes ahead on the answer, timer }. Once asked, GridTracker2 is closing: what the window says after
+// isn't taken
+let rigPttUnkeying = null;
+let rigPttUnkeyAsked = false;
+
+ipcMain.on('rigPttKeyed', (event, keyed) => {
+  if (!rigPttUnkeyAsked) rigPttKeyed = keyed === true;
+});
+
+ipcMain.on('rigPttUnkeyed', () => {
+  rigPttUnkeyDone();
+});
+
+// then() once the main window has unkeyed its rigs; at once with none keyed, or no main window to ask
+function rigPttUnkeyThen(then) {
+  if (rigPttUnkeying) {
+    rigPttUnkeying.waiting.push(then);
+    return;
+  }
+  if (!rigPttKeyed || !mainWindow || mainWindow.isDestroyed()) {
+    rigPttKeyed = false;
+    then();
+    return;
+  }
+  rigPttUnkeyAsked = true;
+  rigPttUnkeying = { waiting: [then], timer: timers.setTimeout(rigPttUnkeyDone, RIG_PTT_UNKEY_WAIT_MS) };
+  mainWindow.webContents.send('rigPttUnkeyBeforeClose');
+}
+
+function rigPttUnkeyDone() {
+  if (!rigPttUnkeying) return;
+  const { waiting, timer } = rigPttUnkeying;
+  rigPttUnkeying = null;
+  rigPttKeyed = false;
+  timers.clearTimeout(timer);
+  for (const then of waiting) then();
+}
+
+// The main window's close, held while a rig is keyed (rigPttUnkeyThen) and made again once it has been unkeyed: true when held
+function rigPttHoldClose(event, window) {
+  if (!rigPttKeyed) return false;
+  event.preventDefault();
+  rigPttUnkeyThen(() => {
+    if (!window.isDestroyed()) window.close();
+  });
+  return true;
+}
+
 ipcMain.on('installAndRestart', (event, what) => {
     if (isShuttingDown) {
         event.returnValue = true;
@@ -511,7 +567,7 @@ ipcMain.on('installAndRestart', (event, what) => {
     event.returnValue = true;
     
     timers.setTimeout(() => {
-        autoUpdater.quitAndInstall(true, true);
+        rigPttUnkeyThen(() => autoUpdater.quitAndInstall(true, true));
     }, 100);
 });
 
@@ -533,8 +589,10 @@ ipcMain.on('restartGridTracker2', (event, resetWindowPositions = false) => {
     event.returnValue = true; 
   
     timers.setTimeout(() => {
-        app.relaunch();
-        app.exit();
+        rigPttUnkeyThen(() => {
+            app.relaunch();
+            app.exit();
+        });
     }, 100);
 });
 
@@ -576,6 +634,10 @@ function serialPortMatches(device) {
   }
   return false;
 }
+
+// Serial ports through Node's serialport (serial.js), opened here for the page; Web Serial above is what the page uses where that isn't
+// available (serialAvailable)
+serialInit(ipcMain);
 
 let mainWindow = null;
 // frameName of the window being opened by setWindowOpenHandler, consumed in browser-window-created
@@ -902,6 +964,8 @@ app.whenReady().then(() => {
           window.hide();
           timers.setTimeout(onChildWindowCloseTimeout, 200, windowIdToAllowedWindows[window.id]);
         } else {
+          // A rig keyed here is unkeyed first: the close is made again once it has been (rigPttHoldClose)
+          if (rigPttHoldClose(event, window)) return;
           mainWindowClosing = true;
           // Main window is 1, so really destroy all the others
           for (const windowId in windowIdToAllowedWindows) {
@@ -948,6 +1012,7 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   inputLevelQuit();
+  serialCloseAll();
 });
 
 function onChildWindowCloseTimeout(windowName) {
