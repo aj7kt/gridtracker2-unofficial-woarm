@@ -560,7 +560,7 @@ function mapCastRender()
   // Only where it can cast (a hardware video encoder): the setting is kept as it is, but can't be changed, and the button stays hidden
   castEnable.checked = GT.settings.map.castEnable;
   castEnable.disabled = CAST.supported === false;
-  castEnable.title = I18N(CAST.supported === false ? "settings.map.cast.unsupported.hover" : "settings.map.cast.hover");
+  castEnableRow.title = I18N(CAST.supported === false ? "settings.map.cast.unsupported.hover" : "settings.map.cast.hover");
   castButton.style.display = GT.settings.map.castEnable && CAST.supported ? "" : "none";
   castButton.style.cursor = CAST.finding ? "progress" : "";
   castImg.style.filter = CAST.socket ? "" : "grayscale(1)";

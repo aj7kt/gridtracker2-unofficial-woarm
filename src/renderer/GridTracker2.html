@@ -1210,9 +1210,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td>
               <td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /></td>
             </tr>
-            <tr>
-              <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting (Google TV Streamer, Chromecast)</label></td>
-              <td><input data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV" type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /></td>
+            <!-- The tooltip on the row, so it shows over the label too (mapCast.js mapCastRender: why it can't be turned on, without a hardware encoder) -->
+            <tr id="castEnableRow" data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast">
+              <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting</label></td>
+              <td><input type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /></td>
             </tr>
           </table>
         </div>

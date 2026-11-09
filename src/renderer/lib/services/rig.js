@@ -2400,8 +2400,9 @@ function rigScopeWanted(R)
 }
 
 // Its data asked for or stopped as wanted (each poll, and as the decoder's window says); asked for: the rig's own scope (on or off), its
-// mode and its span read with it, and its own scope read again each poll while no sweep comes (it may be turned on at the rig). A rig with
-// Use Scope If Present whose stream isn't known (a connection's first) has it stopped once, so one left on doesn't run unread
+// mode and its span read with it, and while no sweep comes its own scope read again (it may be turned on at the rig) and, with that on,
+// its data asked for again (the rig can stop sending it by itself), every RIG_SCOPE_STALE_MS. A rig with Use Scope If Present whose
+// stream isn't known (a connection's first) has it stopped once, so one left on doesn't run unread
 function rigScopeSync(R)
 {
   if (!R.scope || R.status != "connected" || !R.protocol || !R.protocol.binary || R.protocol !== RIG_PROTOCOLS.civ) return;
@@ -2415,7 +2416,15 @@ function rigScopeSync(R)
       C.askedOnAt = Date.now();
       for (const frame of [rigCivFrame(address, 0x27, [0x10]), rigCivFrame(address, 0x27, [0x11, 0x01]), rigCivFrame(address, 0x27, [0x14, 0x00]), rigCivFrame(address, 0x27, [0x15, 0x00])]) rigWrite(R, frame);
     }
-    else if (!(C.sweep && Date.now() - C.sweep.at < RIG_SCOPE_STALE_MS) && Date.now() - C.askedOnAt > RIG_SCOPE_STALE_MS) rigWrite(R, rigCivFrame(address, 0x27, [0x10]));
+    else if (!(C.sweep && Date.now() - C.sweep.at < RIG_SCOPE_STALE_MS) && Date.now() - C.askedOnAt > RIG_SCOPE_STALE_MS)
+    {
+      rigWrite(R, rigCivFrame(address, 0x27, [0x10]));
+      if (C.radioOn === true)
+      {
+        C.askedOnAt = Date.now();
+        rigWrite(R, rigCivFrame(address, 0x27, [0x11, 0x01]));
+      }
+    }
     return;
   }
   if (C.on === true || (C.on === null && rigSettingsOf(R).useScope === true))

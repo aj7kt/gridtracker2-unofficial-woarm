@@ -59,7 +59,7 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
 * **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
 * **Control Panel On Left Side:** puts the side panel on the left of the window and the map on the right.
 * **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
-* **Enable Casting (Google TV Streamer, Chromecast):** adds the Cast button to the button panel, to show the map on a TV. See [Casting the Map](Control-Panel.md#casting-the-map). It can't be turned on without a hardware video encoder.
+* **Enable Casting:** adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See [Casting the Map](Control-Panel.md#casting-the-map). It can't be turned on without a hardware video encoder.
 
 ### Settings
 

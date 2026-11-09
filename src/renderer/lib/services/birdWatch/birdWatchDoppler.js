@@ -370,8 +370,8 @@ function birdWatchDopplerClick(uuid, part)
     // Set as clicked: the user's offsets start again
     GT.rigDoppler.sentRx = GT.rigDoppler.sentTx = null;
     GT.rigDoppler.offset = { rx: 0, tx: 0 };
-    // The mode is set once (it doesn't move with the satellite); RX and TX are followed
-    birdWatchDopplerFollow(setMode);
+    // The mode is set once (it doesn't move with the satellite), the mode cell's at once (birdWatchDopplerModes); RX and TX are followed
+    birdWatchDopplerFollow(setMode ? (part == "mode" ? "now" : true) : false);
     if (setTone) rigTune({ tone: birdWatchTransmitterTone(t) || 0 });
   }
   birdWatchTransmitterWindowUpdate();
@@ -690,7 +690,8 @@ function birdWatchFarReadEvent(D, side, readHz, sentHz)
 }
 
 // The rig set to the followed transmitter's sides, where the satellite is now, with the user's offsets: sent when a side moved 5 Hz or
-// more. setModes: the downlink's mode and the uplink's (rigTune's txMode) set too, each one the rig has a name for
+// more. setModes: the downlink's mode and the uplink's (rigTune's txMode) set too, each one the rig has a name for, once its side's
+// frequency is there ("now": at once; birdWatchDopplerModes)
 function birdWatchDopplerFollow(setModes = false)
 {
   const D = GT.rigDoppler;
@@ -714,8 +715,14 @@ function birdWatchDopplerFollow(setModes = false)
   // Lock VFOs reads the transmitter and both sides' frequencies (birdWatchLockFollow)
   D.lockT = t;
   D.tuning = tuning;
-  // Modes still to be set (Sticky Mode's) go with these frequencies
-  const spec = setModes || D.pendingMode ? { mode: birdWatchRigMode(t), txMode: birdWatchRigUpMode(t) } : {};
+  // Modes still to be set (Sticky Mode's, a click's): each side's due until it is sent (birdWatchDopplerModes)
+  if (setModes || D.pendingMode)
+  {
+    D.modesDue = { rx: !!birdWatchRigMode(t), tx: !!birdWatchRigUpMode(t), now: setModes == "now" };
+    D.pendingMode = null;
+  }
+  if (!D.mode) D.modesDue = null;
+  const spec = {};
   for (const side of ["rx", "tx"])
   {
     if (!D[side] || !tuning[side] || (side == "tx" && !rigTuneCanTx())) continue;
@@ -723,6 +730,9 @@ function birdWatchDopplerFollow(setModes = false)
     const sent = D[side == "rx" ? "sentRx" : "sentTx"];
     if (target !== null && (sent === null || sent === undefined || Math.abs(target - sent) >= 5)) spec[side] = target;
   }
+  const modes = birdWatchDopplerModes(D, t, tuning, spec);
+  if (modes.rx) spec.mode = birdWatchRigMode(t);
+  if (modes.tx) spec.txMode = birdWatchRigUpMode(t);
   if (!spec.rx && !spec.tx && !spec.mode && !spec.txMode) return;
   // Each side is read back here (birdWatchSideTarget), with its own warnings: not by rigTune too
   spec.verify = false;
@@ -743,13 +753,44 @@ function birdWatchDopplerFollow(setModes = false)
         rigPollSoon(read.R);
       }
     }
-    D.pendingMode = null;
+    if (D.modesDue)
+    {
+      if (modes.rx) D.modesDue.rx = false;
+      if (modes.tx) D.modesDue.tx = false;
+    }
     if (D.pendingTone !== undefined)
     {
       rigTune({ tone: D.pendingTone });
       D.pendingTone = undefined;
     }
   }
+}
+
+// The sides whose mode is sent now ({ rx, tx }), of those due (D.modesDue). A side followed gets it once its frequency is there: its
+// first read back near what was sent (its baseline, birdWatchSideTarget), or with its frequency when it can't be read. Sent with the
+// frequency, a rig that can't tune there (an HF rig, a 70 cm downlink) would take the mode and stay in it. A side wanted but not
+// followed (its rig not connected yet, or it wouldn't tune there) waits; one not wanted, or the mode cell clicked (due.now), gets it now
+function birdWatchDopplerModes(D, t, tuning, spec)
+{
+  const out = { rx: false, tx: false };
+  const due = D.modesDue;
+  if (!due) return out;
+  for (const side of ["rx", "tx"])
+  {
+    if (!due[side] || (side == "tx" && !rigTuneCanTx())) continue;
+    const sentKey = side == "rx" ? "sentRx" : "sentTx";
+    if (due.now) out[side] = true;
+    else if (D[side] && tuning[side])
+    {
+      const read = birdWatchSideRead(side);
+      const sent = D[sentKey];
+      const base = D.base ? D.base[side] : null;
+      if (!read || read.hz === null) out[side] = spec[side] > 0 || (sent !== null && sent !== undefined);
+      else out[side] = sent !== null && sent !== undefined && !!base && base.R === read.R && base.seq >= ((D.sentSeq && D.sentSeq[side]) || 0);
+    }
+    else if (!(D.wanted && D.wanted[side])) out[side] = true;
+  }
+  return out;
 }
 
 // A side wanted followed but not (its rig wasn't connected, or it wouldn't tune there: birdWatchSideTarget) is followed again once its
