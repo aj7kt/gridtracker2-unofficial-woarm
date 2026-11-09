@@ -207,6 +207,30 @@ else
   GT = window.opener.GT;
 }
 
+// The App Theme (Settings -> General -> Display): the color of each kind of data, style.css's --gt-* variables, one set per
+// data-app-theme. The main window sets it once its settings are loaded, the other windows here; a new pick reaches every open
+// window at once ("appTheme", sent to all of them by the main process)
+const k_appThemes = ["ambercrt", "apple2e", "aurora", "autumn", "bubblegum", "c64", "cga", "colorblind", "countrykitchen", "cyberpunk",
+  "deepsea", "ega", "ega80s", "foodforest", "frost", "graphite", "grayscale", "highcontrast", "inferno", "matrix", "nightvision", "oledminimal", "opus",
+  "prairiehome", "sunflower", "sunset", "synthwave", "vga", "vic20"];
+// GridTracker2 (its id ega80s from when it was called EGA): new users' theme (defaults.js), and the one an unlisted theme falls back to
+const k_appThemeDefault = "ega80s";
+
+function applyAppTheme(theme = GT.settings && GT.settings.app ? GT.settings.app.appTheme : null)
+{
+  document.documentElement.dataset.appTheme = k_appThemes.includes(theme) ? theme : k_appThemeDefault;
+}
+
+electron.ipcRenderer.on("appTheme", (_event, theme) => applyAppTheme(theme));
+
+// A theme color by its name ("band", "frequency", ...), for drawing on a canvas, which can't use var(--gt-...)
+function gtThemeColor(name)
+{
+  return getComputedStyle(document.documentElement).getPropertyValue("--gt-" + name).trim() || "white";
+}
+
+if (!isGT) applyAppTheme();
+
 // Zoom Code Below
 var s_zoomLevel = 0;
 document.addEventListener("keydown", onZoomControlDown, { capture: true, passive: false });

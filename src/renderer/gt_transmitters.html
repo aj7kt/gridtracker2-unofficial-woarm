@@ -30,7 +30,7 @@
       th,
       td,
       body {
-        color: #fff;
+        color: var(--gt-label);
         white-space: nowrap;
         font-family: Sans-Serif;
         font-size: 12px;
@@ -85,9 +85,9 @@
       <div id="birdTxWrap" style="display: inline-block;">
         <!-- The satellite's name -->
         <div id="birdTxHead" style="display: flex; align-items: center; justify-content: center; gap: 14px; padding: 2px 0;">
-          <span id="birdTxName" style="color: cyan; font-weight: bold;"></span>
+          <span id="birdTxName" style="color: var(--gt-title); font-weight: bold;"></span>
           <!-- Said while the rig follows a transmitter of the table -->
-          <span id="birdTxFollowing" style="color: lightgreen; font-weight: bold;"></span>
+          <span id="birdTxFollowing" style="color: var(--gt-status-ok); font-weight: bold;"></span>
         </div>
         <div id="birdTx"></div>
       </div>

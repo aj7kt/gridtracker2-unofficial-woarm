@@ -458,6 +458,57 @@ ipcMain.handle('captureWindowImage', async (event, what, rect) => {
   }
 });
 
+// Map Cast (mapCast.js): the main window captures itself (getDisplayMedia, answered with its own frame: setDisplayMediaRequestHandler
+// below) and Element Capture cuts that to its map; only while it has asked for that here ('mapCastCaptureAllowed'), and for no other window
+const mapCast = { captureAllowed: false, restoreSize: null };
+
+function mapCastDisplayMedia(request, callback) {
+  const win = allowedWindows['GridTracker2']?.window;
+  const main = win?.webContents.mainFrame;
+  if (mapCast.captureAllowed && main && request.frame && request.frame.processId == main.processId && request.frame.routingId == main.routingId) {
+    mapCast.captureAllowed = false;
+    callback({ video: request.frame });
+  } else {
+    callback({});
+  }
+}
+
+ipcMain.on('mapCastCaptureAllowed', () => {
+  mapCast.captureAllowed = true;
+});
+
+// While casting the main window's content is the nearest 16:9 (the TV's shape) that fits its screen, and the size it had after (not
+// while maximized or full screen)
+ipcMain.handle('mapCastSnap', (event, on) => {
+  const win = allowedWindows['GridTracker2']?.window;
+  if (!win || win.isMaximized() || win.isFullScreen()) return false;
+  if (!on) {
+    if (mapCast.restoreSize) win.setContentSize(mapCast.restoreSize[0], mapCast.restoreSize[1]);
+    mapCast.restoreSize = null;
+    return true;
+  }
+  const [width, height] = win.getContentSize();
+  const bounds = win.getBounds();
+  const area = screen.getDisplayMatching(bounds).workArea;
+  const maxWidth = area.width - (bounds.width - width);
+  const maxHeight = area.height - (bounds.height - height);
+  const byWidth = { width: width, height: Math.round((width * 9) / 16) };
+  const byHeight = { width: Math.round((height * 16) / 9), height: height };
+  let size = Math.abs(byWidth.height - height) <= Math.abs(byHeight.width - width) ? byWidth : byHeight;
+  if (size.width > maxWidth || size.height > maxHeight) {
+    const scale = Math.min(maxWidth / size.width, maxHeight / size.height);
+    size = { width: Math.floor(size.width * scale), height: Math.floor((size.width * scale * 9) / 16) };
+  }
+  if (!mapCast.restoreSize) mapCast.restoreSize = [width, height];
+  win.setContentSize(size.width, size.height);
+  // Kept on its screen
+  const moved = win.getBounds();
+  const x = Math.max(area.x, Math.min(moved.x, area.x + area.width - moved.width));
+  const y = Math.max(area.y, Math.min(moved.y, area.y + area.height - moved.height));
+  if (x != moved.x || y != moved.y) win.setPosition(x, y);
+  return true;
+});
+
 ipcMain.on('setAlwaysOnTop', (event, what, value) => {
   if (allowedWindows[what]?.window) {
     allowedWindows[what].window.setAlwaysOnTop(value);
@@ -478,6 +529,13 @@ ipcMain.on('saveZoom', (event, zoom) => {
 
 ipcMain.on('setTheme', (event, theme) => {
   nativeTheme.themeSource = theme;
+});
+
+// The App Theme picked in Settings: every open window takes its colors at once (first.js applyAppTheme)
+ipcMain.on('setAppTheme', (event, theme) => {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) window.webContents.send('appTheme', theme);
+  }
 });
 
 ipcMain.on('spawnScript', (event, scriptPath) => {
@@ -675,6 +733,7 @@ function createMainWindow() {
   });
   session.setPermissionCheckHandler(() => true);
   session.setDevicePermissionHandler((details) => details.deviceType === 'serial' && serialPortMatches(details.device));
+  session.setDisplayMediaRequestHandler(mapCastDisplayMedia);
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     if (details.frameName == 'printHotKeys') {
@@ -1025,6 +1084,10 @@ function saveWindowPositions() {
   const finalSettings = {};
   for (let window in allowedWindows) {
     finalSettings[window] = allowedWindows[window].options;
+  }
+  // Snapped to 16:9 while casting (mapCastSnap): the size it had before is the one kept
+  if (mapCast.restoreSize && finalSettings['GridTracker2']) {
+    finalSettings['GridTracker2'] = { ...finalSettings['GridTracker2'], width: mapCast.restoreSize[0], height: mapCast.restoreSize[1] };
   }
   fs.writeFileSync(windowSettingsPath, JSON.stringify(finalSettings, null, 2), { flush: true });
 }

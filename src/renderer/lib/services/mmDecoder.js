@@ -537,7 +537,7 @@ function mmDecoderInstanceStatus(read, mode, key)
   mmDecoderInstanceRosterSeen();
   wsjtInstanceStatus(instance, message);
   wsjtInstanceDispatch(instance, message, null);
-  if (!I.live) addEvent("app", "<font style='color:lightgreen'>" + htmlEntities(I18N("mmd.instance.event.started").replace("{mode}", mode).replace("{freq}", formatDialFreq(freq))) + "</font>");
+  if (!I.live) addEvent("app", "<font style='color:var(--gt-status-ok)'>" + htmlEntities(I18N("mmd.instance.event.started").replace("{mode}", mode).replace("{freq}", formatDialFreq(freq))) + "</font>");
   I.live = true;
   I.mode = mode;
   I.sentAt = Date.now();
@@ -660,7 +660,7 @@ function mmDecoderInstanceClose()
     const instance = GT.instances[MMD_INSTANCE_ID];
     wsjtInstanceDispatch(instance, { magic_key: 0xadbccbda, schema_number: 2, type: 6, Id: MMD_INSTANCE_ID }, null);
   }
-  addEvent("app", "<font style='color:white'>" + htmlEntities(I18N("mmd.instance.event.stopped")) + "</font>");
+  addEvent("app", "<font style='color:var(--gt-label)'>" + htmlEntities(I18N("mmd.instance.event.stopped")) + "</font>");
 }
 
 // The Toggle Multi-Mode Decoder button while the instance is open and the window listens closed: a green dot on it, and its tooltip says so

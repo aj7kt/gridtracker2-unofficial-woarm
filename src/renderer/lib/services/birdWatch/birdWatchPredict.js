@@ -426,7 +426,7 @@ function birdWatchSkyDraw(sat, pass, points)
     let top = points[0];
     for (const q of points) if (q[2] > top[2]) top = q;
     const [tx, ty] = at(top[1], top[2]);
-    c.fillStyle = "#ffffff";
+    c.fillStyle = gtThemeColor("elevation");
     c.font = "10px sans-serif";
     c.fillText(top[2].toFixed(0) + "°", tx, ty - 9);
   }
@@ -517,7 +517,7 @@ function birdWatchSideTrack(c, xy, peakAt)
   }
   birdWatchSideDot(c, xy[0][0], xy[0][1], "#2ecc40", 3.5, "#ffffff", 1);
   birdWatchSideDot(c, xy[xy.length - 1][0], xy[xy.length - 1][1], "#ff4136", 3.5, "#ffffff", 1);
-  c.fillStyle = "#ffffff";
+  c.fillStyle = gtThemeColor("elevation");
   c.font = "10px sans-serif";
   c.textAlign = "center";
   c.fillText(peakAt.text, Math.min(BIRD_WATCH_SIDE_W - 12, Math.max(12, peakAt.x)), Math.max(6, peakAt.y - 9));
@@ -653,7 +653,7 @@ function birdWatchSideEarth(c, sat)
   const clampX = (x) => Math.min(BIRD_WATCH_SIDE_W - 30, Math.max(30, x));
   c.font = "10px sans-serif";
   c.textAlign = "center";
-  c.fillStyle = "#ffffff";
+  c.fillStyle = gtThemeColor("distance");
   c.fillText("↑ " + birdWatchDistance(sat.alt), clampX(bx), Math.max(7, by - 11));
   c.fillStyle = sat.up ? "#2ecc40" : "#ff8a80";
   c.fillText("↔ " + birdWatchDistance(sat.range), clampX((sx + bx) / 2), Math.min(BIRD_WATCH_SIDE_H - 7, (sy + by) / 2 + 12));

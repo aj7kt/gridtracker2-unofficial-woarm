@@ -801,7 +801,7 @@ function rigVerifyLater(v, dial)
     if (now - (GT.rigVerifyWarned[v.id] || 0) < RIG_VERIFY_EVENT_MS) return;
     GT.rigVerifyWarned[v.id] = now;
     const text = I18N("rig.event.notTuned").replace("{vfo}", rigVfoLabel(v)).replace("{freq}", formatDialFreq(dial - rigOffset(v))).replace("{read}", formatDialFreq(read.dial - rigOffset(v)));
-    addEvent("app", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+    addEvent("app", "<font style='color:var(--gt-warning)'>" + htmlEntities(text) + "</font>");
   }, RIG_VERIFY_MS);
 }
 
@@ -1114,22 +1114,22 @@ function rigVfoSecondStatusRender(v)
   else if (R.status != "connected" || rigNoAnswer(R))
   {
     text = rigStatusShort(R);
-    color = { connecting: "yellow", error: "#ff8080" }[R.status] || "orange";
+    color = { connecting: "var(--gt-status-busy)", error: "var(--gt-error)" }[R.status] || "var(--gt-status-fail)";
   }
   else if (R.dual === false)
   {
     text = I18N("settings.rig.noSecondVfo");
-    color = "orange";
+    color = "var(--gt-status-fail)";
   }
   else if (!read.up)
   {
     text = I18N("rotor.status.connecting");
-    color = "yellow";
+    color = "var(--gt-status-busy)";
   }
   else
   {
     text = I18N("rotor.status.connected") + "  " + formatDialFreq(read.dial - rigOffset(v)) + (rigOffset(v) ? " LO" : "") + " MHz" + (read.mode ? " " + read.mode : "");
-    color = "lightgreen";
+    color = "var(--gt-status-ok)";
   }
   statusEl.textContent = text;
   statusEl.style.color = color;
@@ -1485,7 +1485,7 @@ function rigLineRender()
   // would show the last transmitter's
   const followed = GT.rigDoppler && typeof birdWatchStickyPrevious == "function" ? birdWatchStickyPrevious() : null;
   const tx = followed && !(followed.uplink_low > 0) ? null : rigRoleVfo("tx");
-  const orange = (text) => "<span style='color:orange'>" + htmlEntities(text) + "</span>";
+  const orange = (text) => "<span style='color:var(--gt-status-fail)'>" + htmlEntities(text) + "</span>";
   const freq = (dial, v, color) => "<span style='color:" + color + "'>" + formatDialFreq(dial - rigOffset(v)) + rigLoBadge(rigOffset(v), dial) + "</span>";
   // Not read: its rig's status, "Off" for one not in use, "-" without a VFO (or a second VFO its rig hasn't)
   const status = (v, read) => (!v ? "-" : !rigVfoOn(v) ? I18N("rotor.status.off") : read.R && (read.R.status != "connected" || rigNoAnswer(read.R)) ? rigStatusShort(read.R) : "-");
@@ -1501,7 +1501,7 @@ function rigLineRender()
     if (el.style.display != value) el.style.display = value;
   };
   const a = rigVfoRead(rx);
-  cell(birdWatchRigRxFreq, a.up ? freq(a.dial, rx, "yellow") : orange(status(rx, a)));
+  cell(birdWatchRigRxFreq, a.up ? freq(a.dial, rx, "var(--gt-frequency)") : orange(status(rx, a)));
   cell(birdWatchRigRxMode, htmlEntities((a.up && a.mode) || "-"));
   const b = rigVfoRead(tx);
   for (const el of [birdWatchRigTxDot, birdWatchRigTxFreq, birdWatchRigTxMode, birdWatchRigLock]) shown(el, !!tx);
@@ -1610,9 +1610,10 @@ function rigStatusRender(R)
   const portErrorEl = rigEl(R, "PortError");
   portErrorEl.style.display = portError ? "" : "none";
   portErrorEl.textContent = portError ? (R.status == "error" ? I18N("serial.inUse").replace("{0}", serialPortShortName(rigSettingsOf(R).port)) + "\n" + R.error : text) : "";
+  portErrorEl.style.color = R.status == "error" ? "var(--gt-error)" : "var(--gt-status-fail)";
   if (portError) text = I18N("rotor.status.errorShort");
   statusEl.textContent = text;
-  statusEl.style.color = quiet ? "orange" : { connected: "lightgreen", connecting: "yellow", error: "#ff8080", noPort: "orange", notFound: "orange" }[R.status] || "#ccc";
+  statusEl.style.color = quiet ? "var(--gt-status-fail)" : { connected: "var(--gt-status-ok)", connecting: "var(--gt-status-busy)", error: "var(--gt-error)", noPort: "var(--gt-status-fail)", notFound: "var(--gt-status-fail)" }[R.status] || "#ccc";
   // The CI-V address the rig answered from, beside the field
   rigEl(R, "CivFound").textContent = R.civFound && R.status == "connected" ? I18N("rig.civ.found").replace("{0}", R.civFound.toString(16).toUpperCase().padStart(2, "0")) + (RIG_CIV_MODELS[R.civFound] ? "  ·  " + RIG_CIV_MODELS[R.civFound] : "") : "";
 }
@@ -2085,7 +2086,7 @@ function rigNetVfoWarn(R)
 {
   if (R.vfoWarned || R.vfoMode !== false || !R.mainSub) return;
   R.vfoWarned = true;
-  addEvent("rig", "<font style='color:red'>" + htmlEntities(I18N("rig.event.needVfoMode").replace("{rig}", R.model || "rigctld")) + "</font>", true);
+  addEvent("rig", "<font style='color:var(--gt-error)'>" + htmlEntities(I18N("rig.event.needVfoMode").replace("{rig}", R.model || "rigctld")) + "</font>", true);
 }
 
 // rigctld: one RPRT line ends each command's answer; a poll's last one means it was read whole

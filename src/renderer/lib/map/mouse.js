@@ -125,7 +125,7 @@ function createTooltTipTable(toolElement)
 
         if (stateNames.length > 0)
         {
-          text += " (<font color='orange'>" + stateNames.join(" / ") + "</font>)";
+          text += " (<span style='color:var(--gt-state)'>" + stateNames.join(" / ") + "</span>)";
         }
       }
 
@@ -135,7 +135,7 @@ function createTooltTipTable(toolElement)
     return (
       "<tr><th colspan='" +
       colspan +
-      "' style='color:yellow'><small>" +
+      "' style='color:var(--gt-country)'><small>" +
       parts.join(", ") +
       "</small></th></tr>"
     );
@@ -184,11 +184,11 @@ function createTooltTipTable(toolElement)
     const pp = info ? info.pp : "?";
 
     return (
-      "<td style='color:yellow'>" +
+      "<td style='color:var(--gt-country)'>" +
       name +
-      " <font color='lightgreen'>(" +
+      " <span style='color:var(--gt-prefix)'>(" +
       pp +
-      ")</font></td>"
+      ")</span></td>"
     );
   }
 
@@ -201,8 +201,8 @@ function createTooltTipTable(toolElement)
   {
     const isMyDX = call.DXcall == GT.settings.app.myCall;
     const isMyDE = call.DEcall == GT.settings.app.myCall;
-    const bgDX = isMyDX ? "background-color:cyan;color:#000;font-weight:bold" : "font-weight:bold;color:cyan;";
-    const bgDE = isMyDE ? "background-color:#FFFF00;color:#000;font-weight:bold" : "font-weight:bold;color:yellow;";
+    const bgDX = isMyDX ? "background-color:cyan;color:#000;font-weight:bold" : "font-weight:bold;color:var(--gt-callsign-other);";
+    const bgDE = isMyDE ? "background-color:#FFFF00;color:#000;font-weight:bold" : "font-weight:bold;color:var(--gt-callsign);";
     const msg = call.msg || "-";
 
     let dxCallHtml = (call.DXcall.indexOf("CQ") == 0 || call.DXcall == "-") 
@@ -218,12 +218,12 @@ function createTooltTipTable(toolElement)
         <td>${call.RSTsent}</td>
         <td>${call.RSTrecv}</td>
         <td style='${bgDX}'>${dxCallHtml}</td>
-        <td style='color:lightblue'>${call.mode}</td>
-        <td style='color:lightgreen'>${call.band}</td>
+        <td style='color:var(--gt-mode)'>${call.mode}</td>
+        <td style='color:var(--gt-band)'>${call.band}</td>
         ${isQso ? `<td align='center'>${call.confirmed ? "&#10004;" : ""}</td>` : ""}
         <td>${msg}</td>
         ${getDxccText(call)}
-        <td align='center' style='color:lightblue'>${getAgeString(call)}</td>
+        <td align='center' style='color:var(--gt-time)'>${getAgeString(call)}</td>
         ${showLoTW ? getLookupCell(GT.lotwCallsigns, call) : ""}
         ${showEQSL ? getLookupCell(GT.eqslCallsigns, call) : ""}
         ${showOQRS ? getLookupCell(GT.oqrsCallsigns, call) : ""}
@@ -250,11 +250,11 @@ function createTooltTipTable(toolElement)
     "<table id='tooltipTable' class='darkTable'>" +
     "<tr><th colspan='" +
     colspan +
-    "' style='color:cyan'>" +
+    "' style='color:var(--gt-grid)'>" +
     qth +
-    " (<font color='white'>" +
+    " (<span style='color:var(--gt-label)'>" +
     I18N(isQso ? "gt.gridView.logbook" : "gt.gridView.live") +
-    "</font>)</th></tr>"
+    "</span>)</th></tr>"
   );
 
   rows.push(buildGridInfo());
@@ -372,16 +372,16 @@ function createSpotTipTable(toolElement)
 
       myTooltip.innerHTML = `
         <table id='tooltipTable' class='darkTable'>
-          <tr><th colspan=2 style='color:cyan'>Rx Spot</th></tr>
-          <tr><td>${I18N("rosterColumns.Spotter.header")}</td><td style='color:#ff0'>${lookupCallHtml(report.call, report.grid)}</td></tr>
-          <tr><td>dB</td><td style='color:#DD44DD'>${formatSignalReport(Number(report.snr))}</td></tr>
+          <tr><th colspan=2 style='color:var(--gt-title)'>Rx Spot</th></tr>
+          <tr><td>${I18N("rosterColumns.Spotter.header")}</td><td style='color:var(--gt-callsign)'>${lookupCallHtml(report.call, report.grid)}</td></tr>
+          <tr><td>dB</td><td style='color:var(--gt-snr)'>${formatSignalReport(Number(report.snr))}</td></tr>
           <tr><td>Age</td><td>${toDHMS(Number(now - report.when))}</td></tr>
-          ${report.dxcc > 0 ? `<tr><td>DXCC</td><td style='color:orange;'>${GT.dxccToAltName[report.dxcc]} <font color='lightgreen'>(${GT.dxccInfo[report.dxcc].pp})</font></td>` : ""}
+          ${report.dxcc > 0 ? `<tr><td>DXCC</td><td style='color:var(--gt-country);'>${GT.dxccToAltName[report.dxcc]} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[report.dxcc].pp})</span></td>` : ""}
           ${gridSpotRow}
-          <tr><td>Freq</td><td style='color:lightgreen'>${formatMhz(report.freq)} <font color='yellow'>(${report.band})</font></td></tr>
-          <tr><td>Mode</td><td style='color:orange'>${report.mode}</td></tr>
-          <tr><td>Dist</td><td style='color:cyan'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
-          <tr><td>Azim</td><td style='color:yellow'>${report.bearing}&deg;</td></tr>
+          <tr><td>Freq</td><td style='color:var(--gt-frequency)'>${formatMhz(report.freq)} <span style='color:var(--gt-band)'>(${report.band})</span></td></tr>
+          <tr><td>Mode</td><td style='color:var(--gt-mode)'>${report.mode}</td></tr>
+          <tr><td>Dist</td><td style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
+          <tr><td>Azim</td><td style='color:var(--gt-azimuth)'>${report.bearing}&deg;</td></tr>
           <tr><td>Time</td><td>${userTimeString(report.when * 1000)}</td></tr>
           ${sourceStr}
         </table>`;
@@ -415,16 +415,16 @@ function createFeedTipTable(toolElement)
 
   myTooltip.innerHTML = `
     <table id='tooltipTable' class='darkTable'>
-      <tr><th colspan=2 style='color:cyan'>${I18N("gt.feedSpot.title")}</th></tr>
-      <tr><td>${I18N("gt.newCallList.Call")}</td><td style='color:#ff0'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td></tr>
-      <tr><td>${I18N("rosterColumns.Spotter.header")}</td><td style='color:#5caeff'>${lookupCallHtml(callObj.spotter)}</td></tr>
+      <tr><th colspan=2 style='color:var(--gt-title)'>${I18N("gt.feedSpot.title")}</th></tr>
+      <tr><td>${I18N("gt.newCallList.Call")}</td><td style='color:var(--gt-callsign)'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td></tr>
+      <tr><td>${I18N("rosterColumns.Spotter.header")}</td><td style='color:var(--gt-callsign-other)'>${lookupCallHtml(callObj.spotter)}</td></tr>
       <tr><td>${I18N("gt.feedSpot.age")}</td><td>${toDHMS(now - callObj.age)}</td></tr>
-      ${callObj.dxcc > 0 ? `<tr><td>${I18N("gt.newCallList.DXCC")}</td><td style='color:orange;'>${GT.dxccToAltName[callObj.dxcc]} <font color='lightgreen'>(${GT.dxccInfo[callObj.dxcc].pp})</font></td></tr>` : ""}
+      ${callObj.dxcc > 0 ? `<tr><td>${I18N("gt.newCallList.DXCC")}</td><td style='color:var(--gt-country);'>${GT.dxccToAltName[callObj.dxcc]} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[callObj.dxcc].pp})</span></td></tr>` : ""}
       <tr><td>${I18N("gt.callsignBox.Grid")}</td>${hasGrid ? `<td style='${lookupGridCellStyle(callObj.grid, callObj.band, callObj.mode)}'>${callObj.fullGrid}</td>` : "<td>-</td>"}</tr>
-      <tr><td>${I18N("gt.newCallList.Freq")}</td><td style='color:lightgreen'>${freq}<font color='yellow'>(${callObj.band})</font></td></tr>
-      <tr><td>${I18N("gt.newCallList.Mode")}</td><td style='color:orange'>${callObj.mode}</td></tr>
-      ${LL ? `<tr><td>${I18N("gt.feedSpot.dist")}</td><td style='color:cyan'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
-      <tr><td>${I18N("gt.feedSpot.azim")}</td><td style='color:yellow'>${bearing}&deg;</td></tr>` : ""}
+      <tr><td>${I18N("gt.newCallList.Freq")}</td><td style='color:var(--gt-frequency)'>${freq}<span style='color:var(--gt-band)'>(${callObj.band})</span></td></tr>
+      <tr><td>${I18N("gt.newCallList.Mode")}</td><td style='color:var(--gt-mode)'>${callObj.mode}</td></tr>
+      ${LL ? `<tr><td>${I18N("gt.feedSpot.dist")}</td><td style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
+      <tr><td>${I18N("gt.feedSpot.azim")}</td><td style='color:var(--gt-azimuth)'>${bearing}&deg;</td></tr>` : ""}
       <tr><td>${I18N("gt.newCallList.Time")}</td><td>${userTimeString(callObj.time * 1000)}</td></tr>
       <tr><td>${I18N("gt.newCallList.LastMsg")}</td><td style='white-space:normal;max-width:300px;'>${htmlEntities(callObj.msg)}</td></tr>
     </table>`;
@@ -445,19 +445,19 @@ function createFeedGroupTipTable(toolElement)
   {
     const freq = callObj.freq > 0 ? formatMhz(callObj.freq / 1000) + " " : "";
     const dxcc = callObj.dxcc > 0 ? GT.dxccToAltName[callObj.dxcc] : "";
-    rows += `<tr><td style='color:#ff0'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
-      `<td style='color:lightgreen'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
-      `<td style='color:orange'>${dxcc}</td>` +
-      `<td style='color:#5caeff'>${lookupCallHtml(callObj.spotter)}</td>` +
-      `<td style='color:lightgreen'>${freq}<font color='yellow'>(${callObj.band})</font></td>` +
-      `<td style='color:orange'>${callObj.mode}</td>` +
-      `<td style='color:lightblue'>${toDHMS(now - callObj.age)}</td>` +
+    rows += `<tr><td style='color:var(--gt-callsign)'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
+      `<td style='color:var(--gt-grid)'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
+      `<td style='color:var(--gt-country)'>${dxcc}</td>` +
+      `<td style='color:var(--gt-callsign-other)'>${lookupCallHtml(callObj.spotter)}</td>` +
+      `<td style='color:var(--gt-frequency)'>${freq}<span style='color:var(--gt-band)'>(${callObj.band})</span></td>` +
+      `<td style='color:var(--gt-mode)'>${callObj.mode}</td>` +
+      `<td style='color:var(--gt-time)'>${toDHMS(now - callObj.age)}</td>` +
       `<td style='white-space:normal;max-width:260px;'>${htmlEntities(callObj.msg)}</td></tr>`;
   }
 
   myTooltip.innerHTML = `
     <table id='tooltipTable' class='darkTable'>
-      <tr><th colspan=8 style='color:cyan'>${I18N("gt.feedSpot.title")} &times; ${spots.length}</th></tr>
+      <tr><th colspan=8 style='color:var(--gt-title)'>${I18N("gt.feedSpot.title")} &times; ${spots.length}</th></tr>
       <tr><th>${I18N("gt.newCallList.Call")}</th><th>${I18N("gt.callsignBox.Grid")}</th><th>${I18N("gt.newCallList.DXCC")}</th><th>${I18N("rosterColumns.Spotter.header")}</th>` +
     `<th>${I18N("gt.newCallList.Freq")}</th><th>${I18N("gt.newCallList.Mode")}</th><th>${I18N("gt.feedSpot.age")}</th><th>${I18N("gt.newCallList.LastMsg")}</th></tr>
       ${rows}
@@ -482,12 +482,12 @@ function createFlagTipTable(feature)
   myFlagtip.innerHTML = `
     <div style='background-color:${workColor};color:#000;font-weight:bold;font-size:18px;border:2px solid gray;margin:0px' class='roundBorder'>${pin.fCall}</div>
     <table id='tooltipTable' class='darkTable'>
-      <tr><td>DXCC</td><td style='color:orange;'>${dxccName} <font color='lightgreen'>(${GT.dxccInfo[dxcc].pp})</font></td>
-      <tr><td>Grid</td><td style='color:cyan;'>${pin.grid}</td></tr>
-      <tr><td>Band</td><td style='color:yellow'>${pin.band}</td></tr>
-      <tr><td>Mode</td><td style='color:orange'>${pin.mode}</td></tr>
-      <tr><td>Dist</td><td style='color:cyan'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
-      <tr><td>Azim</td><td style='color:yellow'>${bearing}&deg;</td></tr>
+      <tr><td>DXCC</td><td style='color:var(--gt-country);'>${dxccName} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[dxcc].pp})</span></td>
+      <tr><td>Grid</td><td style='color:var(--gt-grid);'>${pin.grid}</td></tr>
+      <tr><td>Band</td><td style='color:var(--gt-band)'>${pin.band}</td></tr>
+      <tr><td>Mode</td><td style='color:var(--gt-mode)'>${pin.mode}</td></tr>
+      <tr><td>Dist</td><td style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
+      <tr><td>Azim</td><td style='color:var(--gt-azimuth)'>${bearing}&deg;</td></tr>
     </table>`;
 }
 
@@ -495,13 +495,13 @@ function createTimezoneTipTable(feature)
 {
   let props = feature.getProperties();
   let now = timezoneNow(props.tzid);
-  let abbr = now.abbr ? ` <font color='orange'>(${now.abbr})</font>` : "";
+  let abbr = now.abbr ? ` <span style='color:var(--gt-time)'>(${now.abbr})</span>` : "";
 
   myTimezoneTip.innerHTML = `
     <div style='background-color:cyan;color:#000;font-weight:bold;font-size:16px;border:2px solid gray;margin:0px;padding:1px' class='roundBorder'>${props.tzid}</div>
     <table id='tooltipTable' class='darkTable' align=center>
-      <tr><td style='color:yellow;font-weight:bold'>${now.when}</td></tr>
-      <tr><td style='color:#00FF00;font-weight:bold'>${now.zone}${abbr}</td></tr>
+      <tr><td style='color:var(--gt-time);font-weight:bold'>${now.when}</td></tr>
+      <tr><td style='color:var(--gt-time);font-weight:bold'>${now.zone}${abbr}</td></tr>
     </table>`;
 }
 
@@ -545,12 +545,12 @@ function moonOver(feature)
   let data = subLunar(timeNowSec());
   let object = doRAconvert(GT.myLon, GT.myLat, data.RA, data.Dec);
   let elevation = object.elevation.toFixed(1);
-  let elColor = elevation <= 0 ? "red" : elevation > 10.0 ? "lightgreen" : "yellow";
+  let elColor = elevation <= 0 ? "var(--gt-warning)" : elevation > 10.0 ? "lightgreen" : "yellow";
 
   myMoonTooltip.innerHTML = `
     <table class='darkTable'>
-      <tr><th colspan=2 style='font-size:15px;color:cyan;'>Moon</th></tr>
-      <tr><th>Azimuth</th><td style='color:lightgreen'>${object.azimuth.toFixed(1)}&deg;</td></tr>
+      <tr><th colspan=2 style='font-size:15px;color:var(--gt-title);'>Moon</th></tr>
+      <tr><th>Azimuth</th><td style='color:var(--gt-azimuth)'>${object.azimuth.toFixed(1)}&deg;</td></tr>
       <tr><th>Elevation</th><td style='color:${elColor}'>${elevation}</td></tr>
     </table>`;
 
@@ -570,28 +570,27 @@ function mouseDownGrid(longlat)
   let dist = parseInt(MyCircle.distance(GT.myLat, GT.myLon, longlat[1], longlat[0]) * MyCircle.validateRadius(distanceUnit.value));
 
   let html = `
-    <div style='font-size:14px;font-weight:bold;color:cyan;margin:0 auto' class='roundBorder'>${grid}</div>
+    <div style='font-size:14px;font-weight:bold;color:var(--gt-grid);margin:0 auto' class='roundBorder'>${grid}</div>
     <table align='center' class='darkTable'>
-      <tr style='color:white;'>
-      <tr><td>Dist</td><td style='color:lightgreen'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
-      <tr><td>Azim</td><td style='color:yellow'>${bearing}&deg;</td></tr>
+      <tr><td>Dist</td><td style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
+      <tr><td>Azim</td><td style='color:var(--gt-azimuth)'>${bearing}&deg;</td></tr>
       <tr><td>Lat</td><td style='color:orange'>${longlat[1].toFixed(3)}</td></tr>
       <tr><td>Long</td><td style='color:lightblue'>${longlat[0].toFixed(3)}</td></tr>
     </table>`;
 
   if (grid in GT.gridToDXCC)
   {
-    let dxccCols = GT.gridToDXCC[grid].map(d => `<td>${GT.dxccToAltName[d]} <font color='lightgreen'>(${GT.dxccInfo[d].pp})</font></td>`).join("");
+    let dxccCols = GT.gridToDXCC[grid].map(d => `<td>${GT.dxccToAltName[d]} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[d].pp})</span></td>`).join("");
     let stateCols = "";
     
     if (grid in GT.gridToState)
     {
-      stateCols = "</tr><tr style='color:yellow;'>" + GT.gridToDXCC[grid].map(d => {
+      stateCols = "</tr><tr style='color:var(--gt-state);'>" + GT.gridToDXCC[grid].map(d => {
         let states = GT.gridToState[grid].filter(s => GT.StateData[s].dxcc == d).map(s => GT.StateData[s].name).join("<br>");
         return `<td>${states}</td>`;
       }).join("");
     }
-    html += `<table align='center' class='darkTable' style='border-top:none'><tr style='color:orange;'>${dxccCols}${stateCols}</tr></table>`;
+    html += `<table align='center' class='darkTable' style='border-top:none'><tr style='color:var(--gt-country);'>${dxccCols}${stateCols}</tr></table>`;
     showDxccGrids(grid);
   }
 
@@ -618,7 +617,7 @@ function trophyOver(feature)
   else if (key == "wac" && name in GT.wacZones) { trophy = "Continent"; infoObject = GT.wacZones[name]; }
   else if (key == "was" && name in GT.wasZones) { trophy = "US State"; infoObject = GT.wasZones[name]; name = GT.StateData[name].name; }
   else if (key == "wacp" && name in GT.wacpZones) { trophy = "CA Provinces"; infoObject = GT.wacpZones[name]; name = GT.StateData[name].name; }
-  else if (key == "dxcc" && name in GT.dxccInfo) { trophy = "DXCC"; infoObject = GT.dxccInfo[name]; name = `${GT.dxccInfo[name].name} <font color='orange'>(${GT.dxccInfo[name].pp})</font>`; }
+  else if (key == "dxcc" && name in GT.dxccInfo) { trophy = "DXCC"; infoObject = GT.dxccInfo[name]; name = `${GT.dxccInfo[name].name} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[name].pp})</span>`; }
   else if (key == "usc") { trophy = "US County"; infoObject = GT.countyData[name]; name = `${infoObject.geo.properties.n}, ${infoObject.geo.properties.st}`; }
   else if (key == "us48") {
     trophy = "US Continental Grids"; infoObject = GT.us48Data[feature.get("grid")]; name = feature.get("grid");
@@ -631,31 +630,31 @@ function trophyOver(feature)
     }
   }
 
-  let html = `<div style='font-size:15px;color:cyan;' class='roundBorder'><table><tr><th colspan=2>${trophy}</th></tr>`;
+  let html = `<div style='font-size:15px;color:var(--gt-title);' class='roundBorder'><table><tr><th colspan=2>${trophy}</th></tr>`;
   html += `<tr><td colspan=2><font color='white'><b>${name}</b></font></td></tr>`;
   if (zone) html += `<tr><td colspan=2><font color='lightgreen'>${zone}</font></td></tr>`;
 
   if (!infoObject.worked && !infoObject.confirmed) {
-    html += `<tr><td colspan=2><font color='orange'>${I18N("gt.wcTable.Needed")}</font></td></tr>`;
+    html += `<tr><td colspan=2><span style='color:var(--gt-needed)'>${I18N("gt.wcTable.Needed")}</span></td></tr>`;
   } else {
     html += `<tr>`;
     if (infoObject.worked) {
-      let wBands = Object.keys(infoObject.worked_bands).sort().map(b => `<tr><td align=right>${b}</td><td align=left> <font color='white'>(${infoObject.worked_bands[b]})</font></td></tr>`).join("");
-      let wModes = Object.keys(infoObject.worked_modes).sort().map(m => `<tr><td align=right>${m}</td><td align=left> <font color='white'>(${infoObject.worked_modes[m]})</font></td></tr>`).join("");
+      let wBands = Object.keys(infoObject.worked_bands).sort().map(b => `<tr><td align=right>${b}</td><td align=left> <span style='color:var(--gt-count)'>(${infoObject.worked_bands[b]})</span></td></tr>`).join("");
+      let wModes = Object.keys(infoObject.worked_modes).sort().map(m => `<tr><td align=right>${m}</td><td align=left> <span style='color:var(--gt-count)'>(${infoObject.worked_modes[m]})</span></td></tr>`).join("");
       html += `<td align=center><table class='darkTable'>
-        <tr><td colspan=2><font color='yellow'>${I18N("gt.wcTable.Worked")}</font></td></tr>
-        <tr><td align=right><font color='green'>Band</font></td><td align=left><table class='subtable'>${wBands}</table></td></tr>
-        <tr><td align=right><font color='orange'>${I18N("gt.wcTable.Mode")}</font></td><td align=left><table class='subtable'>${wModes}</table></td></tr>
+        <tr><td colspan=2><span style='color:var(--gt-worked)'>${I18N("gt.wcTable.Worked")}</span></td></tr>
+        <tr><td align=right><span style='color:var(--gt-band)'>Band</span></td><td align=left><table class='subtable'>${wBands}</table></td></tr>
+        <tr><td align=right><span style='color:var(--gt-mode)'>${I18N("gt.wcTable.Mode")}</span></td><td align=left><table class='subtable'>${wModes}</table></td></tr>
       </table></td>`;
     } else html += `<td></td>`;
 
     if (infoObject.confirmed) {
-      let cBands = Object.keys(infoObject.confirmed_bands).sort().map(b => `<tr><td align=right>${b}</td><td align=left> <font color='white'>(${infoObject.confirmed_bands[b]})</font></td></tr>`).join("");
-      let cModes = Object.keys(infoObject.confirmed_modes).sort().map(m => `<tr><td align=right>${m}</td><td align=left> <font color='white'>(${infoObject.confirmed_modes[m]})</font></td></tr>`).join("");
+      let cBands = Object.keys(infoObject.confirmed_bands).sort().map(b => `<tr><td align=right>${b}</td><td align=left> <span style='color:var(--gt-count)'>(${infoObject.confirmed_bands[b]})</span></td></tr>`).join("");
+      let cModes = Object.keys(infoObject.confirmed_modes).sort().map(m => `<tr><td align=right>${m}</td><td align=left> <span style='color:var(--gt-count)'>(${infoObject.confirmed_modes[m]})</span></td></tr>`).join("");
       html += `<td align=center><table class='darkTable'>
-        <tr><td colspan=2><font color='lightgreen'>${I18N("gt.wcTable.Confirmed")}</font></td></tr>
-        <tr><td align=right><font color='green'>${I18N("gt.wcTable.Band")}</font></td><td align=left><table class='subtable'>${cBands}</table></td></tr>
-        <tr><td align=right><font color='orange'>${I18N("gt.wcTable.Mode")}</font></td><td align=left><table class='subtable'>${cModes}</table></td></tr>
+        <tr><td colspan=2><span style='color:var(--gt-confirmed)'>${I18N("gt.wcTable.Confirmed")}</span></td></tr>
+        <tr><td align=right><span style='color:var(--gt-band)'>${I18N("gt.wcTable.Band")}</span></td><td align=left><table class='subtable'>${cBands}</table></td></tr>
+        <tr><td align=right><span style='color:var(--gt-mode)'>${I18N("gt.wcTable.Mode")}</span></td><td align=left><table class='subtable'>${cModes}</table></td></tr>
       </table></td>`;
     } else html += `<td></td>`;
     html += `</tr>`;

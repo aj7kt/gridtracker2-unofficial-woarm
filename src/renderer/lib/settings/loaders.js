@@ -16,7 +16,7 @@ function importSettings(contents)
     {
       if (Number(data.currentVersion.substring(0,7)) < 2241005 )
       {
-        importSettingsInfo.innerHTML = "<font style='color:orange;font-weight:bold'>" + I18N("gt.settings.incompatibleVersion") + "</font>";
+        importSettingsInfo.innerHTML = "<font style='color:var(--gt-error);font-weight:bold'>" + I18N("gt.settings.incompatibleVersion") + "</font>";
       }
       else
       {
@@ -31,12 +31,12 @@ function importSettings(contents)
     }
     else
     {
-      importSettingsInfo.innerHTML = "<font style='color:orange;font-weight:bold'>" + I18N("gt.settings.fileCorrupt") + "</font>";
+      importSettingsInfo.innerHTML = "<font style='color:var(--gt-error);font-weight:bold'>" + I18N("gt.settings.fileCorrupt") + "</font>";
     }
   }
   catch (e)
   {
-    importSettingsInfo.innerHTML = "<font style='color:orange;font-weight:bold'>" + I18N("gt.settings.fileRead") + "</font>";
+    importSettingsInfo.innerHTML = "<font style='color:var(--gt-error);font-weight:bold'>" + I18N("gt.settings.fileRead") + "</font>";
   }
 }
 
@@ -279,8 +279,8 @@ function loadAdifSettings()
     }
   }
 
-  CloudlogStationProfileID.style.color = "#FF0";
-  CloudlogStationProfileID.style.backgroundColor = "darkblue";
+  CloudlogStationProfileID.style.color = "var(--gt-input-text)";
+  CloudlogStationProfileID.style.backgroundColor = "var(--gt-input-bg)";
   CloudlogGetProfiles();
 
   updateAppLogsUI();
@@ -299,6 +299,7 @@ function startupButtonsAndInputs()
   try
   {
     setWindowThemeSelector();
+    setAppThemeSelector();
     GT.pushPinMode = !(GT.settings.app.pushPinMode == true);
     togglePushPinMode();
     udpForwardEnable.checked = GT.settings.app.wsjtForwardUdpEnable;

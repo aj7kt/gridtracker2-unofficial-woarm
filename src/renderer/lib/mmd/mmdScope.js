@@ -86,7 +86,7 @@ function mmdScopeTick()
   const why = { waiting: "cwViewer.scope.waiting", noRig: "cwViewer.scope.noRig", slow: "rig.scope.slow", refused: "rig.scope.refused", radioOff: "rig.scope.radioOff" }[status.state];
   const text = why ? I18N(why) : "";
   if (mmdScopeWarn.textContent != text) mmdScopeWarn.textContent = text;
-  mmdScopeWarn.style.color = status.state == "waiting" ? "#aaa" : "yellow";
+  mmdScopeWarn.style.color = status.state == "waiting" ? "#aaa" : "var(--gt-warning)";
   mmdScopeWarn.style.display = text ? "" : "none";
   // A sweep that stopped coming isn't left showing as if it were live
   if (status.state != "ok" && SCOPE.sweep)
@@ -214,7 +214,7 @@ function mmdScopeDraw()
     }
     if (sweep.outOfRange)
     {
-      ctx.fillStyle = "yellow";
+      ctx.fillStyle = gtThemeColor("warning");
       ctx.font = Math.round(11 * ratio) + "px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -254,7 +254,7 @@ function mmdScopeDraw()
       const tx = Math.max(2 * ratio, Math.min(w - tw - 2 * ratio, hx + 4 * ratio));
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
       ctx.fillRect(tx - 2 * ratio, scaleH + 2 * ratio, tw + 4 * ratio, 13 * ratio);
-      ctx.fillStyle = "white";
+      ctx.fillStyle = gtThemeColor("frequency");
       ctx.textAlign = "left";
       ctx.fillText(text, tx, scaleH + 3 * ratio);
     }

@@ -208,7 +208,7 @@ function birdWatchTransmitterTableHtml(norad)
 function birdWatchTransmitterHtml(norad)
 {
   const tle = birdWatchTleGet(norad);
-  return "<div style='color:cyan;font-weight:bold;text-align:center;padding:2px 0'>" + htmlEntities(tle ? tle.name : String(norad)) + "</div>" + birdWatchTransmitterTableHtml(norad);
+  return "<div style='color:var(--gt-title);font-weight:bold;text-align:center;padding:2px 0'>" + htmlEntities(tle ? tle.name : String(norad)) + "</div>" + birdWatchTransmitterTableHtml(norad);
 }
 
 // The Doppler button (BirdWatch panel) opens the transmitters window of the selected satellite: greyed out while none is selected
@@ -431,7 +431,7 @@ function birdWatchFollowEvent(D)
   const side = (on, low, high) => (on && low > 0 ? birdWatchFrequency(low, high, 1) + " MHz" : "-");
   const text = I18N("birdWatch.event.following").replace("{sat}", () => name).replace("{tx}", () => t.description || "")
     .replace("{down}", () => side(D.rx, t.downlink_low, t.downlink_high)).replace("{up}", () => side(D.tx, t.uplink_low, t.uplink_high));
-  addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(text) + "</font>");
+  addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(text) + "</font>");
 }
 
 // The transmitter followed now, or null
@@ -652,7 +652,7 @@ function birdWatchSideFar(D, side, read, sent)
       D.base = {};
       D.farCount = {};
       const up = side == "tx" ? sent : otherSent;
-      addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(I18N("birdWatch.event.vfoClash").replace("{up}", formatDialFreq(dial(up, "tx")))) + "</font>");
+      addEvent("birdwatch", "<font style='color:var(--gt-warning)'>" + htmlEntities(I18N("birdWatch.event.vfoClash").replace("{up}", formatDialFreq(dial(up, "tx")))) + "</font>");
       birdWatchTransmitterWindowUpdate();
       return null;
     }
@@ -668,7 +668,7 @@ function birdWatchSideFar(D, side, read, sent)
     D.stoppedOn = D.stoppedOn || {};
     D.stoppedOn[side] = read.R.key + ":" + read.R.generation;
     const text = I18N("birdWatch.event.sideStopped").replace("{vfo}", rigVfoLabel(rigRoleVfo(side))).replace("{read}", formatDialFreq(read.hz)).replace("{sent}", formatDialFreq(sent));
-    addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+    addEvent("birdwatch", "<font style='color:var(--gt-warning)'>" + htmlEntities(text) + "</font>");
     birdWatchTransmitterWindowUpdate();
     return null;
   }
@@ -686,7 +686,7 @@ function birdWatchFarReadEvent(D, side, readHz, sentHz)
   if (now - (D.farAt[side] || 0) < 10000) return;
   D.farAt[side] = now;
   const text = I18N("birdWatch.event.farRead").replace("{vfo}", rigVfoLabel(rigRoleVfo(side))).replace("{read}", formatDialFreq(readHz)).replace("{sent}", formatDialFreq(sentHz));
-  addEvent("birdwatch", "<font style='color:orange'>" + htmlEntities(text) + "</font>");
+  addEvent("birdwatch", "<font style='color:var(--gt-warning)'>" + htmlEntities(text) + "</font>");
 }
 
 // The rig set to the followed transmitter's sides, where the satellite is now, with the user's offsets: sent when a side moved 5 Hz or

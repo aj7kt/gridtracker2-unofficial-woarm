@@ -595,22 +595,22 @@ function processStatus(newMessage)
   {
     if (newMessage.Decoding == 1)
     {
-      txrxdec.style.backgroundColor = "Blue";
-      txrxdec.style.borderColor = "Cyan";
+      txrxdec.style.backgroundColor = "var(--gt-status-decode-bg)";
+      txrxdec.style.borderColor = "var(--gt-status-decode-border)";
       txrxdec.innerHTML = I18N("gt.status.txrx.decode");
     }
     else
     {
-      txrxdec.style.backgroundColor = "Green";
-      txrxdec.style.borderColor = "GreenYellow";
+      txrxdec.style.backgroundColor = "var(--gt-status-receive-bg)";
+      txrxdec.style.borderColor = "var(--gt-status-receive-border)";
       // AC Log doesn't receive or decode: it's just connected
       txrxdec.innerHTML = I18N(window.opener.isLoggerInstance(newMessage.instance) ? "gt.status.txrx.connected" : "gt.status.txrx.receive");
     }
   }
   else
   {
-    txrxdec.style.backgroundColor = "red";
-    txrxdec.style.borderColor = "orange";
+    txrxdec.style.backgroundColor = "var(--gt-transmit)";
+    txrxdec.style.borderColor = "var(--gt-status-transmit-border)";
     txrxdec.innerHTML = I18N("gt.status.txrx.transmit");
   }
 }
@@ -1232,8 +1232,8 @@ function gridInputValidate(element)
   element.value = element.value.toUpperCase().replace(/[^A-Z0-9/]+/g, "").substr(0, 4);
   if (!element.value.match(GRID_REGEXP))
   {
-    element.style.color = "#000";
-    element.style.backgroundColor = "yellow";
+    element.style.color = "var(--gt-input-empty-text)";
+    element.style.backgroundColor = "var(--gt-input-empty-bg)";
   }
   else
   {
@@ -3456,23 +3456,23 @@ function ValidateTextInput(inputText, validDiv = null)
     }
     if (passed)
     {
-      inputText.style.color = "#FF0";
+      inputText.style.color = "var(--gt-input-text)";
       inputText.style.backgroundColor = "darkgreen";
       if (validDiv) validDiv.innerHTML = "";
       return true;
     }
     else
     {
-      inputText.style.color = "#000";
-      inputText.style.backgroundColor = "yellow";
+      inputText.style.color = "var(--gt-input-empty-text)";
+      inputText.style.backgroundColor = "var(--gt-input-empty-bg)";
       if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
       return false;
     }
   }
   else
   {
-    inputText.style.color = "#000";
-    inputText.style.backgroundColor = "yellow";
+    inputText.style.color = "var(--gt-input-empty-text)";
+    inputText.style.backgroundColor = "var(--gt-input-empty-bg)";
     if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
     return false;
   }
@@ -3488,8 +3488,8 @@ function watcherNameValidate()
 {
   if (watcherName.value.length === 0 || (watcherName.value in CR.watchers && watcherName.value !== CR.watcherEditKey))
   {
-    watcherName.style.color = "#000";
-    watcherName.style.backgroundColor = "orange";
+    watcherName.style.color = "var(--gt-input-invalid-text)";
+    watcherName.style.backgroundColor = "var(--gt-input-invalid-bg)";
     return false;
   }
   else
@@ -3585,16 +3585,16 @@ function watcherTextValidate(testCallsign = false)
 {
   if (watcherText.value.length === 0)
   {
-    watcherText.style.color = "#FFF";
-    watcherText.style.backgroundColor = "orange";
+    watcherText.style.color = "var(--gt-input-invalid-text)";
+    watcherText.style.backgroundColor = "var(--gt-input-invalid-bg)";
     return false;
   }
   else
   {
     if (testCallsign && !watcherText.value.match(CALLSIGN_REGEXP))
     {
-      watcherText.style.color = "#000";
-      watcherText.style.backgroundColor = "yellow";
+      watcherText.style.color = "var(--gt-input-empty-text)";
+      watcherText.style.backgroundColor = "var(--gt-input-empty-bg)";
     }
     else
     {

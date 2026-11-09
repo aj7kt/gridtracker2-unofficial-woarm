@@ -23,6 +23,10 @@ const WEFAX_TRIM_MAX = 2000;
 // band, Saved)
 const SSTV_CAPTION_SCALE = 2;
 const SSTV_CAPTION_COLORS = { name: "#8cf", time: "#fff", freq: "#8f8", band: "#ff0", saved: "#bbb" };
+// Filter's choices, in its submenu's order (each SSTV_FILTER's, its label cwViewer.picture.filter<Name>.label), and the Undo steps kept
+// for each picture (the oldest let go past it)
+const SSTV_FILTERS = ["sharpen", "denoise", "smooth", "autoContrast", "equalize", "lighten", "darken", "invert"];
+const SSTV_UNDO_KEEP = 20;
 
 const SSTV = {
   workers: {},  // by mode: "sstv" sstvWorker.js, "wefax" wefaxWorker.js
@@ -43,6 +47,7 @@ const SSTV = {
   wefaxAlign: 0,
   status: { state: "idle", snr: -20, line: 0, lines: 0 },
   drawQueued: false,
+  savedLoaded: { sstv: false, wefax: false }, // each mode's saved pictures put in its strip this window (mmdSstvLoadSaved)
   tab: "receive" // the view's tab: "receive" (the pictures) or "send" (Send Picture, mmdSstvTx.js)
 };
 
@@ -355,8 +360,8 @@ function mmdSstvHead()
   sstvHeadText.textContent = text;
 }
 
-// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Delete (From Session; its saved files to the Recycle Bin or
-// Trash; Both: those two only while a file it was saved to is still there)
+// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Filter (not while it comes in), Delete (From Session; File,
+// its saved files deleted; Both: those two only while a file it was saved to is still there)
 function mmdSstvMenu(event, pic)
 {
   event.preventDefault();
@@ -366,6 +371,8 @@ function mmdSstvMenu(event, pic)
   // Rotate: turned from as it is now, or back as it was received
   const turn = (by) => ({ click: () => mmdSstvRotate(pic, by == null ? null : ((pic.rotate || 0) + by) % 360) });
   const saved = mmdSstvSavedFiles(pic).length > 0;
+  const undo = (pic.undo || []).length;
+  const filters = SSTV_FILTERS.map((name) => ({ label: I18N("cwViewer.picture.filter" + name[0].toUpperCase() + name.slice(1) + ".label"), click: () => mmdSstvFilter(pic, name) }));
   const menu = remote.Menu.buildFromTemplate([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdSstvSaveAs(pic) },
     { label: I18N("cwViewer.picture.copy.label"), click: () => mmdSstvCopy(pic) },
@@ -378,13 +385,30 @@ function mmdSstvMenu(event, pic)
         Object.assign({ label: I18N("cwViewer.picture.rotateNone.label"), enabled: !!pic.rotate }, turn(null))
       ]
     },
+    {
+      label: I18N("cwViewer.picture.filter.label"),
+      enabled: pic != SSTV.live,
+      submenu: filters.concat([
+        { type: "separator" },
+        { label: I18N("cwViewer.picture.filterUndo.label").replace("{count}", undo), enabled: undo > 0, click: () => mmdSstvUndo(pic, 1) },
+        { label: I18N("cwViewer.picture.filterUndoAll.label"), enabled: undo > 0, click: () => mmdSstvUndo(pic, undo) }
+      ])
+    },
     { type: "separator" },
     {
       label: I18N("cwViewer.picture.delete.label"),
       submenu: [
         { label: I18N("cwViewer.picture.deleteSession.label"), click: () => mmdSstvDelete(pic) },
-        { label: I18N(process.platform == "win32" ? "cwViewer.picture.deleteFile.label" : "cwViewer.picture.deleteFileTrash.label"), enabled: saved, click: () => mmdSstvTrash(pic) },
-        { label: I18N("cwViewer.picture.deleteBoth.label"), enabled: saved, click: () => mmdSstvTrash(pic).then(() => mmdSstvDelete(pic)) }
+        { label: I18N("cwViewer.picture.deleteFile.label"), enabled: saved, click: () => mmdSstvUnlink(pic) },
+        {
+          label: I18N("cwViewer.picture.deleteBoth.label"),
+          enabled: saved,
+          click: () =>
+          {
+            mmdSstvUnlink(pic);
+            mmdSstvDelete(pic);
+          }
+        }
       ]
     }
   ]);
@@ -397,19 +421,18 @@ function mmdSstvSavedFiles(pic)
   return (pic.files || []).filter((file) => fs.existsSync(file));
 }
 
-// A picture's saved files to the Recycle Bin (Trash elsewhere: undone from there), the picture left in the session, not saved now
-async function mmdSstvTrash(pic)
+// A picture's saved files deleted, the picture left in the session, not saved now
+function mmdSstvUnlink(pic)
 {
-  const shell = window.require("electron").shell;
   for (const file of mmdSstvSavedFiles(pic))
   {
     try
     {
-      await shell.trashItem(file);
+      fs.unlinkSync(file);
     }
     catch (e)
     {
-      mmdStatus(I18N("cwViewer.sstv.trashFailed") + " " + e.message, true);
+      mmdStatus(I18N("cwViewer.sstv.deleteFailed") + " " + e.message, true);
     }
   }
   pic.files = mmdSstvSavedFiles(pic);
@@ -454,6 +477,164 @@ function mmdSstvTurned(pic)
   ctx.rotate((rotate * Math.PI) / 180);
   ctx.drawImage(pic.canvas, 0, 0, width, rows, -width / 2, -rows / 2, width, rows);
   return canvas;
+}
+
+// ---- Filter
+
+// A picture filtered in place (name: one of SSTV_FILTERS), as far as it came: shown, in the strip, and saved or copied that way, what it
+// was kept for Undo. A file saved already stays as it was
+function mmdSstvFilter(pic, name)
+{
+  const width = pic.canvas.width, rows = pic.rows > 0 ? Math.min(pic.rows, pic.canvas.height) : pic.canvas.height;
+  const image = pic.canvas.getContext("2d").getImageData(0, 0, width, rows);
+  // (A chart's grey: one plane, so its Undo steps take a quarter of the room; else red, green and blue)
+  const planes = mmdSstvPlanes(image.data, pic.kind == "wefax" ? 1 : 3);
+  pic.undo = (pic.undo || []).concat([{ rows, planes: planes.map((p) => p.slice()) }]).slice(-SSTV_UNDO_KEEP);
+  SSTV_FILTER[name](planes, width, rows);
+  mmdSstvPut(pic, planes, rows);
+}
+
+// Undo: steps filters taken back (all of them: as it was received, turned as it is)
+function mmdSstvUndo(pic, steps)
+{
+  if (!pic.undo || !pic.undo.length) return;
+  const back = pic.undo.splice(Math.max(0, pic.undo.length - steps))[0];
+  mmdSstvPut(pic, back.planes, back.rows);
+}
+
+// A picture's rows from its planes, shown again
+function mmdSstvPut(pic, planes, rows)
+{
+  const width = pic.canvas.width;
+  const rgba = new Uint8ClampedArray(width * rows * 4);
+  for (let c = 0; c < 3; c++)
+  {
+    const p = planes[Math.min(c, planes.length - 1)];
+    for (let i = 0, j = c; i < p.length; i++, j += 4) rgba[j] = p[i];
+  }
+  for (let j = 3; j < rgba.length; j += 4) rgba[j] = 255;
+  pic.canvas.getContext("2d").putImageData(new ImageData(rgba, width, rows), 0, 0);
+  mmdSstvStrip();
+  mmdSstvDraw();
+}
+
+// RGBA as planes: the first count of red, green and blue, each a byte a pixel
+function mmdSstvPlanes(rgba, count)
+{
+  const planes = [];
+  for (let c = 0; c < count; c++)
+  {
+    const p = new Uint8ClampedArray(rgba.length / 4);
+    for (let i = 0, j = c; i < p.length; i++, j += 4) p[i] = rgba[j];
+    planes.push(p);
+  }
+  return planes;
+}
+
+// Each filter, on a picture's planes (width by rows) in place
+const SSTV_FILTER = {
+  // Unsharp mask: each pixel pushed as far again from its blurred neighborhood
+  sharpen: (planes, w, h) => planes.forEach((p) =>
+  {
+    const blur = mmdSstvBlur(p, w, h);
+    for (let i = 0; i < p.length; i++) p[i] = 2 * p[i] - blur[i];
+  }),
+  // Median of each 3 x 3: specks and noise taken out, edges and lines kept
+  denoise: (planes, w, h) => planes.forEach((p) => p.set(mmdSstvMedian(p, w, h))),
+  // Gaussian blur (5 x 5 binomial)
+  smooth: (planes, w, h) => planes.forEach((p) => p.set(mmdSstvBlur(p, w, h))),
+  // Its levels stretched to black and white (the darkest and lightest 0.5% let go)
+  autoContrast: (planes) => mmdSstvLevels(planes, (hist, total) =>
+  {
+    let lo = 0, hi = 255;
+    for (let n = 0; lo < 255 && (n += hist[lo]) <= total * 0.005;) lo++;
+    for (let n = 0; hi > 0 && (n += hist[hi]) <= total * 0.005;) hi--;
+    return hi > lo ? (v) => ((v - lo) * 255) / (hi - lo) : null;
+  }),
+  // Histogram equalization: its levels spread evenly from black to white
+  equalize: (planes) => mmdSstvLevels(planes, (hist, total) =>
+  {
+    const cdf = new Float64Array(256);
+    for (let v = 0, n = 0; v < 256; v++) cdf[v] = n += hist[v];
+    const first = cdf[hist.findIndex((n) => n > 0)];
+    return total > first ? (v) => ((cdf[v] - first) * 255) / (total - first) : null;
+  }),
+  // Gamma 1.25 and 0.8: the midtones lighter or darker, black and white kept
+  lighten: (planes) => mmdSstvLevels(planes, () => (v) => 255 * Math.pow(v / 255, 0.8)),
+  darken: (planes) => mmdSstvLevels(planes, () => (v) => 255 * Math.pow(v / 255, 1.25)),
+  invert: (planes) => mmdSstvLevels(planes, () => (v) => 255 - v)
+};
+
+// Every plane's levels remapped the same way (colors kept): curve(histogram of all planes, its count) gives each level's new one, or
+// null to leave them
+function mmdSstvLevels(planes, curve)
+{
+  const hist = new Float64Array(256);
+  for (const p of planes) for (let i = 0; i < p.length; i++) hist[p[i]]++;
+  const map = curve(hist, planes.length * planes[0].length);
+  if (!map) return;
+  const lut = new Uint8ClampedArray(256);
+  for (let v = 0; v < 256; v++) lut[v] = Math.round(map(v));
+  for (const p of planes) for (let i = 0; i < p.length; i++) p[i] = lut[p[i]];
+}
+
+// A plane blurred by 1 4 6 4 1 across, then down (its edges repeated past them)
+function mmdSstvBlur(p, w, h)
+{
+  const across = new Float32Array(p.length), out = new Uint8ClampedArray(p.length);
+  const col = (dx) => Int32Array.from({ length: w }, (_, x) => Math.max(0, Math.min(w - 1, x + dx)));
+  const l2 = col(-2), l1 = col(-1), r1 = col(1), r2 = col(2);
+  for (let y = 0; y < h; y++)
+  {
+    const row = y * w;
+    for (let x = 0; x < w; x++) across[row + x] = (p[row + l2[x]] + 4 * p[row + l1[x]] + 6 * p[row + x] + 4 * p[row + r1[x]] + p[row + r2[x]]) / 16;
+  }
+  for (let y = 0; y < h; y++)
+  {
+    const at = (dy) => Math.max(0, Math.min(h - 1, y + dy)) * w;
+    const a = at(-2), b = at(-1), c = y * w, d = at(1), e = at(2);
+    for (let x = 0; x < w; x++) out[c + x] = (across[a + x] + 4 * across[b + x] + 6 * across[c + x] + 4 * across[d + x] + across[e + x]) / 16;
+  }
+  return out;
+}
+
+// The 3 x 3 median's exchanges (Paeth's 19, as Devillard gives them): each pair put in order leaves the median at 4
+const SSTV_MEDIAN_SWAPS = [1, 2, 4, 5, 7, 8, 0, 1, 3, 4, 6, 7, 1, 2, 4, 5, 7, 8, 0, 3, 5, 8, 4, 7, 3, 6, 1, 4, 2, 5, 4, 7, 4, 2, 6, 4, 4, 2];
+
+// A plane's 3 x 3 medians (its edges repeated past them)
+function mmdSstvMedian(p, w, h)
+{
+  const out = new Uint8ClampedArray(p.length), v = new Uint8Array(9);
+  // (Each of the 9's place: its row's start, by the row's 0, 1 or 2, plus its column, by x and the column's 0, 1 or 2)
+  const rows = new Int32Array(3), cols = new Int32Array(w * 3);
+  for (let x = 0; x < w; x++)
+  {
+    cols[x * 3] = Math.max(0, x - 1);
+    cols[x * 3 + 1] = x;
+    cols[x * 3 + 2] = Math.min(w - 1, x + 1);
+  }
+  for (let y = 0; y < h; y++)
+  {
+    rows[0] = Math.max(0, y - 1) * w;
+    rows[1] = y * w;
+    rows[2] = Math.min(h - 1, y + 1) * w;
+    for (let x = 0; x < w; x++)
+    {
+      for (let k = 0; k < 9; k++) v[k] = p[rows[(k / 3) | 0] + cols[x * 3 + (k % 3)]];
+      for (let k = 0; k < SSTV_MEDIAN_SWAPS.length; k += 2)
+      {
+        const a = SSTV_MEDIAN_SWAPS[k], b = SSTV_MEDIAN_SWAPS[k + 1];
+        if (v[a] > v[b])
+        {
+          const t = v[a];
+          v[a] = v[b];
+          v[b] = t;
+        }
+      }
+      out[y * w + x] = v[4];
+    }
+  }
+  return out;
 }
 
 // The picture (as much of it as came) onto the clipboard as an image
@@ -523,6 +704,80 @@ function mmdSstvSave(pic, file)
   catch (e)
   {
     mmdStatus(I18N("cwViewer.sstv.saveFailed") + " " + e.message, true);
+  }
+}
+
+// The mode's newest SSTV_KEEP saved pictures (PNGs), into its strip behind any that came since, the first time its mode is shown in this
+// window: each as it was saved, named, timed and on the frequency its file name gives (Delete's File takes the file). Both modes' folders
+// are looked in, a file going to the mode its name gives (charts saved in SSTV Pictures before WEFAX had a folder of its own), one named
+// otherwise to its folder's
+async function mmdSstvLoadSaved(kind)
+{
+  if (SSTV.savedLoaded[kind]) return;
+  SSTV.savedLoaded[kind] = true;
+  let found = [];
+  const folders = { sstv: mmdSstvFolderOf({ kind: "sstv" }), wefax: mmdSstvFolderOf({ kind: "wefax" }) };
+  for (const folderKind of folders.sstv == folders.wefax ? ["sstv"] : ["sstv", "wefax"])
+  {
+    try
+    {
+      const folder = folders[folderKind];
+      found = found.concat(fs.readdirSync(folder).filter((f) => /\.png$/i.test(f)).map((f) => mmdSstvSavedInfo(path.join(folder, f), folderKind)));
+    }
+    catch (e)
+    {
+      // (No folder yet: nothing saved there)
+    }
+  }
+  found = found.filter((info) => info && info.kind == kind).sort((a, b) => b.at - a.at).slice(0, SSTV_KEEP);
+  const pics = [];
+  for (const info of found)
+  {
+    try
+    {
+      const bitmap = await createImageBitmap(new Blob([await fs.promises.readFile(info.file)]));
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      canvas.getContext("2d").drawImage(bitmap, 0, 0);
+      bitmap.close();
+      pics.push({ id: "file:" + info.file, kind, name: info.name, width: canvas.width, height: canvas.height, canvas, rows: canvas.height, complete: true, at: info.at, dial: info.dial, shift: 0, saved: info.file, files: [info.file] });
+    }
+    catch (e)
+    {
+      // (Not a picture it can read: left out)
+    }
+  }
+  // (One saved again since, by Save Picture...: kept once, as it is now)
+  const list = SSTV.lists[kind];
+  const fresh = pics.filter((pic) => !list.some((p) => (p.files || []).includes(pic.saved)));
+  SSTV.lists[kind] = list.concat(fresh).sort((a, b) => b.at - a.at).slice(0, SSTV_KEEP);
+  if (mmdSstvMode() && kind == mmdSstvKind())
+  {
+    mmdSstvStrip();
+    mmdSstvDraw();
+    mmdSstvHead();
+  }
+}
+
+// A saved picture's file told by its name (mmdSstvFileName: 20261027-225115Z_Martin1_14230kHz.png, WEFAX's WEFAX120576): { file, kind,
+// at, name, dial }. Another name: itself, its folder's kind, at the time it was written. Null for one it can't read
+function mmdSstvSavedInfo(file, folderKind)
+{
+  try
+  {
+    const base = path.basename(file, path.extname(file));
+    const m = base.match(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)Z_([\w-]+?)(?:_(\d+)kHz)?$/);
+    if (!m) return { file, kind: folderKind, at: fs.statSync(file).mtimeMs, name: base, dial: null };
+    const at = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6]);
+    // Its mode's spaces put back (Martin 1, Scottie DX, PD 120), a chart's line rate and index of cooperation apart (WEFAX 120/576)
+    const wefax = m[7].match(/^WEFAX(\d+?)(576|288)$/);
+    const name = wefax ? "WEFAX " + wefax[1] + "/" + wefax[2] : m[7].replace(/^([A-Za-z]+?)(\d+|DX)$/, "$1 $2");
+    return { file, kind: wefax ? "wefax" : "sstv", at, name, dial: m[8] ? Number(m[8]) * 1000 : null };
+  }
+  catch (e)
+  {
+    return null;
   }
 }
 

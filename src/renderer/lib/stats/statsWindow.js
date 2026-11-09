@@ -91,23 +91,23 @@ function ValidateCallsign(inputText, validDiv)
     }
     if (passed)
     {
-      inputText.style.color = "#FF0";
-      inputText.style.backgroundColor = "darkblue";
+      inputText.style.color = "var(--gt-input-text)";
+      inputText.style.backgroundColor = "var(--gt-input-bg)";
       if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Valid");
       return true;
     }
     else
     {
-      inputText.style.color = "#000";
-      inputText.style.backgroundColor = "yellow";
+      inputText.style.color = "var(--gt-input-empty-text)";
+      inputText.style.backgroundColor = "var(--gt-input-empty-bg)";
       if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
       return false;
     }
   }
   else
   {
-    inputText.style.color = "#000";
-    inputText.style.backgroundColor = "yellow";
+    inputText.style.color = "var(--gt-input-empty-text)";
+    inputText.style.backgroundColor = "var(--gt-input-empty-bg)";
     if (validDiv) validDiv.innerHTML = I18N("stats.Validate.Invalid");
     return false;
   }

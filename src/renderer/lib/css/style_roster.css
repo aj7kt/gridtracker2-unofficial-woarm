@@ -136,30 +136,30 @@ body.roster {
   padding-left: 3px;
   white-space: nowrap;
   overflow: hidden;
-  border-bottom: 1px solid lightblue;
+  border-bottom: 1px solid var(--gt-subtab-border);
 }
 
 .rosterTab {
   height: 22px;
   padding: 1px 10px;
   margin-right: 3px;
-  border: 1px solid lightblue;
+  border: 1px solid var(--gt-subtab-border);
   border-bottom: none;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
   background-color: black;
-  color: #eee;
+  color: var(--gt-tab-text);
   font-weight: bold;
   cursor: pointer;
 }
 
 .rosterTab.active {
-  background-color: cyan;
-  color: black;
+  background-color: var(--gt-subtab-active-bg);
+  color: var(--gt-subtab-active-text);
 }
 
 #rosterSettingsButton {
-  color: cyan;
+  color: var(--gt-subtab-active-bg);
 }
 
 /* Settings pane title: which roster these settings belong to */
@@ -167,22 +167,22 @@ body.roster {
   margin: 2px 30px 4px 30px;
   font-weight: bold;
   font-size: larger;
-  color: cyan;
+  color: var(--gt-subtab-active-bg);
 }
 
 body.feedRosterShown #rosterSettingsTitle {
-  color: yellow;
+  color: var(--gt-feed-accent);
 }
 
 /* Feed Roster tab: the window's yellow / cyan swap, so the two rosters are easy to tell apart
    (callsign and grid colors swap too, in processRosterHunting) */
 body.feedRosterShown .rosterTab.active,
 body.feedRosterShown .infotab button.active {
-  background-color: yellow;
+  background-color: var(--gt-feed-accent);
 }
 
 body.feedRosterShown #rosterSettingsButton {
-  color: yellow;
+  color: var(--gt-feed-accent);
 }
 
 body.rosterTabsShown #TransmitControls,
@@ -588,7 +588,7 @@ table.rosterTable tr.virtualSpacer td {
   margin-right: 2px;
   margin-bottom: 2px;
   border-width: 2px;
-  border-color: #999;
+  border-color: var(--gt-button-border);
   border-style: outset;
   min-width: 9em;
   min-height: 2em;
@@ -603,7 +603,7 @@ table.rosterTable tr.virtualSpacer td {
 }
 
 .compact:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .compactCallsign {
@@ -860,14 +860,14 @@ table.sotaLogFields td.sotaLogRst {
 
 /* Style the buttons that are used to open the tab content */
 .infotab button {
-  border: 1px solid lightblue;
+  border: 1px solid var(--gt-subtab-border);
   padding: 3px;
   font-weight: bold;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
   margin-left: 5px;
   margin-right: 0px;
-  color: #eee;
+  color: var(--gt-tab-text);
   background: black;
   text-align: center;
   cursor: pointer;
@@ -878,8 +878,8 @@ table.sotaLogFields td.sotaLogRst {
 
 /* Create an active/current tablink class */
 .infotab button.active {
-  background-color: cyan;
-  color: black;
+  background-color: var(--gt-subtab-active-bg);
+  color: var(--gt-subtab-active-text);
 }
 /* Style the tab content */
 .infoTabcontent {
@@ -933,7 +933,7 @@ p {
 }
 
 .exceptionTab > div:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .break {
@@ -1019,7 +1019,7 @@ p {
 }
 
 .rowBuilder:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .rowBuilder > * {

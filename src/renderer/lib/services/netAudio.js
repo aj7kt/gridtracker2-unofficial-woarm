@@ -317,7 +317,7 @@ function netAudioStatusRender(id)
   const state = GT.netAudio[id];
   const text = state ? state.status : "";
   if (el.textContent != text) el.textContent = text;
-  el.style.color = state && state.error ? "orange" : "";
+  el.style.color = state && state.error ? "var(--gt-error)" : "";
 }
 
 // The Found menu: shown while its protocol has found something, its stream not connected

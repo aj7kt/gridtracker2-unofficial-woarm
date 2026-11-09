@@ -10,15 +10,15 @@ function ignoreMessagesToggle()
   GT.ignoreMessages ^= 1;
   if (GT.ignoreMessages == 0)
   {
-    txrxdec.style.backgroundColor = "Green";
-    txrxdec.style.borderColor = "GreenYellow";
+    txrxdec.style.backgroundColor = "var(--gt-status-receive-bg)";
+    txrxdec.style.borderColor = "var(--gt-status-receive-border)";
     txrxdec.innerHTML = I18N(isLoggerInstance(GT.activeInstance) ? "gt.status.txrx.connected" : "gt.status.txrx.receive");
     txrxdec.title = I18N("gt.status.ignoreMessages.hover");
   }
   else
   {
-    txrxdec.style.backgroundColor = "DimGray";
-    txrxdec.style.borderColor = "DarkGray";
+    txrxdec.style.backgroundColor = "var(--gt-status-ignore-bg)";
+    txrxdec.style.borderColor = "var(--gt-status-ignore-border)";
     txrxdec.innerHTML = I18N("gt.status.txrx.ignore");
     txrxdec.title = I18N("gt.status.resumeMessages.hover");
   }

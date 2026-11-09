@@ -138,7 +138,7 @@ function mmdWefaxAutoToggle()
     // It can't tune without Rig Control: said so, and left off
     WEFAX_AUTO.on = false;
     cwWefaxAuto.checked = false;
-    mmdStatus(I18N("cwViewer.wefax.auto.noRig"), true);
+    mmdStatus(I18N("cwViewer.wefax.auto.noRig"), "warning");
   }
   // On again: the last "off" said no more
   else if (WEFAX_AUTO.on && DEC.running) mmdStatus(I18N("cwViewer.status.listening"));

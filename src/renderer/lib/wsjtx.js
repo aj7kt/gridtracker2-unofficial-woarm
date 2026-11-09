@@ -131,7 +131,7 @@ function handleInstanceStatus(newMessage)
     let bandChange = false;
     let modeChange = false;
 
-    wsjtxMode.innerHTML = "<font color='orange'>" + newMessage.MO + "</font>";
+    wsjtxMode.innerHTML = "<span style='color:var(--gt-mode)'>" + newMessage.MO + "</span>";
     GT.settings.app.myMode = newMessage.MO;
     GT.settings.app.myBand = newMessage.Band;
     if (GT.lastBand != GT.settings.app.myBand)
@@ -166,7 +166,7 @@ function handleInstanceStatus(newMessage)
       redrawDxcwSpots();
       redrawPins();
 
-      let msg = "<font color='yellow'>" + GT.settings.app.myBand + "</font> / <font color='orange'>" + GT.settings.app.myMode + "</font>";
+      let msg = "<span style='color:var(--gt-band)'>" + GT.settings.app.myBand + "</span> / <span style='color:var(--gt-mode)'>" + GT.settings.app.myMode + "</span>";
       addEvent("wsjtx", msg);
       ackAlerts();
 
@@ -176,8 +176,8 @@ function handleInstanceStatus(newMessage)
     GT.settings.app.myRawFreq = newMessage.Frequency;
     // AC Log without a rig interface has no frequency: just the band
     const showFrequency = !isLoggerInstance(newMessage.Id) || newMessage.Frequency > 0;
-    frequency.innerHTML = (showFrequency ? "<font color='lightgreen'>" + formatDialFreq(Number(newMessage.Frequency)) + " </font>" : "") +
-      "<font color='yellow'>(" + GT.settings.app.myBand + ")</font>";
+    frequency.innerHTML = (showFrequency ? "<span style='color:var(--gt-frequency)'>" + formatDialFreq(Number(newMessage.Frequency)) + " </span>" : "") +
+      "<span style='color:var(--gt-band)'>(" + GT.settings.app.myBand + ")</span>";
     
 
     // The instance's own callsign; when it gives none (AC Log without its station info, Log4OM without a rig),
@@ -304,8 +304,8 @@ function handleInstanceStatus(newMessage)
     {
       // Decoding
       fadePaths();
-      txrxdec.style.backgroundColor = "Blue";
-      txrxdec.style.borderColor = "Cyan";
+      txrxdec.style.backgroundColor = "var(--gt-status-decode-bg)";
+      txrxdec.style.borderColor = "var(--gt-status-decode-border)";
       txrxdec.innerHTML = I18N("gt.status.txrx.decode");
       GT.countIndex++;
       GT.weAreDecoding = true;
@@ -342,8 +342,8 @@ function handleInstanceStatus(newMessage)
         }
       }
 
-      txrxdec.style.backgroundColor = "Green";
-      txrxdec.style.borderColor = "GreenYellow";
+      txrxdec.style.backgroundColor = "var(--gt-status-receive-bg)";
+      txrxdec.style.borderColor = "var(--gt-status-receive-border)";
       // AC Log doesn't receive or decode: it's just connected
       txrxdec.innerHTML = I18N(isLoggerInstance(newMessage.instance) ? "gt.status.txrx.connected" : "gt.status.txrx.receive");
     }
@@ -389,8 +389,8 @@ function handleInstanceStatus(newMessage)
     }
     else
     {
-      txrxdec.style.backgroundColor = "red";
-      txrxdec.style.borderColor = "orange";
+      txrxdec.style.backgroundColor = "var(--gt-transmit)";
+      txrxdec.style.borderColor = "var(--gt-status-transmit-border)";
       txrxdec.innerHTML = I18N("gt.status.txrx.transmit");
       GT.layerSources.transmit.clear();
       GT.transmitFlightPath = null;
@@ -530,8 +530,8 @@ function handleClosed(newMessage)
 {
   if (GT.activeInstance == newMessage.Id && GT.instances[newMessage.Id].open == false)
   {
-    txrxdec.style.backgroundColor = "Purple";
-    txrxdec.style.borderColor = "Purple";
+    txrxdec.style.backgroundColor = "var(--gt-status-closed)";
+    txrxdec.style.borderColor = "var(--gt-status-closed)";
     let name = newMessage.Id.toUpperCase().split(" - ");
     // The rig name cut like the panel's rig name (rigDiv), so it fits with the word in every language
     txrxdec.innerHTML = I18N("gt.status.txrx.closed").replace("{0}", name[name.length - 1].substring(0, 18));
@@ -1216,13 +1216,13 @@ function finalWsjtxDecode(newMessage, useReformedMessage = false, reformedMessag
 
   GT.lastMessages.unshift(`
     <tr style='background-color:${bgColor}'>
-      <td style='color:lightblue'>${userTimeString(theTimeStamp * 1000)}</td>
-      <td style='color:orange'>${newMessage.SR}</td>
-      <td style='color:gray'>${newMessage.DT.toFixed(1)}</td>
-      <td style='color:lightgreen'>${newF}</td>
+      <td style='color:var(--gt-time)'>${userTimeString(theTimeStamp * 1000)}</td>
+      <td style='color:var(--gt-snr)'>${newMessage.SR}</td>
+      <td style='color:var(--gt-dt)'>${newMessage.DT.toFixed(1)}</td>
+      <td style='color:var(--gt-frequency)'>${newF}</td>
       <td>${mode}</td>
-      <td style='color:${CQ ? "cyan" : "white"}'>${htmlEntities(theMessage)}</td>
-      <td style='color:yellow'>${countryName}</td>
+      <td style='color:${CQ ? "var(--gt-cq)" : "var(--gt-message)"}'>${htmlEntities(theMessage)}</td>
+      <td style='color:var(--gt-country)'>${countryName}</td>
     </tr>
   `);
 
@@ -1510,7 +1510,7 @@ function setCallAndGrid(callsign, grid, instance = null, genMessages = true)
 
       responseArray = responseArray.slice(0, length);
       wsjtUdpMessage(responseArray, responseArray.length, port, address);
-      addEvent("wsjtx", "<font color='lightgreen'>" + I18N("gt.msg.generated") + "</font>");
+      addEvent("wsjtx", "<span style='color:var(--gt-status-ok)'>" + I18N("gt.msg.generated") + "</span>");
     }
     else
     {
@@ -1538,7 +1538,7 @@ function setCallAndGrid(callsign, grid, instance = null, genMessages = true)
   }
   if (thisInstance && thisInstance.TxEnabled == 1 && genMessages == true)
   {
-    addEvent("wsjtx", "<font color='yellow'>" + I18N("gt.msg.txEnabled") + "</font><br><font color='yellow'>" + I18N("gt.msg.generateAborted") + "</font>");
+    addEvent("wsjtx", "<span style='color:var(--gt-warning)'>" + I18N("gt.msg.txEnabled") + "</span><br><span style='color:var(--gt-warning)'>" + I18N("gt.msg.generateAborted") + "</span>");
   }
 }
 

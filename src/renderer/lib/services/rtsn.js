@@ -1177,7 +1177,7 @@ function simplePushTestResponse(buffer, isTest)
   if (isTest)
   {
     let divText = I18N("adif.TestResult.error");
-    let color = "#F00";
+    let color = "var(--gt-error)";
     try 
     {
       if (buffer)
@@ -1186,12 +1186,12 @@ function simplePushTestResponse(buffer, isTest)
         if ("notificationId" in json || "taskId" in json)
         {
           divText = I18N("adif.TestResult.passed");
-          color = "#1F1";
+          color = "var(--gt-status-ok)";
         }
         if ("error" in json)
         {
           divText = json.msg;
-          color = "#F00";
+          color = "var(--gt-error)";
         }
       }
       else
@@ -1259,7 +1259,7 @@ function PushoverReply(data, isTest)
   if (isTest)
   {
     let result = "Unknown Error";
-    let color = "#F00";
+    let color = "var(--gt-error)";
     let responseJson = JSON.parse(data);
 
     if (typeof responseJson != "undefined" && typeof responseJson.status != "undefined")
@@ -1267,12 +1267,12 @@ function PushoverReply(data, isTest)
       if (responseJson.status == 1)
       {
         // {"status":1,"request":"1d5ace84-c2e4-4b19-a051-5ac4c9671170"}
-        color = "#FFF";
+        color = "var(--gt-status-ok)";
         result = I18N("adif.TestResult.passed");
       }
       else if (responseJson.status == 0)
       {
-        color = "#FF0";
+        color = "var(--gt-error)";
         if (typeof responseJson.user != "undefined")
         {
           // {"user":"invalid","errors":["user identifier is not a valid user, group, or subscribed user key, see https://pushover.net/api#identifiers"],"status":0,"request":"3ef45ac6-38d6-47db-b7aa-7731e8ac0fcb"}

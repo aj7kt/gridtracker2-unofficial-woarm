@@ -742,11 +742,11 @@ function parkGroupTipHtml(keys)
   {
     const { activator, spotter, frequency, count, spotTime, source, comments, band, mode } = spot;
     const grid = potaSpotGrid(spot, GT.pota.parks[key]);
-    rows += `<tr><td style='color:yellow'>${lookupCallHtml(activator, grid == "-" ? "" : grid)}</td><td style='color:lightgreen'>${grid}</td>` +
+    rows += `<tr><td style='color:var(--gt-callsign)'>${lookupCallHtml(activator, grid == "-" ? "" : grid)}</td><td style='color:var(--gt-grid)'>${grid}</td>` +
       `<td style='color:#fbb6fc'>${key}</td>` +
-      `<td style='color:cyan'>${spotter === activator ? "Self" : lookupCallHtml(spotter)}</td>` +
-      `<td style='color:lightgreen'>${formatMhz(frequency)} <font color='yellow'>(${band})</font></td><td style='color:orange'>${mode}</td>` +
-      `<td>${count}</td><td style='color:lightblue'>${toDHMS(~~((now - spotTime) / 1000))}</td><td>${source}</td><td>${comments}</td></tr>`;
+      `<td style='color:var(--gt-callsign-other)'>${spotter === activator ? "Self" : lookupCallHtml(spotter)}</td>` +
+      `<td style='color:var(--gt-frequency)'>${formatMhz(frequency)} <span style='color:var(--gt-band)'>(${band})</span></td><td style='color:var(--gt-mode)'>${mode}</td>` +
+      `<td>${count}</td><td style='color:var(--gt-time)'>${toDHMS(~~((now - spotTime) / 1000))}</td><td>${source}</td><td>${comments}</td></tr>`;
   }
   return `<table id='potaSpotsTable' class='darkTable' style='margin: 0 auto;'>
     <tr><th colspan=10 style='color:#fbb6fc'>${I18N("gt.potaSpot.title")} &times; ${spots.length}</th></tr>
@@ -772,7 +772,7 @@ function parkTipHtml(key)
   // Header like the SOTA summit tooltip's: the park; where it is; distance and bearing (when it has a position). The grid
   // is in the spot rows
   const where = [locationDesc && locationDesc != "??-??" ? `<font color='lightblue'>${htmlEntities(locationDesc)}</font>` : "",
-    `<font color='yellow'>${altName}</font>`].filter((part) => part).join(", ");
+    `<span style='color:var(--gt-country)'>${altName}</span>`].filter((part) => part).join(", ");
   const lat = Number(park.latitude);
   const lon = Number(park.longitude);
   let position = "";
@@ -780,7 +780,7 @@ function parkTipHtml(key)
   {
     const bearing = parseInt(MyCircle.bearing(GT.myLat, GT.myLon, lat, lon));
     const dist = parseInt(MyCircle.distance(GT.myLat, GT.myLon, lat, lon) * MyCircle.validateRadius(distanceUnit.value));
-    position = `<font color='cyan'>${dist}${distanceUnit.value.toLowerCase()}</font> <font color='yellow'>${bearing}&deg;</font>`;
+    position = `<span style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</span> <span style='color:var(--gt-azimuth)'>${bearing}&deg;</span>`;
   }
 
   let html = `<div style='background-color:#000;color:#fbb6fc;font-weight:bold;font-size:12px;border:1px solid gray;margin:0px' class='roundBorder'>
@@ -800,8 +800,8 @@ function parkTipHtml(key)
       const secondsAgo = ~~((now - spotTime) / 1000);
       const grid = potaSpotGrid(spot, park);
       // Callsigns look up when clicked, also popped out (lookupCallHtml, map/mouse.js)
-      html += `<tr><td style='color:yellow'>${lookupCallHtml(activator, grid == "-" ? "" : grid)}</td><td style='color:lightgreen'>${grid}</td>` +
-        `<td style='color:cyan'>${spotterDisplay == "Self" ? spotterDisplay : lookupCallHtml(spotter)}</td><td style='color:lightgreen'>${formatMhz(frequency)} <font color='yellow'>(${band})</font></td><td style='color:orange'>${mode}</td><td>${count}</td><td style='color:lightblue'>${toDHMS(secondsAgo)}</td><td>${source}</td><td>${comments}</td></tr>`;
+      html += `<tr><td style='color:var(--gt-callsign)'>${lookupCallHtml(activator, grid == "-" ? "" : grid)}</td><td style='color:var(--gt-grid)'>${grid}</td>` +
+        `<td style='color:var(--gt-callsign-other)'>${spotterDisplay == "Self" ? spotterDisplay : lookupCallHtml(spotter)}</td><td style='color:var(--gt-frequency)'>${formatMhz(frequency)} <span style='color:var(--gt-band)'>(${band})</span></td><td style='color:var(--gt-mode)'>${mode}</td><td>${count}</td><td style='color:var(--gt-time)'>${toDHMS(secondsAgo)}</td><td>${source}</td><td>${comments}</td></tr>`;
     }
   }
   html += "</table>";

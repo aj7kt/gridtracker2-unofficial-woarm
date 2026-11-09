@@ -18,6 +18,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The help button in the button panel has a new icon and now opens the new GridTracker2 User Guide in its own window, with search, page thumbnails, contents, zoom, print and save
   - Click the button to show or hide the window, right-click it to only show it; Esc closes it
   - F1 still shows the hotkey list
+- New App Theme (Settings, General, Display, above Window Theme): GridTracker2, the default, GridTracker2's own colors, now with one meaning each everywhere outside the rosters
+  - Frequency light green, band yellow, mode orange, callsign yellow, grid cyan, country orange, distance cyan, bearing yellow, times light blue, warnings orange and errors red
+  - Places that showed one of these in another color now match, such as the band in the map's tooltips and the logbook, and errors that were orange
+  - Red is kept for errors: Transmitting and Band Activity's transmit bars, Kp 8 and 9, and the Moon below the horizon are orange
+  - A second theme, Opus' Choice: softer colors of one brightness, a different color for each thing shown side by side, and labels a step dimmer than the information beside them
+  - 27 more themes, listed alphabetically in the menu. Retro computers: EGA (the 16-color EGA palette), CGA (cyan, magenta and white), VGA (the DOS 16-color look with blue and cyan controls), Amber CRT (an amber monochrome terminal), and Apple ][e, VIC-20 and C-64 (each computer's own colors)
+  - Nature and seasons: Inferno (golds, ambers and flame), Frost (ice blues, teal and lilac), Sunflower (petal yellows, leaf greens and seed brown), Country Kitchen (butter yellow, sage, copper and cream), Autumn (pumpkin, mustard and olive), Deep Sea (glowing aqua and coral on navy), Aurora (northern-lights greens and violets), Sunset (gold, coral, rose and lavender on plum), Food Forest (leaf greens, apricot, plum and persimmon on bark) and Prairie Home (wheat gold, prairie sage, big-sky blue and coneflower on barnwood)
+  - Just for fun: Bubble Gum (pink, lavender, mint and lemon), Synthwave (neon cyan, magenta and sunset orange on purple), Cyberpunk (acid yellow, cyan, magenta and neon green) and Matrix (terminal greens with white accents)
+  - Modern and easy on the eyes: Graphite (a modern dark mode with one blue accent), High Contrast (pure colors and white borders, for low vision and bright rooms), Colorblind Safe (colors that stay apart with red-green color blindness), OLED Minimal (true black, white and gray, with color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted, so errors are white) and Grayscale (shades of gray, with red kept for errors)
+  - The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window including the Call Roster and Feed Roster (their callsign, grid and other colors stay the ones set in their Settings)
+  - Choosing a theme recolors every open window at once
+  - The Call Roster and Feed Roster keep the colors you set in their Settings
+- New Casting (Settings, General, Display, Enable Casting; off unless turned on): shows the map live on a TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
+  - Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found
+  - While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops
+  - Needs a computer with a hardware video encoder; without one, the setting can't be turned on
 
 #### Multi-Mode Decoder
 
@@ -79,6 +95,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - WEFAX mode (Mode menu): weather fax charts from the coast and weather stations that still send them, received in SSTV's picture view, each started by its start tone with its line rate and width found by themselves (or picked on the second line), and saved as SSTV's pictures are
   - Start Now begins a chart already being sent, and Stop ends one
   - Right-click a chart (or an SSTV picture) to rotate it 90° either way or 180°, for the charts some stations send sideways; it is saved and copied as shown
+  - Right-click a chart (or an SSTV picture) for Filter: Sharpen, Noise Reduction, Smooth, Auto Contrast, Equalize, Lighten, Darken and Invert, as many as you like one after another; Undo takes them back one at a time (up to 20), Undo All all at once; it is saved and copied as shown
+  - The newest 12 charts saved, and SSTV's 12 newest pictures, are back in the strip each time the window opens
   - Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand (Trim is kept for next time)
   - The Frequency menu lists the stations heard around the world (NOAA's, Germany's, Japan's, Australia's and others), each named, with its schedule where it has one
   - Auto-Tune (with Rig Control): the rig is tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another; a frequency that doesn't come in is passed over for a while, and tuning the rig by hand turns it off
@@ -192,6 +210,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>F1 still shows the hotkey list</li>
     </ul>
   </li>
+  <li>New App Theme (Settings, General, Display, above Window Theme): GridTracker2, the default, GridTracker2's own colors, now with one meaning each everywhere outside the rosters
+    <ul>
+      <li>Frequency light green, band yellow, mode orange, callsign yellow, grid cyan, country orange, distance cyan, bearing yellow, times light blue, warnings orange and errors red</li>
+      <li>Places that showed one of these in another color now match, such as the band in the map's tooltips and the logbook, and errors that were orange</li>
+      <li>Red is kept for errors: Transmitting and Band Activity's transmit bars, Kp 8 and 9, and the Moon below the horizon are orange</li>
+      <li>A second theme, Opus' Choice: softer colors of one brightness, a different color for each thing shown side by side, and labels a step dimmer than the information beside them</li>
+      <li>27 more themes, listed alphabetically in the menu. Retro computers: EGA (the 16-color EGA palette), CGA (cyan, magenta and white), VGA (the DOS 16-color look with blue and cyan controls), Amber CRT (an amber monochrome terminal), and Apple ][e, VIC-20 and C-64 (each computer's own colors)</li>
+      <li>Nature and seasons: Inferno (golds, ambers and flame), Frost (ice blues, teal and lilac), Sunflower (petal yellows, leaf greens and seed brown), Country Kitchen (butter yellow, sage, copper and cream), Autumn (pumpkin, mustard and olive), Deep Sea (glowing aqua and coral on navy), Aurora (northern-lights greens and violets), Sunset (gold, coral, rose and lavender on plum), Food Forest (leaf greens, apricot, plum and persimmon on bark) and Prairie Home (wheat gold, prairie sage, big-sky blue and coneflower on barnwood)</li>
+      <li>Just for fun: Bubble Gum (pink, lavender, mint and lemon), Synthwave (neon cyan, magenta and sunset orange on purple), Cyberpunk (acid yellow, cyan, magenta and neon green) and Matrix (terminal greens with white accents)</li>
+      <li>Modern and easy on the eyes: Graphite (a modern dark mode with one blue accent), High Contrast (pure colors and white borders, for low vision and bright rooms), Colorblind Safe (colors that stay apart with red-green color blindness), OLED Minimal (true black, white and gray, with color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted, so errors are white) and Grayscale (shades of gray, with red kept for errors)</li>
+      <li>The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window including the Call Roster and Feed Roster (their callsign, grid and other colors stay the ones set in their Settings)</li>
+      <li>Choosing a theme recolors every open window at once</li>
+      <li>The Call Roster and Feed Roster keep the colors you set in their Settings</li>
+    </ul>
+  </li>
+  <li>New Casting (Settings, General, Display, Enable Casting; off unless turned on): shows the map live on a TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
+    <ul>
+      <li>Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found</li>
+      <li>While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops</li>
+      <li>Needs a computer with a hardware video encoder; without one, the setting can't be turned on</li>
+    </ul>
+  </li>
 </ul>
 <h4>Multi-Mode Decoder</h4>
 <ul>
@@ -281,6 +321,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     <ul>
       <li>Start Now begins a chart already being sent, and Stop ends one</li>
       <li>Right-click a chart (or an SSTV picture) to rotate it 90° either way or 180°, for the charts some stations send sideways; it is saved and copied as shown</li>
+      <li>Right-click a chart (or an SSTV picture) for Filter: Sharpen, Noise Reduction, Smooth, Auto Contrast, Equalize, Lighten, Darken and Invert, as many as you like one after another; Undo takes them back one at a time (up to 20), Undo All all at once; it is saved and copied as shown</li>
+      <li>The newest 12 charts saved, and SSTV's 12 newest pictures, are back in the strip each time the window opens</li>
       <li>Charts are kept straight and lined up by themselves: by the black mark many stations send at the start of each line, else by the chart's own upright lines, even when the sound card's clock is off or audio is lost for a moment; Trim and a click on the chart's left edge do it by hand (Trim is kept for next time)</li>
       <li>The Frequency menu lists the stations heard around the world (NOAA's, Germany's, Japan's, Australia's and others), each named, with its schedule where it has one</li>
       <li>Auto-Tune (with Rig Control): the rig is tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another; a frequency that doesn't come in is passed over for a while, and tuning the rig by hand turns it off</li>

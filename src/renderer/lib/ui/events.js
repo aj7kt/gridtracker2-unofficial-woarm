@@ -22,8 +22,8 @@ GT.eventsWidths = { time: 0, source: 0, text: 0 };
 
 // An event from a part of the app: source "app", "log", "decode", "wsjtx", "roster", "birdwatch", "rotor" or "sota"; html the text
 // (html coloring allowed; a message's line breaks become spaces). error: an error, which opens the Event Viewer (Settings -> General,
-// Open Event Viewer On Error); by default one said in red, as the app says its errors
-function addEvent(source, html, error = /color:\s*red\b|color=["']red["']/i.test(String(html)))
+// Open Event Viewer On Error); by default one said in red (the theme's error color), as the app says its errors
+function addEvent(source, html, error = /color:\s*red\b|color=["']red["']|var\(--gt-error\)/i.test(String(html)))
 {
   const now = Date.now();
   const event = { time: now, source: source, text: String(html).replace(/<br\s*\/?>/gi, " ") };
@@ -110,8 +110,8 @@ function eventsApplyWidths(list)
 function eventsRowHtml(event)
 {
   let text = event.text;
-  if (GT.localDXcall && GT.localDXcall.length > 1) text = text.replaceAll(GT.localDXcall, "<font style='color:cyan'>" + GT.localDXcall + "</font>");
-  if (GT.settings.app.myRawCall.length > 1) text = text.replaceAll(GT.settings.app.myRawCall, "<font style='color:yellow'>" + GT.settings.app.myRawCall + "</font>");
+  if (GT.localDXcall && GT.localDXcall.length > 1) text = text.replaceAll(GT.localDXcall, "<font style='color:var(--gt-callsign-other)'>" + GT.localDXcall + "</font>");
+  if (GT.settings.app.myRawCall.length > 1) text = text.replaceAll(GT.settings.app.myRawCall, "<font style='color:var(--gt-callsign)'>" + GT.settings.app.myRawCall + "</font>");
   return text;
 }
 

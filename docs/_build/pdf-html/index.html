@@ -884,12 +884,28 @@
 <td><p>Opens the <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while <strong>Multi-Mode Decoder</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
+<td><p>Cast</p></td>
+<td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <p>The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you tick their <strong>Menu Button</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#logging-tab"><span class="std std-ref">Settings → Logging</span></a>. Online buttons are hidden in Offline Mode.</p>
 <section id="santa-tracker">
 <h4>Santa Tracker<a class="headerlink" href="#santa-tracker" title="Link to this heading">¶</a></h4>
-<p>From December 1st the Santa Tracker button appears. Turn the tracker on to see a countdown, at the top of the map, until Santa leaves at midnight on December 24th (your time). Then a box on the map shows where he is, his next stop and how many gifts he has delivered. Click where he is to center the map on him, and hover over a stop to see its DXCC entity and state or province. Shortly before he reaches you, contact with Santa is lost…</p>
+<p>From December 1st the Santa Tracker button appears. Turn the tracker on to see a countdown, at the top of the map, until Santa leaves at midnight on December 24th (your time). Then a box on the map shows where he is, his next stop and how many gifts he has delivered. Click where he is to center the map on him, and hover over a stop to see its DXCC entity and state or province.</p>
+</section>
+<section id="casting-the-map">
+<h4>Casting the Map<a class="headerlink" href="#casting-the-map" title="Link to this heading">¶</a></h4>
+<p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">Settings → General → Display</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network.</p>
+<ul class="simple">
+<li><p><strong>Click</strong> the button to start casting. The first time, GridTracker2 casts to the first Cast device it finds and remembers it; after that it casts to the device you picked last. Click it again to stop.</p></li>
+<li><p><strong>Right-click</strong> the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it for next time. While casting, the menu also has <strong>Stop Casting</strong>.</p></li>
+<li><p>While casting, the button is in color and its tooltip names the device. The main window is sized to the TV’s 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.</p></li>
+<li><p>Starting and stopping, and a device that can’t be reached, are shown in the <a class="reference internal" href="#event-viewer">Event Viewer</a>.</p></li>
+</ul>
+<p>Casting needs a computer with a hardware video encoder. On a computer without one, <strong>Enable Casting</strong> can’t be turned on.</p>
 </section>
 </section>
 <section id="rearranging-the-panel">
@@ -899,7 +915,7 @@
 </section>
 <section id="event-viewer">
 <h3>Event Viewer<a class="headerlink" href="#event-viewer" title="Link to this heading">¶</a></h3>
-<p>Click the <strong>Event Viewer</strong> button in the button panel to see what has happened, newest first. Each event has its <strong>Time</strong>, its <strong>Source</strong> (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor or SOTA) and the <strong>Event</strong> itself:</p>
+<p>Click the <strong>Event Viewer</strong> button in the button panel to see what has happened, newest first. Each event has its <strong>Time</strong>, its <strong>Source</strong> (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the <strong>Event</strong> itself:</p>
 <ul class="simple">
 <li><p>band and mode changes;</p></li>
 <li><p>decodes that set off a Custom Alert, with a 🚩;</p></li>
@@ -963,12 +979,22 @@
 </section>
 <section id="display">
 <h4>Display<a class="headerlink" href="#display" title="Link to this heading">¶</a></h4>
-<ul class="simple">
+<ul>
 <li><p><strong>Language (requires restart):</strong> the language of the interface. Choosing one saves your settings and restarts GridTracker2. See <a class="reference internal" href="#document-Introduction/Whats-New"><span class="std std-doc">What’s New</span></a> for the list.</p></li>
+<li><p><strong>App Theme:</strong> the colors of the information GridTracker2 shows, each color with one meaning everywhere outside the rosters. GridTracker2 (the default): frequency light green, band yellow, mode orange, callsign yellow (the other station’s cyan), grid cyan, country orange, distance cyan, bearing yellow, times light blue, warnings orange, errors red. Opus’ Choice: softer colors of one brightness, a different color for each thing shown side by side (frequency mint, band lavender, mode peach, callsign gold, country pink, distance aqua, bearing lime, times periwinkle, needed pink-violet), labels a step dimmer than the information beside them, errors still red. The menu lists the themes alphabetically; the other 27 are:</p>
+<ul class="simple">
+<li><p><strong>Retro computers:</strong> EGA (the 16-color EGA palette, gray buttons and blue tabs), CGA (the classic cyan, magenta and white, yellow for warnings), VGA (the DOS 16-color look, with blue and cyan text boxes and tabs), Amber CRT (an amber monochrome terminal), and Apple ][e, VIC-20 and C-64 (each computer’s own colors and text-box look).</p></li>
+<li><p><strong>Nature and seasons:</strong> Inferno (golds, ambers, flame orange and white-hot), Frost (ice blues, teal, lilac and white), Sunflower (petal yellows, leaf greens, sky blue and seed brown), Country Kitchen (butter yellow, sage, copper and cream with gingham-blue tabs), Autumn (pumpkin, mustard, olive and cream), Deep Sea (glowing aqua, coral, kelp green and sand on navy), Aurora (northern-lights greens, teals and violets), Sunset (gold, coral, rose and lavender on plum), Food Forest (layered leaf greens, apricot, plum, persimmon and fig on bark) and Prairie Home (wheat gold, prairie sage, big-sky blue, coneflower and barn rust on weathered barnwood).</p></li>
+<li><p><strong>Just for fun:</strong> Bubble Gum (pink, lavender, mint, baby blue and lemon), Synthwave (neon cyan, magenta, mint and sunset orange on purple), Cyberpunk (acid yellow, cyan, magenta and neon green) and Matrix (terminal greens with white for callsigns and titles, amber for warnings).</p></li>
+<li><p><strong>Modern and easy on the eyes:</strong> Graphite (a modern dark mode, muted colors and one blue accent), High Contrast (pure colors, white text and borders, for low vision and bright rooms), Colorblind Safe (the Okabe-Ito colors, which stay apart with red-green color blindness), OLED Minimal (true black, white and gray, color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted; errors are white, since everything is red) and Grayscale (shades of gray only, values brighter than labels, with red kept for errors).</p></li>
+</ul>
+<p>The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window, the rosters included. A theme you choose recolors every open window at once. The Call Roster and Feed Roster keep the callsign, grid and other colors set in their own Settings.</p>
+</li>
 <li><p><strong>Window Theme:</strong> Dark, Light or System.</p></li>
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
 <li><p><strong>Control Panel On Left Side:</strong> puts the side panel on the left of the window and the map on the right.</p></li>
 <li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
+<li><p><strong>Enable Casting (Google TV Streamer, Chromecast):</strong> adds the Cast button to the button panel, to show the map on a TV. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. It can’t be turned on without a hardware video encoder.</p></li>
 </ul>
 </section>
 <section id="settings">
@@ -3131,7 +3157,20 @@
 </ul>
 </li>
 <li><p>The header above the chart shows its line rate and width (for example <strong>WEFAX 120/576</strong>), its UTC time, frequency and band, and <strong>saved</strong> once it is.</p></li>
-<li><p>Right-click a chart for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>, for charts some stations send sideways) or <strong>Delete</strong>. A rotated chart is saved and copied as shown.</p></li>
+<li><p>Right-click a chart for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>, for charts some stations send sideways), <strong>Filter</strong> or <strong>Delete</strong>. A rotated or filtered chart is saved and copied as shown.</p></li>
+<li><p><strong>Filter</strong> (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:</p>
+<ul>
+<li><p><strong>Sharpen:</strong> crisper lines and lettering.</p></li>
+<li><p><strong>Noise Reduction:</strong> takes out specks and static, keeping lines and lettering.</p></li>
+<li><p><strong>Smooth:</strong> softens grainy noise.</p></li>
+<li><p><strong>Auto Contrast:</strong> stretches a faded chart to full black and white.</p></li>
+<li><p><strong>Equalize:</strong> spreads the gray levels evenly, to bring out a faint chart.</p></li>
+<li><p><strong>Lighten</strong> and <strong>Darken:</strong> lighten or darken the middle grays, keeping black and white.</p></li>
+<li><p><strong>Invert:</strong> swaps black and white.</p></li>
+<li><p><strong>Undo</strong> takes back the last filter (the number beside it says how many can be undone, up to 20). <strong>Undo All</strong> takes them all back. A file saved already stays as it was.</p></li>
+</ul>
+</li>
+<li><p>Each time the window opens, the newest 12 charts in the save folder are back in the strip.</p></li>
 <li><p><strong>Save Charts</strong> (under <strong>WEFAX</strong> in the window’s <strong>Settings</strong> → <strong>Decoders</strong>; off at first) saves each chart as a PNG when it ends, however much of it came. <strong>Folder</strong> shows where they go (<code class="docutils literal notranslate"><span class="pre">WEFAX</span> <span class="pre">Charts</span></code> at first, beside SSTV’s <code class="docutils literal notranslate"><span class="pre">SSTV</span> <span class="pre">Pictures</span></code>; click it to open it); <strong>Choose</strong> picks another.</p></li>
 <li><p><strong>Frequency menu:</strong> the stations heard around the world (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s, the UK’s and others), each named with its assigned frequency and its hours where it has them. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
@@ -3166,7 +3205,8 @@
 <li><p>You don’t need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong. Dashed lines on the waterfall show where its sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found.</p></li>
 <li><p>A sender whose sound card runs a little fast or slow, one that drifts, or a satellite’s Doppler, is put right, so the picture stays straight and its colors true.</p></li>
 <li><p>A sender that fades out part way is read on to the end, so the rest still comes if it comes back.</p></li>
-<li><p>Right-click a picture for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> or <strong>Delete</strong>.</p></li>
+<li><p>Right-click a picture for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong>, <strong>Filter</strong> (the same as WEFAX’s, see <a class="reference internal" href="#wefax">WEFAX</a>) or <strong>Delete</strong>.</p></li>
+<li><p>Each time the window opens, the newest 12 pictures in the save folder are back in the strip.</p></li>
 <li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go (click it to open it); <strong>Choose</strong> picks another.</p></li>
 <li><p><strong>Frequency menu:</strong> the usual SSTV frequencies from 160 to 2 meters, and the ISS’s SSTV events on 145.800 MHz. <strong>Set Mode</strong> sets the rig to the frequency’s sideband (LSB below 10 MHz, USB above), or FM for the ISS.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s SSTV transmitter switches the decoder to SSTV.</p></li>

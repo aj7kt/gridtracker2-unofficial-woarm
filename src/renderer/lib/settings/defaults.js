@@ -257,6 +257,7 @@ const def_settings = {
     warnOnSoundcardsChange: false,
     spotView: 0,
     windowTheme: "dark",
+    appTheme: "ega80s",
     useLocalTime: 0,
     wsjtForwardUdpEnable: false,
     wsjtForwardUdpIp: "127.0.0.1",
@@ -313,6 +314,9 @@ const def_settings = {
     gridAlpha: 136,
     // POTA, SOTA and DX Feeds markers that would overlap are drawn as one (groupOverlappingFeatures)
     groupSpots: true,
+    // Settings -> General -> Display -> Enable Casting (the button panel's Cast button), and the device cast to last (mapCast.js)
+    castEnable: false,
+    castDevice: { id: "", name: "", host: "" },
     haltAllOnTx: true,
     longitude: 0.0,
     latitude: 0.0,

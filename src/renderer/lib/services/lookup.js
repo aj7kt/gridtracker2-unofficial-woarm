@@ -145,7 +145,7 @@ function lookupRequestFailed(resultTd, requested)
   return function (message)
   {
     if (resultTd == null && isStaleLookup(requested)) return;
-    const html = "<font color='red'>Lookup failed: " + htmlEntities(message) + "</font>";
+    const html = "<span style='color:var(--gt-error)'>Lookup failed: " + htmlEntities(message) + "</span>";
     if (resultTd != null) resultTd.innerHTML = html;
     else setLookupDiv("lookupInfoDiv", html);
   };
@@ -159,7 +159,7 @@ function continueWithLookup(callsign, gridPass)
   // (lookupWait: the window keeps its size until the answer comes, lookupFit)
   setLookupDiv(
     "lookupInfoDiv",
-    "<span class='lookupWait'>Looking up <font color='cyan'>" + lookupHtml(callsign) + "</font>, please wait...</span>"
+    "<span class='lookupWait'>Looking up <span style='color:var(--gt-callsign)'>" + lookupHtml(callsign) + "</span>, please wait...</span>"
   );
 
   if (GT.settings.app.lookupService != "CALLOOK")
@@ -221,11 +221,11 @@ function continueWithLookup(callsign, gridPass)
           "<br>" + I18N("gt.callookDX2") +
           "<br>" + I18N("gt.callookDX3") + "<br>"];
       html.push(
-        "<br>" + I18N("gt.callookDX4") + " <font color='orange'> " +
+        "<br>" + I18N("gt.callookDX4") + " <span style='color:var(--gt-callsign)'> " +
         lookupHtml(callsign) +
-        "</font> " + I18N("gt.callookDX5") + " <font color='yellow'> " +
+        "</span> " + I18N("gt.callookDX5") + " <span style='color:var(--gt-country)'> " +
         lookupHtml(where) +
-        "</font><br>");
+        "</span><br>");
       html.push(
         "<br><br>" + I18N("gt.callookDX6") + "<br>");
       html.push(I18N("gt.callookDX7") + "<br></center>");
@@ -382,7 +382,7 @@ function readLookupSession(buffer, sessionTag, keyTag, errorTag)
   if (oDOM.getElementsByTagName("parsererror").length > 0)
   {
     GT.qrzLookupSessionId = null;
-    return "<font color='red'>" + I18N("gt.test.unknownError") + "</font>";
+    return "<span style='color:var(--gt-error)'>" + I18N("gt.test.unknownError") + "</span>";
   }
 
   const json = XML2jsobj(oDOM.documentElement);
@@ -390,18 +390,18 @@ function readLookupSession(buffer, sessionTag, keyTag, errorTag)
   if (!json.hasOwnProperty(sessionTag))
   {
     GT.qrzLookupSessionId = null;
-    return "<font color='red'>" + I18N("gt.test.invalidResponse") + "</font>";
+    return "<span style='color:var(--gt-error)'>" + I18N("gt.test.invalidResponse") + "</span>";
   }
 
   const session = json[sessionTag];
   if (session.hasOwnProperty(keyTag))
   {
     GT.qrzLookupSessionId = session[keyTag];
-    return "<font color='green'>Valid</font>";
+    return "<span style='color:var(--gt-status-ok)'>Valid</span>";
   }
 
   GT.qrzLookupSessionId = null;
-  return "<font color='red'>" + lookupHtml(session[errorTag] || "Unknown Error") + "</font>";
+  return "<span style='color:var(--gt-error)'>" + lookupHtml(session[errorTag] || "Unknown Error") + "</span>";
 }
 
 // A lookup failed because the login session is no longer valid (e.g. it expired), not because
@@ -840,8 +840,8 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
     );
 
     chips.push(
-      `<span class='lookupChip'><span class='lookupChipLabel'>Distance</span><span style='color:cyan'>${distance}${distanceUnit.value.toLowerCase()}</span></span>`,
-      `<span class='lookupChip'><span class='lookupChipLabel'>Azimuth</span><span style='color:yellow'>${bearing}&deg;</span></span>`
+      `<span class='lookupChip'><span class='lookupChipLabel'>Distance</span><span style='color:var(--gt-distance)'>${distance}${distanceUnit.value.toLowerCase()}</span></span>`,
+      `<span class='lookupChip'><span class='lookupChipLabel'>Azimuth</span><span style='color:var(--gt-azimuth)'>${bearing}&deg;</span></span>`
     );
   }
 
@@ -994,7 +994,7 @@ function makeYesNoRow(first, object, key)
 function lookupGridCellStyle(gridLocator, band, mode)
 {
   const g = (gridLocator || "").substr(0, 4);
-  if (!g) return "color:cyan;";
+  if (!g) return "color:var(--gt-grid);";
 
   const b = band ?? GT.settings.app.myBand ?? "";
   const m = mode ?? GT.settings.app.myMode ?? "";
@@ -1038,7 +1038,7 @@ function lookupGridCellStyle(gridLocator, band, mode)
   }
 
   return (g + suffix) in GT.tracker.confirmed.grid
-    ? "color:cyan;background-color:black;"
+    ? "color:var(--gt-grid);background-color:black;"
     : "color:black;background-color:cyan;";
 }
 
@@ -1213,16 +1213,16 @@ function searchLogForCallsign(call)
   html.push("<div class='lookupLog'>");
   if (Object.keys(work).length > 0)
   {
-    row("Worked", "yellow", chips(Object.keys(work), false));
+    row("Worked", "var(--gt-worked)", chips(Object.keys(work), false));
   }
   if (Object.keys(conf).length > 0)
   {
-    row("Confirmed", "lightgreen", chips(Object.keys(conf), true));
+    row("Confirmed", "var(--gt-confirmed)", chips(Object.keys(conf), true));
   }
   if (lastRow)
   {
     const last = list[lastRow];
-    row(I18N("gt.lookup.lastQSO"), "cyan", "<span style='font-weight:bold;color:#" + (GT.bandColors[last.band] || "888888") + "'>" + last.band + " " + last.mode + "</span> <span class='lookupLogTime'>" + userTimeString(last.time * 1000) + "</span>");
+    row(I18N("gt.lookup.lastQSO"), "var(--gt-title)","<span style='font-weight:bold;color:#" + (GT.bandColors[last.band] || "888888") + "'>" + last.band + " " + last.mode + "</span> <span class='lookupLogTime'>" + userTimeString(last.time * 1000) + "</span>");
   }
 
   // The entity's bands: confirmed ones filled
@@ -1234,7 +1234,7 @@ function searchLogForCallsign(call)
       bands.push(lookupBandChip(GT.colorBands[band], GT.colorBands[band], String(dxcc) + "|" + GT.colorBands[band] in GT.tracker.confirmed.dxcc));
     }
   }
-  row(GT.dxccToAltName[dxcc] + " (" + GT.dxccInfo[dxcc].pp + ")", "orange", bands.join(""));
+  row(GT.dxccToAltName[dxcc] + " (" + GT.dxccInfo[dxcc].pp + ")", "var(--gt-country)", bands.join(""));
 
   html.push("</div>");
   setLookupDiv("lookupLocalDiv", html.join(""));

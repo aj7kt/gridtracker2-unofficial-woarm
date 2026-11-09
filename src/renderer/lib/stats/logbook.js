@@ -419,7 +419,7 @@ function renderLogbookView(sortIndex = null, nextPage = 0)
         let stateTd = "<td></td>";
         if (key.state) {
           const stateTitle = htmlEntities(key.state in GT.StateData ? GT.StateData[key.state].name : key.state.substr(3)).replace(/'/g, "&#39;");
-          stateTd = `<td align=center style='color:lightgreen' title='${stateTitle}'><div class='logClip'>${htmlEntities(key.state.substr(3))}</div></td>`;
+          stateTd = `<td align=center style='color:var(--gt-state)' title='${stateTitle}'><div class='logClip'>${htmlEntities(key.state.substr(3))}</div></td>`;
         }
         let cntyTd = (key.cnty && key.cnty in GT.countyData) ? `<td align=center style='color:cyan'>${GT.countyData[key.cnty].geo.properties.n}</td>` : `<td></td>`;
         let potaTd = showPota ? (key.pota ? `<td align=center style='color:#fbb6fc'>${key.pota}</td>` : `<td></td>`) : "";
@@ -436,20 +436,20 @@ function renderLogbookView(sortIndex = null, nextPage = 0)
         }
 
         return `<tr align=left>
-          <td style='color:#ff0;cursor:pointer' onclick='window.opener.startLookup("${key.DEcall}","${key.grid}");'>${formatCallsign(key.DEcall)}</td>
-          <td style='color:cyan;'>${key.grid}${key.vucc_grids.length ? ", " + key.vucc_grids.join(", ") : ""}</td>
-          <td style='color:lightgreen'>${key.band}</td>
-          <td style='color:lightblue'>${key.mode}</td>
+          <td style='color:var(--gt-callsign);cursor:pointer' onclick='window.opener.startLookup("${key.DEcall}","${key.grid}");'>${formatCallsign(key.DEcall)}</td>
+          <td style='color:var(--gt-grid);'>${key.grid}${key.vucc_grids.length ? ", " + key.vucc_grids.join(", ") : ""}</td>
+          <td style='color:var(--gt-band)'>${key.band}</td>
+          <td style='color:var(--gt-mode)'>${key.mode}</td>
           <td align=left ${confTitle}>${confTd}</td>
           <td>${key.RSTsent}</td>
           <td>${key.RSTrecv}</td>
-          <td style='color:orange'>${GT.dxccToAltName[key.dxcc]} <font color='lightgreen'>(${key.dxcc in GT.dxccInfo ? GT.dxccInfo[key.dxcc].pp : "?"})</font></td>
+          <td style='color:var(--gt-country)'>${GT.dxccToAltName[key.dxcc]} <span style='color:var(--gt-prefix)'>(${key.dxcc in GT.dxccInfo ? GT.dxccInfo[key.dxcc].pp : "?"})</span></td>
           <td align=center style='margin:0;padding:0'><img style='padding-top:4px' src='img/flags/16/${key.dxcc in GT.dxccInfo ? GT.dxccInfo[key.dxcc].flag : "_United Nations.png"}'></td>
           ${stateTd}
           ${cntyTd}
           ${potaTd}
           ${sotaTd}
-          <td style='color:lightblue'>${userTimeString(key.time * 1000)}</td>
+          <td style='color:var(--gt-time)'>${userTimeString(key.time * 1000)}</td>
           ${lotwTd}
           ${eqslTd}
           ${oqrsTd}

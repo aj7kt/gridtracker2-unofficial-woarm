@@ -510,14 +510,14 @@ function displayAlertPopUp(what, message, target)
         html.push("<tr>");
         html.push("<td>" + GT.alertTypeOptions[GT.activeCustomAlerts[key].type] + "</td>");
         if (GT.activeCustomAlerts[key].type == 0)
-        { html.push("<td style='color:yellow'>" + GT.activeCustomAlerts[key].value + "</td>"); }
+        { html.push("<td style='color:var(--gt-callsign)'>" + GT.activeCustomAlerts[key].value + "</td>"); }
         if (GT.activeCustomAlerts[key].type == 2)
-        { html.push("<td style='color:red'>" + GT.activeCustomAlerts[key].value + "</td>"); }
+        { html.push("<td style='color:var(--gt-grid)'>" + GT.activeCustomAlerts[key].value + "</td>"); }
         if (GT.activeCustomAlerts[key].type == 4)
-        { html.push("<td style='color:cyan'>" + GT.settings.app.myCall + "</td>"); }
+        { html.push("<td style='color:var(--gt-callsign)'>" + GT.settings.app.myCall + "</td>"); }
         if (GT.activeCustomAlerts[key].type == 5)
         {
-          html.push("<td style='color:lightgreen'>" + GT.activeCustomAlerts[key].value + "*</td>");
+          html.push("<td style='color:var(--gt-callsign)'>" + GT.activeCustomAlerts[key].value + "*</td>");
         }
         if (GT.activeCustomAlerts[key].type == 6)
         { 
@@ -530,7 +530,7 @@ function displayAlertPopUp(what, message, target)
           (GT.activeCustomAlerts[key].shortname.length > 0 ? GT.activeCustomAlerts[key].shortname : "-") +
           "</td>");
         html.push("<td>" + (GT.activeCustomAlerts[key].fired > 0 ? "Yes" : "No") + "</td>");
-        html.push("<td style='color:cyan'>" +
+        html.push("<td style='color:var(--gt-message)'>" +
           (GT.activeCustomAlerts[key].lastMessage.length > 0
             ? GT.activeCustomAlerts[key].lastMessage
             : "-") +
@@ -655,14 +655,14 @@ function displayCustomAlerts()
       html.push("<tr>");
       html.push("<td>" + GT.alertTypeOptions[GT.activeCustomAlerts[key].type] + "</td>");
       if (GT.activeCustomAlerts[key].type == 0)
-      { html.push("<td style='color:yellow'>" + GT.activeCustomAlerts[key].value + "</td>"); }
+      { html.push("<td style='color:var(--gt-callsign)'>" + GT.activeCustomAlerts[key].value + "</td>"); }
       if (GT.activeCustomAlerts[key].type == 2)
-      { html.push("<td style='color:red'>" + GT.activeCustomAlerts[key].value + "</td>"); }
+      { html.push("<td style='color:var(--gt-grid)'>" + GT.activeCustomAlerts[key].value + "</td>"); }
       if (GT.activeCustomAlerts[key].type == 4)
-      { html.push("<td style='color:cyan'>" + GT.settings.app.myCall + "</td>"); }
+      { html.push("<td style='color:var(--gt-callsign)'>" + GT.settings.app.myCall + "</td>"); }
       if (GT.activeCustomAlerts[key].type == 5)
       {
-        html.push("<td style='color:lightgreen'>" + GT.activeCustomAlerts[key].value + "*</td>");
+        html.push("<td style='color:var(--gt-callsign)'>" + GT.activeCustomAlerts[key].value + "*</td>");
       }
       if (GT.activeCustomAlerts[key].type == 6)
       { html.push("<td style='color:pink'>" + GT.activeCustomAlerts[key].value + "</td>"); }
@@ -673,7 +673,7 @@ function displayCustomAlerts()
         (GT.activeCustomAlerts[key].shortname.length > 0 ? GT.activeCustomAlerts[key].shortname : "-") +
         "</td>");
       html.push("<td>" + (GT.activeCustomAlerts[key].fired > 0 ? "Yes" : "No") + "</td>");
-      html.push("<td style='color:cyan'>" +
+      html.push("<td style='color:var(--gt-message)'>" +
         (GT.activeCustomAlerts[key].lastMessage.length > 0
           ? GT.activeCustomAlerts[key].lastMessage
           : "-") +

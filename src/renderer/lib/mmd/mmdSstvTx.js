@@ -401,7 +401,7 @@ function mmdSstvTxPttRender()
   const vfo = GT.settings.MMD.rigControl === true ? opener.mmDecoderVfo("sstv") : null;
   const method = vfo ? opener.rigPttMethod(vfo.id) : "none";
   sstvTxPttText.textContent = (method == "none" ? opener.I18N("settings.rig.vfo.none.label") : method.toUpperCase()) + (vfo ? " · " + opener.rigVfoLabel(vfo) : "");
-  sstvTxPttText.style.color = method == "none" ? "orange" : "";
+  sstvTxPttText.style.color = method == "none" ? "var(--gt-status-fail)" : "";
 }
 
 // The settings from the form, and the picture built again. Never before the form has been filled from them (mmdSstvTxForm): its blank
@@ -468,7 +468,7 @@ function mmdSstvTxOutputRender()
   sstvTxOutputText.textContent = device ? mmdInputLabel(device) : I18N("sstvTx.status.noOutput");
   // (Its whole name in the tooltip: a long one is cut short in the box)
   sstvTxOutputText.title = sstvTxOutputText.textContent;
-  sstvTxOutputText.style.color = device ? "" : "orange";
+  sstvTxOutputText.style.color = device ? "" : "var(--gt-status-fail)";
 }
 
 // Simulate Rx, Send and Tune, always in their places: the one running red (Send while the picture is built too; Simulate Rx says
@@ -782,7 +782,7 @@ function mmdSstvTxKeying()
 function mmdSstvTxStatus(text, error = false)
 {
   sstvTxStatus.textContent = text;
-  sstvTxStatus.style.color = error ? "red" : "";
+  sstvTxStatus.style.color = error ? "var(--gt-error)" : "";
   if (text) mmdStatus(text, error);
 }
 

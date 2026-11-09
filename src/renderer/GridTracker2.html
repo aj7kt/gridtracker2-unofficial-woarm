@@ -82,6 +82,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/netAudioRtp.js" type="text/javascript"></script>
   <script src="./lib/services/netAudioPulse.js" type="text/javascript"></script>
   <script src="./lib/services/mmDecoder.js" type="text/javascript"></script>
+  <script src="./lib/services/mapCast.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
   <script src="./lib/map/tropo.js" type="text/javascript"></script>
@@ -147,12 +148,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <div id="main" style="display: none;">
     <div id="mapDiv" class="mapDivClass"></div>
     <div id="mouseTrackDiv" class="mouseTrackClass"></div>
-    <div id="warnSoundcardDiv" class="absoluteCenterDiv" style="display:none;border-color:orange;border-style:solid;border-width: 5px;padding:5px;font-weight:bold;color:cyan;" >
+    <div id="warnSoundcardDiv" class="absoluteCenterDiv" style="display:none;border-color:orange;border-style:solid;border-width: 5px;padding:5px;font-weight:bold;color:var(--gt-warning);" >
       <div id="warnSoundcardHtml">This is some test text!!!</div>
       <div data-i18n="updatePopup.ok" class="button" style="margin:5px;" onclick="warnSoundcardDiv.style.display='none'"></div>
     </div>
     <div id="legendDiv" class="legendDivClass">
-      <div id="spotsDiv" style="border: 1px solid yellow; background-color: black; width: fit-content; padding: 2px;" class="roundBorder">
+      <div id="spotsDiv" style="border: 1px solid var(--gt-frame-rig); background-color: black; width: fit-content; padding: 2px;" class="roundBorder">
         <table align="center" style="width: 100%;">
           <tr>
             <td colspan="2" id="spotCountDiv" style="text-align: center; font-weight: bold;">Spots: 0</td>
@@ -160,7 +161,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <tr>
             <td colspan="2" align="center" style="white-space: nowrap; padding-bottom: 4px;">
               <span data-i18n="gt.SpotMaxAge">Max Age: </span>
-              <span style="display: inline-flex; align-items: center; background-color: darkblue; color:yellow; border: 1px solid #666; border-radius: 4px; padding: 2px 4px; font-family: monospace; font-size: 1.1em;">
+              <span style="display: inline-flex; align-items: center; background-color: var(--gt-input-bg); color: var(--gt-input-text); border: 1px solid #666; border-radius: 4px; padding: 2px 4px; font-family: monospace; font-size: 1.1em;">
                 <input type="number" id="spotHistoryH" min="0" max="24" value="00" title="Hours"
                   style="width: 20px; text-align: right; background: transparent; color: inherit; border: none; outline: none; padding: 0;"
                   onfocus="this.select()" onchange="syncSpotSlider();" onkeyup="if(event.key === 'Enter') syncSpotSlider();" />
@@ -180,7 +181,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </tr>
         </table>
       </div>
-      <div id="predDiv" style="border: 1px solid rgb(0, 247, 255); width:fit-content; background-color: black; margin-top: 1px; padding:2px;" class="roundBorder">
+      <div id="predDiv" style="border: 1px solid var(--gt-frame-filters); width:fit-content; background-color: black; margin-top: 1px; padding:2px;" class="roundBorder">
         <table align="center">
           <tr style="font-weight: bold;">
             <td id="mufTitle"   data-i18n="predlayer.muf.label"   colspan="3">Maximum Usable Frequency</td>
@@ -306,12 +307,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- BirdWatch panel: same width as the control panel, on the opposite side (placed by applyBirdWatchLayout) -->
     <div id="birdWatchDiv" class="birdWatchDivClass">
       <!-- Like the control panel's GridTracker2 button: hides the panel, birdWatchChevronDiv brings it back -->
-      <div id="birdWatchTitleDiv" class="roundBorder" style="border: 1px solid white; margin: 1px; padding: 0px">
+      <div id="birdWatchTitleDiv" class="roundBorder" style="border: 1px solid var(--gt-frame-main); margin: 1px; padding: 0px">
         <table align="center">
           <tr>
             <td>
               <div id="birdWatchTitle" class="button" data-i18n="birdWatch.hidePanel.hover" title="Click to hide BirdWatch" style="
-                    color: #fff;
+                    color: var(--gt-app-title);
                     margin: 0;
                     padding: 0;
                     font-weight: bold;
@@ -333,10 +334,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <div id="birdWatchBoxes">
       <!-- The satellite selected on the map (birdWatchPanel.js), in a box of its own like the control panel's Map View Filters; - / +
            minimizes it to the satellite's name -->
-      <div id="birdWatchInfoDiv" class="roundBorder" data-box="info" style="display: none; border: 1px solid cyan; margin: 1px; padding: 0 4px 3px 4px; font-size: 12px; white-space: nowrap; overflow: hidden;">
+      <div id="birdWatchInfoDiv" class="roundBorder" data-box="info" style="display: none; border: 1px solid var(--gt-frame-filters); margin: 1px; padding: 0 4px 3px 4px; font-size: 12px; white-space: nowrap; overflow: hidden;">
         <div id="birdWatchInfoNames" style="cursor: pointer;" onclick="birdWatchCenterOnSelected();">
           <div style="display: flex; align-items: center;">
-            <div id="birdWatchInfoName" oncontextmenu="birdWatchOpenSatnogs(event);" style="flex: 1; min-width: 0; padding-left: 15px; text-align: center; font-size: 15px; font-weight: bold; color: cyan; overflow: hidden; text-overflow: ellipsis;"></div>
+            <div id="birdWatchInfoName" oncontextmenu="birdWatchOpenSatnogs(event);" style="flex: 1; min-width: 0; padding-left: 15px; text-align: center; font-size: 15px; font-weight: bold; color: var(--gt-title); overflow: hidden; text-overflow: ellipsis;"></div>
             <div style="margin-left: 3px; cursor: pointer;" onclick="event.stopPropagation(); birdWatchInfoCollapseToggle();"><img id="birdWatchInfoCollapseImg" class="roundBorder" src="img/minimize.png" height="12" /></div>
           </div>
           <div id="birdWatchInfoLong" style="color: #aaa; overflow: hidden; text-overflow: ellipsis; min-height: 15px;"></div>
@@ -348,7 +349,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </div>
       <!-- Rig Control's box (rig.js, rigLineRender): the frequencies and the mode, a box like the sky plot's with a yellow border; there while it is on; as wide as the sky plot's. A click opens the Doppler (transmitters) window; a right click BirdWatch's settings, where its Rig Control is -->
       <!-- Its buttons are kept apart from the text redrawn with each frequency read, so a click isn't lost to a redraw: Follow / Unfollow the selected satellite, Re-center (the user's tuning dropped) -->
-      <div id="birdWatchRigLine" class="roundBorder" data-box="rig" onclick="birdWatchTransmitterWindowOpen();" oncontextmenu="showBirdWatchSettings(); return false;" style="display: none; cursor: pointer; border: 1px solid yellow; margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <div id="birdWatchRigLine" class="roundBorder" data-box="rig" onclick="birdWatchTransmitterWindowOpen();" oncontextmenu="showBirdWatchSettings(); return false;" style="display: none; cursor: pointer; border: 1px solid var(--gt-frame-rig); margin: 1px; padding: 3px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
         <!-- Columns of fixed width but the frequency's: Re-center (>|<, lit while the user's tuning is off the Doppler frequency) on the
              left, beside both rows when there's an uplink; the downlink's frequency and mode, the uplink's under them; Lock VFOs on the
              right beside both (birdWatchLockFollow; the same setting as in BirdWatch's settings), a bracket from each row to it -->
@@ -375,16 +376,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
       </div>
       <!-- The sky plot of the selected satellite, in a box of its own like the control panel's Rx Calls box; the side views (Bird Views) under it -->
-      <div id="birdWatchSkyBox" data-box="sky" class="roundBorder" data-i18n="birdWatch.view.skybox.hover" title="Skybox&#10;The whole sky as a circle: north at the top, east on the right, the horizon around the edge and straight overhead in the center. The selected satellite's pass runs from AOS (green) to LOS (red), with its highest elevation marked; the cyan dot is where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
-      <div id="birdWatchSideProfileBox" data-box="profile" class="roundBorder" data-i18n="birdWatch.view.profile.hover" title="Pass Profile&#10;The selected satellite's elevation through its pass, from AOS (green) to LOS (red): their times under the ends, its highest elevation marked, and the cyan dot where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideProfileCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
-      <div id="birdWatchSideHorizonBox" data-box="horizon" class="roundBorder" data-i18n="birdWatch.view.horizon.hover" title="Horizon&#10;The selected satellite's pass as you would see it facing the horizon: compass directions along the bottom, centered on its highest point, and elevation up the side. AOS is green, LOS red, and the cyan dot is where it is now" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideHorizonCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
-      <div id="birdWatchSideEarthBox" data-box="earth" class="roundBorder" data-i18n="birdWatch.view.earth.hover" title="Earth&#10;The selected satellite seen from the side, above the curve of the Earth: your station on top, your horizon dashed, east to the right. The line to the satellite is green when it is above your horizon and red when it is below, with its height (↑) and its distance from you (↔)" style="display: none; border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideEarthCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSkyBox" data-box="sky" class="roundBorder" data-i18n="birdWatch.view.skybox.hover" title="Skybox&#10;The whole sky as a circle: north at the top, east on the right, the horizon around the edge and straight overhead in the center. The selected satellite's pass runs from AOS (green) to LOS (red), with its highest elevation marked; the cyan dot is where it is now" style="display: none; border: 1px solid var(--gt-frame-counts); margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSky" width="176" height="176" style="width: 176px; height: 176px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideProfileBox" data-box="profile" class="roundBorder" data-i18n="birdWatch.view.profile.hover" title="Pass Profile&#10;The selected satellite's elevation through its pass, from AOS (green) to LOS (red): their times under the ends, its highest elevation marked, and the cyan dot where it is now" style="display: none; border: 1px solid var(--gt-frame-counts); margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideProfileCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideHorizonBox" data-box="horizon" class="roundBorder" data-i18n="birdWatch.view.horizon.hover" title="Horizon&#10;The selected satellite's pass as you would see it facing the horizon: compass directions along the bottom, centered on its highest point, and elevation up the side. AOS is green, LOS red, and the cyan dot is where it is now" style="display: none; border: 1px solid var(--gt-frame-counts); margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideHorizonCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
+      <div id="birdWatchSideEarthBox" data-box="earth" class="roundBorder" data-i18n="birdWatch.view.earth.hover" title="Earth&#10;The selected satellite seen from the side, above the curve of the Earth: your station on top, your horizon dashed, east to the right. The line to the satellite is green when it is above your horizon and red when it is below, with its height (↑) and its distance from you (↔)" style="display: none; border: 1px solid var(--gt-frame-counts); margin: 1px; margin-bottom: 1px; padding: 3px; text-align: center;"><canvas id="birdWatchSideEarthCanvas" width="176" height="110" style="width: 176px; height: 110px; display: block; margin: 0 auto;"></canvas></div>
       </div>
     </div>
     <!-- The passes of the tracked satellites over the next 24 hours (birdWatchPredict.js) -->
-    <div id="birdWatchTimelineDiv" class="roundBorder" style="display: none; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); z-index: 590; background-color: #000000; border: 1px solid white; padding: 4px 8px 8px 8px; text-align: left;">
+    <div id="birdWatchTimelineDiv" class="roundBorder" style="display: none; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); z-index: 590; background-color: #000000; border: 1px solid var(--gt-frame-main); padding: 4px 8px 8px 8px; text-align: left;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-        <span data-i18n="birdWatch.timeline.label" style="font-weight: bold; color: cyan;">Pass Timeline</span>
+        <span data-i18n="birdWatch.timeline.label" style="font-weight: bold; color: var(--gt-title);">Pass Timeline</span>
         <span style="display: flex; align-items: center; gap: 10px;">
           <div class="button birdTleButton" style="padding: 1px 10px;" data-i18n="birdWatch.export.hover" title="Save the next three days of passes of the tracked satellites for your calendar" onclick="birdWatchExportPasses();"><span data-i18n="birdWatch.export.label">Export Passes</span> (.ics)</div>
           <button class="Xbutton" onclick="birdWatchTimelineClose();">X</button>
@@ -399,13 +400,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <div id="chevronDiv" class="chevronDivClass" data-i18n="map.showMenu.hover" title="Click me, place holder" onclick="updateLayout(false)">↔</div>
     <div id="menuDiv" class="menuDivClass">
       <div id="localInfoDiv"
-        style="border: 1px solid white; margin: 1px; margin-top: 1px; margin-bottom: 1px; padding: 0px"
+        style="border: 1px solid var(--gt-frame-main); margin: 1px; margin-top: 1px; margin-bottom: 1px; padding: 0px"
         class="roundBorder">
         <table align="center">
           <tr>
             <td colspan="2">
               <div id="appTitle" class="button" data-i18n="map.hideMenu.hover" title="Click to hide menu" style="
-                    color: #fff;
+                    color: var(--gt-app-title);
                     margin: 0;
                     padding: 0;
                     font-weight: bold;
@@ -452,18 +453,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </tr>
           <tr>
             <td>
-              <div id="localDXCountry" style="font-size: smaller; font-weight: italic; color: lightgreen" title="DXCC">
+              <div id="localDXCountry" style="font-size: smaller; color: var(--gt-country)" title="DXCC">
                 &nbsp;
               </div>
             </td>
             <td>
-              <div id="localDXDistance" style="font-size: smaller; font-weight: italic; color: lightblue"
+              <div id="localDXDistance" style="font-size: smaller; color: var(--gt-distance)"
                 title="Distance">
                 &nbsp;
               </div>
             </td>
             <td>
-              <div id="localDXAzimuth" style="font-size: smaller; font-weight: italic; color: lightgreen"
+              <div id="localDXAzimuth" style="font-size: smaller; color: var(--gt-azimuth)"
                 title="Heading">
                 &nbsp;
               </div>
@@ -473,13 +474,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </div>
       <div id="rigWrap" style="
             display: none;
-            background-color: blue;
+            background-color: var(--gt-rig-bg);
             border-style: inset;
-            border-color: lightblue;
+            border-color: var(--gt-rig-border);
             border-width: 3px;
             margin: 0;
             margin-bottom: 1px;
-            color: yellow;
+            color: var(--gt-rig-text);
             padding: 2px;
           " class="roundBorder">
         <div style="display: inline-block; padding-top: 0px; cursor: pointer; left: 0px" onClick="rigChange(false);">
@@ -490,7 +491,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </div>
       <div id="operatingMode" style="margin: 0; margin-bottom: 1px; cursor: pointer" onclick="ignoreMessagesToggle()"
         data-i18n="gt.status.ignoreMessages.hover" title="Click to ignore incoming messages">
-        <div data-i18n="sidebarNoMessages" id="txrxdec" style="background-color: Green; border-style: outset; border-color: yellow; border-width: 3px"
+        <div data-i18n="sidebarNoMessages" id="txrxdec" style="background-color: var(--gt-status-receive-bg); color: var(--gt-status-text); border-style: outset; border-color: var(--gt-status-waiting-border); border-width: 3px"
           class="roundBorder">
           waiting for message
         </div>
@@ -501,7 +502,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <div id="bandActivityDiv" data-box="bandActivity" class="roundBorder" style="
             position: relative;
             background-color: #000;
-            border: 1px solid purple;
+            border: 1px solid var(--gt-frame-activity);
             margin: 1px;
             height: 49px;
             margin-bottom: 1px;
@@ -512,7 +513,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
       </div>
 
-      <div id="actionDiv" data-box="counts" style="border: 1px solid blue; margin: 1px; margin-bottom: 1px; padding: 3px"
+      <div id="actionDiv" data-box="counts" style="border: 1px solid var(--gt-frame-counts); margin: 1px; margin-bottom: 1px; padding: 3px"
         class="roundBorder" title="Quick Stats">
         <table align="center">
           <tr>
@@ -558,7 +559,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </div></td>
           </tr>
           <tr id="rowsFilteredTr">
-            <td colspan=4><div style="cursor: pointer; background-color: #000; color: orange;" class="roundBorderValue" 
+            <td colspan=4><div style="cursor: pointer; background-color: #000; color: var(--gt-warning);" class="roundBorderValue"
               onclick="openLogbookSettings()"
               data-i18n="gt.status.logFiltered.label" title="ADIF Log records have been filtered based on your settings" align="center">
               Log Entries Filtered
@@ -584,7 +585,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </table>
       </div>
       <div id="filterDiv" data-box="mapViewFilters" class="roundBorder"
-        style="position: relative; background-color: #000; border: 1px solid cyan; margin: 1px; margin-bottom: 1px"
+        style="position: relative; background-color: #000; border: 1px solid var(--gt-frame-filters); margin: 1px; margin-bottom: 1px"
         >
         <div>
           <div data-i18n="mapFilter.title.label" style="display:inline-block;font-weight:bold;" onclick="checkMapViewFiltersMaximize()">Map View Filters</div>
@@ -592,7 +593,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
         <table align="center" id="mapViewFiltersTable">
           <tr data-i18n="mapFilter.band.hover" title="Select Band&#10;(Auto tracks WSJT-X)">
-            <td data-i18n="mapFilter.band.label" style="color:lightgreen">Band</td>
+            <td data-i18n="mapFilter.band.label" style="color:var(--gt-band)">Band</td>
             <td>
               <select id="gtBandFilter" onkeypress="return false;" onchange="gtBandFilterChanged(this);">
                 <option data-i18n="mapFilter.band.Auto" value="auto">Auto</option>
@@ -635,7 +636,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </td>
           </tr>
           <tr data-i18n="mapFilter.mode.hover" title="Select Mode">
-            <td data-i18n="mapFilter.mode.label" style="color:orange">Mode</td>
+            <td data-i18n="mapFilter.mode.label" style="color:var(--gt-mode)">Mode</td>
             <td>
               <select id="gtModeFilter" onkeypress="return false;" onchange="gtModeFilterChanged(this);">
                 <option data-i18n="mapFilter.mode.Auto" value="auto">Auto</option>
@@ -647,7 +648,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </td>
           </tr>
           <tr data-i18n="mapFilter.prop.hover" title="Select Propagation Mode">
-            <td data-i18n="mapFilter.prop.label" style="color:yellow">Prop</td>
+            <td data-i18n="mapFilter.prop.label" style="color:var(--gt-frequency)">Prop</td>
             <td>
               <select id="gtPropFilter" onkeypress="return false;" onchange="gtPropFilterChanged(this);">
                 <option data-i18n="mapFilter.prop.Mixed" value="mixed">Mixed</option>
@@ -674,7 +675,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </td>
           </tr>
           <tr>
-            <td data-i18n="mapFilter.data.label" style="color:cyan">Data</td>
+            <td data-i18n="mapFilter.data.label" style="color:var(--gt-title)">Data</td>
             <td>
               <select id="gtGridViewMode" onkeypress="return false;" onchange="setGridView()">
                 <option data-i18n="mapFilter.data.Live"    value="1">Live</option>
@@ -821,6 +822,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="mmDecoderButton" onclick="toggleMmDecoder();" oncontextmenu="toggleMmDecoder(false);" class="iconButton" style="display:none;" title="Toggle Multi-Mode Decoder" data-i18n="gt.button.cwViewer.hover">
           <img id="mmDecoderImg" src="img/mm-decoder.png" class="buttonImg" />
         </div>
+        <!-- Shown while Settings -> General -> Display -> Enable Casting is on (services/mapCast.js): a right click lists the devices -->
+        <div id="castButton" onclick="mapCastButtonClick();" oncontextmenu="mapCastButtonMenu(event);" class="iconButton" style="display:none;" title="Cast the map to a TV (right-click: pick the device)" data-i18n="gt.button.cast.hover">
+          <img id="castImg" src="img/cast.png" class="buttonImg" style="filter: grayscale(1);" />
+        </div>
       </div>
       </div>
     </div>
@@ -837,7 +842,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           z-index: -500;
           left: -1000px;
           top: -1000px;
-          border: 2px solid white;
+          border: 2px solid var(--gt-frame-main);
           white-space: nowrap;
           overflow: hidden;
         "
@@ -855,7 +860,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           z-index: -500;
           left: -1000px;
           top: -1000px;
-          border: 2px solid white;
+          border: 2px solid var(--gt-frame-main);
           white-space: nowrap;
           overflow: hidden;
         " class="roundBorder"></div>
@@ -868,7 +873,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           z-index: -499;
           left: 50px;
           top: 50px;
-          border: 2px solid white;
+          border: 2px solid var(--gt-frame-main);
           white-space: nowrap;
           overflow: hidden;
         " class="roundBorder"></div>
@@ -881,7 +886,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           z-index: -499;
           left: 50px;
           top: 50px;
-          border: 2px solid white;
+          border: 2px solid var(--gt-frame-main);
           white-space: nowrap;
           overflow: hidden;
         " class="roundBorder"></div>
@@ -894,7 +899,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           z-index: -499;
           left: 50px;
           top: 50px;
-          border: 2px solid white;
+          border: 2px solid var(--gt-frame-main);
           white-space: nowrap;
           overflow: hidden;
         " class="roundBorder"></div>
@@ -923,9 +928,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           vertical-align: middle;
           position: absolute;
           z-index: 600;
-          border: 1px cyan;
+          border: 1px solid var(--gt-frame-filters);
         " class="roundBorder">
-      <div id="printHotKeyDiv" style="border: 1px solid cyan; color: white; text-align: auto">
+      <div id="printHotKeyDiv" style="border: 1px solid var(--gt-frame-filters); color: var(--gt-label); text-align: auto">
         <table id="printableHotKeyTable" class="darkTable">
         </table>
       </div>
@@ -1141,6 +1146,42 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               </td>
             </tr>
             <tr>
+              <td class="mapRowLabel"><label data-i18n="settings.general.AppTheme.label" for="appTheme">App Theme</label></td>
+              <td>
+                <select id="appTheme" value="ega80s" onchange="changeAppTheme();">
+                  <option value="ambercrt">Amber CRT</option>
+                  <option value="apple2e">Apple ][e</option>
+                  <option value="aurora">Aurora</option>
+                  <option value="autumn">Autumn</option>
+                  <option value="bubblegum">Bubble Gum</option>
+                  <option value="c64">C-64</option>
+                  <option value="cga">CGA</option>
+                  <option value="colorblind">Colorblind Safe</option>
+                  <option value="countrykitchen">Country Kitchen</option>
+                  <option value="cyberpunk">Cyberpunk</option>
+                  <option value="deepsea">Deep Sea</option>
+                  <option value="ega">EGA</option>
+                  <option value="foodforest">Food Forest</option>
+                  <option value="frost">Frost</option>
+                  <option value="graphite">Graphite</option>
+                  <option value="grayscale">Grayscale</option>
+                  <option value="ega80s">GridTracker2</option>
+                  <option value="highcontrast">High Contrast</option>
+                  <option value="inferno">Inferno</option>
+                  <option value="matrix">Matrix</option>
+                  <option value="nightvision">Night Vision</option>
+                  <option value="oledminimal">OLED Minimal</option>
+                  <option value="opus">Opus' Choice</option>
+                  <option value="prairiehome">Prairie Home</option>
+                  <option value="sunflower">Sunflower</option>
+                  <option value="sunset">Sunset</option>
+                  <option value="synthwave">Synthwave</option>
+                  <option value="vga">VGA</option>
+                  <option value="vic20">VIC-20</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
               <td class="mapRowLabel"><label data-i18n="settings.general.WindowTheme.label" for="windowTheme">Window Theme</label></td>
               <td>
                 <select id="windowTheme" value="dark" onchange="changeWindowTheme();">
@@ -1168,6 +1209,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <tr>
               <td class="mapRowLabel"><label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td>
               <td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /></td>
+            </tr>
+            <tr>
+              <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting (Google TV Streamer, Chromecast)</label></td>
+              <td><input data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV" type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /></td>
             </tr>
           </table>
         </div>
@@ -1507,11 +1552,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   </tr>
                   <tr data-f="PortTr">
                     <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
-                    <td><div data-f="Choose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort(this);"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span data-f="PortName" class="mapValue"></span><div data-f="PortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
+                    <td><div data-f="Choose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort(this);"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span data-f="PortName" class="mapValue"></span><div data-f="PortError" style="display: none; color: var(--gt-status-fail); white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
                   </tr>
                   <tr data-f="LinuxTr" style="display: none;">
                     <td></td>
-                    <td><span data-f="LinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                    <td><span data-f="LinuxText" style="color: var(--gt-warning); white-space: normal; display: inline-block; max-width: 320px;"></span></td>
                   </tr>
                   <tr data-f="BaudTr">
                     <td class="mapRowLabel mapIndent"><label data-for="Baud" data-i18n="settings.rotor.baud.label">Baud</label></td>
@@ -1528,7 +1573,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <tr data-f="ScopeTr">
                     <td class="mapRowLabel mapIndent"></td>
                     <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="UseScope" data-i18n="settings.rig.scope.hover" title="Shows the radio's own band scope in the Multi-Mode Decoder, if the radio sends it (Icom, over USB)" onclick="rigScopeChanged(this);" /> <label data-for="UseScope" data-i18n="settings.rig.scope.label">Use Scope If Present</label>
-                      <div data-f="ScopeWarn" style="display: none; color: yellow; white-space: normal; max-width: 300px;"></div></td>
+                      <div data-f="ScopeWarn" style="display: none; color: var(--gt-warning); white-space: normal; max-width: 300px;"></div></td>
                   </tr>
                   <tr data-f="HostTr">
                     <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
@@ -1609,12 +1654,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <tr id="rotorPortTr">
               <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
               <!-- The port's name beside the button; an error opening it under the button (rotorStatusRender) -->
-              <td><div id="rotorChoose" class="button mapInlineButton" data-i18n="settings.rotor.choose.hover" title="Pick the serial port the rotator controller is on" onclick="rotorChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rotorPortName" class="mapValue"></span><div id="rotorPortError" style="display: none; color: orange; white-space: normal; max-width: 260px; margin-top: 2px;"></div></td>
+              <td><div id="rotorChoose" class="button mapInlineButton" data-i18n="settings.rotor.choose.hover" title="Pick the serial port the rotator controller is on" onclick="rotorChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rotorPortName" class="mapValue"></span><div id="rotorPortError" style="display: none; color: var(--gt-status-fail); white-space: normal; max-width: 260px; margin-top: 2px;"></div></td>
             </tr>
             <!-- Linux only: the user isn't in the group that owns the serial devices (serialLinuxCheck) -->
             <tr id="rotorLinuxTr" style="display: none;">
               <td></td>
-              <td><span id="rotorLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+              <td><span id="rotorLinuxText" style="color: var(--gt-warning); white-space: normal; display: inline-block; max-width: 320px;"></span></td>
             </tr>
             <tr id="rotorBaudTr">
               <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rotorBaud">Baud</label></td>
@@ -2603,7 +2648,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <td id="addButton">
               <div data-i18n="settings.alerts.CustomAlerts.new.addButton" class="flexButton" onclick="addNewAlert();">ADD</div>
             </td>
-            <td id="addError" style="color: red"></td>
+            <td id="addError" style="color: var(--gt-error)"></td>
           </tr>
         </table>
       </div>

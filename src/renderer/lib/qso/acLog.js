@@ -379,7 +379,7 @@ function acLogSpotPotaQsos(buffer)
       GRIDSQUARE: (object.GRID || "").toUpperCase(),
       MY_GRIDSQUARE: (object.FLDGRIDS || opGrid || "").toUpperCase()
     });
-    addEvent("log", "<font style='color:white'>" + I18N("gt.log.spottedPota") + "</font>");
+    addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.spottedPota") + "</font>");
   }
 }
 

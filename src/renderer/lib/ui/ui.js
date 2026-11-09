@@ -54,6 +54,18 @@ function changeWindowTheme()
   setWindowTheme();
 }
 
+function setAppThemeSelector()
+{
+  appTheme.value = GT.settings.app.appTheme;
+}
+
+// Every open window takes the new colors at once (first.js applyAppTheme); a canvas when it next draws
+function changeAppTheme()
+{
+  GT.settings.app.appTheme = appTheme.value;
+  electron.ipcRenderer.send("setAppTheme", appTheme.value);
+}
+
 function toggleMapViewFiltersCollapse()
 {
   GT.settings.app.collapsedMapViewFilters = !GT.settings.app.collapsedMapViewFilters;
@@ -206,11 +218,11 @@ function getCurrentBandModeHTML()
   let band = GT.settings.app.gtBandFilter == "auto" ? GT.settings.app.myBand + " (Auto)" : GT.settings.app.gtBandFilter.length == 0 ? "Mixed Bands" : GT.settings.app.gtBandFilter;
   let mode = GT.settings.app.gtModeFilter == "auto" ? GT.settings.app.myMode + " (Auto)" : GT.settings.app.gtModeFilter.length == 0 ? "Mixed Modes" : GT.settings.app.gtModeFilter;
   return (
-    "<div style='vertical-align:top;display:inline-block;margin-bottom:3px;color:lightgreen;font-weight:bold;font-size:larger'>" + I18N("stats.viewing") + ": <span style='color:yellow'>" +
+    "<div style='vertical-align:top;display:inline-block;margin-bottom:3px;color:var(--gt-label);font-weight:bold;font-size:larger'>" + I18N("stats.viewing") + ": <span style='color:var(--gt-band)'>" +
     band +
-    "</span> / <span style='color:orange'>" +
+    "</span> / <span style='color:var(--gt-mode)'>" +
     mode +
-    "</span></b></div><br>"
+    "</span></div><br>"
   );
 }
 
@@ -220,7 +232,7 @@ function displayTime()
   GT.currentDay = ~~(GT.timeNow / 86400);
   GT.currentYear = new Date().getUTCFullYear();
 
-  currentTime.innerHTML = "<font color='lightblue'>" + userTimeString(null) + "</font>";
+  currentTime.innerHTML = "<span style='color:var(--gt-time)'>" + userTimeString(null) + "</span>";
   if (GT.lastTimeSinceMessageInSeconds > 0)
   {
     let since = GT.timeNow - GT.lastTimeSinceMessageInSeconds;
@@ -240,8 +252,8 @@ function displayTime()
         secondsAgoMsg.style.backgroundColor = "yellow";
         secondsAgoMsg.style.color = "#000";
       } else {
-        secondsAgoMsg.style.backgroundColor = "blue";
-        secondsAgoMsg.style.color = "#FF0";
+        secondsAgoMsg.style.backgroundColor = "var(--gt-pill-bg)";
+        secondsAgoMsg.style.color = "var(--gt-pill-text)";
       }
     }
   }
@@ -412,7 +424,7 @@ function handleKpIndexJSON(json)
 function captureScreenshot()
 {
   electron.ipcRenderer.send("capturePageToClipboard", "GridTracker2");
-  addEvent("app", "<font style='color:lightgreen;'>" + I18N("gt.ui.screenshotCaptured") + "</font>");
+  addEvent("app", "<font style='color:var(--gt-status-ok);'>" + I18N("gt.ui.screenshotCaptured") + "</font>");
   playAlertMediaFile("Camera Click 1.mp3");
 }
 

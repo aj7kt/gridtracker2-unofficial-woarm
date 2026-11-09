@@ -709,8 +709,8 @@ function mmdStatus(text, error = false)
   mmdStatusShow();
 }
 
-// The status where it goes: FT8's, FT4's and WSPR's on the divider, left of their place in the period; an error, and the other modes',
-// at the top right
+// The status where it goes: FT8's, FT4's and WSPR's on the divider, left of their place in the period; an error (error true, or
+// "warning" for one in the warning color), and the other modes', at the top right
 function mmdStatusShow()
 {
   const S = DEC.status || { text: "", error: false };
@@ -718,7 +718,7 @@ function mmdStatusShow()
   const top = onSplit ? "" : S.text;
   const split = onSplit ? S.text : "";
   if (cwStatus.textContent != top) cwStatus.textContent = top;
-  const className = S.error ? "cwError" : "";
+  const className = S.error == "warning" ? "cwWarning" : S.error ? "cwError" : "";
   if (cwStatus.className != className) cwStatus.className = className;
   if (cwSplitStatus.textContent != split) cwSplitStatus.textContent = split;
 }
@@ -2397,9 +2397,10 @@ function mmdModeSet(mode)
   // This mode's Input Device (the decoder started again on it, if it was listening to another)
   mmdInputs();
   if (DEC.ft8) DEC.ft8.total = 0;
-  // SSTV starts listening afresh (what it had heard before is gone)
+  // SSTV starts listening afresh (what it had heard before is gone); the first time in this window, its saved pictures in its strip
   if (sstv)
   {
+    mmdSstvLoadSaved(mmdSstvKind());
     mmdSstvReset();
     mmdSstvStrip();
     mmdSstvDraw();

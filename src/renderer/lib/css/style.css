@@ -4,7 +4,7 @@ html, body {
   user-select: none;
   height: 100%;
   background-color: black;
-  color: #fff;
+  color: var(--gt-label);
   white-space: nowrap;
   font-family: Arial, Helvetica, sans-serif, "Yu Gothic UI", "Meiryo UI", "Microsoft YaHei";
   font-size: 12px;
@@ -15,8 +15,2627 @@ html, body {
 }
 
 :root {
-  accent-color: #4ab9f8;
+  accent-color: var(--gt-accent);
   color-scheme: dark;
+}
+
+/* App Theme (Settings -> General -> Display): the color of each kind of data, on black. A theme is a
+   :root[data-app-theme="..."] block of these (first.js applyAppTheme, k_appThemes); canvases read them with gtThemeColor() */
+:root,
+:root[data-app-theme="ega80s"] {
+  /* GridTracker2, the default */
+  --gt-frequency: lightgreen;
+  --gt-band: yellow;
+  --gt-mode: orange;
+  --gt-title: cyan;
+  --gt-label: white;
+  --gt-callsign: yellow;
+  --gt-callsign-other: cyan;
+  --gt-grid: cyan;
+  --gt-country: orange;
+  --gt-prefix: lightgreen;
+  --gt-state: lightgreen;
+  --gt-zone: cyan;
+  --gt-distance: cyan;
+  --gt-azimuth: yellow;
+  --gt-elevation: lightgreen;
+  --gt-count: white;
+  --gt-snr: white;
+  --gt-dt: white;
+  --gt-needed: white;
+  --gt-time: lightblue;
+  --gt-warning: orange;
+  --gt-error: red;
+  --gt-worked: yellow;
+  --gt-confirmed: lightgreen;
+  --gt-worked-bg: yellow;
+  --gt-confirmed-bg: red;
+  --gt-status-ok: lightgreen;
+  --gt-status-busy: yellow;
+  --gt-status-fail: orange;
+  --gt-transmit: orange;
+  --gt-cq: cyan;
+  --gt-message: white;
+  /* Controls: inputs and dropdowns (an input check's invalid / empty colors too), buttons, tabs (Settings', the Stats window's
+     info tabs, the rosters' tabs; the Feed Roster's accent tells it from the Call Roster), count pills, checkboxes */
+  --gt-input-text: yellow;
+  --gt-input-bg: darkblue;
+  --gt-input-border: #999;
+  --gt-input-disabled-bg: #008;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: rgb(199, 113, 0);
+  --gt-input-empty-text: #000;
+  --gt-input-empty-bg: yellow;
+  --gt-option-text: #fff;
+  --gt-option-bg: #000;
+  --gt-button-text: #eee;
+  --gt-button-border: #999;
+  --gt-button-bg: #223;
+  --gt-hover-border: #fff;
+  --gt-hover-accent: cyan;
+  --gt-tab-text: #eee;
+  --gt-tab-border: blue;
+  --gt-tab-active-text: yellow;
+  --gt-tab-active-bg: blue;
+  --gt-infotab-border: green;
+  --gt-infotab-active-text: yellow;
+  --gt-infotab-active-bg: green;
+  --gt-subtab-border: lightblue;
+  --gt-subtab-active-text: black;
+  --gt-subtab-active-bg: cyan;
+  --gt-feed-accent: yellow;
+  --gt-pill-text: #ff0;
+  --gt-pill-bg: blue;
+  --gt-accent: #4ab9f8;
+  /* The panels' box frames and title buttons, the rig box, the status box (RECEIVE, DECODE, ...), notes, sliders */
+  --gt-frame-main: white;
+  --gt-frame-activity: purple;
+  --gt-frame-counts: blue;
+  --gt-frame-filters: cyan;
+  --gt-frame-rig: yellow;
+  --gt-app-title: #fff;
+  --gt-rig-text: yellow;
+  --gt-rig-bg: blue;
+  --gt-rig-border: lightblue;
+  --gt-status-text: #fff;
+  --gt-status-waiting-border: yellow;
+  --gt-status-receive-bg: green;
+  --gt-status-receive-border: greenyellow;
+  --gt-status-decode-bg: blue;
+  --gt-status-decode-border: cyan;
+  --gt-status-transmit-border: orange;
+  --gt-status-ignore-bg: dimgray;
+  --gt-status-ignore-border: darkgray;
+  --gt-status-closed: purple;
+  --gt-note: #ccc;
+  --gt-slider-track-start: #111;
+  --gt-slider-track: #888;
+  --gt-slider-thumb-border: rgba(0, 0, 136, 0.514);
+  --gt-slider-thumb-start: #1100a7;
+  --gt-slider-thumb-end: #00f7ff;
+}
+
+:root[data-app-theme="opus"] {
+  /* Opus' Choice: softer tones of one brightness, a different hue for each thing shown side by side, labels a step dimmer
+     than values; red still only for errors */
+  --gt-frequency: #6ee7b7;
+  --gt-band: #c4b5fd;
+  --gt-mode: #fdba74;
+  --gt-title: #7dd3fc;
+  --gt-label: #cbd5e1;
+  --gt-callsign: #fde047;
+  --gt-callsign-other: #93c5fd;
+  --gt-grid: #2dd4bf;
+  --gt-country: #f9a8d4;
+  --gt-prefix: #94a3b8;
+  --gt-state: #86efac;
+  --gt-zone: #2dd4bf;
+  --gt-distance: #67e8f9;
+  --gt-azimuth: #bef264;
+  --gt-elevation: #86efac;
+  --gt-count: #f1f5f9;
+  --gt-snr: #f1f5f9;
+  --gt-dt: #f1f5f9;
+  --gt-needed: #f0abfc;
+  --gt-time: #a5b4fc;
+  --gt-warning: #fb923c;
+  --gt-error: #f87171;
+  --gt-worked: #fcd34d;
+  --gt-confirmed: #86efac;
+  --gt-worked-bg: #fcd34d;
+  --gt-confirmed-bg: #f87171;
+  --gt-status-ok: #86efac;
+  --gt-status-busy: #fcd34d;
+  --gt-status-fail: #fb923c;
+  --gt-transmit: #f97316;
+  --gt-cq: #67e8f9;
+  --gt-message: #e2e8f0;
+  --gt-input-text: #fde68a;
+  --gt-input-bg: #1e293b;
+  --gt-input-border: #64748b;
+  --gt-input-disabled-bg: #0f172a;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #c2410c;
+  --gt-input-empty-text: #0f172a;
+  --gt-input-empty-bg: #fcd34d;
+  --gt-option-text: #e2e8f0;
+  --gt-option-bg: #0f172a;
+  --gt-button-text: #e2e8f0;
+  --gt-button-border: #64748b;
+  --gt-button-bg: #1e293b;
+  --gt-hover-border: #e2e8f0;
+  --gt-hover-accent: #7dd3fc;
+  --gt-tab-text: #cbd5e1;
+  --gt-tab-border: #6366f1;
+  --gt-tab-active-text: #fde68a;
+  --gt-tab-active-bg: #3730a3;
+  --gt-infotab-border: #10b981;
+  --gt-infotab-active-text: #fde68a;
+  --gt-infotab-active-bg: #065f46;
+  --gt-subtab-border: #7dd3fc;
+  --gt-subtab-active-text: #0f172a;
+  --gt-subtab-active-bg: #7dd3fc;
+  --gt-feed-accent: #fde047;
+  --gt-pill-text: #fde68a;
+  --gt-pill-bg: #1e3a8a;
+  --gt-accent: #818cf8;
+  --gt-frame-main: #cbd5e1;
+  --gt-frame-activity: #10b981;
+  --gt-frame-counts: #6366f1;
+  --gt-frame-filters: #7dd3fc;
+  --gt-frame-rig: #c4b5fd;
+  --gt-app-title: #f1f5f9;
+  --gt-rig-text: #fde68a;
+  --gt-rig-bg: #3730a3;
+  --gt-rig-border: #7dd3fc;
+  --gt-status-text: #fde68a;
+  --gt-status-waiting-border: #fcd34d;
+  --gt-status-receive-bg: #065f46;
+  --gt-status-receive-border: #86efac;
+  --gt-status-decode-bg: #3730a3;
+  --gt-status-decode-border: #7dd3fc;
+  --gt-status-transmit-border: #fb923c;
+  --gt-status-ignore-bg: #1e293b;
+  --gt-status-ignore-border: #64748b;
+  --gt-status-closed: #5053c3;
+  --gt-note: #cbd5e1;
+  --gt-slider-track-start: #1e293b;
+  --gt-slider-track: #64748b;
+  --gt-slider-thumb-border: #6366f1;
+  --gt-slider-thumb-start: #3730a3;
+  --gt-slider-thumb-end: #7dd3fc;
+}
+
+:root[data-app-theme="inferno"] {
+  /* Inferno: golds, ambers, flame orange, coral and white-hot, on ember controls; red still only for errors */
+  --gt-frequency: #ffe082;
+  --gt-band: #ff7043;
+  --gt-mode: #ffb300;
+  --gt-title: #ff9800;
+  --gt-label: #d7ccc8;
+  --gt-callsign: #fff3e0;
+  --gt-callsign-other: #ffab91;
+  --gt-grid: #ffab91;
+  --gt-country: #ff8a65;
+  --gt-prefix: #bcaaa4;
+  --gt-state: #ffd180;
+  --gt-zone: #ffab91;
+  --gt-distance: #ffcc80;
+  --gt-azimuth: #fff176;
+  --gt-elevation: #ffd180;
+  --gt-count: #fff8e1;
+  --gt-snr: #fff8e1;
+  --gt-dt: #fff8e1;
+  --gt-needed: #ff80ab;
+  --gt-time: #ffccbc;
+  --gt-warning: #ffd600;
+  --gt-error: #ff1744;
+  --gt-worked: #ffd54f;
+  --gt-confirmed: #fff3e0;
+  --gt-worked-bg: #ffb300;
+  --gt-confirmed-bg: #ff1744;
+  --gt-status-ok: #fff3e0;
+  --gt-status-busy: #ffd600;
+  --gt-status-fail: #ff6d00;
+  --gt-transmit: #e65100;
+  --gt-cq: #ffd180;
+  --gt-message: #efebe9;
+  --gt-input-text: #ffd27f;
+  --gt-input-bg: #2b0a00;
+  --gt-input-border: #8a3b12;
+  --gt-input-disabled-bg: #1a0600;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #c43e00;
+  --gt-input-empty-text: #000;
+  --gt-input-empty-bg: #ffb300;
+  --gt-option-text: #ffe0b2;
+  --gt-option-bg: #120400;
+  --gt-button-text: #ffe0b2;
+  --gt-button-border: #8a3b12;
+  --gt-button-bg: #2b0a00;
+  --gt-hover-border: #ffb74d;
+  --gt-hover-accent: #ff9800;
+  --gt-tab-text: #d7ccc8;
+  --gt-tab-border: #b33c00;
+  --gt-tab-active-text: #fff3e0;
+  --gt-tab-active-bg: #8f2a00;
+  --gt-infotab-border: #c75000;
+  --gt-infotab-active-text: #fff3e0;
+  --gt-infotab-active-bg: #a33f00;
+  --gt-subtab-border: #ff9800;
+  --gt-subtab-active-text: #000;
+  --gt-subtab-active-bg: #ff9800;
+  --gt-feed-accent: #ffd54f;
+  --gt-pill-text: #ffe082;
+  --gt-pill-bg: #5a1a00;
+  --gt-accent: #ff6d00;
+  --gt-frame-main: #d7ccc8;
+  --gt-frame-activity: #c75000;
+  --gt-frame-counts: #b33c00;
+  --gt-frame-filters: #ff9800;
+  --gt-frame-rig: #ff7043;
+  --gt-app-title: #fff8e1;
+  --gt-rig-text: #fff3e0;
+  --gt-rig-bg: #8f2a00;
+  --gt-rig-border: #ff9800;
+  --gt-status-text: #fff3e0;
+  --gt-status-waiting-border: #ffd600;
+  --gt-status-receive-bg: #a33f00;
+  --gt-status-receive-border: #fff3e0;
+  --gt-status-decode-bg: #8f2a00;
+  --gt-status-decode-border: #ff9800;
+  --gt-status-transmit-border: #ffd600;
+  --gt-status-ignore-bg: #2b0a00;
+  --gt-status-ignore-border: #8a3b12;
+  --gt-status-closed: #b33c00;
+  --gt-note: #d7ccc8;
+  --gt-slider-track-start: #2b0a00;
+  --gt-slider-track: #8a3b12;
+  --gt-slider-thumb-border: #b33c00;
+  --gt-slider-thumb-start: #8f2a00;
+  --gt-slider-thumb-end: #ff9800;
+}
+
+:root[data-app-theme="frost"] {
+  /* Frost: ice blues, teal, lilac and white, on deep-navy controls */
+  --gt-frequency: #80deea;
+  --gt-band: #b39ddb;
+  --gt-mode: #90caf9;
+  --gt-title: #e1f5fe;
+  --gt-label: #b0bec5;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #81d4fa;
+  --gt-grid: #4dd0e1;
+  --gt-country: #ce93d8;
+  --gt-prefix: #78909c;
+  --gt-state: #80cbc4;
+  --gt-zone: #4dd0e1;
+  --gt-distance: #4fc3f7;
+  --gt-azimuth: #e1bee7;
+  --gt-elevation: #80cbc4;
+  --gt-count: #eceff1;
+  --gt-snr: #eceff1;
+  --gt-dt: #eceff1;
+  --gt-needed: #f48fb1;
+  --gt-time: #9fa8da;
+  --gt-warning: #ffcc80;
+  --gt-error: #ff6b6b;
+  --gt-worked: #fff59d;
+  --gt-confirmed: #80cbc4;
+  --gt-worked-bg: #fff59d;
+  --gt-confirmed-bg: #ef5350;
+  --gt-status-ok: #80cbc4;
+  --gt-status-busy: #fff59d;
+  --gt-status-fail: #ffcc80;
+  --gt-transmit: #e57c52;
+  --gt-cq: #81d4fa;
+  --gt-message: #eceff1;
+  --gt-input-text: #e1f5fe;
+  --gt-input-bg: #0b2233;
+  --gt-input-border: #4f7a94;
+  --gt-input-disabled-bg: #06141e;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #c0662b;
+  --gt-input-empty-text: #0b2233;
+  --gt-input-empty-bg: #b3e5fc;
+  --gt-option-text: #e1f5fe;
+  --gt-option-bg: #06141e;
+  --gt-button-text: #e1f5fe;
+  --gt-button-border: #4f7a94;
+  --gt-button-bg: #0b2233;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #80deea;
+  --gt-tab-text: #b0bec5;
+  --gt-tab-border: #4f8fb3;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #1f5f8b;
+  --gt-infotab-border: #3c9aa0;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #1d6f74;
+  --gt-subtab-border: #81d4fa;
+  --gt-subtab-active-text: #0b2233;
+  --gt-subtab-active-bg: #b3e5fc;
+  --gt-feed-accent: #fff59d;
+  --gt-pill-text: #e1f5fe;
+  --gt-pill-bg: #1f4f6f;
+  --gt-accent: #4fc3f7;
+  --gt-frame-main: #b0bec5;
+  --gt-frame-activity: #3c9aa0;
+  --gt-frame-counts: #4f8fb3;
+  --gt-frame-filters: #e1f5fe;
+  --gt-frame-rig: #b39ddb;
+  --gt-app-title: #eceff1;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #1f5f8b;
+  --gt-rig-border: #81d4fa;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #fff59d;
+  --gt-status-receive-bg: #1d6f74;
+  --gt-status-receive-border: #80cbc4;
+  --gt-status-decode-bg: #1f5f8b;
+  --gt-status-decode-border: #80deea;
+  --gt-status-transmit-border: #ffcc80;
+  --gt-status-ignore-bg: #0b2233;
+  --gt-status-ignore-border: #4f7a94;
+  --gt-status-closed: #407491;
+  --gt-note: #b0bec5;
+  --gt-slider-track-start: #0b2233;
+  --gt-slider-track: #4f7a94;
+  --gt-slider-thumb-border: #4f8fb3;
+  --gt-slider-thumb-start: #1f5f8b;
+  --gt-slider-thumb-end: #80deea;
+}
+
+:root[data-app-theme="cga"] {
+  /* CGA: palette 1's cyan, magenta and white, gray labels; yellow only for warnings, light red only for errors */
+  --gt-frequency: #55ffff;
+  --gt-band: #ff55ff;
+  --gt-mode: #ffffff;
+  --gt-title: #55ffff;
+  --gt-label: #aaaaaa;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #ff55ff;
+  --gt-grid: #55ffff;
+  --gt-country: #ff55ff;
+  --gt-prefix: #aaaaaa;
+  --gt-state: #55ffff;
+  --gt-zone: #55ffff;
+  --gt-distance: #ff55ff;
+  --gt-azimuth: #55ffff;
+  --gt-elevation: #55ffff;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ff55ff;
+  --gt-time: #55ffff;
+  --gt-warning: #ffff55;
+  --gt-error: #ff5555;
+  --gt-worked: #ff55ff;
+  --gt-confirmed: #55ffff;
+  --gt-worked-bg: #ff55ff;
+  --gt-confirmed-bg: #ff5555;
+  --gt-status-ok: #55ffff;
+  --gt-status-busy: #ffffff;
+  --gt-status-fail: #ff55ff;
+  --gt-transmit: #aa00aa;
+  --gt-cq: #55ffff;
+  --gt-message: #ffffff;
+  --gt-input-text: #55ffff;
+  --gt-input-bg: #000000;
+  --gt-input-border: #aaaaaa;
+  --gt-input-disabled-bg: #000000;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #aa00aa;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #ff55ff;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #aaaaaa;
+  --gt-button-bg: #000000;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #ff55ff;
+  --gt-tab-text: #aaaaaa;
+  --gt-tab-border: #55ffff;
+  --gt-tab-active-text: #000000;
+  --gt-tab-active-bg: #55ffff;
+  --gt-infotab-border: #ff55ff;
+  --gt-infotab-active-text: #000000;
+  --gt-infotab-active-bg: #ff55ff;
+  --gt-subtab-border: #55ffff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #55ffff;
+  --gt-feed-accent: #ff55ff;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #aa00aa;
+  --gt-accent: #ff55ff;
+  --gt-frame-main: #aaaaaa;
+  --gt-frame-activity: #ff55ff;
+  --gt-frame-counts: #55ffff;
+  --gt-frame-filters: #55ffff;
+  --gt-frame-rig: #ff55ff;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #000000;
+  --gt-rig-bg: #55ffff;
+  --gt-rig-border: #55ffff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #ffffff;
+  --gt-status-receive-bg: #ba3eba;
+  --gt-status-receive-border: #55ffff;
+  --gt-status-decode-bg: #297a7a;
+  --gt-status-decode-border: #ff55ff;
+  --gt-status-transmit-border: #ffff55;
+  --gt-status-ignore-bg: #000000;
+  --gt-status-ignore-border: #aaaaaa;
+  --gt-status-closed: #555555;
+  --gt-note: #aaaaaa;
+  --gt-slider-track-start: #000000;
+  --gt-slider-track: #aaaaaa;
+  --gt-slider-thumb-border: #55ffff;
+  --gt-slider-thumb-start: #55ffff;
+  --gt-slider-thumb-end: #ff55ff;
+}
+
+:root[data-app-theme="vga"] {
+  /* VGA: the DOS 16/256-color look, bright data colors and Turbo Vision blue and cyan controls */
+  --gt-frequency: #55ffff;
+  --gt-band: #ffff55;
+  --gt-mode: #ff55ff;
+  --gt-title: #ffffff;
+  --gt-label: #aaaaaa;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #55ffff;
+  --gt-grid: #55ff55;
+  --gt-country: #ffaa00;
+  --gt-prefix: #aaaaaa;
+  --gt-state: #55ff55;
+  --gt-zone: #55ff55;
+  --gt-distance: #55ffff;
+  --gt-azimuth: #ffff55;
+  --gt-elevation: #55ff55;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ff55ff;
+  --gt-time: #aaaaff;
+  --gt-warning: #ffaa00;
+  --gt-error: #ff5555;
+  --gt-worked: #ffff55;
+  --gt-confirmed: #55ff55;
+  --gt-worked-bg: #ffff55;
+  --gt-confirmed-bg: #ff5555;
+  --gt-status-ok: #55ff55;
+  --gt-status-busy: #ffff55;
+  --gt-status-fail: #ffaa00;
+  --gt-transmit: #aa5500;
+  --gt-cq: #55ffff;
+  --gt-message: #ffffff;
+  --gt-input-text: #ffff55;
+  --gt-input-bg: #0000aa;
+  --gt-input-border: #00aaaa;
+  --gt-input-disabled-bg: #000055;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #aa5500;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #00aaaa;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #0000aa;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #00aaaa;
+  --gt-button-bg: #0000aa;
+  --gt-hover-border: #ffff55;
+  --gt-hover-accent: #55ffff;
+  --gt-tab-text: #aaaaaa;
+  --gt-tab-border: #00aaaa;
+  --gt-tab-active-text: #000000;
+  --gt-tab-active-bg: #00aaaa;
+  --gt-infotab-border: #00aa00;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #00aa00;
+  --gt-subtab-border: #55ffff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #55ffff;
+  --gt-feed-accent: #ffff55;
+  --gt-pill-text: #ffff55;
+  --gt-pill-bg: #0000aa;
+  --gt-accent: #00aaaa;
+  --gt-frame-main: #aaaaaa;
+  --gt-frame-activity: #00aa00;
+  --gt-frame-counts: #00aaaa;
+  --gt-frame-filters: #ffffff;
+  --gt-frame-rig: #ffff55;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #000000;
+  --gt-rig-bg: #00aaaa;
+  --gt-rig-border: #55ffff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #ffff55;
+  --gt-status-receive-bg: #008a00;
+  --gt-status-receive-border: #55ff55;
+  --gt-status-decode-bg: #007c7c;
+  --gt-status-decode-border: #55ffff;
+  --gt-status-transmit-border: #ffaa00;
+  --gt-status-ignore-bg: #0000aa;
+  --gt-status-ignore-border: #00aaaa;
+  --gt-status-closed: #aa00aa;
+  --gt-note: #aaaaaa;
+  --gt-slider-track-start: #0000aa;
+  --gt-slider-track: #00aaaa;
+  --gt-slider-thumb-border: #00aaaa;
+  --gt-slider-thumb-start: #00aaaa;
+  --gt-slider-thumb-end: #55ffff;
+}
+
+:root[data-app-theme="matrix"] {
+  /* Matrix: terminal greens, white for callsigns, titles and counts; red still for errors, amber for warnings and transmit */
+  --gt-frequency: #00ff41;
+  --gt-band: #b3ffcc;
+  --gt-mode: #66ff99;
+  --gt-title: #ffffff;
+  --gt-label: #4fbf6a;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #b3ffcc;
+  --gt-grid: #66ff99;
+  --gt-country: #d0ffd8;
+  --gt-prefix: #2e8b57;
+  --gt-state: #66ff99;
+  --gt-zone: #66ff99;
+  --gt-distance: #8cff9e;
+  --gt-azimuth: #c6ffdd;
+  --gt-elevation: #66ff99;
+  --gt-count: #ffffff;
+  --gt-snr: #d0ffd0;
+  --gt-dt: #d0ffd0;
+  --gt-needed: #ffffff;
+  --gt-time: #7dffa0;
+  --gt-warning: #ffb000;
+  --gt-error: #ff3030;
+  --gt-worked: #d0ffd0;
+  --gt-confirmed: #00ff41;
+  --gt-worked-bg: #b3ffcc;
+  --gt-confirmed-bg: #ff3030;
+  --gt-status-ok: #00ff41;
+  --gt-status-busy: #ccff00;
+  --gt-status-fail: #ffb000;
+  --gt-transmit: #b37a00;
+  --gt-cq: #ffffff;
+  --gt-message: #b3ffcc;
+  --gt-input-text: #00ff41;
+  --gt-input-bg: #001a08;
+  --gt-input-border: #00802b;
+  --gt-input-disabled-bg: #000d04;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #8a5a00;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #00ff41;
+  --gt-option-text: #b3ffcc;
+  --gt-option-bg: #000000;
+  --gt-button-text: #b3ffcc;
+  --gt-button-border: #00802b;
+  --gt-button-bg: #001a08;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #00ff41;
+  --gt-tab-text: #4fbf6a;
+  --gt-tab-border: #00802b;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #00591e;
+  --gt-infotab-border: #00a336;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #006b24;
+  --gt-subtab-border: #00ff41;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #00ff41;
+  --gt-feed-accent: #ffffff;
+  --gt-pill-text: #00ff41;
+  --gt-pill-bg: #003b12;
+  --gt-accent: #00ff41;
+  --gt-frame-main: #4fbf6a;
+  --gt-frame-activity: #00a336;
+  --gt-frame-counts: #00802b;
+  --gt-frame-filters: #ffffff;
+  --gt-frame-rig: #b3ffcc;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #00591e;
+  --gt-rig-border: #00ff41;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #ccff00;
+  --gt-status-receive-bg: #006b24;
+  --gt-status-receive-border: #00ff41;
+  --gt-status-decode-bg: #00591e;
+  --gt-status-decode-border: #00ff41;
+  --gt-status-transmit-border: #ffb000;
+  --gt-status-ignore-bg: #001a08;
+  --gt-status-ignore-border: #00802b;
+  --gt-status-closed: #00802b;
+  --gt-note: #4fbf6a;
+  --gt-slider-track-start: #001a08;
+  --gt-slider-track: #00802b;
+  --gt-slider-thumb-border: #00802b;
+  --gt-slider-thumb-start: #00591e;
+  --gt-slider-thumb-end: #00ff41;
+}
+
+:root[data-app-theme="grayscale"] {
+  /* Grayscale: brightness only, values lighter than labels; red the one color, for errors */
+  --gt-frequency: #ffffff;
+  --gt-band: #c8c8c8;
+  --gt-mode: #a8a8a8;
+  --gt-title: #f0f0f0;
+  --gt-label: #8c8c8c;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #bcbcbc;
+  --gt-grid: #d0d0d0;
+  --gt-country: #b0b0b0;
+  --gt-prefix: #808080;
+  --gt-state: #c0c0c0;
+  --gt-zone: #c0c0c0;
+  --gt-distance: #d8d8d8;
+  --gt-azimuth: #b8b8b8;
+  --gt-elevation: #c8c8c8;
+  --gt-count: #e8e8e8;
+  --gt-snr: #e0e0e0;
+  --gt-dt: #e0e0e0;
+  --gt-needed: #ffffff;
+  --gt-time: #a0a0a0;
+  --gt-warning: #e6e6e6;
+  --gt-error: #ff4d4d;
+  --gt-worked: #b0b0b0;
+  --gt-confirmed: #ffffff;
+  --gt-worked-bg: #9e9e9e;
+  --gt-confirmed-bg: #ffffff;
+  --gt-status-ok: #e0e0e0;
+  --gt-status-busy: #a0a0a0;
+  --gt-status-fail: #8a8a8a;
+  --gt-transmit: #616161;
+  --gt-cq: #ffffff;
+  --gt-message: #c8c8c8;
+  --gt-input-text: #ffffff;
+  --gt-input-bg: #2b2b2b;
+  --gt-input-border: #777777;
+  --gt-input-disabled-bg: #1a1a1a;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #555555;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #d0d0d0;
+  --gt-option-text: #e0e0e0;
+  --gt-option-bg: #000000;
+  --gt-button-text: #e0e0e0;
+  --gt-button-border: #777777;
+  --gt-button-bg: #222222;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #ffffff;
+  --gt-tab-text: #9e9e9e;
+  --gt-tab-border: #666666;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #444444;
+  --gt-infotab-border: #666666;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #3a3a3a;
+  --gt-subtab-border: #888888;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #d0d0d0;
+  --gt-feed-accent: #ffffff;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #333333;
+  --gt-accent: #9e9e9e;
+  --gt-frame-main: #8c8c8c;
+  --gt-frame-activity: #666666;
+  --gt-frame-counts: #666666;
+  --gt-frame-filters: #f0f0f0;
+  --gt-frame-rig: #c8c8c8;
+  --gt-app-title: #e8e8e8;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #444444;
+  --gt-rig-border: #888888;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #a0a0a0;
+  --gt-status-receive-bg: #3a3a3a;
+  --gt-status-receive-border: #e0e0e0;
+  --gt-status-decode-bg: #444444;
+  --gt-status-decode-border: #ffffff;
+  --gt-status-transmit-border: #e6e6e6;
+  --gt-status-ignore-bg: #222222;
+  --gt-status-ignore-border: #777777;
+  --gt-status-closed: #666666;
+  --gt-note: #8c8c8c;
+  --gt-slider-track-start: #222222;
+  --gt-slider-track: #777777;
+  --gt-slider-thumb-border: #666666;
+  --gt-slider-thumb-start: #444444;
+  --gt-slider-thumb-end: #ffffff;
+}
+
+:root[data-app-theme="ega"] {
+  /* EGA: the 16-color EGA palette, bright green, yellow, magenta and blue, gray buttons and blue tabs; light red for errors */
+  --gt-frequency: #55ff55;
+  --gt-band: #ffff55;
+  --gt-mode: #ff55ff;
+  --gt-title: #55ffff;
+  --gt-label: #aaaaaa;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #55ffff;
+  --gt-grid: #00aaaa;
+  --gt-country: #ff55ff;
+  --gt-prefix: #aaaaaa;
+  --gt-state: #00aa00;
+  --gt-zone: #00aaaa;
+  --gt-distance: #5555ff;
+  --gt-azimuth: #ffff55;
+  --gt-elevation: #55ff55;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ff55ff;
+  --gt-time: #5555ff;
+  --gt-warning: #ffff55;
+  --gt-error: #ff5555;
+  --gt-worked: #ffff55;
+  --gt-confirmed: #55ff55;
+  --gt-worked-bg: #ffff55;
+  --gt-confirmed-bg: #ff5555;
+  --gt-status-ok: #55ff55;
+  --gt-status-busy: #ffff55;
+  --gt-status-fail: #ff55ff;
+  --gt-transmit: #aa5500;
+  --gt-cq: #55ffff;
+  --gt-message: #ffffff;
+  --gt-input-text: #55ffff;
+  --gt-input-bg: #000000;
+  --gt-input-border: #5555ff;
+  --gt-input-disabled-bg: #000000;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #aa5500;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #ffff55;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #aaaaaa;
+  --gt-button-bg: #555555;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #55ffff;
+  --gt-tab-text: #aaaaaa;
+  --gt-tab-border: #5555ff;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #0000aa;
+  --gt-infotab-border: #00aa00;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #00aa00;
+  --gt-subtab-border: #55ffff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #55ffff;
+  --gt-feed-accent: #ffff55;
+  --gt-pill-text: #ffff55;
+  --gt-pill-bg: #0000aa;
+  --gt-accent: #5555ff;
+  --gt-frame-main: #aaaaaa;
+  --gt-frame-activity: #00aa00;
+  --gt-frame-counts: #5555ff;
+  --gt-frame-filters: #55ffff;
+  --gt-frame-rig: #ffff55;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #0000aa;
+  --gt-rig-border: #55ffff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #ffff55;
+  --gt-status-receive-bg: #008a00;
+  --gt-status-receive-border: #55ff55;
+  --gt-status-decode-bg: #0000aa;
+  --gt-status-decode-border: #55ffff;
+  --gt-status-transmit-border: #ffff55;
+  --gt-status-ignore-bg: #555555;
+  --gt-status-ignore-border: #aaaaaa;
+  --gt-status-closed: #5555ff;
+  --gt-note: #aaaaaa;
+  --gt-slider-track-start: #555555;
+  --gt-slider-track: #aaaaaa;
+  --gt-slider-thumb-border: #5555ff;
+  --gt-slider-thumb-start: #0000aa;
+  --gt-slider-thumb-end: #55ffff;
+}
+
+:root[data-app-theme="sunflower"] {
+  /* Sunflower: petal yellows and golds, leaf greens, sky blue, seed-brown controls */
+  --gt-frequency: #9ccc65;
+  --gt-band: #ffd54f;
+  --gt-mode: #ffb74d;
+  --gt-title: #ffe082;
+  --gt-label: #d7c9a8;
+  --gt-callsign: #fff59d;
+  --gt-callsign-other: #81d4fa;
+  --gt-grid: #aed581;
+  --gt-country: #ffcc80;
+  --gt-prefix: #a1887f;
+  --gt-state: #c5e1a5;
+  --gt-zone: #aed581;
+  --gt-distance: #4fc3f7;
+  --gt-azimuth: #fff176;
+  --gt-elevation: #c5e1a5;
+  --gt-count: #fffde7;
+  --gt-snr: #fffde7;
+  --gt-dt: #fffde7;
+  --gt-needed: #f48fb1;
+  --gt-time: #b3e5fc;
+  --gt-warning: #ff9800;
+  --gt-error: #ff5252;
+  --gt-worked: #ffd54f;
+  --gt-confirmed: #9ccc65;
+  --gt-worked-bg: #ffd54f;
+  --gt-confirmed-bg: #ff5252;
+  --gt-status-ok: #9ccc65;
+  --gt-status-busy: #ffd54f;
+  --gt-status-fail: #ff9800;
+  --gt-transmit: #bf6a00;
+  --gt-cq: #81d4fa;
+  --gt-message: #fff8e1;
+  --gt-input-text: #fff59d;
+  --gt-input-bg: #2e2410;
+  --gt-input-border: #8d6e3f;
+  --gt-input-disabled-bg: #1a140a;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b35a00;
+  --gt-input-empty-text: #2e2410;
+  --gt-input-empty-bg: #ffd54f;
+  --gt-option-text: #fff8e1;
+  --gt-option-bg: #1a140a;
+  --gt-button-text: #fff8e1;
+  --gt-button-border: #8d6e3f;
+  --gt-button-bg: #2e2410;
+  --gt-hover-border: #ffe082;
+  --gt-hover-accent: #ffd54f;
+  --gt-tab-text: #d7c9a8;
+  --gt-tab-border: #a1887f;
+  --gt-tab-active-text: #fff59d;
+  --gt-tab-active-bg: #6d4c1f;
+  --gt-infotab-border: #7cb342;
+  --gt-infotab-active-text: #fff59d;
+  --gt-infotab-active-bg: #33691e;
+  --gt-subtab-border: #ffd54f;
+  --gt-subtab-active-text: #2e2410;
+  --gt-subtab-active-bg: #ffd54f;
+  --gt-feed-accent: #81d4fa;
+  --gt-pill-text: #fff59d;
+  --gt-pill-bg: #4e3b14;
+  --gt-accent: #ffc107;
+  --gt-frame-main: #d7c9a8;
+  --gt-frame-activity: #7cb342;
+  --gt-frame-counts: #a1887f;
+  --gt-frame-filters: #ffe082;
+  --gt-frame-rig: #ffd54f;
+  --gt-app-title: #fffde7;
+  --gt-rig-text: #fff59d;
+  --gt-rig-bg: #6d4c1f;
+  --gt-rig-border: #ffd54f;
+  --gt-status-text: #fff59d;
+  --gt-status-waiting-border: #ffd54f;
+  --gt-status-receive-bg: #33691e;
+  --gt-status-receive-border: #9ccc65;
+  --gt-status-decode-bg: #6d4c1f;
+  --gt-status-decode-border: #ffd54f;
+  --gt-status-transmit-border: #ff9800;
+  --gt-status-ignore-bg: #2e2410;
+  --gt-status-ignore-border: #8d6e3f;
+  --gt-status-closed: #75635d;
+  --gt-note: #d7c9a8;
+  --gt-slider-track-start: #2e2410;
+  --gt-slider-track: #8d6e3f;
+  --gt-slider-thumb-border: #a1887f;
+  --gt-slider-thumb-start: #6d4c1f;
+  --gt-slider-thumb-end: #ffd54f;
+}
+
+:root[data-app-theme="countrykitchen"] {
+  /* Country Kitchen: butter yellow, sage, copper and cream, gingham-blue tabs on walnut; no red but errors */
+  --gt-frequency: #a5c882;
+  --gt-band: #f3d97b;
+  --gt-mode: #d7965f;
+  --gt-title: #f5e6c8;
+  --gt-label: #bfae94;
+  --gt-callsign: #fff4dc;
+  --gt-callsign-other: #8fb3d9;
+  --gt-grid: #9cc5a1;
+  --gt-country: #e3a87a;
+  --gt-prefix: #9e8b73;
+  --gt-state: #c2d6a0;
+  --gt-zone: #9cc5a1;
+  --gt-distance: #8fb3d9;
+  --gt-azimuth: #f3d97b;
+  --gt-elevation: #c2d6a0;
+  --gt-count: #fdf6e3;
+  --gt-snr: #fdf6e3;
+  --gt-dt: #fdf6e3;
+  --gt-needed: #e8a0bf;
+  --gt-time: #b7c9e2;
+  --gt-warning: #f0a050;
+  --gt-error: #ff4d4d;
+  --gt-worked: #f3d97b;
+  --gt-confirmed: #a5c882;
+  --gt-worked-bg: #f3d97b;
+  --gt-confirmed-bg: #e04848;
+  --gt-status-ok: #a5c882;
+  --gt-status-busy: #f3d97b;
+  --gt-status-fail: #f0a050;
+  --gt-transmit: #a0522d;
+  --gt-cq: #8fb3d9;
+  --gt-message: #f5e6c8;
+  --gt-input-text: #fff4dc;
+  --gt-input-bg: #3b2a1e;
+  --gt-input-border: #8a6a4f;
+  --gt-input-disabled-bg: #23180f;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #a0522d;
+  --gt-input-empty-text: #3b2a1e;
+  --gt-input-empty-bg: #f3d97b;
+  --gt-option-text: #f5e6c8;
+  --gt-option-bg: #23180f;
+  --gt-button-text: #f5e6c8;
+  --gt-button-border: #8a6a4f;
+  --gt-button-bg: #3b2a1e;
+  --gt-hover-border: #f5e6c8;
+  --gt-hover-accent: #f3d97b;
+  --gt-tab-text: #bfae94;
+  --gt-tab-border: #5a7fa8;
+  --gt-tab-active-text: #fff4dc;
+  --gt-tab-active-bg: #3d5a80;
+  --gt-infotab-border: #6b8e4e;
+  --gt-infotab-active-text: #fff4dc;
+  --gt-infotab-active-bg: #4a6b35;
+  --gt-subtab-border: #8fb3d9;
+  --gt-subtab-active-text: #23180f;
+  --gt-subtab-active-bg: #b7c9e2;
+  --gt-feed-accent: #f3d97b;
+  --gt-pill-text: #fff4dc;
+  --gt-pill-bg: #3d5a80;
+  --gt-accent: #d7965f;
+  --gt-frame-main: #bfae94;
+  --gt-frame-activity: #6b8e4e;
+  --gt-frame-counts: #5a7fa8;
+  --gt-frame-filters: #f5e6c8;
+  --gt-frame-rig: #f3d97b;
+  --gt-app-title: #fdf6e3;
+  --gt-rig-text: #fff4dc;
+  --gt-rig-bg: #3d5a80;
+  --gt-rig-border: #8fb3d9;
+  --gt-status-text: #fff4dc;
+  --gt-status-waiting-border: #f3d97b;
+  --gt-status-receive-bg: #4a6b35;
+  --gt-status-receive-border: #a5c882;
+  --gt-status-decode-bg: #3d5a80;
+  --gt-status-decode-border: #f3d97b;
+  --gt-status-transmit-border: #f0a050;
+  --gt-status-ignore-bg: #3b2a1e;
+  --gt-status-ignore-border: #8a6a4f;
+  --gt-status-closed: #517297;
+  --gt-note: #bfae94;
+  --gt-slider-track-start: #3b2a1e;
+  --gt-slider-track: #8a6a4f;
+  --gt-slider-thumb-border: #5a7fa8;
+  --gt-slider-thumb-start: #3d5a80;
+  --gt-slider-thumb-end: #f3d97b;
+}
+
+:root[data-app-theme="bubblegum"] {
+  /* Bubble Gum: bubblegum pink, lavender, mint, baby blue and lemon on deep plum */
+  --gt-frequency: #7ee8c6;
+  --gt-band: #ffb3de;
+  --gt-mode: #c9a7ff;
+  --gt-title: #ff8fcf;
+  --gt-label: #e0c3d8;
+  --gt-callsign: #fff0fa;
+  --gt-callsign-other: #9fd8ff;
+  --gt-grid: #a8f0d8;
+  --gt-country: #ffd27a;
+  --gt-prefix: #b89bb0;
+  --gt-state: #b8f2a8;
+  --gt-zone: #a8f0d8;
+  --gt-distance: #9fd8ff;
+  --gt-azimuth: #fff59d;
+  --gt-elevation: #b8f2a8;
+  --gt-count: #fff5fb;
+  --gt-snr: #fff5fb;
+  --gt-dt: #fff5fb;
+  --gt-needed: #ff6fb5;
+  --gt-time: #c4c9ff;
+  --gt-warning: #ffb347;
+  --gt-error: #ff3b30;
+  --gt-worked: #fff59d;
+  --gt-confirmed: #7ee8c6;
+  --gt-worked-bg: #fff59d;
+  --gt-confirmed-bg: #ff3b30;
+  --gt-status-ok: #7ee8c6;
+  --gt-status-busy: #fff59d;
+  --gt-status-fail: #ffb347;
+  --gt-transmit: #d0458f;
+  --gt-cq: #9fd8ff;
+  --gt-message: #fde4f2;
+  --gt-input-text: #fff0fa;
+  --gt-input-bg: #3a1630;
+  --gt-input-border: #a8558f;
+  --gt-input-disabled-bg: #220c1c;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #c45a00;
+  --gt-input-empty-text: #3a1630;
+  --gt-input-empty-bg: #ffb3de;
+  --gt-option-text: #fde4f2;
+  --gt-option-bg: #220c1c;
+  --gt-button-text: #fde4f2;
+  --gt-button-border: #a8558f;
+  --gt-button-bg: #3a1630;
+  --gt-hover-border: #ffd1ec;
+  --gt-hover-accent: #ff8fcf;
+  --gt-tab-text: #e0c3d8;
+  --gt-tab-border: #c060a0;
+  --gt-tab-active-text: #fff0fa;
+  --gt-tab-active-bg: #8a2b6b;
+  --gt-infotab-border: #7a5fc0;
+  --gt-infotab-active-text: #fff0fa;
+  --gt-infotab-active-bg: #4f3a8f;
+  --gt-subtab-border: #ffb3de;
+  --gt-subtab-active-text: #3a1630;
+  --gt-subtab-active-bg: #ffb3de;
+  --gt-feed-accent: #9fd8ff;
+  --gt-pill-text: #fff0fa;
+  --gt-pill-bg: #6b2357;
+  --gt-accent: #ff69b4;
+  --gt-frame-main: #e0c3d8;
+  --gt-frame-activity: #7a5fc0;
+  --gt-frame-counts: #c060a0;
+  --gt-frame-filters: #ff8fcf;
+  --gt-frame-rig: #ffb3de;
+  --gt-app-title: #fff5fb;
+  --gt-rig-text: #fff0fa;
+  --gt-rig-bg: #8a2b6b;
+  --gt-rig-border: #ffb3de;
+  --gt-status-text: #fff0fa;
+  --gt-status-waiting-border: #fff59d;
+  --gt-status-receive-bg: #4f3a8f;
+  --gt-status-receive-border: #7ee8c6;
+  --gt-status-decode-bg: #8a2b6b;
+  --gt-status-decode-border: #ff8fcf;
+  --gt-status-transmit-border: #ffb347;
+  --gt-status-ignore-bg: #3a1630;
+  --gt-status-ignore-border: #a8558f;
+  --gt-status-closed: #9c4e82;
+  --gt-note: #e0c3d8;
+  --gt-slider-track-start: #3a1630;
+  --gt-slider-track: #a8558f;
+  --gt-slider-thumb-border: #c060a0;
+  --gt-slider-thumb-start: #8a2b6b;
+  --gt-slider-thumb-end: #ff8fcf;
+}
+
+:root[data-app-theme="ambercrt"] {
+  /* Amber CRT: the amber monochrome terminal, shades of amber, white-hot for warnings; red still for errors */
+  --gt-frequency: #ffb000;
+  --gt-band: #ffd27a;
+  --gt-mode: #ffc84a;
+  --gt-title: #fff1d0;
+  --gt-label: #c08a2a;
+  --gt-callsign: #fff1d0;
+  --gt-callsign-other: #ffd27a;
+  --gt-grid: #ffc84a;
+  --gt-country: #ffe2a8;
+  --gt-prefix: #8a6320;
+  --gt-state: #ffc84a;
+  --gt-zone: #ffc84a;
+  --gt-distance: #ffd88f;
+  --gt-azimuth: #ffe6b0;
+  --gt-elevation: #ffc84a;
+  --gt-count: #fff1d0;
+  --gt-snr: #ffe6b0;
+  --gt-dt: #ffe6b0;
+  --gt-needed: #ffffff;
+  --gt-time: #e0a040;
+  --gt-warning: #ffffff;
+  --gt-error: #ff3030;
+  --gt-worked: #ffe2a8;
+  --gt-confirmed: #ffb000;
+  --gt-worked-bg: #ffd27a;
+  --gt-confirmed-bg: #ff3030;
+  --gt-status-ok: #ffb000;
+  --gt-status-busy: #ffe6b0;
+  --gt-status-fail: #ff8c40;
+  --gt-transmit: #a86a00;
+  --gt-cq: #fff1d0;
+  --gt-message: #ffd88f;
+  --gt-input-text: #ffb000;
+  --gt-input-bg: #1f1400;
+  --gt-input-border: #8a6320;
+  --gt-input-disabled-bg: #120c00;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #a84a00;
+  --gt-input-empty-text: #000;
+  --gt-input-empty-bg: #ffb000;
+  --gt-option-text: #ffd88f;
+  --gt-option-bg: #000;
+  --gt-button-text: #ffd88f;
+  --gt-button-border: #8a6320;
+  --gt-button-bg: #1f1400;
+  --gt-hover-border: #fff1d0;
+  --gt-hover-accent: #ffb000;
+  --gt-tab-text: #c08a2a;
+  --gt-tab-border: #8a6320;
+  --gt-tab-active-text: #fff1d0;
+  --gt-tab-active-bg: #5a3d00;
+  --gt-infotab-border: #a87a20;
+  --gt-infotab-active-text: #fff1d0;
+  --gt-infotab-active-bg: #6b4a00;
+  --gt-subtab-border: #ffb000;
+  --gt-subtab-active-text: #000;
+  --gt-subtab-active-bg: #ffb000;
+  --gt-feed-accent: #fff1d0;
+  --gt-pill-text: #ffb000;
+  --gt-pill-bg: #3a2800;
+  --gt-accent: #ffb000;
+  --gt-frame-main: #c08a2a;
+  --gt-frame-activity: #a87a20;
+  --gt-frame-counts: #8a6320;
+  --gt-frame-filters: #fff1d0;
+  --gt-frame-rig: #ffd27a;
+  --gt-app-title: #fff1d0;
+  --gt-rig-text: #fff1d0;
+  --gt-rig-bg: #5a3d00;
+  --gt-rig-border: #ffb000;
+  --gt-status-text: #fff1d0;
+  --gt-status-waiting-border: #ffe6b0;
+  --gt-status-receive-bg: #6b4a00;
+  --gt-status-receive-border: #ffb000;
+  --gt-status-decode-bg: #5a3d00;
+  --gt-status-decode-border: #ffb000;
+  --gt-status-transmit-border: #ffffff;
+  --gt-status-ignore-bg: #1f1400;
+  --gt-status-ignore-border: #8a6320;
+  --gt-status-closed: #8a6320;
+  --gt-note: #c08a2a;
+  --gt-slider-track-start: #1f1400;
+  --gt-slider-track: #8a6320;
+  --gt-slider-thumb-border: #8a6320;
+  --gt-slider-thumb-start: #5a3d00;
+  --gt-slider-thumb-end: #ffb000;
+}
+
+:root[data-app-theme="synthwave"] {
+  /* Synthwave: neon cyan, magenta, mint and sunset orange on dark purple */
+  --gt-frequency: #00f0ff;
+  --gt-band: #ff2fd1;
+  --gt-mode: #ffa14a;
+  --gt-title: #ff71ce;
+  --gt-label: #b8a1d9;
+  --gt-callsign: #fdf6ff;
+  --gt-callsign-other: #01cdfe;
+  --gt-grid: #05ffa1;
+  --gt-country: #fffb96;
+  --gt-prefix: #8a76b0;
+  --gt-state: #05ffa1;
+  --gt-zone: #05ffa1;
+  --gt-distance: #01cdfe;
+  --gt-azimuth: #b967ff;
+  --gt-elevation: #05ffa1;
+  --gt-count: #fdf6ff;
+  --gt-snr: #fdf6ff;
+  --gt-dt: #fdf6ff;
+  --gt-needed: #ff71ce;
+  --gt-time: #9d8cff;
+  --gt-warning: #ffb000;
+  --gt-error: #ff2a3d;
+  --gt-worked: #fffb96;
+  --gt-confirmed: #05ffa1;
+  --gt-worked-bg: #fffb96;
+  --gt-confirmed-bg: #ff2a3d;
+  --gt-status-ok: #05ffa1;
+  --gt-status-busy: #fffb96;
+  --gt-status-fail: #ffb000;
+  --gt-transmit: #c2187f;
+  --gt-cq: #01cdfe;
+  --gt-message: #e8dcff;
+  --gt-input-text: #01cdfe;
+  --gt-input-bg: #1a0b2e;
+  --gt-input-border: #6b3fa0;
+  --gt-input-disabled-bg: #0f061c;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b0306f;
+  --gt-input-empty-text: #1a0b2e;
+  --gt-input-empty-bg: #fffb96;
+  --gt-option-text: #e8dcff;
+  --gt-option-bg: #0f061c;
+  --gt-button-text: #e8dcff;
+  --gt-button-border: #6b3fa0;
+  --gt-button-bg: #1a0b2e;
+  --gt-hover-border: #ff71ce;
+  --gt-hover-accent: #01cdfe;
+  --gt-tab-text: #b8a1d9;
+  --gt-tab-border: #b967ff;
+  --gt-tab-active-text: #fdf6ff;
+  --gt-tab-active-bg: #6b1f8f;
+  --gt-infotab-border: #ff71ce;
+  --gt-infotab-active-text: #fdf6ff;
+  --gt-infotab-active-bg: #8f1f6b;
+  --gt-subtab-border: #01cdfe;
+  --gt-subtab-active-text: #0f061c;
+  --gt-subtab-active-bg: #01cdfe;
+  --gt-feed-accent: #ff71ce;
+  --gt-pill-text: #01cdfe;
+  --gt-pill-bg: #2e0f4f;
+  --gt-accent: #ff71ce;
+  --gt-frame-main: #b8a1d9;
+  --gt-frame-activity: #ff71ce;
+  --gt-frame-counts: #b967ff;
+  --gt-frame-filters: #ff71ce;
+  --gt-frame-rig: #ff2fd1;
+  --gt-app-title: #fdf6ff;
+  --gt-rig-text: #fdf6ff;
+  --gt-rig-bg: #6b1f8f;
+  --gt-rig-border: #01cdfe;
+  --gt-status-text: #fdf6ff;
+  --gt-status-waiting-border: #fffb96;
+  --gt-status-receive-bg: #8f1f6b;
+  --gt-status-receive-border: #05ffa1;
+  --gt-status-decode-bg: #6b1f8f;
+  --gt-status-decode-border: #01cdfe;
+  --gt-status-transmit-border: #ffb000;
+  --gt-status-ignore-bg: #1a0b2e;
+  --gt-status-ignore-border: #6b3fa0;
+  --gt-status-closed: #874bba;
+  --gt-note: #b8a1d9;
+  --gt-slider-track-start: #1a0b2e;
+  --gt-slider-track: #6b3fa0;
+  --gt-slider-thumb-border: #b967ff;
+  --gt-slider-thumb-start: #6b1f8f;
+  --gt-slider-thumb-end: #01cdfe;
+}
+
+:root[data-app-theme="deepsea"] {
+  /* Deep Sea: glowing aqua, coral, kelp green, lilac and sand on navy */
+  --gt-frequency: #4dffd2;
+  --gt-band: #ffcf8a;
+  --gt-mode: #ff9e80;
+  --gt-title: #7fdbff;
+  --gt-label: #8aa8b8;
+  --gt-callsign: #e8fbff;
+  --gt-callsign-other: #7fdbff;
+  --gt-grid: #3ad6c6;
+  --gt-country: #c3a6ff;
+  --gt-prefix: #5f7f8f;
+  --gt-state: #9be3a0;
+  --gt-zone: #3ad6c6;
+  --gt-distance: #59c3ff;
+  --gt-azimuth: #ffe9a8;
+  --gt-elevation: #9be3a0;
+  --gt-count: #e8fbff;
+  --gt-snr: #e8fbff;
+  --gt-dt: #e8fbff;
+  --gt-needed: #ff8fcf;
+  --gt-time: #9fb4ff;
+  --gt-warning: #ffb74d;
+  --gt-error: #ff5c5c;
+  --gt-worked: #ffe9a8;
+  --gt-confirmed: #4dffd2;
+  --gt-worked-bg: #ffe9a8;
+  --gt-confirmed-bg: #ff5c5c;
+  --gt-status-ok: #4dffd2;
+  --gt-status-busy: #ffe9a8;
+  --gt-status-fail: #ffb74d;
+  --gt-transmit: #c4623e;
+  --gt-cq: #7fdbff;
+  --gt-message: #d6eef5;
+  --gt-input-text: #e8fbff;
+  --gt-input-bg: #06243a;
+  --gt-input-border: #2f6f8f;
+  --gt-input-disabled-bg: #031522;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b5562b;
+  --gt-input-empty-text: #06243a;
+  --gt-input-empty-bg: #7fdbff;
+  --gt-option-text: #d6eef5;
+  --gt-option-bg: #031522;
+  --gt-button-text: #d6eef5;
+  --gt-button-border: #2f6f8f;
+  --gt-button-bg: #06243a;
+  --gt-hover-border: #7fdbff;
+  --gt-hover-accent: #4dffd2;
+  --gt-tab-text: #8aa8b8;
+  --gt-tab-border: #1f7a99;
+  --gt-tab-active-text: #e8fbff;
+  --gt-tab-active-bg: #0e4f6e;
+  --gt-infotab-border: #1f9a8a;
+  --gt-infotab-active-text: #e8fbff;
+  --gt-infotab-active-bg: #0e5f55;
+  --gt-subtab-border: #4dffd2;
+  --gt-subtab-active-text: #031522;
+  --gt-subtab-active-bg: #4dffd2;
+  --gt-feed-accent: #ffe9a8;
+  --gt-pill-text: #4dffd2;
+  --gt-pill-bg: #0a3550;
+  --gt-accent: #3ad6c6;
+  --gt-frame-main: #8aa8b8;
+  --gt-frame-activity: #1f9a8a;
+  --gt-frame-counts: #1f7a99;
+  --gt-frame-filters: #7fdbff;
+  --gt-frame-rig: #ffcf8a;
+  --gt-app-title: #e8fbff;
+  --gt-rig-text: #e8fbff;
+  --gt-rig-bg: #0e4f6e;
+  --gt-rig-border: #4dffd2;
+  --gt-status-text: #e8fbff;
+  --gt-status-waiting-border: #ffe9a8;
+  --gt-status-receive-bg: #0e5f55;
+  --gt-status-receive-border: #4dffd2;
+  --gt-status-decode-bg: #0e4f6e;
+  --gt-status-decode-border: #4dffd2;
+  --gt-status-transmit-border: #ffb74d;
+  --gt-status-ignore-bg: #06243a;
+  --gt-status-ignore-border: #2f6f8f;
+  --gt-status-closed: #1f7a99;
+  --gt-note: #8aa8b8;
+  --gt-slider-track-start: #06243a;
+  --gt-slider-track: #2f6f8f;
+  --gt-slider-thumb-border: #1f7a99;
+  --gt-slider-thumb-start: #0e4f6e;
+  --gt-slider-thumb-end: #4dffd2;
+}
+
+:root[data-app-theme="autumn"] {
+  /* Autumn: pumpkin, mustard, olive, cream and heather on dark walnut */
+  --gt-frequency: #c5d86d;
+  --gt-band: #e8b04a;
+  --gt-mode: #f08a4b;
+  --gt-title: #f2c48d;
+  --gt-label: #c4a98a;
+  --gt-callsign: #fff1dc;
+  --gt-callsign-other: #d99a6c;
+  --gt-grid: #a3b86c;
+  --gt-country: #e07a5f;
+  --gt-prefix: #9a8270;
+  --gt-state: #c5d86d;
+  --gt-zone: #a3b86c;
+  --gt-distance: #e8c07a;
+  --gt-azimuth: #f2d27a;
+  --gt-elevation: #c5d86d;
+  --gt-count: #fff6e8;
+  --gt-snr: #fff6e8;
+  --gt-dt: #fff6e8;
+  --gt-needed: #d88aa0;
+  --gt-time: #c8a2c8;
+  --gt-warning: #ffb347;
+  --gt-error: #ff3b3b;
+  --gt-worked: #e8b04a;
+  --gt-confirmed: #c5d86d;
+  --gt-worked-bg: #e8b04a;
+  --gt-confirmed-bg: #e53935;
+  --gt-status-ok: #c5d86d;
+  --gt-status-busy: #e8b04a;
+  --gt-status-fail: #ffb347;
+  --gt-transmit: #a0461e;
+  --gt-cq: #f2c48d;
+  --gt-message: #f3e6d4;
+  --gt-input-text: #fff1dc;
+  --gt-input-bg: #2e1a10;
+  --gt-input-border: #8a5a3a;
+  --gt-input-disabled-bg: #1c0f08;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #a8461e;
+  --gt-input-empty-text: #2e1a10;
+  --gt-input-empty-bg: #e8b04a;
+  --gt-option-text: #f3e6d4;
+  --gt-option-bg: #1c0f08;
+  --gt-button-text: #f3e6d4;
+  --gt-button-border: #8a5a3a;
+  --gt-button-bg: #2e1a10;
+  --gt-hover-border: #f2c48d;
+  --gt-hover-accent: #f08a4b;
+  --gt-tab-text: #c4a98a;
+  --gt-tab-border: #8a4a2a;
+  --gt-tab-active-text: #fff1dc;
+  --gt-tab-active-bg: #6b2f1a;
+  --gt-infotab-border: #6b7a2a;
+  --gt-infotab-active-text: #fff1dc;
+  --gt-infotab-active-bg: #4a5a1a;
+  --gt-subtab-border: #e8b04a;
+  --gt-subtab-active-text: #1c0f08;
+  --gt-subtab-active-bg: #e8b04a;
+  --gt-feed-accent: #c5d86d;
+  --gt-pill-text: #fff1dc;
+  --gt-pill-bg: #5a2e14;
+  --gt-accent: #f08a4b;
+  --gt-frame-main: #c4a98a;
+  --gt-frame-activity: #6b7a2a;
+  --gt-frame-counts: #8a4a2a;
+  --gt-frame-filters: #f2c48d;
+  --gt-frame-rig: #e8b04a;
+  --gt-app-title: #fff6e8;
+  --gt-rig-text: #fff1dc;
+  --gt-rig-bg: #6b2f1a;
+  --gt-rig-border: #e8b04a;
+  --gt-status-text: #fff1dc;
+  --gt-status-waiting-border: #e8b04a;
+  --gt-status-receive-bg: #4a5a1a;
+  --gt-status-receive-border: #c5d86d;
+  --gt-status-decode-bg: #6b2f1a;
+  --gt-status-decode-border: #f08a4b;
+  --gt-status-transmit-border: #ffb347;
+  --gt-status-ignore-bg: #2e1a10;
+  --gt-status-ignore-border: #8a5a3a;
+  --gt-status-closed: #8a4a2a;
+  --gt-note: #c4a98a;
+  --gt-slider-track-start: #2e1a10;
+  --gt-slider-track: #8a5a3a;
+  --gt-slider-thumb-border: #8a4a2a;
+  --gt-slider-thumb-start: #6b2f1a;
+  --gt-slider-thumb-end: #f08a4b;
+}
+
+:root[data-app-theme="apple2e"] {
+  /* Apple ][e: hi-res green, violet, orange and blue, lo-res aqua, pink and yellow; green-phosphor text boxes */
+  --gt-frequency: #14f53c;
+  --gt-band: #ff44fd;
+  --gt-mode: #ff6a3c;
+  --gt-title: #14cffd;
+  --gt-label: #9c9c9c;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #14cffd;
+  --gt-grid: #72ffd0;
+  --gt-country: #ffa0d0;
+  --gt-prefix: #9c9c9c;
+  --gt-state: #d0dd8d;
+  --gt-zone: #72ffd0;
+  --gt-distance: #14cffd;
+  --gt-azimuth: #d0dd8d;
+  --gt-elevation: #14f53c;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ffa0d0;
+  --gt-time: #d0c3ff;
+  --gt-warning: #d0dd8d;
+  --gt-error: #ff3030;
+  --gt-worked: #d0dd8d;
+  --gt-confirmed: #14f53c;
+  --gt-worked-bg: #d0dd8d;
+  --gt-confirmed-bg: #e31e60;
+  --gt-status-ok: #14f53c;
+  --gt-status-busy: #d0dd8d;
+  --gt-status-fail: #ff6a3c;
+  --gt-transmit: #607203;
+  --gt-cq: #14cffd;
+  --gt-message: #ffffff;
+  --gt-input-text: #14f53c;
+  --gt-input-bg: #000000;
+  --gt-input-border: #00a360;
+  --gt-input-disabled-bg: #000000;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #607203;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #d0dd8d;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #9c9c9c;
+  --gt-button-bg: #000000;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #14f53c;
+  --gt-tab-text: #9c9c9c;
+  --gt-tab-border: #604ee3;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #604ee3;
+  --gt-infotab-border: #00a360;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #00a360;
+  --gt-subtab-border: #14cffd;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #14cffd;
+  --gt-feed-accent: #ff44fd;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #604ee3;
+  --gt-accent: #14f53c;
+  --gt-frame-main: #9c9c9c;
+  --gt-frame-activity: #00a360;
+  --gt-frame-counts: #604ee3;
+  --gt-frame-filters: #14cffd;
+  --gt-frame-rig: #ff44fd;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #604ee3;
+  --gt-rig-border: #14cffd;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #d0dd8d;
+  --gt-status-receive-bg: #00844e;
+  --gt-status-receive-border: #14f53c;
+  --gt-status-decode-bg: #604ee3;
+  --gt-status-decode-border: #14f53c;
+  --gt-status-transmit-border: #d0dd8d;
+  --gt-status-ignore-bg: #000000;
+  --gt-status-ignore-border: #9c9c9c;
+  --gt-status-closed: #ba32b8;
+  --gt-note: #9c9c9c;
+  --gt-slider-track-start: #000000;
+  --gt-slider-track: #9c9c9c;
+  --gt-slider-thumb-border: #604ee3;
+  --gt-slider-thumb-start: #604ee3;
+  --gt-slider-thumb-end: #14f53c;
+}
+
+:root[data-app-theme="vic20"] {
+  /* VIC-20: the VIC's colors, its screen's white on blue with a cyan border for the text boxes */
+  --gt-frequency: #44e239;
+  --gt-band: #dcd71b;
+  --gt-mode: #e9b072;
+  --gt-title: #4df0ff;
+  --gt-label: #8290ff;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #4df0ff;
+  --gt-grid: #9af7fd;
+  --gt-country: #e79293;
+  --gt-prefix: #8290ff;
+  --gt-state: #8fe493;
+  --gt-zone: #9af7fd;
+  --gt-distance: #4df0ff;
+  --gt-azimuth: #e5de85;
+  --gt-elevation: #8fe493;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #b43fff;
+  --gt-time: #e09fff;
+  --gt-warning: #ca5400;
+  --gt-error: #ff4040;
+  --gt-worked: #dcd71b;
+  --gt-confirmed: #44e239;
+  --gt-worked-bg: #dcd71b;
+  --gt-confirmed-bg: #ff4040;
+  --gt-status-ok: #44e239;
+  --gt-status-busy: #dcd71b;
+  --gt-status-fail: #ca5400;
+  --gt-transmit: #ca5400;
+  --gt-cq: #4df0ff;
+  --gt-message: #ffffff;
+  --gt-input-text: #ffffff;
+  --gt-input-bg: #1a34ff;
+  --gt-input-border: #4df0ff;
+  --gt-input-disabled-bg: #0d1a80;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #ca5400;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #dcd71b;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #4df0ff;
+  --gt-button-bg: #1a34ff;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #4df0ff;
+  --gt-tab-text: #9af7fd;
+  --gt-tab-border: #4df0ff;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #1a34ff;
+  --gt-infotab-border: #44e239;
+  --gt-infotab-active-text: #000000;
+  --gt-infotab-active-bg: #8fe493;
+  --gt-subtab-border: #4df0ff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #4df0ff;
+  --gt-feed-accent: #dcd71b;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #1a34ff;
+  --gt-accent: #4df0ff;
+  --gt-frame-main: #8290ff;
+  --gt-frame-activity: #44e239;
+  --gt-frame-counts: #4df0ff;
+  --gt-frame-filters: #4df0ff;
+  --gt-frame-rig: #dcd71b;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #1a34ff;
+  --gt-rig-border: #4df0ff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #dcd71b;
+  --gt-status-receive-bg: #4c794e;
+  --gt-status-receive-border: #44e239;
+  --gt-status-decode-bg: #1a34ff;
+  --gt-status-decode-border: #4df0ff;
+  --gt-status-transmit-border: #ca5400;
+  --gt-status-ignore-bg: #1a34ff;
+  --gt-status-ignore-border: #4df0ff;
+  --gt-status-closed: #298088;
+  --gt-note: #8290ff;
+  --gt-slider-track-start: #1a34ff;
+  --gt-slider-track: #4df0ff;
+  --gt-slider-thumb-border: #4df0ff;
+  --gt-slider-thumb-start: #1a34ff;
+  --gt-slider-thumb-end: #4df0ff;
+}
+
+:root[data-app-theme="c64"] {
+  /* C-64: the C-64 palette a little brighter for black, the BASIC screen's light blue on blue for text boxes and tabs */
+  --gt-frequency: #a9ff9f;
+  --gt-band: #edf171;
+  --gt-mode: #d08a50;
+  --gt-title: #706deb;
+  --gt-label: #959595;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #75cec8;
+  --gt-grid: #75cec8;
+  --gt-country: #c46c71;
+  --gt-prefix: #959595;
+  --gt-state: #56ac4d;
+  --gt-zone: #75cec8;
+  --gt-distance: #b2b2b2;
+  --gt-azimuth: #edf171;
+  --gt-elevation: #56ac4d;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ffffff;
+  --gt-time: #706deb;
+  --gt-warning: #ffa94d;
+  --gt-error: #ff3030;
+  --gt-worked: #edf171;
+  --gt-confirmed: #a9ff9f;
+  --gt-worked-bg: #edf171;
+  --gt-confirmed-bg: #ff5050;
+  --gt-status-ok: #a9ff9f;
+  --gt-status-busy: #edf171;
+  --gt-status-fail: #ffa94d;
+  --gt-transmit: #8e5029;
+  --gt-cq: #75cec8;
+  --gt-message: #ffffff;
+  --gt-input-text: #a5a2ff;
+  --gt-input-bg: #2e2c9b;
+  --gt-input-border: #706deb;
+  --gt-input-disabled-bg: #1c1a60;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #8e5029;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #edf171;
+  --gt-option-text: #c8c6ff;
+  --gt-option-bg: #2e2c9b;
+  --gt-button-text: #c8c6ff;
+  --gt-button-border: #706deb;
+  --gt-button-bg: #2e2c9b;
+  --gt-hover-border: #ffffff;
+  --gt-hover-accent: #706deb;
+  --gt-tab-text: #959595;
+  --gt-tab-border: #706deb;
+  --gt-tab-active-text: #c8c6ff;
+  --gt-tab-active-bg: #2e2c9b;
+  --gt-infotab-border: #56ac4d;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #3a7a33;
+  --gt-subtab-border: #706deb;
+  --gt-subtab-active-text: #ffffff;
+  --gt-subtab-active-bg: #706deb;
+  --gt-feed-accent: #edf171;
+  --gt-pill-text: #c8c6ff;
+  --gt-pill-bg: #2e2c9b;
+  --gt-accent: #706deb;
+  --gt-frame-main: #959595;
+  --gt-frame-activity: #56ac4d;
+  --gt-frame-counts: #706deb;
+  --gt-frame-filters: #706deb;
+  --gt-frame-rig: #edf171;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #c8c6ff;
+  --gt-rig-bg: #2e2c9b;
+  --gt-rig-border: #706deb;
+  --gt-status-text: #c8c6ff;
+  --gt-status-waiting-border: #edf171;
+  --gt-status-receive-bg: #2a5925;
+  --gt-status-receive-border: #a9ff9f;
+  --gt-status-decode-bg: #2e2c9b;
+  --gt-status-decode-border: #706deb;
+  --gt-status-transmit-border: #ffa94d;
+  --gt-status-ignore-bg: #2e2c9b;
+  --gt-status-ignore-border: #706deb;
+  --gt-status-closed: #803688;
+  --gt-note: #959595;
+  --gt-slider-track-start: #2e2c9b;
+  --gt-slider-track: #706deb;
+  --gt-slider-thumb-border: #706deb;
+  --gt-slider-thumb-start: #2e2c9b;
+  --gt-slider-thumb-end: #706deb;
+}
+
+:root[data-app-theme="graphite"] {
+  /* Graphite: a modern system dark mode, charcoal and soft white, muted data colors and one blue accent */
+  --gt-frequency: #8fc9a8;
+  --gt-band: #d9c27a;
+  --gt-mode: #d9a27a;
+  --gt-title: #e6e6e6;
+  --gt-label: #9aa0a6;
+  --gt-callsign: #f1f3f4;
+  --gt-callsign-other: #8ab4f8;
+  --gt-grid: #7fb8c4;
+  --gt-country: #c9a0dc;
+  --gt-prefix: #7c8187;
+  --gt-state: #a8c8a0;
+  --gt-zone: #7fb8c4;
+  --gt-distance: #81c4d9;
+  --gt-azimuth: #e0d38f;
+  --gt-elevation: #a8c8a0;
+  --gt-count: #f1f3f4;
+  --gt-snr: #e8eaed;
+  --gt-dt: #e8eaed;
+  --gt-needed: #f0a6c8;
+  --gt-time: #aab4c8;
+  --gt-warning: #fdd663;
+  --gt-error: #ff6b6b;
+  --gt-worked: #fdd663;
+  --gt-confirmed: #81c995;
+  --gt-worked-bg: #fdd663;
+  --gt-confirmed-bg: #ee675c;
+  --gt-status-ok: #81c995;
+  --gt-status-busy: #fdd663;
+  --gt-status-fail: #fcad70;
+  --gt-transmit: #b06000;
+  --gt-cq: #8ab4f8;
+  --gt-message: #e8eaed;
+  --gt-input-text: #e8eaed;
+  --gt-input-bg: #2d2f31;
+  --gt-input-border: #5f6368;
+  --gt-input-disabled-bg: #202124;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #a8471e;
+  --gt-input-empty-text: #202124;
+  --gt-input-empty-bg: #fdd663;
+  --gt-option-text: #e8eaed;
+  --gt-option-bg: #202124;
+  --gt-button-text: #e8eaed;
+  --gt-button-border: #5f6368;
+  --gt-button-bg: #2d2f31;
+  --gt-hover-border: #bdc1c6;
+  --gt-hover-accent: #4c8dff;
+  --gt-tab-text: #9aa0a6;
+  --gt-tab-border: #3c4043;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #1a5fd6;
+  --gt-infotab-border: #3c4043;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #3c4043;
+  --gt-subtab-border: #5f6368;
+  --gt-subtab-active-text: #ffffff;
+  --gt-subtab-active-bg: #4c8dff;
+  --gt-feed-accent: #fdd663;
+  --gt-pill-text: #e8eaed;
+  --gt-pill-bg: #3c4043;
+  --gt-accent: #4c8dff;
+  --gt-frame-main: #9aa0a6;
+  --gt-frame-activity: #3c4043;
+  --gt-frame-counts: #3c4043;
+  --gt-frame-filters: #e6e6e6;
+  --gt-frame-rig: #d9c27a;
+  --gt-app-title: #f1f3f4;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #1a5fd6;
+  --gt-rig-border: #5f6368;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #fdd663;
+  --gt-status-receive-bg: #2d5a3a;
+  --gt-status-receive-border: #81c995;
+  --gt-status-decode-bg: #1a5fd6;
+  --gt-status-decode-border: #4c8dff;
+  --gt-status-transmit-border: #fdd663;
+  --gt-status-ignore-bg: #2d2f31;
+  --gt-status-ignore-border: #5f6368;
+  --gt-status-closed: #5f3d6b;
+  --gt-note: #9aa0a6;
+  --gt-slider-track-start: #2d2f31;
+  --gt-slider-track: #5f6368;
+  --gt-slider-thumb-border: #3c4043;
+  --gt-slider-thumb-start: #1a5fd6;
+  --gt-slider-thumb-end: #4c8dff;
+}
+
+:root[data-app-theme="highcontrast"] {
+  /* High Contrast: pure saturated colors, white text, white borders and strong active tabs, for low vision and bright rooms */
+  --gt-frequency: #00ff00;
+  --gt-band: #ffff00;
+  --gt-mode: #ff9900;
+  --gt-title: #00ffff;
+  --gt-label: #ffffff;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #00ffff;
+  --gt-grid: #00ffff;
+  --gt-country: #ff9900;
+  --gt-prefix: #00ff00;
+  --gt-state: #00ff00;
+  --gt-zone: #00ffff;
+  --gt-distance: #00ffff;
+  --gt-azimuth: #ffff00;
+  --gt-elevation: #00ff00;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ff66ff;
+  --gt-time: #66b3ff;
+  --gt-warning: #ff9900;
+  --gt-error: #ff3333;
+  --gt-worked: #ffff00;
+  --gt-confirmed: #00ff00;
+  --gt-worked-bg: #ffff00;
+  --gt-confirmed-bg: #ff3333;
+  --gt-status-ok: #00ff00;
+  --gt-status-busy: #ffff00;
+  --gt-status-fail: #ff9900;
+  --gt-transmit: #b34700;
+  --gt-cq: #00ffff;
+  --gt-message: #ffffff;
+  --gt-input-text: #ffffff;
+  --gt-input-bg: #000000;
+  --gt-input-border: #ffffff;
+  --gt-input-disabled-bg: #000000;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #b34700;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #ffff00;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #ffffff;
+  --gt-button-bg: #000000;
+  --gt-hover-border: #ffff00;
+  --gt-hover-accent: #ffff00;
+  --gt-tab-text: #ffffff;
+  --gt-tab-border: #ffffff;
+  --gt-tab-active-text: #000000;
+  --gt-tab-active-bg: #ffff00;
+  --gt-infotab-border: #ffffff;
+  --gt-infotab-active-text: #000000;
+  --gt-infotab-active-bg: #00ff00;
+  --gt-subtab-border: #ffffff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #00ffff;
+  --gt-feed-accent: #ffff00;
+  --gt-pill-text: #ffff00;
+  --gt-pill-bg: #000000;
+  --gt-accent: #ffff00;
+  --gt-frame-main: #ffffff;
+  --gt-frame-activity: #ffffff;
+  --gt-frame-counts: #ffffff;
+  --gt-frame-filters: #00ffff;
+  --gt-frame-rig: #ffff00;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #000000;
+  --gt-rig-bg: #ffff00;
+  --gt-rig-border: #ffffff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #ffff00;
+  --gt-status-receive-bg: #006600;
+  --gt-status-receive-border: #00ff00;
+  --gt-status-decode-bg: #0000cc;
+  --gt-status-decode-border: #ffff00;
+  --gt-status-transmit-border: #ff9900;
+  --gt-status-ignore-bg: #000000;
+  --gt-status-ignore-border: #ffffff;
+  --gt-status-closed: #800080;
+  --gt-note: #ffffff;
+  --gt-slider-track-start: #000000;
+  --gt-slider-track: #ffffff;
+  --gt-slider-thumb-border: #ffffff;
+  --gt-slider-thumb-start: #ffff00;
+  --gt-slider-thumb-end: #ffff00;
+}
+
+:root[data-app-theme="colorblind"] {
+  /* Colorblind Safe: the Okabe-Ito palette (sky blue, yellow, reddish purple, orange, bluish green, blue, vermilion), told apart
+     with red-green color blindness; frequency, band and mode far apart */
+  --gt-frequency: #56b4e9;
+  --gt-band: #f0e442;
+  --gt-mode: #cc79a7;
+  --gt-title: #ffffff;
+  --gt-label: #b0b0b0;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #56b4e9;
+  --gt-grid: #009e73;
+  --gt-country: #e69f00;
+  --gt-prefix: #b0b0b0;
+  --gt-state: #009e73;
+  --gt-zone: #009e73;
+  --gt-distance: #56b4e9;
+  --gt-azimuth: #f0e442;
+  --gt-elevation: #009e73;
+  --gt-count: #ffffff;
+  --gt-snr: #ffffff;
+  --gt-dt: #ffffff;
+  --gt-needed: #ffffff;
+  --gt-time: #a0c8e8;
+  --gt-warning: #f0e442;
+  --gt-error: #ff5a1f;
+  --gt-worked: #f0e442;
+  --gt-confirmed: #009e73;
+  --gt-worked-bg: #f0e442;
+  --gt-confirmed-bg: #d55e00;
+  --gt-status-ok: #009e73;
+  --gt-status-busy: #f0e442;
+  --gt-status-fail: #e69f00;
+  --gt-transmit: #0072b2;
+  --gt-cq: #56b4e9;
+  --gt-message: #ffffff;
+  --gt-input-text: #ffffff;
+  --gt-input-bg: #0b2a40;
+  --gt-input-border: #0072b2;
+  --gt-input-disabled-bg: #061a28;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #a84400;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #f0e442;
+  --gt-option-text: #ffffff;
+  --gt-option-bg: #000000;
+  --gt-button-text: #ffffff;
+  --gt-button-border: #0072b2;
+  --gt-button-bg: #0b2a40;
+  --gt-hover-border: #56b4e9;
+  --gt-hover-accent: #56b4e9;
+  --gt-tab-text: #b0b0b0;
+  --gt-tab-border: #0072b2;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #0072b2;
+  --gt-infotab-border: #009e73;
+  --gt-infotab-active-text: #000000;
+  --gt-infotab-active-bg: #009e73;
+  --gt-subtab-border: #56b4e9;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #56b4e9;
+  --gt-feed-accent: #e69f00;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #0072b2;
+  --gt-accent: #56b4e9;
+  --gt-frame-main: #b0b0b0;
+  --gt-frame-activity: #009e73;
+  --gt-frame-counts: #0072b2;
+  --gt-frame-filters: #ffffff;
+  --gt-frame-rig: #f0e442;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #0072b2;
+  --gt-rig-border: #56b4e9;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #f0e442;
+  --gt-status-receive-bg: #00805d;
+  --gt-status-receive-border: #009e73;
+  --gt-status-decode-bg: #0072b2;
+  --gt-status-decode-border: #56b4e9;
+  --gt-status-transmit-border: #f0e442;
+  --gt-status-ignore-bg: #0b2a40;
+  --gt-status-ignore-border: #0072b2;
+  --gt-status-closed: #95587a;
+  --gt-note: #b0b0b0;
+  --gt-slider-track-start: #0b2a40;
+  --gt-slider-track: #0072b2;
+  --gt-slider-thumb-border: #0072b2;
+  --gt-slider-thumb-start: #0072b2;
+  --gt-slider-thumb-end: #56b4e9;
+}
+
+:root[data-app-theme="aurora"] {
+  /* Aurora: northern-lights greens, teals and violets glowing on deep navy, soft pink highlights */
+  --gt-frequency: #5cffb0;
+  --gt-band: #c79bff;
+  --gt-mode: #ff9ecf;
+  --gt-title: #7cf5e0;
+  --gt-label: #8fa3c0;
+  --gt-callsign: #f0fff8;
+  --gt-callsign-other: #7cc8ff;
+  --gt-grid: #4fe3c1;
+  --gt-country: #ffd59e;
+  --gt-prefix: #6f86a8;
+  --gt-state: #9effd1;
+  --gt-zone: #4fe3c1;
+  --gt-distance: #7cc8ff;
+  --gt-azimuth: #e3c9ff;
+  --gt-elevation: #9effd1;
+  --gt-count: #f0fff8;
+  --gt-snr: #f0fff8;
+  --gt-dt: #f0fff8;
+  --gt-needed: #ff9ecf;
+  --gt-time: #a9b8ff;
+  --gt-warning: #ffc46b;
+  --gt-error: #ff5a6e;
+  --gt-worked: #fff3a3;
+  --gt-confirmed: #5cffb0;
+  --gt-worked-bg: #fff3a3;
+  --gt-confirmed-bg: #ff5a6e;
+  --gt-status-ok: #5cffb0;
+  --gt-status-busy: #fff3a3;
+  --gt-status-fail: #ffc46b;
+  --gt-transmit: #b2457a;
+  --gt-cq: #7cf5e0;
+  --gt-message: #dfe8ff;
+  --gt-input-text: #e8fff6;
+  --gt-input-bg: #0b1730;
+  --gt-input-border: #3d5a8a;
+  --gt-input-disabled-bg: #070f20;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b5562b;
+  --gt-input-empty-text: #0b1730;
+  --gt-input-empty-bg: #7cf5e0;
+  --gt-option-text: #dfe8ff;
+  --gt-option-bg: #070f20;
+  --gt-button-text: #dfe8ff;
+  --gt-button-border: #3d5a8a;
+  --gt-button-bg: #0b1730;
+  --gt-hover-border: #7cf5e0;
+  --gt-hover-accent: #5cffb0;
+  --gt-tab-text: #8fa3c0;
+  --gt-tab-border: #5b4bb0;
+  --gt-tab-active-text: #f0fff8;
+  --gt-tab-active-bg: #3a2f8f;
+  --gt-infotab-border: #1f9e86;
+  --gt-infotab-active-text: #f0fff8;
+  --gt-infotab-active-bg: #106b5a;
+  --gt-subtab-border: #5cffb0;
+  --gt-subtab-active-text: #070f20;
+  --gt-subtab-active-bg: #5cffb0;
+  --gt-feed-accent: #c79bff;
+  --gt-pill-text: #5cffb0;
+  --gt-pill-bg: #142a50;
+  --gt-accent: #5cffb0;
+  --gt-frame-main: #8fa3c0;
+  --gt-frame-activity: #1f9e86;
+  --gt-frame-counts: #5b4bb0;
+  --gt-frame-filters: #7cf5e0;
+  --gt-frame-rig: #c79bff;
+  --gt-app-title: #f0fff8;
+  --gt-rig-text: #f0fff8;
+  --gt-rig-bg: #3a2f8f;
+  --gt-rig-border: #5cffb0;
+  --gt-status-text: #f0fff8;
+  --gt-status-waiting-border: #fff3a3;
+  --gt-status-receive-bg: #106b5a;
+  --gt-status-receive-border: #5cffb0;
+  --gt-status-decode-bg: #3a2f8f;
+  --gt-status-decode-border: #5cffb0;
+  --gt-status-transmit-border: #ffc46b;
+  --gt-status-ignore-bg: #0b1730;
+  --gt-status-ignore-border: #3d5a8a;
+  --gt-status-closed: #5b4bb0;
+  --gt-note: #8fa3c0;
+  --gt-slider-track-start: #0b1730;
+  --gt-slider-track: #3d5a8a;
+  --gt-slider-thumb-border: #5b4bb0;
+  --gt-slider-thumb-start: #3a2f8f;
+  --gt-slider-thumb-end: #5cffb0;
+}
+
+:root[data-app-theme="cyberpunk"] {
+  /* Cyberpunk: acid yellow in the lead, hot cyan, magenta and neon green; sharp, yellow on near-black text boxes */
+  --gt-frequency: #00f0ff;
+  --gt-band: #fcee0a;
+  --gt-mode: #ff00ff;
+  --gt-title: #fcee0a;
+  --gt-label: #9bb0c8;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #00f0ff;
+  --gt-grid: #39ff14;
+  --gt-country: #ff9f1c;
+  --gt-prefix: #6c7a96;
+  --gt-state: #39ff14;
+  --gt-zone: #39ff14;
+  --gt-distance: #00f0ff;
+  --gt-azimuth: #fcee0a;
+  --gt-elevation: #39ff14;
+  --gt-count: #ffffff;
+  --gt-snr: #e0f7ff;
+  --gt-dt: #e0f7ff;
+  --gt-needed: #ff00ff;
+  --gt-time: #b388ff;
+  --gt-warning: #ff9f1c;
+  --gt-error: #ff1f3d;
+  --gt-worked: #fcee0a;
+  --gt-confirmed: #39ff14;
+  --gt-worked-bg: #fcee0a;
+  --gt-confirmed-bg: #ff1f3d;
+  --gt-status-ok: #39ff14;
+  --gt-status-busy: #fcee0a;
+  --gt-status-fail: #ff9f1c;
+  --gt-transmit: #b0008c;
+  --gt-cq: #00f0ff;
+  --gt-message: #e0f7ff;
+  --gt-input-text: #fcee0a;
+  --gt-input-bg: #0d0d1a;
+  --gt-input-border: #00f0ff;
+  --gt-input-disabled-bg: #07070f;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b0008c;
+  --gt-input-empty-text: #000;
+  --gt-input-empty-bg: #fcee0a;
+  --gt-option-text: #e0f7ff;
+  --gt-option-bg: #07070f;
+  --gt-button-text: #e0f7ff;
+  --gt-button-border: #00f0ff;
+  --gt-button-bg: #0d0d1a;
+  --gt-hover-border: #fcee0a;
+  --gt-hover-accent: #ff00ff;
+  --gt-tab-text: #9bb0c8;
+  --gt-tab-border: #fcee0a;
+  --gt-tab-active-text: #000000;
+  --gt-tab-active-bg: #fcee0a;
+  --gt-infotab-border: #00f0ff;
+  --gt-infotab-active-text: #000000;
+  --gt-infotab-active-bg: #00f0ff;
+  --gt-subtab-border: #ff00ff;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #ff00ff;
+  --gt-feed-accent: #fcee0a;
+  --gt-pill-text: #fcee0a;
+  --gt-pill-bg: #1a1a33;
+  --gt-accent: #fcee0a;
+  --gt-frame-main: #9bb0c8;
+  --gt-frame-activity: #00f0ff;
+  --gt-frame-counts: #fcee0a;
+  --gt-frame-filters: #fcee0a;
+  --gt-frame-rig: #fcee0a;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #000000;
+  --gt-rig-bg: #fcee0a;
+  --gt-rig-border: #ff00ff;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #fcee0a;
+  --gt-status-receive-bg: #008088;
+  --gt-status-receive-border: #39ff14;
+  --gt-status-decode-bg: #8c0080;
+  --gt-status-decode-border: #ff00ff;
+  --gt-status-transmit-border: #ff9f1c;
+  --gt-status-ignore-bg: #0d0d1a;
+  --gt-status-ignore-border: #00f0ff;
+  --gt-status-closed: #5c4a00;
+  --gt-note: #9bb0c8;
+  --gt-slider-track-start: #0d0d1a;
+  --gt-slider-track: #00f0ff;
+  --gt-slider-thumb-border: #fcee0a;
+  --gt-slider-thumb-start: #fcee0a;
+  --gt-slider-thumb-end: #ff00ff;
+}
+
+:root[data-app-theme="sunset"] {
+  /* Sunset: golden hour, coral, rose, lavender and dusk blue on dark plum */
+  --gt-frequency: #ffd166;
+  --gt-band: #ff8fa3;
+  --gt-mode: #ff9966;
+  --gt-title: #ffb4a2;
+  --gt-label: #b8a0b4;
+  --gt-callsign: #fff1e6;
+  --gt-callsign-other: #c3a6ff;
+  --gt-grid: #f4a261;
+  --gt-country: #cdb4db;
+  --gt-prefix: #8e7a8f;
+  --gt-state: #f9dc5c;
+  --gt-zone: #f4a261;
+  --gt-distance: #a2d2ff;
+  --gt-azimuth: #ffe5a0;
+  --gt-elevation: #f9dc5c;
+  --gt-count: #fff1e6;
+  --gt-snr: #fff1e6;
+  --gt-dt: #fff1e6;
+  --gt-needed: #ff70a6;
+  --gt-time: #b8c0ff;
+  --gt-warning: #ffb347;
+  --gt-error: #ff3b3b;
+  --gt-worked: #ffe5a0;
+  --gt-confirmed: #b5e48c;
+  --gt-worked-bg: #ffd166;
+  --gt-confirmed-bg: #ff3b3b;
+  --gt-status-ok: #b5e48c;
+  --gt-status-busy: #ffd166;
+  --gt-status-fail: #ffb347;
+  --gt-transmit: #c44569;
+  --gt-cq: #a2d2ff;
+  --gt-message: #ffe8d6;
+  --gt-input-text: #fff1e6;
+  --gt-input-bg: #2a1530;
+  --gt-input-border: #8a4f7d;
+  --gt-input-disabled-bg: #1a0c1e;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #c45a1e;
+  --gt-input-empty-text: #2a1530;
+  --gt-input-empty-bg: #ffd166;
+  --gt-option-text: #ffe8d6;
+  --gt-option-bg: #1a0c1e;
+  --gt-button-text: #ffe8d6;
+  --gt-button-border: #8a4f7d;
+  --gt-button-bg: #2a1530;
+  --gt-hover-border: #ffb4a2;
+  --gt-hover-accent: #ff9966;
+  --gt-tab-text: #b8a0b4;
+  --gt-tab-border: #b5567d;
+  --gt-tab-active-text: #fff1e6;
+  --gt-tab-active-bg: #7a2e5a;
+  --gt-infotab-border: #c4703a;
+  --gt-infotab-active-text: #fff1e6;
+  --gt-infotab-active-bg: #8a4520;
+  --gt-subtab-border: #ff9966;
+  --gt-subtab-active-text: #1a0c1e;
+  --gt-subtab-active-bg: #ffb4a2;
+  --gt-feed-accent: #a2d2ff;
+  --gt-pill-text: #fff1e6;
+  --gt-pill-bg: #5a2348;
+  --gt-accent: #ff9966;
+  --gt-frame-main: #b8a0b4;
+  --gt-frame-activity: #c4703a;
+  --gt-frame-counts: #b5567d;
+  --gt-frame-filters: #ffb4a2;
+  --gt-frame-rig: #ff8fa3;
+  --gt-app-title: #fff1e6;
+  --gt-rig-text: #fff1e6;
+  --gt-rig-bg: #7a2e5a;
+  --gt-rig-border: #ff9966;
+  --gt-status-text: #fff1e6;
+  --gt-status-waiting-border: #ffd166;
+  --gt-status-receive-bg: #8a4520;
+  --gt-status-receive-border: #b5e48c;
+  --gt-status-decode-bg: #7a2e5a;
+  --gt-status-decode-border: #ff9966;
+  --gt-status-transmit-border: #ffb347;
+  --gt-status-ignore-bg: #2a1530;
+  --gt-status-ignore-border: #8a4f7d;
+  --gt-status-closed: #a34d71;
+  --gt-note: #b8a0b4;
+  --gt-slider-track-start: #2a1530;
+  --gt-slider-track: #8a4f7d;
+  --gt-slider-thumb-border: #b5567d;
+  --gt-slider-thumb-start: #7a2e5a;
+  --gt-slider-thumb-end: #ff9966;
+}
+
+:root[data-app-theme="oledminimal"] {
+  /* OLED Minimal: true black, soft white values, gray labels, one blue accent and thin borders; color kept for warnings and errors */
+  --gt-frequency: #ffffff;
+  --gt-band: #d4d4d4;
+  --gt-mode: #bdbdbd;
+  --gt-title: #7aa2ff;
+  --gt-label: #737373;
+  --gt-callsign: #ffffff;
+  --gt-callsign-other: #a3a3a3;
+  --gt-grid: #d4d4d4;
+  --gt-country: #bdbdbd;
+  --gt-prefix: #737373;
+  --gt-state: #d4d4d4;
+  --gt-zone: #d4d4d4;
+  --gt-distance: #e5e5e5;
+  --gt-azimuth: #bdbdbd;
+  --gt-elevation: #d4d4d4;
+  --gt-count: #ffffff;
+  --gt-snr: #e5e5e5;
+  --gt-dt: #e5e5e5;
+  --gt-needed: #7aa2ff;
+  --gt-time: #a3a3a3;
+  --gt-warning: #fbbf24;
+  --gt-error: #f87171;
+  --gt-worked: #d4d4d4;
+  --gt-confirmed: #7aa2ff;
+  --gt-worked-bg: #a3a3a3;
+  --gt-confirmed-bg: #f87171;
+  --gt-status-ok: #7aa2ff;
+  --gt-status-busy: #a3a3a3;
+  --gt-status-fail: #fbbf24;
+  --gt-transmit: #b45309;
+  --gt-cq: #7aa2ff;
+  --gt-message: #e5e5e5;
+  --gt-input-text: #ffffff;
+  --gt-input-bg: #000000;
+  --gt-input-border: #404040;
+  --gt-input-disabled-bg: #000000;
+  --gt-input-invalid-text: #ffffff;
+  --gt-input-invalid-bg: #92400e;
+  --gt-input-empty-text: #000000;
+  --gt-input-empty-bg: #d4d4d4;
+  --gt-option-text: #e5e5e5;
+  --gt-option-bg: #000000;
+  --gt-button-text: #e5e5e5;
+  --gt-button-border: #404040;
+  --gt-button-bg: #0a0a0a;
+  --gt-hover-border: #a3a3a3;
+  --gt-hover-accent: #7aa2ff;
+  --gt-tab-text: #737373;
+  --gt-tab-border: #262626;
+  --gt-tab-active-text: #ffffff;
+  --gt-tab-active-bg: #262626;
+  --gt-infotab-border: #262626;
+  --gt-infotab-active-text: #ffffff;
+  --gt-infotab-active-bg: #262626;
+  --gt-subtab-border: #404040;
+  --gt-subtab-active-text: #000000;
+  --gt-subtab-active-bg: #e5e5e5;
+  --gt-feed-accent: #7aa2ff;
+  --gt-pill-text: #ffffff;
+  --gt-pill-bg: #171717;
+  --gt-accent: #7aa2ff;
+  --gt-frame-main: #737373;
+  --gt-frame-activity: #404040;
+  --gt-frame-counts: #404040;
+  --gt-frame-filters: #7aa2ff;
+  --gt-frame-rig: #d4d4d4;
+  --gt-app-title: #ffffff;
+  --gt-rig-text: #ffffff;
+  --gt-rig-bg: #1a1a1a;
+  --gt-rig-border: #404040;
+  --gt-status-text: #ffffff;
+  --gt-status-waiting-border: #a3a3a3;
+  --gt-status-receive-bg: #262626;
+  --gt-status-receive-border: #7aa2ff;
+  --gt-status-decode-bg: #1a2a4a;
+  --gt-status-decode-border: #7aa2ff;
+  --gt-status-transmit-border: #fbbf24;
+  --gt-status-ignore-bg: #0a0a0a;
+  --gt-status-ignore-border: #404040;
+  --gt-status-closed: #262626;
+  --gt-note: #737373;
+  --gt-slider-track-start: #0a0a0a;
+  --gt-slider-track: #404040;
+  --gt-slider-thumb-border: #262626;
+  --gt-slider-thumb-start: #262626;
+  --gt-slider-thumb-end: #7aa2ff;
+}
+
+:root[data-app-theme="nightvision"] {
+  /* Night Vision: dim reds and a little amber that keep the eyes dark-adapted; errors are white here (the user's choice), the one
+     theme where red isn't an error */
+  --gt-frequency: #ff7a5c;
+  --gt-band: #ffa07a;
+  --gt-mode: #ff5c3d;
+  --gt-title: #ff8c66;
+  --gt-label: #a84030;
+  --gt-callsign: #ffb39e;
+  --gt-callsign-other: #ff8c66;
+  --gt-grid: #ff6a4a;
+  --gt-country: #ff9a80;
+  --gt-prefix: #8a3020;
+  --gt-state: #ff7a5c;
+  --gt-zone: #ff6a4a;
+  --gt-distance: #ffa07a;
+  --gt-azimuth: #ff9a80;
+  --gt-elevation: #ff7a5c;
+  --gt-count: #ffb39e;
+  --gt-snr: #ffa894;
+  --gt-dt: #ffa894;
+  --gt-needed: #ffd0c4;
+  --gt-time: #d9583c;
+  --gt-warning: #ffb84d;
+  --gt-error: #ffffff;
+  --gt-worked: #ffb39e;
+  --gt-confirmed: #ff5c3d;
+  --gt-worked-bg: #ffa07a;
+  --gt-confirmed-bg: #ff3b2f;
+  --gt-status-ok: #ff7a5c;
+  --gt-status-busy: #ffa07a;
+  --gt-status-fail: #ffb84d;
+  --gt-transmit: #8a1a10;
+  --gt-cq: #ff8c66;
+  --gt-message: #ffb39e;
+  --gt-input-text: #ff8c66;
+  --gt-input-bg: #1a0503;
+  --gt-input-border: #6a1a10;
+  --gt-input-disabled-bg: #0d0201;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #8a1a10;
+  --gt-input-empty-text: #000;
+  --gt-input-empty-bg: #ff7a5c;
+  --gt-option-text: #ffb39e;
+  --gt-option-bg: #000;
+  --gt-button-text: #ffa07a;
+  --gt-button-border: #6a1a10;
+  --gt-button-bg: #1a0503;
+  --gt-hover-border: #ff7a5c;
+  --gt-hover-accent: #ff5c3d;
+  --gt-tab-text: #a84030;
+  --gt-tab-border: #6a1a10;
+  --gt-tab-active-text: #ffb39e;
+  --gt-tab-active-bg: #4a0e08;
+  --gt-infotab-border: #6a1a10;
+  --gt-infotab-active-text: #ffb39e;
+  --gt-infotab-active-bg: #3a0b06;
+  --gt-subtab-border: #ff5c3d;
+  --gt-subtab-active-text: #000;
+  --gt-subtab-active-bg: #ff5c3d;
+  --gt-feed-accent: #ffb84d;
+  --gt-pill-text: #ff8c66;
+  --gt-pill-bg: #2a0805;
+  --gt-accent: #ff5c3d;
+  --gt-frame-main: #a84030;
+  --gt-frame-activity: #6a1a10;
+  --gt-frame-counts: #6a1a10;
+  --gt-frame-filters: #ff8c66;
+  --gt-frame-rig: #ffa07a;
+  --gt-app-title: #ffb39e;
+  --gt-rig-text: #ffb39e;
+  --gt-rig-bg: #4a0e08;
+  --gt-rig-border: #ff5c3d;
+  --gt-status-text: #ffb39e;
+  --gt-status-waiting-border: #ffa07a;
+  --gt-status-receive-bg: #3a0b06;
+  --gt-status-receive-border: #ff7a5c;
+  --gt-status-decode-bg: #4a0e08;
+  --gt-status-decode-border: #ff5c3d;
+  --gt-status-transmit-border: #ffb84d;
+  --gt-status-ignore-bg: #1a0503;
+  --gt-status-ignore-border: #6a1a10;
+  --gt-status-closed: #6a1a10;
+  --gt-note: #a84030;
+  --gt-slider-track-start: #1a0503;
+  --gt-slider-track: #6a1a10;
+  --gt-slider-thumb-border: #6a1a10;
+  --gt-slider-thumb-start: #4a0e08;
+  --gt-slider-thumb-end: #ff5c3d;
+}
+
+:root[data-app-theme="foodforest"] {
+  /* Food Forest: layered leaf greens, apricot, plum, persimmon and fig, sunlit canopy gold, on bark and forest-floor controls */
+  --gt-frequency: #9ed36a;
+  --gt-band: #ffc078;
+  --gt-mode: #c88fd8;
+  --gt-title: #d4e157;
+  --gt-label: #b5c4a1;
+  --gt-callsign: #fff176;
+  --gt-callsign-other: #a5d6c4;
+  --gt-grid: #81c784;
+  --gt-country: #ff9f5a;
+  --gt-prefix: #a1887f;
+  --gt-state: #c5e1a5;
+  --gt-zone: #81c784;
+  --gt-distance: #80cbc4;
+  --gt-azimuth: #e6ee9c;
+  --gt-elevation: #c5e1a5;
+  --gt-count: #f1f8e9;
+  --gt-snr: #f1f8e9;
+  --gt-dt: #f1f8e9;
+  --gt-needed: #e091b8;
+  --gt-time: #b3e5fc;
+  --gt-warning: #ffb74d;
+  --gt-error: #ff5252;
+  --gt-worked: #fff176;
+  --gt-confirmed: #9ed36a;
+  --gt-worked-bg: #fff176;
+  --gt-confirmed-bg: #ff5252;
+  --gt-status-ok: #9ed36a;
+  --gt-status-busy: #fff176;
+  --gt-status-fail: #ffb74d;
+  --gt-transmit: #b8541e;
+  --gt-cq: #a5d6c4;
+  --gt-message: #f1f8e9;
+  --gt-input-text: #e6ee9c;
+  --gt-input-bg: #14261a;
+  --gt-input-border: #4f7a4a;
+  --gt-input-disabled-bg: #0c1a10;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b35a00;
+  --gt-input-empty-text: #14261a;
+  --gt-input-empty-bg: #fff176;
+  --gt-option-text: #f1f8e9;
+  --gt-option-bg: #0c1a10;
+  --gt-button-text: #f1f8e9;
+  --gt-button-border: #5d7a45;
+  --gt-button-bg: #1c2e1a;
+  --gt-hover-border: #d4e157;
+  --gt-hover-accent: #9ed36a;
+  --gt-tab-text: #b5c4a1;
+  --gt-tab-border: #5d7a45;
+  --gt-tab-active-text: #f9fbe7;
+  --gt-tab-active-bg: #2e5a2a;
+  --gt-infotab-border: #8d6e63;
+  --gt-infotab-active-text: #f9fbe7;
+  --gt-infotab-active-bg: #5a3d2b;
+  --gt-subtab-border: #9ed36a;
+  --gt-subtab-active-text: #14261a;
+  --gt-subtab-active-bg: #9ed36a;
+  --gt-feed-accent: #c88fd8;
+  --gt-pill-text: #fff176;
+  --gt-pill-bg: #2e4a1e;
+  --gt-accent: #8bc34a;
+  --gt-frame-main: #b5c4a1;
+  --gt-frame-activity: #c88fd8;
+  --gt-frame-counts: #5d7a45;
+  --gt-frame-filters: #d4e157;
+  --gt-frame-rig: #ffc078;
+  --gt-app-title: #f1f8e9;
+  --gt-rig-text: #f9fbe7;
+  --gt-rig-bg: #2e5a2a;
+  --gt-rig-border: #9ed36a;
+  --gt-status-text: #f9fbe7;
+  --gt-status-waiting-border: #fff176;
+  --gt-status-receive-bg: #2e5a2a;
+  --gt-status-receive-border: #9ed36a;
+  --gt-status-decode-bg: #5a3d6b;
+  --gt-status-decode-border: #c88fd8;
+  --gt-status-transmit-border: #ffb74d;
+  --gt-status-ignore-bg: #1c2e1a;
+  --gt-status-ignore-border: #5d7a45;
+  --gt-status-closed: #5a3d2b;
+  --gt-note: #b5c4a1;
+  --gt-slider-track-start: #1c2e1a;
+  --gt-slider-track: #5d7a45;
+  --gt-slider-thumb-border: #5d7a45;
+  --gt-slider-thumb-start: #2e5a2a;
+  --gt-slider-thumb-end: #9ed36a;
+}
+
+:root[data-app-theme="prairiehome"] {
+  /* Prairie Home: wheat gold, prairie sage, big-sky blue, coneflower and barn rust, on weathered barnwood with denim tabs */
+  --gt-frequency: #a8c686;
+  --gt-band: #e9c46a;
+  --gt-mode: #e48b5a;
+  --gt-title: #9cc9e8;
+  --gt-label: #c2b59b;
+  --gt-callsign: #f6e7a1;
+  --gt-callsign-other: #9cc9e8;
+  --gt-grid: #8fbf9f;
+  --gt-country: #f0a868;
+  --gt-prefix: #a89a86;
+  --gt-state: #c8dba8;
+  --gt-zone: #8fbf9f;
+  --gt-distance: #8ecae6;
+  --gt-azimuth: #f4d58d;
+  --gt-elevation: #c8dba8;
+  --gt-count: #fbf6e9;
+  --gt-snr: #fbf6e9;
+  --gt-dt: #fbf6e9;
+  --gt-needed: #d9a5c8;
+  --gt-time: #b8d8f0;
+  --gt-warning: #f4a259;
+  --gt-error: #ff5c5c;
+  --gt-worked: #e9c46a;
+  --gt-confirmed: #a8c686;
+  --gt-worked-bg: #e9c46a;
+  --gt-confirmed-bg: #ff5c5c;
+  --gt-status-ok: #a8c686;
+  --gt-status-busy: #e9c46a;
+  --gt-status-fail: #f4a259;
+  --gt-transmit: #a8502a;
+  --gt-cq: #9cc9e8;
+  --gt-message: #fbf6e9;
+  --gt-input-text: #f6e7a1;
+  --gt-input-bg: #2a2218;
+  --gt-input-border: #8a7a62;
+  --gt-input-disabled-bg: #1a150f;
+  --gt-input-invalid-text: #fff;
+  --gt-input-invalid-bg: #b35a00;
+  --gt-input-empty-text: #2a2218;
+  --gt-input-empty-bg: #e9c46a;
+  --gt-option-text: #fbf6e9;
+  --gt-option-bg: #1a150f;
+  --gt-button-text: #fbf6e9;
+  --gt-button-border: #8a7a62;
+  --gt-button-bg: #2f281f;
+  --gt-hover-border: #f4d58d;
+  --gt-hover-accent: #9cc9e8;
+  --gt-tab-text: #c2b59b;
+  --gt-tab-border: #5b7fa3;
+  --gt-tab-active-text: #fff8e7;
+  --gt-tab-active-bg: #3d5f80;
+  --gt-infotab-border: #7a9a5a;
+  --gt-infotab-active-text: #fff8e7;
+  --gt-infotab-active-bg: #4a6a35;
+  --gt-subtab-border: #e9c46a;
+  --gt-subtab-active-text: #2a2218;
+  --gt-subtab-active-bg: #e9c46a;
+  --gt-feed-accent: #d9a5c8;
+  --gt-pill-text: #f6e7a1;
+  --gt-pill-bg: #4a3c28;
+  --gt-accent: #e9c46a;
+  --gt-frame-main: #c2b59b;
+  --gt-frame-activity: #d9a5c8;
+  --gt-frame-counts: #5b7fa3;
+  --gt-frame-filters: #9cc9e8;
+  --gt-frame-rig: #e9c46a;
+  --gt-app-title: #fbf6e9;
+  --gt-rig-text: #fff8e7;
+  --gt-rig-bg: #3d5f80;
+  --gt-rig-border: #e9c46a;
+  --gt-status-text: #fff8e7;
+  --gt-status-waiting-border: #e9c46a;
+  --gt-status-receive-bg: #4a6a35;
+  --gt-status-receive-border: #a8c686;
+  --gt-status-decode-bg: #3d5f80;
+  --gt-status-decode-border: #9cc9e8;
+  --gt-status-transmit-border: #f4a259;
+  --gt-status-ignore-bg: #2f281f;
+  --gt-status-ignore-border: #8a7a62;
+  --gt-status-closed: #6a4a6a;
+  --gt-note: #c2b59b;
+  --gt-slider-track-start: #2f281f;
+  --gt-slider-track: #8a7a62;
+  --gt-slider-thumb-border: #5b7fa3;
+  --gt-slider-thumb-start: #3d5f80;
+  --gt-slider-thumb-end: #e9c46a;
 }
 
 @media print {
@@ -56,7 +2675,7 @@ html, body {
   width: 200px;
   z-index: 1;
   background-color: black;
-  color: #fff;
+  color: var(--gt-label);
   display: none;
   height: 100%;
 }
@@ -71,7 +2690,7 @@ html, body {
   z-index: 1;
   box-shadow: 0 0 0 1px #444;
   background-color: black;
-  color: #fff;
+  color: var(--gt-label);
   display: none;
 }
 
@@ -308,7 +2927,7 @@ html, body {
   width: 200px;
   z-index: 1;
   background-color: black;
-  color: #fff;
+  color: var(--gt-label);
   display: none;
   height: 100%;
 }
@@ -352,7 +2971,7 @@ html, body {
   padding-right: 1px;
   margin-top: -1px;
 
-  border: 1px solid yellow;
+  border: 1px solid var(--gt-band);
   border-radius: 6px;
 }
 .aBand {
@@ -366,7 +2985,7 @@ html, body {
   padding: 0px;
   display: inline-block;
   position: relative;
-  background-color: red;
+  background-color: var(--gt-transmit);
   vertical-align: baseline;
 }
 .barRx {
@@ -381,18 +3000,18 @@ html, body {
 
 .inputTextValue {
   -webkit-border-radius: 6px;
-  border: 1px solid #999;
+  border: 1px solid var(--gt-input-border);
   outline: none;
   margin: 1px;
   padding: 1px;
-  background-color: darkblue;
-  color: yellow;
+  background-color: var(--gt-input-bg);
+  color: var(--gt-input-text);
   border-style: outset;
   font-size: 12px;
 }
 
 .inputTextValue:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
   border-style: inset;
   cursor: auto;
 }
@@ -400,8 +3019,8 @@ html, body {
 .roundBorderValue {
   border: 1px solid white;
   border-radius: 6px;
-  background-color: Blue;
-  color: #ff0;
+  background-color: var(--gt-pill-bg);
+  color: var(--gt-pill-text);
   padding: 1px;
   min-width: 20px;
   outline: none;
@@ -463,7 +3082,7 @@ html, body {
   padding-bottom: 2px;
   padding-left: 2px;
   border-width: 1px;
-  border-color: #999;
+  border-color: var(--gt-button-border);
   border-style: outset;
   display: inline-grid;
   transition: border-style;
@@ -491,7 +3110,7 @@ html, body {
 .iconButton:hover {
   margin:0px;
   border-width: 2px;
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 /* The button panel's buttons: the one under the mouse grows, over its neighbours, to show its icon's detail. Grown by its layout (the
@@ -603,7 +3222,7 @@ img {
 }
 
 .mapItem:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .buttonImg {
@@ -686,18 +3305,18 @@ td > input[type="checkbox"]:only-child {
 input[type="range"]::-webkit-slider-runnable-track {
   -webkit-appearance: none;
   height: 4px;
-  border: 1px solid  #888;
-  background: linear-gradient(to right, #111, #888);
+  border: 1px solid var(--gt-slider-track);
+  background: linear-gradient(to right, var(--gt-slider-track-start), var(--gt-slider-track));
   -webkit-border-radius: 10px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  border: 1px solid rgba(0, 0, 136, 0.514);
+  border: 1px solid var(--gt-slider-thumb-border);
   height: 13px;
   width: 12px;
   -webkit-border-radius: 25%;
-  background:linear-gradient(to right, #1100a7, #00f7ff);
+  background: linear-gradient(to right, var(--gt-slider-thumb-start), var(--gt-slider-thumb-end));
   margin-top: -6px;
 }
 
@@ -712,14 +3331,14 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
 select {
   -webkit-appearance: none;
   -webkit-border-radius: 6px;
-  border: 1px solid #999;
+  border: 1px solid var(--gt-input-border);
   text-indent: 0.2px;
   min-width: 30px;
   padding: 1px;
   padding-right: 2px;
   margin: 1px;
-  background-color: darkblue;
-  color: #ff0;
+  background-color: var(--gt-input-bg);
+  color: var(--gt-input-text);
   cursor: pointer;
   font-size: 12px;
   border-style: outset;
@@ -730,24 +3349,24 @@ select:focus {
 }
 
 select:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
   border-style: inset;
 }
 
 select:disabled {
   border: 1px solid grey;
-  background-color: #008;
-  color: #ff0;
+  background-color: var(--gt-input-disabled-bg);
+  color: var(--gt-input-text);
   outline: none;
 }
 
 select option {
-  background: #000;
-  color: #fff;
+  background: var(--gt-option-bg);
+  color: var(--gt-option-text);
 }
 
 select option:focus {
-  color: #f00;
+  color: orange;
 }
 
 option:disabled {
@@ -879,7 +3498,7 @@ a {
 }
 
 .birdInfoFeaturedName {
-  color: white;
+  color: var(--gt-label);
   font-size: 11px;
   line-height: 1.1;
 }
@@ -960,7 +3579,7 @@ table.darkTable.birdDopplerTable td {
   top: 0;
   /* Solid, so the rows don't show through it as they scroll under it */
   background: black;
-  color: cyan;
+  color: var(--gt-title);
   /* Downlink, Uplink and Shift over the middle of their numbers; Transmitter and Mode from the left (below) */
   text-align: center;
   padding: 2px 8px;
@@ -1051,7 +3670,7 @@ table.darkTable.birdDopplerTable td {
 }
 
 .birdSatHead .birdSatLong {
-  color: cyan;
+  color: var(--gt-title);
 }
 
 /* Each list's header stays at the top as it scrolls */
@@ -1059,9 +3678,9 @@ table.darkTable.birdDopplerTable td {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #0b0420;
-  border-bottom: 1px solid #6a3fd0;
-  color: cyan;
+  background: black;
+  border-bottom: 1px solid #666;
+  color: var(--gt-title);
   font-weight: bold;
 }
 
@@ -1109,7 +3728,7 @@ table.darkTable.birdDopplerTable td {
 .birdSatHead .birdSatAos {
   background: none;
   border: none;
-  color: cyan;
+  color: var(--gt-title);
   cursor: default;
 }
 
@@ -1159,9 +3778,9 @@ table.darkTable.birdDopplerTable td {
   padding: 4px 10px 6px;
   min-height: 0;
   text-align: left;
-  border: 1px solid #6a3fd0;
+  border: 1px solid #666;
   border-radius: 6px;
-  background: rgba(106, 63, 208, 0.1);
+  background: #00000066;
 }
 
 /* Enable: a source can be turned off without deleting it. A box and its words share one center line */
@@ -1180,7 +3799,7 @@ table.darkTable.birdDopplerTable td {
 }
 
 .birdTleEnable {
-  color: #fff;
+  color: var(--gt-label);
 }
 
 .birdTleEnable input,
@@ -1233,7 +3852,7 @@ table.darkTable.birdDopplerTable td {
 
 .birdTleBoxTitle {
   font-weight: bold;
-  color: #fff;
+  color: var(--gt-title);
   padding-bottom: 2px;
 }
 
@@ -1442,7 +4061,7 @@ table.darkTable.birdDopplerTable td {
 
 /* Under a station too far away for any tracked satellite */
 .birdSkedNever td {
-  color: orange;
+  color: var(--gt-warning);
   white-space: normal;
   padding-top: 0;
 }
@@ -1469,16 +4088,16 @@ table.darkTable.birdDopplerTable td {
 }
 
 .birdSkedMutual .birdSkedDur {
-  color: #ffff00;
+  color: var(--gt-time);
   text-align: right;
 }
 
 .birdSkedMutual .birdSkedCall {
-  color: lightgreen;
+  color: var(--gt-callsign);
 }
 
 .birdSkedMutual .birdSkedEl {
-  color: #ffffff;
+  color: var(--gt-elevation);
   text-align: right;
 }
 
@@ -1496,7 +4115,7 @@ table.darkTable.birdDopplerTable td {
 }
 
 .birdSkedMutual tr.birdSkedFocus .birdSkedCall {
-  color: #ffff00;
+  color: var(--gt-callsign);
   font-weight: bold;
 }
 
@@ -1517,29 +4136,6 @@ table.darkTable.birdDopplerTable td {
   padding: 1px 10px;
 }
 
-/* BirdWatch's tabs and their content: the main Settings' yellow on blue answered with cyan on violet, a night-sky look for the
-   satellites */
-.settingstab button.settingsTablinks.birdWatchTab {
-  border-color: #8a5cf0;
-  color: #cfe;
-}
-
-.settingstab button.settingsTablinks.birdWatchTab:hover {
-  background: #1d0f45;
-}
-
-.settingstab button.settingsTablinks.birdWatchTab.active {
-  background: linear-gradient(#6a3fd0, #3a1a80);
-  color: #5ff;
-  text-shadow: 0 1px 2px #000;
-}
-
-.settingsTabcontent.birdWatchSettingsTabcontent {
-  border-color: #8a5cf0;
-  background: linear-gradient(#150a38, #000 70%);
-  color: #cfe;
-}
-
 /* Style the tab */
 .settingstab {
   overflow: hidden;
@@ -1551,14 +4147,14 @@ table.darkTable.birdDopplerTable td {
 
 /* Style the buttons that are used to open the tab content */
 .settingstab button.settingsTablinks {
-  border: 1px solid blue;
+  border: 1px solid var(--gt-tab-border);
   padding: 3px;
   font-weight: bold;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
   margin-left: 5px;
   margin-right: 1px;
-  color: #eee;
+  color: var(--gt-tab-text);
   background: black;
   text-align: center;
   cursor: pointer;
@@ -1569,8 +4165,8 @@ table.darkTable.birdDopplerTable td {
 
 /* Create an active/current tablink class */
 .settingstab button.settingsTablinks.active {
-  background-color: blue;
-  color: yellow;
+  background-color: var(--gt-tab-active-bg);
+  color: var(--gt-tab-active-text);
 }
 
 /* The tabs of the group the page doesn't belong to (BirdWatch's, or the others: by group, wherever a tab wraps to) dimmed, so it is
@@ -1811,7 +4407,7 @@ table.darkTable.birdDopplerTable td {
   padding-bottom: 10px;
   text-align: center;
   width: auto;
-  border: 1px solid blue;
+  border: 1px solid var(--gt-tab-border);
   vertical-align: top;
   -webkit-border-radius: 6px;
   white-space: normal;
@@ -1851,14 +4447,14 @@ table.darkTable.birdDopplerTable td {
 
 /* Style the buttons that are used to open the tab content */
 .infotab button {
-  border: 1px solid green;
+  border: 1px solid var(--gt-infotab-border);
   padding: 3px;
   font-weight: bold;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
   margin-left: 0px;
   margin-right: 0px;
-  color: #eee;
+  color: var(--gt-tab-text);
   background: black;
   text-align: center;
   cursor: pointer;
@@ -1869,8 +4465,8 @@ table.darkTable.birdDopplerTable td {
 
 /* Create an active/current tablink class */
 .infotab button.active {
-  background-color: green;
-  color: yellow;
+  background-color: var(--gt-infotab-active-bg);
+  color: var(--gt-infotab-active-text);
 }
 
 /* Style the tab content */
@@ -2140,7 +4736,7 @@ table.darkTable.birdDopplerTable td {
 
 .lookupSectionTitle {
   margin-bottom: 6px;
-  color: cyan;
+  color: var(--gt-title);
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 1px;
@@ -2167,7 +4763,7 @@ table.darkTable.birdDopplerTable td {
 }
 
 .lookupYes {
-  color: lightgreen;
+  color: var(--gt-status-ok);
 }
 
 .lookupNo {
@@ -2271,14 +4867,14 @@ table.subtable tr:hover td {
 
 .DXCallBoxWorked {
   font-weight: bold;
-  background-color: yellow;
+  background-color: var(--gt-worked-bg);
   color: black;
   animation: change-background-yellow 2s ease infinite;
 }
 
 .DXCallBoxConfirmed {
   font-weight: bold;
-  background-color: red;
+  background-color: var(--gt-confirmed-bg);
   color: black;
   animation: change-background-red 2s ease infinite;
 }
@@ -2301,30 +4897,30 @@ table.subtable tr:hover td {
 @keyframes change-background-red {
   0% {
     background: black;
-    color: red;
+    color: var(--gt-confirmed-bg);
   }
   50% {
-    background: red;
+    background: var(--gt-confirmed-bg);
     color: black;
   }
   100% {
     background: black;
-    color: red;
+    color: var(--gt-confirmed-bg);
   }
 }
 
 @keyframes change-background-yellow {
   0% {
     background: black;
-    color: yellow;
+    color: var(--gt-worked-bg);
   }
   50% {
-    background: yellow;
+    background: var(--gt-worked-bg);
     color: black;
   }
   100% {
     background: black;
-    color: yellow;
+    color: var(--gt-worked-bg);
   }
 }
 
@@ -2358,7 +4954,7 @@ table.subtable tr:hover td {
 }
 
 .buttonScript:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 input[type="color"] {
@@ -2392,11 +4988,11 @@ input[type="color"]::-webkit-color-swatch {
   padding: 2px;
   padding-bottom: 0px;
   border-width: 1px;
-  border-color: #999;
+  border-color: var(--gt-button-border);
   border-style: outset;
   min-width: 40px;
   display: inline-block;
-  color: #eee;
+  color: var(--gt-button-text);
   transition: border-style;
 }
 
@@ -2409,14 +5005,14 @@ button:focus {
 }
 
 .button:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .flexButton {
   border-radius: 4px;
   cursor: pointer;
-  border: 1px outset #999;
-  color: #eee;
+  border: 1px outset var(--gt-button-border);
+  color: var(--gt-button-text);
   transition: border-style;
   vertical-align: middle;
   text-align: center;
@@ -2430,7 +5026,7 @@ button:focus {
 }
 
 .flexButton:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 #alertMatrixDiv {
@@ -2557,7 +5153,7 @@ button:focus {
 }
 
 .mapGroupTitle {
-  color: cyan;
+  color: var(--gt-title);
   /* The settings tab buttons' size (a button's default) */
   font-size: 13.3333px;
   font-weight: bold;
@@ -2614,7 +5210,7 @@ button:focus {
   align-items: center;
   gap: 3px;
   margin-left: 14px;
-  color: #fff;
+  color: var(--gt-label);
 }
 
 .mapGroup .rigVfoConnect input[type="checkbox"] {
@@ -2626,7 +5222,7 @@ button:focus {
 .mapGroup .rigVfoTitle {
   display: flex;
   align-items: center;
-  color: cyan;
+  color: var(--gt-title);
   font-weight: bold;
   text-align: left;
   border-bottom: 1px solid #444;
@@ -2650,7 +5246,7 @@ button:focus {
 }
 
 .mapGroup .rigVfoRemove:hover {
-  color: red;
+  color: orange;
 }
 
 /* Move up and down (the list's order is BirdWatch's priority: rig.js, rigVfoMove) */
@@ -2700,7 +5296,7 @@ button:focus {
 .eventViewerTitle {
   display: inline-block;
   padding: 4px 12px 2px 12px;
-  color: cyan;
+  color: var(--gt-title);
   font-weight: bold;
   font-size: 13.3333px;
 }
@@ -2767,7 +5363,7 @@ button:focus {
   top: 0;
   z-index: 1;
   background-color: black;
-  color: cyan;
+  color: var(--gt-title);
   font-weight: bold;
   border-bottom: 1px solid #444;
 }
@@ -2894,7 +5490,7 @@ button:focus {
 
 .birdWatchRigMode {
   text-align: left;
-  color: lightgreen;
+  color: var(--gt-mode);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -3018,7 +5614,7 @@ button:focus {
 
 /* The box under the mouse: its border inset and white, as .mapItem's */
 .mapGroup:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
   border-style: inset;
 }
 
@@ -3101,7 +5697,7 @@ button:focus {
   display: inline-block;
   min-width: 50px;
   margin-left: 6px;
-  color: yellow;
+  color: var(--gt-input-text);
   font-size: 12px;
   font-weight: bold;
   vertical-align: middle;
@@ -3141,7 +5737,7 @@ button:focus {
 
 /* A small note or status line across a box (General -> Receive / Forward UDP Messages) */
 .mapGroup td.mapNote {
-  color: #ccc;
+  color: var(--gt-note);
   font-size: 11px;
   text-align: center;
 }
@@ -3167,7 +5763,7 @@ button:focus {
 
 /* A warning under a field (a forward hostname that can't be found) */
 .mapGroup td.mapNote.mapWarn {
-  color: orange;
+  color: var(--gt-warning);
   font-weight: bold;
   text-align: left;
   white-space: normal;
@@ -3461,7 +6057,7 @@ button:focus {
 }
 
 .mapGroup input[type="color"]:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 /* Gridsquare colors: a swatch and its name, four to a row */
@@ -3850,7 +6446,7 @@ button:focus {
 }
 
 .flexItem:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .password-wrapper {

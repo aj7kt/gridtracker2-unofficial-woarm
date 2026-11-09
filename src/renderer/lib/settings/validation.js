@@ -107,8 +107,8 @@ function validGridKeys(value)
 }
 
 function setInputStatus(input, valid, validDiv, validTxt = "Valid!", invalidTxt = "Invalid!") {
-  input.style.color = valid ? "#FF0" : (input.value ? "#FFF" : "#000");
-  input.style.backgroundColor = valid ? "darkblue" : (input.value ? "rgb(199, 113, 0)" : "yellow");
+  input.style.color = valid ? "var(--gt-input-text)" : (input.value ? "var(--gt-input-invalid-text)" : "var(--gt-input-empty-text)");
+  input.style.backgroundColor = valid ? "var(--gt-input-bg)" : (input.value ? "var(--gt-input-invalid-bg)" : "var(--gt-input-empty-bg)");
   if (validDiv) validDiv.innerHTML = valid ? validTxt : invalidTxt;
   return valid;
 }
@@ -131,8 +131,8 @@ function ValidateCallsign(inputText, validDiv) {
   if (validDiv) validDiv.innerHTML = "";
   inputText.value = inputText.value.toUpperCase();
   let passed = inputText.value.length > 0 && (/\d/.test(inputText.value) || /[A-Z]/.test(inputText.value));
-  inputText.style.color = passed ? "#FF0" : "#000";
-  inputText.style.backgroundColor = passed ? "darkblue" : "yellow";
+  inputText.style.color = passed ? "var(--gt-input-text)" : "var(--gt-input-empty-text)";
+  inputText.style.backgroundColor = passed ? "var(--gt-input-bg)" : "var(--gt-input-empty-bg)";
   if (validDiv) validDiv.innerHTML = passed ? "Valid!" : "Invalid!";
   return passed;
 }
@@ -140,8 +140,8 @@ function ValidateCallsign(inputText, validDiv) {
 function ValidateGridsquareOnly4(inputText, validDiv) {
   inputText.value = inputText.value.toUpperCase();
   let passed = inputText.value.length === 0 || /^[A-R]{2}[0-9]{2}$/.test(inputText.value);
-  inputText.style.color = passed ? (inputText.value.length ? "#FF0" : "#000") : "#FFF";
-  inputText.style.backgroundColor = passed ? (inputText.value.length ? "darkblue" : "yellow") : "rgb(199, 113, 0)";
+  inputText.style.color = passed ? (inputText.value.length ? "var(--gt-input-text)" : "var(--gt-input-empty-text)") : "var(--gt-input-invalid-text)";
+  inputText.style.backgroundColor = passed ? (inputText.value.length ? "var(--gt-input-bg)" : "var(--gt-input-empty-bg)") : "var(--gt-input-invalid-bg)";
   if (validDiv) validDiv.innerHTML = passed ? "Valid!" : "Invalid!";
   return passed;
 }
@@ -191,34 +191,34 @@ function ValidateMulticast(inputText)
       {
         if (ipInt > ipToInt("224.0.0.255"))
         {
-          inputText.style.color = "black";
-          inputText.style.backgroundColor = "yellow";
+          inputText.style.color = "var(--gt-input-empty-text)";
+          inputText.style.backgroundColor = "var(--gt-input-empty-bg)";
         }
         else
         {
-          inputText.style.color = "#FF0";
-          inputText.style.backgroundColor = "darkblue";
+          inputText.style.color = "var(--gt-input-text)";
+          inputText.style.backgroundColor = "var(--gt-input-bg)";
         }
         return true;
       }
       else
       {
-        inputText.style.color = "#FFF";
-        inputText.style.backgroundColor = "rgb(199, 113, 0)";
+        inputText.style.color = "var(--gt-input-invalid-text)";
+        inputText.style.backgroundColor = "var(--gt-input-invalid-bg)";
         return false;
       }
     }
     else
     {
-      inputText.style.color = "#FFF";
-      inputText.style.backgroundColor = "rgb(199, 113, 0)";
+      inputText.style.color = "var(--gt-input-invalid-text)";
+      inputText.style.backgroundColor = "var(--gt-input-invalid-bg)";
       return false;
     }
   }
   else
   {
-    inputText.style.color = "#FFF";
-    inputText.style.backgroundColor = "rgb(199, 113, 0)";
+    inputText.style.color = "var(--gt-input-invalid-text)";
+    inputText.style.backgroundColor = "var(--gt-input-invalid-bg)";
     return false;
   }
 }
@@ -230,22 +230,22 @@ function ValidatePort(inputText, checkBox, callBackCheck)
   {
     if (callBackCheck && !callBackCheck(value))
     {
-      inputText.style.color = "#FFF";
-      inputText.style.backgroundColor = "orange";
+      inputText.style.color = "var(--gt-input-invalid-text)";
+      inputText.style.backgroundColor = "var(--gt-input-invalid-bg)";
       if (checkBox) checkBox.checked = false;
       return false;
     }
     else
     {
-      inputText.style.color = "#FF0";
-      inputText.style.backgroundColor = "darkblue";
+      inputText.style.color = "var(--gt-input-text)";
+      inputText.style.backgroundColor = "var(--gt-input-bg)";
       return true;
     }
   }
   else
   {
-    inputText.style.color = "#FFF";
-    inputText.style.backgroundColor = "orange";
+    inputText.style.color = "var(--gt-input-invalid-text)";
+    inputText.style.backgroundColor = "var(--gt-input-invalid-bg)";
     if (checkBox) checkBox.checked = false;
     return false;
   }

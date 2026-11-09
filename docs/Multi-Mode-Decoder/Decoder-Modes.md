@@ -153,7 +153,17 @@ WEFAX receives weather fax charts from the coast and weather stations that still
   * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
   * Click the chart's real left edge, on the chart coming in, to line it up there.
 * The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
-* Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways) or **Delete**. A rotated chart is saved and copied as shown.
+* Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**. A rotated or filtered chart is saved and copied as shown.
+* **Filter** (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:
+  * **Sharpen:** crisper lines and lettering.
+  * **Noise Reduction:** takes out specks and static, keeping lines and lettering.
+  * **Smooth:** softens grainy noise.
+  * **Auto Contrast:** stretches a faded chart to full black and white.
+  * **Equalize:** spreads the gray levels evenly, to bring out a faint chart.
+  * **Lighten** and **Darken:** lighten or darken the middle grays, keeping black and white.
+  * **Invert:** swaps black and white.
+  * **Undo** takes back the last filter (the number beside it says how many can be undone, up to 20). **Undo All** takes them all back. A file saved already stays as it was.
+* Each time the window opens, the newest 12 charts in the save folder are back in the strip.
 * **Save Charts** (under **WEFAX** in the window's **Settings** → **Decoders**; off at first) saves each chart as a PNG when it ends, however much of it came. **Folder** shows where they go (`WEFAX Charts` at first, beside SSTV's `SSTV Pictures`; click it to open it); **Choose** picks another.
 * **Frequency menu:** the stations heard around the world (NOAA's, Germany's, Japan's, Korea's, Australia's, the UK's and others), each named with its assigned frequency and its hours where it has them. **Set Mode** sets the rig to USB.
 
@@ -187,7 +197,8 @@ SSTV receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robo
 * You don't need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong. Dashed lines on the waterfall show where its sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found.
 * A sender whose sound card runs a little fast or slow, one that drifts, or a satellite's Doppler, is put right, so the picture stays straight and its colors true.
 * A sender that fades out part way is read on to the end, so the rest still comes if it comes back.
-* Right-click a picture for **Save Picture…**, **Copy To Clipboard**, **Rotate** or **Delete**.
+* Right-click a picture for **Save Picture…**, **Copy To Clipboard**, **Rotate**, **Filter** (the same as WEFAX's, see [WEFAX](#wefax)) or **Delete**.
+* Each time the window opens, the newest 12 pictures in the save folder are back in the strip.
 * **Save Pictures** (the window's **Settings** → **Decoders**, under **SSTV**; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. **Folder** shows where they go (click it to open it); **Choose** picks another.
 * **Frequency menu:** the usual SSTV frequencies from 160 to 2 meters, and the ISS's SSTV events on 145.800 MHz. **Set Mode** sets the rig to the frequency's sideband (LSB below 10 MHz, USB above), or FM for the ISS.
 * With **Follow BirdWatch**, a satellite's SSTV transmitter switches the decoder to SSTV.

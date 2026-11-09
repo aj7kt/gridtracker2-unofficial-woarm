@@ -139,12 +139,24 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/eventsButton.png){width=32px} | Event Viewer | Shows the [Event Viewer](#event-viewer). Right-click to choose whether it shows over the map or in a window of its own. | |
 | ![](../img/buttons/birdWatchButton.png){width=32px} | Toggle Satellite Tracking | Turns BirdWatch's satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while **BirdWatch** is on. See [BirdWatch](../BirdWatch.md). | Ctrl+F12 |
 | ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while **Multi-Mode Decoder** is on. | |
+| ![](../img/buttons/castButton.png){width=32px} | Cast | Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while **Enable Casting** is on. See [Casting the Map](#casting-the-map). | |
 
 The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you tick their **Menu Button** in [Settings → Logging](Settings-Sub-Menus.md#logging-tab). Online buttons are hidden in Offline Mode.
 
 ### Santa Tracker
 
-From December 1st the Santa Tracker button appears. Turn the tracker on to see a countdown, at the top of the map, until Santa leaves at midnight on December 24th (your time). Then a box on the map shows where he is, his next stop and how many gifts he has delivered. Click where he is to center the map on him, and hover over a stop to see its DXCC entity and state or province. Shortly before he reaches you, contact with Santa is lost...
+From December 1st the Santa Tracker button appears. Turn the tracker on to see a countdown, at the top of the map, until Santa leaves at midnight on December 24th (your time). Then a box on the map shows where he is, his next stop and how many gifts he has delivered. Click where he is to center the map on him, and hover over a stop to see its DXCC entity and state or province.
+
+### Casting the Map
+
+Turn on **Enable Casting** in [Settings → General → Display](Settings-Sub-Menus.md#display) to add the **Cast** button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network.
+
+* **Click** the button to start casting. The first time, GridTracker2 casts to the first Cast device it finds and remembers it; after that it casts to the device you picked last. Click it again to stop.
+* **Right-click** the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it for next time. While casting, the menu also has **Stop Casting**.
+* While casting, the button is in color and its tooltip names the device. The main window is sized to the TV's 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.
+* Starting and stopping, and a device that can't be reached, are shown in the [Event Viewer](#event-viewer).
+
+Casting needs a computer with a hardware video encoder. On a computer without one, **Enable Casting** can't be turned on.
 
 ## Rearranging the Panel
 
@@ -154,7 +166,7 @@ The band activity graph, the Quick Stats and the Map View Filters can each be mo
 
 ## Event Viewer
 
-Click the **Event Viewer** button in the button panel to see what has happened, newest first. Each event has its **Time**, its **Source** (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor or SOTA) and the **Event** itself:
+Click the **Event Viewer** button in the button panel to see what has happened, newest first. Each event has its **Time**, its **Source** (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the **Event** itself:
 
 * band and mode changes;
 * decodes that set off a Custom Alert, with a 🚩;

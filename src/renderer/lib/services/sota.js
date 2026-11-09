@@ -168,13 +168,13 @@ function summitGroupTipHtml(groups)
   for (const { ref, callObj } of spots)
   {
     const freq = callObj.freq > 0 ? formatMhz(callObj.freq / 1000) + " " : "";
-    rows += `<tr><td style='color:yellow'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
-      `<td style='color:lightgreen'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
+    rows += `<tr><td style='color:var(--gt-callsign)'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
+      `<td style='color:var(--gt-grid)'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
       `<td style='color:orange'>${ref}</td>` +
-      `<td style='color:cyan'>${lookupCallHtml(callObj.spotter)}</td>` +
-      `<td style='color:lightgreen'>${freq}<font color='yellow'>(${callObj.band})</font></td>` +
-      `<td style='color:orange'>${callObj.mode}</td>` +
-      `<td style='color:lightblue'>${toDHMS(now - callObj.age)}</td>` +
+      `<td style='color:var(--gt-callsign-other)'>${lookupCallHtml(callObj.spotter)}</td>` +
+      `<td style='color:var(--gt-frequency)'>${freq}<span style='color:var(--gt-band)'>(${callObj.band})</span></td>` +
+      `<td style='color:var(--gt-mode)'>${callObj.mode}</td>` +
+      `<td style='color:var(--gt-time)'>${toDHMS(now - callObj.age)}</td>` +
       `<td style='white-space:normal;max-width:260px;'>${htmlEntities(callObj.msg)}</td></tr>`;
   }
   return `<table id='tooltipTable' class='darkTable'>
@@ -200,7 +200,7 @@ function summitTipHtml(ref, hashes)
     ${ref} : <font color='cyan'>${htmlEntities(summit.name)}</font><br>
     ${where ? `<font color='lightblue'>${where}</font><br>` : ""}
     <font color='white'>${sotaHeightText(summit.alt)}</font> &bull; <font color='yellow'>${I18N("rosterColumns.SOTA.points").replace("{0}", summit.points)}</font> &bull;
-    <font color='cyan'>${dist}${distanceUnit.value.toLowerCase()}</font> <font color='yellow'>${bearing}&deg;</font></div>
+    <span style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</span> <span style='color:var(--gt-azimuth)'>${bearing}&deg;</span></div>
     <table id='tooltipTable' class='darkTable' style='margin: 0 auto;'>
     <tr><th>${I18N("gt.newCallList.Call")}</th><th>${I18N("gt.callsignBox.Grid")}</th><th>${I18N("rosterColumns.Spotter.header")}</th><th>${I18N("gt.newCallList.Freq")}</th>` +
     `<th>${I18N("gt.newCallList.Mode")}</th><th>${I18N("gt.feedSpot.age")}</th><th>${I18N("gt.newCallList.LastMsg")}</th></tr>`;
@@ -211,12 +211,12 @@ function summitTipHtml(ref, hashes)
   {
     const freq = callObj.freq > 0 ? formatMhz(callObj.freq / 1000) + " " : "";
     // Callsigns look up when clicked, also in the popped-out tooltip (lookupCallHtml, map/mouse.js)
-    html += `<tr><td style='color:yellow'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
-      `<td style='color:lightgreen'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
-      `<td style='color:cyan'>${lookupCallHtml(callObj.spotter)}</td>` +
-      `<td style='color:lightgreen'>${freq}<font color='yellow'>(${callObj.band})</font></td>` +
-      `<td style='color:orange'>${callObj.mode}</td>` +
-      `<td style='color:lightblue'>${toDHMS(now - callObj.age)}</td>` +
+    html += `<tr><td style='color:var(--gt-callsign)'>${lookupCallHtml(callObj.DEcall, callObj.grid)}</td>` +
+      `<td style='color:var(--gt-grid)'>${callObj.fullGrid || callObj.grid || "-"}</td>` +
+      `<td style='color:var(--gt-callsign-other)'>${lookupCallHtml(callObj.spotter)}</td>` +
+      `<td style='color:var(--gt-frequency)'>${freq}<span style='color:var(--gt-band)'>(${callObj.band})</span></td>` +
+      `<td style='color:var(--gt-mode)'>${callObj.mode}</td>` +
+      `<td style='color:var(--gt-time)'>${toDHMS(now - callObj.age)}</td>` +
       `<td style='white-space:normal;max-width:260px;'>${htmlEntities(callObj.msg)}</td></tr>`;
   }
   return html + "</table>";
@@ -707,7 +707,7 @@ function logSotaChaseQso(fields)
     if (GT.lastReport === before) return { ok: false, message: I18N("sotaLog.duplicate") };
 
     const refs = [park, ref].filter((value) => value).join(" / ");
-    addEvent("sota", `<font style='color:lightgreen;'>${I18N("sotaLog.title")}</font><br><font style='color:yellow;'>${call}</font> ` +
+    addEvent("sota", `<font style='color:var(--gt-status-ok);'>${I18N("sotaLog.title")}</font><br><font style='color:var(--gt-callsign);'>${call}</font> ` +
       `<font style='color:#40FFD8;'>${refs}</font>`);
     return { ok: true, message: I18N("sotaLog.logged").replace("{0}", call).replace("{1}", refs) };
   }

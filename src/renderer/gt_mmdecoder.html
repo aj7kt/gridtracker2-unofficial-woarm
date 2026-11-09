@@ -31,7 +31,7 @@
       body {
         -webkit-appearance: none;
         -webkit-user-select: none;
-        color: #fff;
+        color: var(--gt-label);
         white-space: nowrap;
         font-family: Sans-Serif;
         font-size: 12px;
@@ -159,7 +159,7 @@
       /* Band Plans (mmdBands.js): its tables of inputs, compact */
       .mmdBandsHead {
         padding: 4px 2px;
-        color: orange;
+        color: var(--gt-warning);
       }
       .mmdBandsTable th {
         text-align: left;
@@ -204,13 +204,13 @@
       .cwButton {
         cursor: pointer;
         padding: 0 8px;
-        border: 1px solid #888;
+        border: 1px solid var(--gt-button-border);
         border-radius: 4px;
-        background-color: #223;
-        color: #fff;
+        background-color: var(--gt-button-bg);
+        color: var(--gt-button-text);
       }
       .cwButton:hover {
-        border-color: cyan;
+        border-color: var(--gt-hover-accent);
       }
       /* Test Signals while one plays (or waits for its period): it stops it */
       .cwButton.cwTestOn {
@@ -242,13 +242,13 @@
         font-weight: bold;
       }
       #cwFreqText .cwFreqHz {
-        color: lightgreen;
+        color: var(--gt-frequency);
       }
       #cwFreqText .cwFreqBand {
-        color: yellow;
+        color: var(--gt-band);
       }
       #cwFreqText .cwFreqMode {
-        color: orange;
+        color: var(--gt-mode);
       }
       #cwLevelButton {
         margin-left: 4px;
@@ -317,7 +317,11 @@
         color: #ccc;
       }
       #cwStatus.cwError {
-        color: orange;
+        color: var(--gt-error);
+        white-space: normal;
+      }
+      #cwStatus.cwWarning {
+        color: var(--gt-warning);
         white-space: normal;
       }
       /* The frequency scale with the channels found, over the waterfall */
@@ -672,17 +676,20 @@
       #wsprTable td.ft8Num {
         color: #aaa;
       }
+      #satTable td.packetKind {
+        color: yellow;
+      }
       #packetTable td.packetCall,
       #satTable td.packetCall,
       #wsprTable td.packetCall {
-        color: yellow;
+        color: var(--gt-callsign);
       }
       #packetTable td.packetPath,
       #satTable td.packetPath {
         color: #bbb;
       }
-      #packetTable span.packetSat,
-      #satTable span.packetSat {
+      #packetTable .packetSat,
+      #satTable .packetSat {
         color: cyan;
       }
       #packetTable tr.packetMine td,
@@ -724,7 +731,7 @@
         width: 36px;
       }
       td.cwFreq {
-        color: cyan;
+        color: var(--gt-frequency);
         font-family: monospace;
         font-size: 13px;
       }
@@ -767,7 +774,7 @@
         font-weight: bold;
       }
       span.cwCall {
-        color: cyan;
+        color: var(--gt-callsign);
         font-weight: bold;
       }
       #cwEmpty {
@@ -856,12 +863,12 @@
         color: #aaa;
       }
       .sstvTab:hover {
-        border-color: cyan;
+        border-color: var(--gt-hover-accent);
       }
       .sstvTabOn {
-        background-color: #223;
-        color: #fff;
-        border-color: #888;
+        background-color: var(--gt-button-bg);
+        color: var(--gt-button-text);
+        border-color: var(--gt-button-border);
       }
       /* A text line's place (mmdSstvTx.js): 3 by 3 cells standing for the picture's places, the one picked lit */
       .sstvTxPlace {
@@ -1002,7 +1009,7 @@
         cursor: default;
       }
       .cwButton.sstvTxBusy:hover {
-        border-color: #888;
+        border-color: var(--gt-button-border);
       }
       #sstvTxForm select {
         width: 132px;
@@ -1238,7 +1245,7 @@
                   <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft4SendDecodesValue" data-i18n="settings.ft4Decoder.sendDecodes.hover" title="FT4 decodes go to the Call Roster as well as the map" onclick="mmdSetSendDecodes('ft4');" /> <label for="ft4SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
                 </tr>
                 <tr id="ft4InstanceNoteTr">
-                  <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft4Decoder.instance.note.label">Waiting for Rig Control to read the FT4 VFO's dial</td>
+                  <td colspan="2" style="color: var(--gt-status-busy); font-size: 11px; padding-left: 22px;" data-i18n="settings.ft4Decoder.instance.note.label">Waiting for Rig Control to read the FT4 VFO's dial</td>
                 </tr>
               </table>
             </div>
@@ -1271,7 +1278,7 @@
                   <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.hover" title="FT8 decodes go to the Call Roster as well as the map" onclick="mmdSetSendDecodes('ft8');" /> <label for="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
                 </tr>
                 <tr id="ft8InstanceNoteTr">
-                  <td colspan="2" style="color: orange; font-size: 11px; padding-left: 22px;" data-i18n="settings.ft8Decoder.instance.note.label">Waiting for Rig Control to read the FT8 VFO's dial</td>
+                  <td colspan="2" style="color: var(--gt-status-busy); font-size: 11px; padding-left: 22px;" data-i18n="settings.ft8Decoder.instance.note.label">Waiting for Rig Control to read the FT8 VFO's dial</td>
                 </tr>
               </table>
             </div>

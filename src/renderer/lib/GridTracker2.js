@@ -88,6 +88,12 @@ function loadAllSettings()
     GT.settings.map.projection = k_valid_projections[0];
   }
 
+  // An App Theme no longer listed (first.js k_appThemes) falls back to GridTracker2's
+  if (!k_appThemes.includes(GT.settings.app.appTheme))
+  {
+    GT.settings.app.appTheme = k_appThemeDefault;
+  }
+
   if (GT.settings.mapMemory.length != 7)
   {
     GT.settings.mapMemory = [];
@@ -216,6 +222,7 @@ function loadAllSettings()
   }
 
   setWindowTheme();
+  applyAppTheme();
 }
 
 loadAllSettings();
@@ -542,8 +549,8 @@ GT.KColors = [
   "#FF0",
   "#FC0",
   "#F90",
-  "#F00",
-  "#F00"
+  "var(--gt-warning)",
+  "var(--gt-warning)"
 ];
 
 
@@ -898,6 +905,8 @@ function postInit()
     netAudioInit();
     section = "MmDecoderInit";
     mmDecoderInit();
+    section = "MapCastInit";
+    mapCastInit();
     projectionImg.style.filter = GT.settings.map.projection == "AEQD" ? "" : "grayscale(1)";
     section = "MouseTrack";
     displayMouseTrack();
@@ -1021,6 +1030,8 @@ function saveAndCloseApp(shouldRestart = false)
   if (GT.activeInstance && (!expected || GT.instancePicked || GT.expectedInstanceSeen)) GT.settings.app.expectedInstance = GT.activeInstance;
   saveAllSettings();
   saveReceptionReports();
+  // The TV told to stop (and the window's size from before casting put back)
+  mapCastStop();
 
   closeOpenSockets();
 

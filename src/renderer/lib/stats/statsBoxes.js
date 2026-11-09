@@ -6,7 +6,7 @@
 
 function showCallsignBox() {
   // Start with a pure string
-  let html = `<div style='vertical-align:top;display:inline-block;margin:2px;color:cyan;font-weight:bolder;'>${I18N("gt.callsignBox.title")} <img src='img/reset_24x48.png' title='${I18N("gt.spots.refresh")}' onclick="window.opener.showCallsignBox()" style='height:18px;margin:-1px;margin-bottom:-3px;padding:0px;cursor:pointer;border:1px' alt="${I18N("gt.spots.refresh")}"></div><br>`;
+  let html = `<div style='vertical-align:top;display:inline-block;margin:2px;color:var(--gt-title);font-weight:bolder;'>${I18N("gt.callsignBox.title")} <img src='img/reset_24x48.png' title='${I18N("gt.spots.refresh")}' onclick="window.opener.showCallsignBox()" style='height:18px;margin:-1px;margin-bottom:-3px;padding:0px;cursor:pointer;border:1px' alt="${I18N("gt.spots.refresh")}"></div><br>`;
 
   const callsignCount = GT.sessionCallsigns.size;
 
@@ -67,10 +67,10 @@ function showCallsignBox() {
       // OPTIMIZATION 3: Replace slow 'in' operator with instant '!== undefined' hash checks
       html += `
         <tr>
-          <td align=left style='color:#ff0;cursor:pointer' onClick='window.opener.startLookup("${thisCall}", "${grid}");'>${formatCallsign(thisCall)}</td>
-          <td align=left style='color:cyan;'>${grid}</td>
+          <td align=left style='color:var(--gt-callsign);cursor:pointer' onClick='window.opener.startLookup("${thisCall}", "${grid}");'>${formatCallsign(thisCall)}</td>
+          <td align=left style='color:var(--gt-grid);'>${grid}</td>
           <td style='color:#${bandColor};'>${callObj.band}</td>
-          <td style='color:orange;'>${geo.name}<font style='color:lightgreen;'> (${geo.pp})</font></td>
+          <td style='color:var(--gt-country);'>${geo.name}<font style='color:var(--gt-prefix);'> (${geo.pp})</font></td>
           <td>${cqzone}</td>
           <td>${ituzone}</td>
           <td>${workedCall[thisCall] !== undefined ? "&#10004;" : ""}</td>
@@ -118,9 +118,9 @@ function showCallsignBox() {
       const item = dxccArray[i];
       html += `
         <tr>
-          <td align=left style='color:#ff0;'>${item.name}</td>
+          <td align=left style='color:var(--gt-country);'>${item.name}</td>
           <td align='center' style='margin:0;padding:0'><img style='padding-top:3px' src='img/flags/16/${item.flag}'></td>
-          <td align=left style='color:lightblue;'>${item.total}</td>
+          <td align=left style='color:var(--gt-count);'>${item.total}</td>
         </tr>
       `;
     }
@@ -203,15 +203,15 @@ function getDXMarathon()
   for (let year = GT.currentYear; year >= firstYear; year--)
   {
     const counts = years[year];
-    rows.push(`<tr><td style='color:white;'>${year}</td><td style='color:white;'>${counts.dxcc.size}</td><td style='color:white;'>${counts.cqz.size}</td><td style='font-weight:bold;color:white;'>${counts.dxcc.size + counts.cqz.size}</td></tr>`);
+    rows.push(`<tr><td style='color:var(--gt-time);'>${year}</td><td style='color:var(--gt-count);'>${counts.dxcc.size}</td><td style='color:var(--gt-count);'>${counts.cqz.size}</td><td style='font-weight:bold;color:var(--gt-count);'>${counts.dxcc.size + counts.cqz.size}</td></tr>`);
   }
 
   return `<h1>${I18N("rosterColumns.Wanted.dxm")}</h1>
     <table class='darkTable' align=center>
-      <tr><th><font color='lightgreen'>${I18N("gt.statBox.year")}</font></th>
-      <th><font color='orange'>${I18N("gt.viewInfo.worldGeoData")}</font></th>
-      <th><font color='cyan'>${I18N("gt.viewInfo.cqZones")}</font></th>
-      <th><font color='yellow'>Total</font></th></tr>
+      <tr><th><span style='color:var(--gt-time)'>${I18N("gt.statBox.year")}</span></th>
+      <th><span style='color:var(--gt-country)'>${I18N("gt.viewInfo.worldGeoData")}</span></th>
+      <th><span style='color:var(--gt-zone)'>${I18N("gt.viewInfo.cqZones")}</span></th>
+      <th><span style='color:var(--gt-count)'>Total</span></th></tr>
       ${rows.join("")}
     </table>`;
 }
@@ -220,15 +220,15 @@ function showZonesBox()
 {
   let html = [getCurrentBandModeHTML()];
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.CQZoneBox.Worked") + "</b><br>");
-  html.push(displayItemList(GT.cqZones, "#FFA500"));
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.CQZoneBox.Worked") + "</b><br>");
+  html.push(displayItemList(GT.cqZones, "var(--gt-zone)"));
   html.push("</div>");
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.ITUZoneBox.Worked") + "</b><br>");
-  html.push(displayItemList(GT.ituZones, "#00DDDD"));
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.ITUZoneBox.Worked") + "</b><br>");
+  html.push(displayItemList(GT.ituZones, "var(--gt-zone)"));
   html.push("</div>");
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.WASWACBox.WAC") + "</b><br>");
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.WASWACBox.WAC") + "</b><br>");
   html.push(displayItemList(GT.wacZones, "#90EE90"));
   html.push("</div>");
 
@@ -240,16 +240,16 @@ function showWASPlusBox()
   let html = [getCurrentBandModeHTML()];
   let band = GT.settings.app.gtBandFilter == "auto" ? GT.settings.app.myBand : GT.settings.app.gtBandFilter || "";
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.WASWACBox.WAS") + "</b><br>");
-  html.push(displayItemList(GT.wasZones, "#00DDDD"));
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.WASWACBox.WAS") + "</b><br>");
+  html.push(displayItemList(GT.wasZones, "var(--gt-state)"));
   html.push("</div>");
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.WASWACBox.WACP") + "</b><br>");
-  html.push(displayItemList(GT.wacpZones, "#FFA500"));
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.WASWACBox.WACP") + "</b><br>");
+  html.push(displayItemList(GT.wacpZones, "var(--gt-state)"));
   html.push("</div>");
 
-  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.viewInfo.us48Data") + "</b><br>");
-  html.push(displayItemList(GT.us48Data, "#DDDD00", key => `searchWorkedGrid("${key}", "${band}")`));
+  html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.viewInfo.us48Data") + "</b><br>");
+  html.push(displayItemList(GT.us48Data, "var(--gt-grid)", key => `searchWorkedGrid("${key}", "${band}")`));
   html.push("</div>");
 
   setStatsDiv("wasPlusListDiv", html.join(""));
@@ -284,7 +284,7 @@ function displayItemList(table, color, clickFn = null)
   let rows = [];
 
   rows.push(
-    "<div style='color:white;vertical-align:top;display:inline-block;margin-right:8px;overflow-y:auto;overflow-x:hidden;height:" +
+    "<div style='color:var(--gt-label);vertical-align:top;display:inline-block;margin-right:8px;overflow-y:auto;overflow-x:hidden;height:" +
       maxHeight +
       "px;'>"
   );
@@ -365,7 +365,7 @@ function showDXCCsBox()
       let rowStyle = isNeeded ? "color:#000000;background-color:#ff0;text-shadow: 0px 0px 1px black;" : isConfirmed ? "" : "background-clip:content-box;box-shadow: 0 0 8px 3px inset; cursor:pointer;";
       let rowAttr =  isNeeded ? "" : isConfirmed ? "" : `onclick='searchWorked(${item.dxcc}, "${band}", "${mode}");'`;
       return `<tr>
-        <td align=left style='color:#ff0;${rowStyle}' ${rowAttr}>${item.name}</td>
+        <td align=left style='color:var(--gt-country);${rowStyle}' ${rowAttr}>${item.name}</td>
         <td align='center' style='margin:0;padding:0'><img style='padding-top:3px' src='img/flags/16/${item.flag}'></td>
         <td align=left style='color:cyan;'>${item.dxcc}</td>
       </tr>`;
@@ -429,12 +429,12 @@ function showWPXBox()
   if (worked > 0)
   {
     worker +=
-      "<div  style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'>" +
-        "<b>" + I18N("gt.WPXBox.worked") + " (<font color='#fff'>" +
+      "<div  style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'>" +
+        "<b>" + I18N("gt.WPXBox.worked") + " (<span style='color:var(--gt-count)'>" +
       worked +
-      "</font>)</b><br>";
+      "</span>)</b><br>";
     worker +=
-      "<div  style='color:white;vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;height:" +
+      "<div  style='color:var(--gt-label);vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;height:" +
       Math.min(worked * 23 + 45, getStatsWindowHeight() - 6) +
       "px;'><table class='darkTable' align=center>";
     Object.keys(List)
@@ -444,7 +444,7 @@ function showWPXBox()
         worker +=
           "<tr><td align=left style='color:#ff0;' >" +
           formatCallsign(key) +
-          "</td><td style='color:#0ff;'>" +
+          "</td><td style='color:var(--gt-callsign);'>" +
           formatCallsign(GT.tracker.worked.px[key]) +
           "</td></tr>";
       });
@@ -456,12 +456,12 @@ function showWPXBox()
   if (confirmed > 0)
   {
     worker +=
-      "<div  style='vertical-align:top;display:inline-block;margin-right:16px;overflow:auto;overflow-x:hidden;color:cyan;'>" +
-        "<b>" + I18N("gt.WPXBox.confirmed") + " (<font color='#fff'>" +
+      "<div  style='vertical-align:top;display:inline-block;margin-right:16px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'>" +
+        "<b>" + I18N("gt.WPXBox.confirmed") + " (<span style='color:var(--gt-count)'>" +
       confirmed +
-      "</font>)</b><br>";
+      "</span>)</b><br>";
     worker +=
-      "<div  style='color:white;vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;height:" +
+      "<div  style='color:var(--gt-label);vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;height:" +
       Math.min(confirmed * 23 + 45, getStatsWindowHeight() - 6) +
       "px;'><table class='darkTable' align=center>";
     Object.keys(ListConfirmed)
@@ -471,7 +471,7 @@ function showWPXBox()
         worker +=
           "<tr><td align=left style='color:#ff0;' >" +
           formatCallsign(key) +
-          "</td><td style='color:#0ff;'>" +
+          "</td><td style='color:var(--gt-callsign);'>" +
           formatCallsign(GT.tracker.confirmed.px[key]) +
           "</td></tr>";
       });
@@ -480,7 +480,7 @@ function showWPXBox()
     worker += "</div>";
   }
 
-  worker += "<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:cyan;'><b>" + I18N("gt.viewInfo.countyData") + "</b><br>";
+  worker += "<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.viewInfo.countyData") + "</b><br>";
   worker += displayItemList(GT.countyData, "orange");
   worker += "</div>";
   
@@ -563,7 +563,7 @@ function showStatBox(resize)
   {
     setStatsDiv(
       "statViewDiv",
-      "<h1 style='color:yellow'>" + I18N("gt.statBox.calculating") + "</h1>"
+      "<h1 style='color:var(--gt-status-busy)'>" + I18N("gt.statBox.calculating") + "</h1>"
     );
     setStatsDivHeight("statViewDiv", "auto");
     GT.statBoxTimer = nodeTimers.setTimeout(renderStatsBox, 250);
@@ -1070,16 +1070,16 @@ function renderStatsBox()
     ];
 
     const AwardNames = [
-      ["WRFA", I18N("gt.awardNames.WRFA"), "WRFA", "yellow"],
-      ["GRID", I18N("gt.awardNames.Grid"), "GSA", "cyan"],
-      ["DXCC", I18N("gt.awardNames.DXCC"), "DXWA", "orange"],
-      ["CQ", I18N("gt.awardNames.CQ"), "WAZ", "lightgreen"],
-      ["ITU", I18N("gt.awardNames.ITU"), "ITUz", "#DD44DD"],
+      ["WRFA", I18N("gt.awardNames.WRFA"), "WRFA", "var(--gt-callsign)"],
+      ["GRID", I18N("gt.awardNames.Grid"), "GSA", "var(--gt-grid)"],
+      ["DXCC", I18N("gt.awardNames.DXCC"), "DXWA", "var(--gt-country)"],
+      ["CQ", I18N("gt.awardNames.CQ"), "WAZ", "var(--gt-zone)"],
+      ["ITU", I18N("gt.awardNames.ITU"), "ITUz", "var(--gt-zone)"],
       ["WAC", I18N("gt.awardNames.WAC"), "WAC", "cyan"],
-      ["WAS", I18N("gt.awardNames.WAS"), "WAS", "lightblue"],
+      ["WAS", I18N("gt.awardNames.WAS"), "WAS", "var(--gt-state)"],
       ["USC", I18N("gt.awardNames.USC"), "USA-CA", "orange"],
       ["WPX", I18N("gt.awardNames.WPX"), "WPX", "yellow"],
-      ["WACP", "CA Provinces", "WACP", "lightblue"]
+      ["WACP", "CA Provinces", "WACP", "var(--gt-state)"]
     ];
 
     const callsignsCount = Object.keys(details.callsigns).length;
@@ -1087,19 +1087,19 @@ function renderStatsBox()
     const distUnitStr = distanceUnit.value.toLowerCase();
 
     // Template Literals drastically improve HTML readability
-    html.push(`<font color='cyan'>`);
+    html.push(`<font style='color:var(--gt-title)'>`);
     html.push(`<h1>${I18N("gt.logbook.title")}</h1>`);
     html.push(`<table style='display:inline-table;margin:5px;' class='darkTable'>`);
     
-    html.push(`<tr><td>Callsign${callsignsCount > 1 ? "s" : ""}</td><td style='color:yellow'><b>${callsignsList}</b></td></tr>`);
-    html.push(`<tr><td>${I18N("gt.logbook.firstContact")}</td><td style='color:white'>${userTimeString(details.oldest * 1000)}</td></tr>`);
-    html.push(`<tr><td>${I18N("gt.logbook.lastContact")}</td><td style='color:white'>${userTimeString(details.newest * 1000)}</td></tr>`);
+    html.push(`<tr><td>Callsign${callsignsCount > 1 ? "s" : ""}</td><td style='color:var(--gt-callsign)'><b>${callsignsList}</b></td></tr>`);
+    html.push(`<tr><td>${I18N("gt.logbook.firstContact")}</td><td style='color:var(--gt-time)'>${userTimeString(details.oldest * 1000)}</td></tr>`);
+    html.push(`<tr><td>${I18N("gt.logbook.lastContact")}</td><td style='color:var(--gt-time)'>${userTimeString(details.newest * 1000)}</td></tr>`);
     
     html.push(`</table><br>`);
     
     html.push(`<h1>${I18N("gt.logbook.scoreCard")}</h1>`);
     html.push(`<table style='display:inline-table;margin:5px;' class='darkTable'>`);
-    html.push(`<tr><th>${I18N("gt.logbook.topScore")}</th><th style='color:yellow'>${I18N("gt.logbook.worked")}</th><th style='color:lightgreen'>${I18N("gt.logbook.confirmed")}</th></tr>`);
+    html.push(`<tr><th>${I18N("gt.logbook.topScore")}</th><th style='color:var(--gt-worked)'>${I18N("gt.logbook.worked")}</th><th style='color:var(--gt-confirmed)'>${I18N("gt.logbook.confirmed")}</th></tr>`);
 
     for (let i = 0; i < AwardNames.length; i++)
     {
@@ -1111,11 +1111,11 @@ function renderStatsBox()
       let confirmedHtml = `<td></td>`;
       if (info.confirmed_high_key)
       {
-        confirmedHtml = `<td style='color:${color}'>${info.confirmed_high_key}<font color='white'> (${info.confirmed_high})</font></td>`;
+        confirmedHtml = `<td style='color:${color}'>${info.confirmed_high_key}<span style='color:var(--gt-count)'> (${info.confirmed_high})</span></td>`;
       }
 
-      html.push(`<tr><td style='color:white'>${awdLabel}</td>` +
-                `<td style='color:${color}'>${info.worked_high_key}<font color='white'> (${info.worked_high})</font></td>` +
+      html.push(`<tr><td style='color:var(--gt-label)'>${awdLabel}</td>` +
+                `<td style='color:${color}'>${info.worked_high_key}<span style='color:var(--gt-count)'> (${info.worked_high})</span></td>` +
                 confirmedHtml +
                 `</tr>`);
     }
@@ -1130,7 +1130,7 @@ function renderStatsBox()
       // Pointer cache avoids slow "in" prototype lookups
       const qso = hash ? GT.QSOhash[hash] : null; 
       if (qso && (!isConfirmed || val > 0)) {
-        res += `<font style='color:yellow'> ${qso.DEcall}</font><font style='color:orange'> ${qso.grid}</font>`;
+        res += `<font style='color:var(--gt-callsign)'> ${qso.DEcall}</font><font style='color:var(--gt-grid)'> ${qso.grid}</font>`;
       } else if (isConfirmed) {
         return `<td></td>`;
       }
@@ -1139,15 +1139,15 @@ function renderStatsBox()
     };
 
     scoreSection = "Long Distance";
-    html.push(`<tr><td style='color:white'>${I18N("gt.score.LongDist")}</td>`);
-    html.push(buildDistCell(long_distance, "lightgreen", false));
-    html.push(buildDistCell(long_distance, "lightgreen", true));
+    html.push(`<tr><td style='color:var(--gt-label)'>${I18N("gt.score.LongDist")}</td>`);
+    html.push(buildDistCell(long_distance, "var(--gt-distance)", false));
+    html.push(buildDistCell(long_distance, "var(--gt-distance)", true));
     html.push(`</tr>`);
 
     scoreSection = "Short Distance";
-    html.push(`<tr><td style='color:white'>${I18N("gt.score.ShortDist")}</td>`);
-    html.push(buildDistCell(short_distance, "lightblue", false));
-    html.push(buildDistCell(short_distance, "lightblue", true));
+    html.push(`<tr><td style='color:var(--gt-label)'>${I18N("gt.score.ShortDist")}</td>`);
+    html.push(buildDistCell(short_distance, "var(--gt-distance)", false));
+    html.push(buildDistCell(short_distance, "var(--gt-distance)", true));
     html.push(`</tr>`);
 
     html.push(`</table><br>`);
@@ -1185,6 +1185,7 @@ function renderStatsBox()
   {
     html.push(`<br> ${I18N("gt.stats.inSection")} ${scoreSection}<br>${I18N("gt.scorecardError")}`);
   }
+  html.push(`</font>`);
 
   setStatsDiv("statViewDiv", html.join(""));
   setStatsDivHeight("statViewDiv", getStatsWindowHeight() + 29 + "px");
@@ -1193,12 +1194,12 @@ function renderStatsBox()
 function createDistanceTable(obj, name)
 {
   let html = `<table style='display:inline-table;margin:5px;' class='darkTable'>
-    <tr><th colspan=3 align=left style='font-size:15px;color:cyan;'>${name}</th></tr>
-    <tr><td></td><td><font color='yellow'>${I18N("gt.distanceTable.Worked")}</font></td><td colspan=2><font color='lightgreen'>${I18N("gt.distanceTable.Confirmed")}</font></td></tr>`;
+    <tr><th colspan=3 align=left style='font-size:15px;color:var(--gt-title);'>${name}</th></tr>
+    <tr><td></td><td><span style='color:var(--gt-worked)'>${I18N("gt.distanceTable.Worked")}</span></td><td colspan=2><span style='color:var(--gt-confirmed)'>${I18N("gt.distanceTable.Confirmed")}</span></td></tr>`;
 
   const categories = [
-    { id: "band", color: "lightgreen", label: I18N("gt.distanceTable.Bands"), sort: numberSort },
-    { id: "mode", color: "orange", label: I18N("gt.distanceTable.Modes") },
+    { id: "band", color: "var(--gt-band)", label: I18N("gt.distanceTable.Bands"), sort: numberSort },
+    { id: "mode", color: "var(--gt-mode)", label: I18N("gt.distanceTable.Modes") },
     { id: "type", color: "#DD44DD", label: I18N("gt.distanceTable.Types") }
   ];
 
@@ -1216,9 +1217,9 @@ function createDistanceTable(obj, name)
       
       if (hash && GT.QSOhash[hash]) {
         let qso = GT.QSOhash[hash];
-        return `<tr><td align=right>${key}</td><td style='color:lightgreen' align=left>(${unit} ${distUnit})</td>
-          <td style='color:yellow;cursor:pointer' align=left onclick='window.opener.startLookup("${qso.DEcall}","${qso.grid}");'>${qso.DEcall}</td>
-          <td style='color:orange' align=left>${qso.grid}</td></tr>`;
+        return `<tr><td align=right>${key}</td><td style='color:var(--gt-distance)' align=left>(${unit} ${distUnit})</td>
+          <td style='color:var(--gt-callsign);cursor:pointer' align=left onclick='window.opener.startLookup("${qso.DEcall}","${qso.grid}");'>${qso.DEcall}</td>
+          <td style='color:var(--gt-grid)' align=left>${qso.grid}</td></tr>`;
       }
       return isConf ? "<tr><td>&nbsp;</td></tr>" : "";
     }).join("");
@@ -1227,7 +1228,7 @@ function createDistanceTable(obj, name)
     let confRows = buildRows(true);
 
     if (workedRows || confRows.replace(/<tr><td>&nbsp;<\/td><\/tr>/g, "")) {
-      html += `<tr><td align=center><font color='${cat.color}'>${cat.label}</font></td>
+      html += `<tr><td align=center><span style='color:${cat.color}'>${cat.label}</span></td>
         <td align=left><table class='subtable'>${workedRows}</table></td>
         <td align=left><table class='subtable'>${confRows}</table></td></tr>`;
     }
@@ -1252,13 +1253,13 @@ function createStatTable(title, infoObject, awardName)
   if (!infoObject || !infoObject.worked) return "";
 
   let html = `<table style='display:inline-table;margin:5px;' class='darkTable'>
-    <tr><th colspan=3 align=left style='font-size:15px;color:cyan;'>${title}</th></tr>
-    <tr><th>${awardName}</th><td><font color='yellow'>${I18N("gt.statTable.Worked")}</font> <font color='white'>(${infoObject.worked})</font></td>
-    <td colspan=2><font color='lightgreen'>${I18N("gt.statTable.Confirmed")}</font> <font color='white'>(${infoObject.confirmed})</font></td></tr>`;
+    <tr><th colspan=3 align=left style='font-size:15px;color:var(--gt-title);'>${title}</th></tr>
+    <tr><th>${awardName}</th><td><span style='color:var(--gt-worked)'>${I18N("gt.statTable.Worked")}</span> <span style='color:var(--gt-count)'>(${infoObject.worked})</span></td>
+    <td colspan=2><span style='color:var(--gt-confirmed)'>${I18N("gt.statTable.Confirmed")}</span> <span style='color:var(--gt-count)'>(${infoObject.confirmed})</span></td></tr>`;
 
   const categories = [
-    { label: I18N("gt.statTable.Bands"), color: "lightgreen", wDict: infoObject.worked_bands, cDict: infoObject.confirmed_bands, sort: numberSort, count: infoObject.worked_band_count },
-    { label: I18N("gt.statTable.Modes"), color: "orange", wDict: infoObject.worked_modes, cDict: infoObject.confirmed_modes, sort: undefined, count: infoObject.worked_mode_count },
+    { label: I18N("gt.statTable.Bands"), color: "var(--gt-band)", wDict: infoObject.worked_bands, cDict: infoObject.confirmed_bands, sort: numberSort, count: infoObject.worked_band_count },
+    { label: I18N("gt.statTable.Modes"), color: "var(--gt-mode)", wDict: infoObject.worked_modes, cDict: infoObject.confirmed_modes, sort: undefined, count: infoObject.worked_mode_count },
     { label: I18N("gt.statTable.Types"), color: "#DD44DD", wDict: infoObject.worked_types, cDict: infoObject.confirmed_types, sort: undefined, count: infoObject.worked_type_count }
   ];
 
@@ -1268,10 +1269,10 @@ function createStatTable(title, infoObject, awardName)
 
     let keys = Object.keys(cat.wDict).sort(cat.sort);
     
-    let wRows = keys.map(k => `<tr><td align=right>${k}</td><td align=left> <font color='white'>(${cat.wDict[k]})</font></td></tr>`).join("");
-    let cRows = keys.map(k => cat.cDict[k] ? `<tr><td align=right>${k}</td><td align=left> <font color='white'>(${cat.cDict[k]})</font></td></tr>` : `<tr><td>&nbsp;</td></tr>`).join("");
+    let wRows = keys.map(k => `<tr><td align=right>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.wDict[k]})</span></td></tr>`).join("");
+    let cRows = keys.map(k => cat.cDict[k] ? `<tr><td align=right>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.cDict[k]})</span></td></tr>` : `<tr><td>&nbsp;</td></tr>`).join("");
 
-    html += `<tr><td align=center><font color='${cat.color}'>${cat.label}</font></td>
+    html += `<tr><td align=center><span style='color:${cat.color}'>${cat.label}</span></td>
       <td align=left><table class='subtable'>${wRows}</table></td>
       <td align=left><table class='subtable'>${cRows}</table></td></tr>`;
   }

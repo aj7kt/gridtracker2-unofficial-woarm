@@ -468,8 +468,8 @@ function birdWatchSkedCallShow(row)
   const call = row.querySelector("[data-f='Call']");
   const value = call.value.trim().toUpperCase();
   const valid = birdWatchSkedCallValid(value);
-  call.style.backgroundColor = value && !valid ? "rgb(199, 113, 0)" : "";
-  call.style.color = value && !valid ? "#FFF" : "";
+  call.style.backgroundColor = value && !valid ? "var(--gt-input-invalid-bg)" : "";
+  call.style.color = value && !valid ? "var(--gt-input-invalid-text)" : "";
   for (const f of ["Grid", "Height", "MinEl", "Notes"]) row.querySelector("[data-f='" + f + "']").disabled = !valid;
   return valid;
 }
@@ -839,7 +839,7 @@ function birdWatchSkedCopy(windows)
   // The element sets' age goes with them: the times hold to seconds only while both sides use fresh ones
   const epoch = birdWatchSkedTleNote(windows);
   window.require("electron").clipboard.writeText(lines.join("\n") + (epoch ? "\n" + epoch : ""));
-  addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(I18N("birdWatch.skeds.copied").replace("{n}", lines.length)) + "</font>");
+  addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(I18N("birdWatch.skeds.copied").replace("{n}", lines.length)) + "</font>");
 }
 
 // "TLE epochs: SO-50 2026-11-11, ..." for the satellites in the windows
@@ -909,8 +909,8 @@ function birdWatchSkedSaveIcs(windows)
     content: lines.join("\r\n") + "\r\n",
     filters: [{ name: "iCalendar", extensions: ["ics"] }, { name: "All Files", extensions: ["*"] }]
   });
-  if (result && result.error) addEvent("birdwatch", "<font style='color:red'>" + htmlEntities(result.error) + "</font>");
-  else if (result) addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", windows.length).replace("{file}", result)) + "</font>");
+  if (result && result.error) addEvent("birdwatch", "<font style='color:var(--gt-error)'>" + htmlEntities(result.error) + "</font>");
+  else if (result) addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", windows.length).replace("{file}", result)) + "</font>");
 }
 
 // A whole pass's time in the calendar's description: UTC
@@ -939,7 +939,7 @@ function birdWatchSkedCopyMine()
   if (height > 0) parts.push(Math.round(height) + "m");
   if (birdWatchSkedMyMinEl() > 0) parts.push("min " + birdWatchSkedMyMinEl() + "°");
   window.require("electron").clipboard.writeText(parts.filter((x) => x).join(" "));
-  addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(I18N("birdWatch.skeds.mineCopied").replace("{line}", parts.filter((x) => x).join(" "))) + "</font>");
+  addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(I18N("birdWatch.skeds.mineCopied").replace("{line}", parts.filter((x) => x).join(" "))) + "</font>");
 }
 
 // A station's line pasted from the clipboard (its callsign, grid, and maybe its height and lowest elevation, in any order): added, or
@@ -960,7 +960,7 @@ function birdWatchSkedPaste()
     else continue;
     added++;
   }
-  addEvent("birdwatch", "<font style='color:" + (added ? "white" : "yellow") + "'>" + htmlEntities(added ? I18N("birdWatch.skeds.pasted").replace("{n}", added) : I18N("birdWatch.skeds.pasteNone")) + "</font>");
+  addEvent("birdwatch", "<font style='color:" + (added ? "var(--gt-label)" : "var(--gt-warning)") + "'>" + htmlEntities(added ? I18N("birdWatch.skeds.pasted").replace("{n}", added) : I18N("birdWatch.skeds.pasteNone")) + "</font>");
   if (!added) return;
   birdWatchSkedsRender();
   birdWatchSkedsChanged();
@@ -1092,11 +1092,11 @@ function birdWatchSkedHoverFill(feature)
   const now = Date.now();
   const windows = birdWatchSkedWindows(now).filter((w) => w.key == s.id);
   const esc = (text) => htmlEntities(String(text));
-  let html = "<div style='color:#90ee90;font-weight:bold;font-size:larger'>" + esc(s.call || s.grid) + "</div><div style='color:#ffff00'>" + esc(s.grid) + (s.notes ? "  <span style='color:#ccc'>" + esc(s.notes) + "</span>" : "") + "</div>";
+  let html = "<div style='color:var(--gt-callsign);font-weight:bold;font-size:larger'>" + esc(s.call || s.grid) + "</div><div style='color:var(--gt-grid)'>" + (s.call ? esc(s.grid) : "") + (s.notes ? "  <span style='color:#ccc'>" + esc(s.notes) + "</span>" : "") + "</div>";
   if (!windows.length)
   {
     const reach = birdWatchSkedReach(s);
-    html += reach && !reach.possible ? "<div style='color:orange'>" + esc(birdWatchSkedNeverText(reach)) + "</div>" : "<div style='color:#9aa4b8'>" + esc(I18N("birdWatch.skeds.none")) + "</div>";
+    html += reach && !reach.possible ? "<div style='color:var(--gt-warning)'>" + esc(birdWatchSkedNeverText(reach)) + "</div>" : "<div style='color:#9aa4b8'>" + esc(I18N("birdWatch.skeds.none")) + "</div>";
   }
   for (const w of windows.slice(0, BIRD_WATCH_SKED_HOVER_MAX))
   {

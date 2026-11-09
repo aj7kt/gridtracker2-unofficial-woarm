@@ -256,7 +256,7 @@ function mmdSatPictureSave(pic)
 function mmdSatLine(line)
 {
   const tip = (line.fec ? line.fec + "\n" : "") + line.hex;
-  return "<tr><td class='ft8Num'>" + line.utc + "</td><td class='packetCall'>" + mmdEscape(line.kind) + "</td><td class='ft8Num'>" + line.baud +
+  return "<tr><td class='ft8Num'>" + line.utc + "</td><td class='packetKind'>" + mmdEscape(line.kind) + "</td><td class='ft8Num'>" + line.baud +
     "</td><td class='packetSat'>" + mmdEscape(line.sat || "") + "</td><td title=\"" + mmdEscape(tip).replace(/"/g, "&quot;") + "\">" + mmdEscape(line.summary) + "</td></tr>";
 }
 

@@ -96,7 +96,7 @@ function birdWatchExportSave(lists)
   const ics = birdWatchIcs(lists);
   if (ics.count == 0)
   {
-    addEvent("birdwatch", "<font style='color:yellow'>" + I18N("birdWatch.export.none") + "</font>");
+    addEvent("birdwatch", "<font style='color:var(--gt-warning)'>" + I18N("birdWatch.export.none") + "</font>");
     return;
   }
   const result = electron.ipcRenderer.sendSync("saveTextFile", {
@@ -107,8 +107,8 @@ function birdWatchExportSave(lists)
   });
   if (result && result.error)
   {
-    addEvent("birdwatch", "<font style='color:red'>" + htmlEntities(result.error) + "</font>");
+    addEvent("birdwatch", "<font style='color:var(--gt-error)'>" + htmlEntities(result.error) + "</font>");
     return;
   }
-  if (result) addEvent("birdwatch", "<font style='color:white'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", ics.count).replace("{file}", result)) + "</font>");
+  if (result) addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(I18N("birdWatch.export.saved").replace("{n}", ics.count).replace("{file}", result)) + "</font>");
 }
