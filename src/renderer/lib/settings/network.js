@@ -50,6 +50,7 @@ function updateFeedViews()
   // Settings -> Feeds tab: only while DX Feeds is on (if it's the open tab when it goes, General opens instead)
   const active = feedsActive();
   feedsSettingsButton.style.display = active ? "" : "none";
+  settingsTabsFit();
   if (!active && feedsSettingsDiv.style.display === "block")
   {
     openSettingsTab(generalbut, "generalSettingsDiv");

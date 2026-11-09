@@ -286,3 +286,134 @@ class IqUsbProcessor extends AudioWorkletProcessor
 }
 
 registerProcessor("iq-usb", IqUsbProcessor);
+
+// A network stream's audio (the page's mmdNetPcm: mono samples at the stream's rate, processorOptions.rate) as the decoder's input. The
+// stream's clock and the context's differ a little, and packets come in bursts: the samples wait in a queue, played from once it holds
+// NET_START_S. The queue is held near NET_TARGET_S by reading it a little faster or slower (at most NET_MAX_TRIM), the fill smoothed over a
+// few seconds so the jitter of the packets doesn't move it, each sample read between its neighbors (a cubic through four of them). Emptied
+// (the stream stopped): silence until it holds NET_START_S again; grown past NET_MAX_S (a stall let go all at once), the oldest dropped down
+// to NET_TARGET_S. A stream at another rate than the context's is read at the ratio between them
+const NET_START_S = 0.2;
+const NET_TARGET_S = 0.2;
+const NET_MAX_S = 1.5;
+const NET_MAX_TRIM = 0.005;
+// How hard the fill's distance from the target trims the rate (per second of it), and the smoothing of the fill (s)
+const NET_TRIM_GAIN = 0.02;
+const NET_SMOOTH_S = 4;
+
+class PcmInProcessor extends AudioWorkletProcessor
+{
+  constructor(options)
+  {
+    super();
+    const rate = (options && options.processorOptions && options.processorOptions.rate) || sampleRate;
+    this.rate = rate;
+    this.base = rate / sampleRate;
+    this.queue = new Float32Array(Math.ceil(rate * NET_MAX_S) + 4096);
+    this.head = 0;
+    this.count = 0;
+    // Where the next sample is read, between queue[head] and queue[head + 1]
+    this.frac = 0;
+    this.playing = false;
+    this.fill = NET_TARGET_S;
+    this.port.onmessage = (event) => this.push(event.data);
+  }
+
+  push(samples)
+  {
+    const size = this.queue.length;
+    for (let i = 0; i < samples.length; i++)
+    {
+      this.queue[(this.head + this.count) % size] = samples[i];
+      if (this.count < size) this.count++;
+      else this.head = (this.head + 1) % size;
+    }
+    if (this.count > this.rate * NET_MAX_S)
+    {
+      const drop = this.count - Math.round(this.rate * NET_TARGET_S);
+      this.head = (this.head + drop) % size;
+      this.count -= drop;
+      this.fill = NET_TARGET_S;
+    }
+  }
+
+  at(k)
+  {
+    return this.queue[(this.head + k) % this.queue.length];
+  }
+
+  process(inputs, outputs)
+  {
+    const out = outputs[0] && outputs[0][0];
+    if (!out) return true;
+    if (!this.playing && this.count >= this.rate * NET_START_S)
+    {
+      this.playing = true;
+      this.fill = this.count / this.rate;
+    }
+    // The fill smoothed, and the rate trimmed from how far it is from the target
+    const alpha = out.length / (sampleRate * NET_SMOOTH_S);
+    this.fill += alpha * (this.count / this.rate - this.fill);
+    const trim = Math.max(-NET_MAX_TRIM, Math.min(NET_MAX_TRIM, NET_TRIM_GAIN * (this.fill - NET_TARGET_S)));
+    const step = this.base * (1 + trim);
+    const size = this.queue.length;
+    for (let j = 0; j < out.length; j++)
+    {
+      // Four samples needed around where it reads: the one before, the two it is between, the one after
+      if (!this.playing || this.count < 4)
+      {
+        this.playing = false;
+        out[j] = 0;
+        continue;
+      }
+      const t = this.frac;
+      const y0 = this.at(0), y1 = this.at(1), y2 = this.at(2), y3 = this.at(3);
+      out[j] = y1 + 0.5 * t * (y2 - y0 + t * (2 * y0 - 5 * y1 + 4 * y2 - y3 + t * (3 * (y1 - y2) + y3 - y0)));
+      this.frac += step;
+      const whole = Math.floor(this.frac);
+      if (whole > 0)
+      {
+        const used = Math.min(whole, this.count);
+        this.head = (this.head + used) % size;
+        this.count -= used;
+        this.frac -= whole;
+      }
+    }
+    return true;
+  }
+}
+
+registerProcessor("pcm-in", PcmInProcessor);
+
+// What is sent to a network stream (an Output Device that is one: mmdSstvTx.js): the audio reaching this node, mono, handed to the page in
+// pieces of processorOptions.chunk samples as the context plays them, so they go out at the pace they are made. Nothing connected (yet):
+// silence, so the stream stays steady
+class PcmOutProcessor extends AudioWorkletProcessor
+{
+  constructor(options)
+  {
+    super();
+    this.chunk = Math.max(128, (options && options.processorOptions && options.processorOptions.chunk) || 960);
+    this.buffer = new Float32Array(this.chunk);
+    this.fill = 0;
+  }
+
+  process(inputs)
+  {
+    const input = inputs[0] && inputs[0][0];
+    const n = input ? input.length : 128;
+    for (let i = 0; i < n; i++)
+    {
+      this.buffer[this.fill++] = input ? input[i] : 0;
+      if (this.fill == this.chunk)
+      {
+        this.port.postMessage(this.buffer, [this.buffer.buffer]);
+        this.buffer = new Float32Array(this.chunk);
+        this.fill = 0;
+      }
+    }
+    return true;
+  }
+}
+
+registerProcessor("pcm-out", PcmOutProcessor);

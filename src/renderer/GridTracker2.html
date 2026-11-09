@@ -74,6 +74,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/rigSdrpp.js" type="text/javascript"></script>
   <script src="./lib/services/rigIq.js" type="text/javascript"></script>
   <script src="./lib/services/rigRanges.js" type="text/javascript"></script>
+  <script src="./lib/services/rigFlex.js" type="text/javascript"></script>
+  <script src="./lib/services/rigIcomLan.js" type="text/javascript"></script>
+  <script src="./lib/services/netAudio.js" type="text/javascript"></script>
+  <script src="./lib/services/netAudioVban.js" type="text/javascript"></script>
+  <script src="./lib/services/netAudioRtp.js" type="text/javascript"></script>
+  <script src="./lib/services/netAudioPulse.js" type="text/javascript"></script>
   <script src="./lib/services/mmDecoder.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
@@ -984,6 +990,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           onclick="openSettingsTab(event, 'generalSettingsDiv')">General</button>
         <button data-i18n="settings.Features.label" id="featuresbut" class="settingsTablinks"
           onclick="openSettingsTab(event, 'featuresSettingsDiv')">Features</button>
+        <!-- Radios: Rig Control, Rotor Control and Network Audio, while one of them is on (panel.js, settingsRadiosTabRender) -->
+        <button data-i18n="settings.radios.label" id="radiosSettingsButton" class="settingsTablinks" style="display: none;"
+          onclick="openSettingsTab(event, 'radiosSettingsDiv')">Radios</button>
         <button data-i18n="settings.Lookups.label" id="lookupbut" class="settingsTablinks"
           onclick="openSettingsTab(event, 'lookupsSettingsDiv')">Lookups</button>
         <button data-i18n="settings.Audio.label" class="settingsTablinks"
@@ -1202,7 +1211,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <table>
               <!-- A service's box in front of its name, as in the Online group; the rows under one are tabbed in -->
               <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.label" for="birdWatchEnable">BirdWatch</label></td>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.enable.label" for="birdWatchEnable">BirdWatch (Satellite Tracking)</label></td>
               </tr>
               <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from each mode's Input Device (picked there) -->
               <tr>
@@ -1211,155 +1220,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr>
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rotor.hover" title="Points an antenna rotator from GridTracker: a controller on a serial port, or Hamlib's rotctld" type="checkbox" id="rotorEnable" onclick="rotorEnableChanged();" /> <label data-i18n="settings.rotor.label" for="rotorEnable">Rotor Control</label></td>
               </tr>
-              <!-- Rotor Control's rows, shown while it is on (rotor.js). Connect: checked, the rotator connected and its settings locked -->
-              <tr id="rotorConnectTr">
-                <td colspan="2" class="mapRowLabel mapIndent" style="text-align: left;"><input data-i18n="settings.rotor.connect.hover" title="Uncheck to disconnect the rotator and change its settings; checked, they are locked and it is connected with them" type="checkbox" id="rotorConnectValue" onclick="rotorConnectChanged();" /> <label data-i18n="settings.rig.connect.label" for="rotorConnectValue">Connect</label></td>
-              </tr>
-              <tr id="rotorProtocolTr">
-                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.protocol.label" for="rotorProtocol">Protocol</label></td>
-                <td><select id="rotorProtocol" onchange="rotorSettingsChanged();"></select></td>
-              </tr>
-              <tr id="rotorPortTr">
-                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
-                <!-- The port's name beside the button; an error opening it under the button (rotorStatusRender) -->
-                <td><div id="rotorChoose" class="button mapInlineButton" data-i18n="settings.rotor.choose.hover" title="Pick the serial port the rotator controller is on" onclick="rotorChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rotorPortName" class="mapValue"></span><div id="rotorPortError" style="display: none; color: orange; white-space: normal; max-width: 260px; margin-top: 2px;"></div></td>
-              </tr>
-              <!-- Linux only: the user isn't in the group that owns the serial devices (serialLinuxCheck) -->
-              <tr id="rotorLinuxTr" style="display: none;">
-                <td></td>
-                <td><span id="rotorLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-              </tr>
-              <tr id="rotorBaudTr">
-                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rotorBaud">Baud</label></td>
-                <!-- Baud, then data bits, parity and stop bits (8 N 1) -->
-                <td><select id="rotorBaud" onchange="rotorSettingsChanged();"></select>
-                  <select id="rotorDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rotorSettingsChanged();"><option value="8">8</option><option value="7">7</option></select>
-                  <select id="rotorParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rotorSettingsChanged();"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
-                  <select id="rotorStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rotorSettingsChanged();"><option value="1">1</option><option value="2">2</option></select></td>
-              </tr>
-              <tr id="rotorHostTr">
-                <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.host.label" for="rotorHost">Host</label></td>
-                <td><input id="rotorHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rotorSettingsChanged();" /> <label id="rotorNetPortLabel" data-i18n="settings.rotor.tcpPort.label" for="rotorNetPort">TCP Port</label> <input id="rotorNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rotorSettingsChanged();" /></td>
-              </tr>
-              <tr id="rotorStatusTr">
-                <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
-                <td><span id="rotorStatus" class="mapValue" style="margin-left: 0;"></span></td>
-              </tr>
-              <!-- The box lines up with the labels' right edge, its name with the values -->
-              <tr id="rotorFollowTr">
-                <td class="mapRowLabel mapIndent"><input data-i18n="settings.rotor.follow.hover" title="Keeps the rotator on BirdWatch's selected satellite while it is up, and points at where it will rise a few minutes before" type="checkbox" id="rotorFollow" onclick="rotorFollowChanged();" /></td>
-                <td><label class="mapRowLabelText" data-i18n="settings.rotor.follow.label" for="rotorFollow">Follow Satellite</label></td>
-              </tr>
               <!-- Rig Control (rig.js), its rows shown while it is on -->
               <tr>
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rig.hover" title="Talks to the rig: Hamlib's rigctld, flrig, or on a serial port an Icom (CI-V), a Kenwood or a Yaesu (CAT)" type="checkbox" id="rigEnable" onclick="rigEnableChanged();" /> <label data-i18n="settings.rig.label" for="rigEnable">Rig Control</label></td>
               </tr>
-              <!-- The VFOs (rig.js, rigSettingsRender): a box for each, made from #rigVfoTemplate, then Add VFO -->
-              <tr id="rigVfosTr">
-                <td colspan="2">
-                  <div id="rigVfosDiv"></div>
-                  <div id="rigAddVfo" class="button mapInlineButton" data-i18n="settings.rig.addVfo.hover" title="Adds a VFO: a rig of its own, or the second VFO of a rig set up above. BirdWatch and the Multi-Mode Decoder each pick the VFOs they use" onclick="rigVfoAdd();"><span data-i18n="settings.rig.addVfo.label">Add VFO</span></div>
-                </td>
+              <!-- Network Audio (netAudio.js): its streams in the Radios tab -->
+              <tr>
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.netAudio.hover" title="Audio over the network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder" type="checkbox" id="netAudioEnable" onclick="netAudioEnableChanged();" /> <label data-i18n="settings.netAudio.label" for="netAudioEnable">Network Audio</label></td>
               </tr>
-              <!-- A VFO's box: its letter, its own name and its Connect on the title line (checked, connected and its settings locked; unchecked,
-                   let go and its settings free to change), the X that removes it (with Connect unchecked); then where it is (a rig of its own, or
-                   another one's second VFO), its rig's rows (one of its own), its status and its offset. Its fields are found by data-f -->
-              <template id="rigVfoTemplate">
-                <div class="rigVfoBox">
-                  <div class="rigVfoTitle"><span data-f="Title"></span> <input data-f="Name" type="text" class="inputTextValue" size="10" maxlength="20" data-i18n="settings.rig.vfoName.hover" title="Your own name for this VFO, shown after its letter: VFO-C (SDR)" onchange="rigVfoNameChanged(this);" />
-                    <span data-f="MoveUp" class="rigVfoMove" data-i18n="settings.rig.moveUp.hover" title="Moves this VFO up: BirdWatch uses the VFOs higher in the list first" onclick="rigVfoMove(this, -1);">▲</span><span data-f="MoveDown" class="rigVfoMove" data-i18n="settings.rig.moveDown.hover" title="Moves this VFO down" onclick="rigVfoMove(this, 1);">▼</span>
-                    <span class="rigVfoConnect"><input data-f="Connect" data-i18n="settings.rig.connect.hover" title="Uncheck to disconnect the rig and change its settings; checked, they are locked and the rig is connected with them" type="checkbox" onclick="rigConnectChanged(this);" /> <label data-for="Connect" data-i18n="settings.rig.connect.label">Connect</label> <span data-f="Remove" class="rigVfoRemove" data-i18n="settings.rig.removeVfo.hover" title="Removes this VFO" onclick="rigVfoRemove(this);">✕</span></span></div>
-                  <table>
-                    <tr data-f="SourceTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Source" data-i18n="rig.line.rig">Rig</label></td>
-                      <td><select data-f="Source" data-i18n="settings.rig.source.hover" title="Where this VFO is: a rig of its own, with its own connection, or the second VFO (VFO B, or Sub) of a rig set up in another box" onchange="rigVfoSourceChanged(this);"></select></td>
-                    </tr>
-                    <tr data-f="ProtocolTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Protocol" data-i18n="settings.rotor.protocol.label">Protocol</label></td>
-                      <td><select data-f="Protocol" onchange="rigSettingsChanged(this);"></select></td>
-                    </tr>
-                    <!-- Under Kenwood CAT and Yaesu CAT: the other rigs that speak it (rig.js, rigSettingsRenderOne) -->
-                    <tr data-f="ProtocolNoteTr" style="display: none;">
-                      <td></td>
-                      <td><span data-f="ProtocolNote" style="color: #aaa; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-                    </tr>
-                    <tr data-f="PortTr">
-                      <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
-                      <td><div data-f="Choose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort(this);"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span data-f="PortName" class="mapValue"></span><div data-f="PortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
-                    </tr>
-                    <tr data-f="LinuxTr" style="display: none;">
-                      <td></td>
-                      <td><span data-f="LinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
-                    </tr>
-                    <tr data-f="BaudTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Baud" data-i18n="settings.rotor.baud.label">Baud</label></td>
-                      <td><select data-f="Baud" onchange="rigSettingsChanged(this);"></select>
-                        <select data-f="DataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged(this);"><option value="8">8</option><option value="7">7</option></select>
-                        <select data-f="Parity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged(this);"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
-                        <select data-f="StopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged(this);"><option value="1">1</option><option value="2">2</option></select></td>
-                    </tr>
-                    <tr data-f="CivTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="CivValue" data-i18n="settings.rig.civ.label">CI-V Address</label></td>
-                      <td><input data-f="CivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged(this);" /> <span data-f="CivFound" class="mapValue"></span></td>
-                    </tr>
-                    <!-- Use Scope If Present: the rig's own band scope in the Multi-Mode Decoder (rig.js, rigScopeSync); in yellow why it can't come -->
-                    <tr data-f="ScopeTr">
-                      <td class="mapRowLabel mapIndent"></td>
-                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="UseScope" data-i18n="settings.rig.scope.hover" title="Shows the radio's own band scope in the Multi-Mode Decoder, if the radio sends it (Icom, over USB)" onclick="rigScopeChanged(this);" /> <label data-for="UseScope" data-i18n="settings.rig.scope.label">Use Scope If Present</label>
-                        <div data-f="ScopeWarn" style="display: none; color: yellow; white-space: normal; max-width: 300px;"></div></td>
-                    </tr>
-                    <tr data-f="HostTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
-                      <td><input data-f="Host" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged(this);" /> <label data-for="NetPort" data-i18n="settings.rotor.tcpPort.label">TCP Port</label> <input data-f="NetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged(this);" /></td>
-                    </tr>
-                    <tr data-f="SdrppSourceTr" style="display: none;">
-                      <td class="mapRowLabel mapIndent"><label data-for="SdrppSource" data-i18n="settings.rig.sdrpp.source.label">Source</label></td>
-                      <td><select data-f="SdrppSource" data-i18n="settings.rig.sdrpp.source.hover" title="The SDR++ Server's source, as its own menu has it" onchange="rigSdrppPick(this, 'source');"></select></td>
-                    </tr>
-                    <tr data-f="SdrppDeviceTr" style="display: none;">
-                      <td class="mapRowLabel mapIndent"><label data-for="SdrppDevice" data-i18n="settings.rig.sdrpp.device.label">Device</label></td>
-                      <td><select data-f="SdrppDevice" data-i18n="settings.rig.sdrpp.device.hover" title="The device the source uses" onchange="rigSdrppPick(this, 'device');"></select> <span data-f="SdrppRefresh" class="button mapInlineButton" data-i18n="settings.rig.sdrpp.refresh.hover" title="Looks for devices again" onclick="rigSdrppRefresh(this);"><span data-i18n="settings.rig.sdrpp.refresh.label">Refresh</span></span></td>
-                    </tr>
-                    <tr data-f="SdrppRateTr" style="display: none;">
-                      <td class="mapRowLabel mapIndent"><label data-for="SdrppRate" data-i18n="settings.rig.sdrpp.rate.label">Sample Rate</label></td>
-                      <td><select data-f="SdrppRate" data-i18n="settings.rig.sdrpp.rate.hover" title="The device's sample rate: the decoder takes what it needs from it" onchange="rigSdrppPick(this, 'rate');"></select></td>
-                    </tr>
-                    <tr data-f="ForceVfoTr">
-                      <td class="mapRowLabel mapIndent"></td>
-                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="ForceVfo" data-i18n="settings.rig.forceVfo.hover" title="Asks rigctld for its VFO mode on Rig Control's own connection, as rigctld --vfo gives, so each VFO is tuned by name. Needed for VFO-B on a radio whose VFOs are Main and Sub (Yaesu FTX-1). Other programs connected to the same rigctld keep its usual mode" onclick="rigSettingsChanged(this);" /> <label data-for="ForceVfo" data-i18n="settings.rig.forceVfo.label">Force VFO Mode</label></td>
-                    </tr>
-                    <!-- How the Multi-Mode Decoder keys this rig to transmit (rig.js, rigPtt); DTR and RTS only on a serial port -->
-                    <tr data-f="PttTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Ptt" data-i18n="settings.rig.ptt.label">PTT Method</label></td>
-                      <td><select data-f="Ptt" data-i18n="settings.rig.ptt.hover" title="How the Multi-Mode Decoder keys this rig to transmit: CAT (the protocol's PTT command), VOX (the rig's own, from the audio), DTR or RTS (the serial port's line, as the rig's PTT input is set up), or None (it isn't keyed)" onchange="rigPttChanged(this);"></select></td>
-                    </tr>
-                    <tr data-f="StatusTr">
-                      <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
-                      <td><span data-f="Status" class="mapValue" style="margin-left: 0;"></span></td>
-                    </tr>
-                    <!-- The VFO's converter offset (an LNB, an upconverter, a transverter): the rig's dial is the frequency on the air plus it -->
-                    <tr data-f="OffsetTr">
-                      <td class="mapRowLabel mapIndent"><label data-for="Offset" data-i18n="settings.rig.offset.label">Offset Hz</label></td>
-                      <td><input data-f="Offset" type="text" class="inputTextValue" maxlength="15" size="14" data-i18n="settings.rig.offset.hover" title="A converter between the antenna and the rig (an LNB, an upconverter, a transverter): added to the frequency sent to the rig, and taken off what it reads. Negative or positive: an LNB with a 9750 MHz LO is -9750000000" onkeypress="return rigOffsetKey(event);" onchange="rigOffsetChanged(this);" /></td>
-                    </tr>
-                    <!-- SSB's Data: the digital modes set on this VFO in USB or LSB (the Multi-Mode Decoder's) set as its data mode; a rig of its own's -->
-                    <tr data-f="SsbTr">
-                      <td class="mapRowLabel mapIndent" data-i18n="settings.rig.ssb.label">SSB</td>
-                      <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="SsbData" data-i18n="settings.rig.ssbData.hover" title="Digital modes use the data mode (USB-D) on this VFO" onclick="rigSsbDataChanged(this);" /> <label data-for="SsbData" data-i18n="settings.rig.ssbData.label">Data</label></td>
-                    </tr>
-                    <!-- What BirdWatch uses this VFO for (rig.js, rigSatRender): ranges on the air to receive, transmit or both, every frequency
-                         receive only until changed; the list's order is the priority -->
-                    <tr data-f="SatTr">
-                      <td class="mapRowLabel mapIndent" data-i18n="settings.rig.sat.label">Satellites</td>
-                      <td style="white-space: normal; max-width: 340px;"><div data-f="SatList"></div>
-                        <div><select data-f="SatBand" data-i18n="settings.rig.sat.hover" title="What BirdWatch may use this VFO for: a band, every frequency, or a range of your own, to receive, transmit or both. The first VFO in the list that fits is used, unless a transmitter has a VFO picked of its own" onchange="rigSatBandChanged(this);"></select>
-                          <span data-f="SatCustom" style="display: none;"><input data-f="SatLo" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.lo.hover" title="From, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> - <input data-f="SatHi" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.hi.hover" title="To, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> MHz</span>
-                          <select data-f="SatDir"></select>
-                          <span class="button mapInlineButton" data-i18n="settings.rig.sat.add.hover" title="Adds the range picked" onclick="rigSatAdd(this);"><span data-i18n="settings.bands.add.label">Add</span></span></div></td>
-                    </tr>
-                  </table>
-                </div>
-              </template>
             </table>
           </div>
         </div>
@@ -1590,6 +1458,230 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.audio.Speech.Phonetics.label" for="speechPhonetics">Phonetics</label></td>
               <td><input type="checkbox" id="speechPhonetics" data-i18n="settings.audio.Speech.Phonetics.hover" title="Speak Callsigns and Gridsquares phonetically" onclick="changeSpeechValues()" /></td>
             </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Radios (panel.js, settingsRadiosTabRender): a box for each of Rig Control, Rotor Control and Network Audio that is on (Features ->
+         Service) -->
+    <div id="radiosSettingsDiv" class="settingsTabcontent">
+      <div class="mapGroups">
+        <div id="radiosRigGroup" class="mapGroup">
+          <div class="mapGroupTitle" data-i18n="settings.rig.label">Rig Control</div>
+          <table>
+            <!-- The VFOs (rig.js, rigSettingsRender): a box for each, made from #rigVfoTemplate, then Add VFO -->
+            <tr id="rigVfosTr">
+              <td colspan="2">
+                <div id="rigVfosDiv"></div>
+                <div id="rigAddVfo" class="button mapInlineButton" data-i18n="settings.rig.addVfo.hover" title="Adds a VFO: a rig of its own, or the second VFO of a rig set up above. BirdWatch and the Multi-Mode Decoder each pick the VFOs they use" onclick="rigVfoAdd();"><span data-i18n="settings.rig.addVfo.label">Add VFO</span></div>
+              </td>
+            </tr>
+            <!-- A VFO's box: its letter, its own name and its Connect on the title line (checked, connected and its settings locked; unchecked,
+                 let go and its settings free to change), the X that removes it (with Connect unchecked); then where it is (a rig of its own, or
+                 another one's second VFO), its rig's rows (one of its own), its status and its offset. Its fields are found by data-f -->
+            <template id="rigVfoTemplate">
+              <div class="rigVfoBox">
+                <div class="rigVfoTitle"><span data-f="Title"></span> <input data-f="Name" type="text" class="inputTextValue" size="10" maxlength="20" data-i18n="settings.rig.vfoName.hover" title="Your own name for this VFO, shown after its letter: VFO-C (SDR)" onchange="rigVfoNameChanged(this);" />
+                  <span data-f="MoveUp" class="rigVfoMove" data-i18n="settings.rig.moveUp.hover" title="Moves this VFO up: BirdWatch uses the VFOs higher in the list first" onclick="rigVfoMove(this, -1);">▲</span><span data-f="MoveDown" class="rigVfoMove" data-i18n="settings.rig.moveDown.hover" title="Moves this VFO down" onclick="rigVfoMove(this, 1);">▼</span>
+                  <span class="rigVfoConnect"><input data-f="Connect" data-i18n="settings.rig.connect.hover" title="Uncheck to disconnect the rig and change its settings; checked, they are locked and the rig is connected with them" type="checkbox" onclick="rigConnectChanged(this);" /> <label data-for="Connect" data-i18n="settings.rig.connect.label">Connect</label> <span data-f="Remove" class="rigVfoRemove" data-i18n="settings.rig.removeVfo.hover" title="Removes this VFO" onclick="rigVfoRemove(this);">✕</span></span></div>
+                <table>
+                  <tr data-f="SourceTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Source" data-i18n="rig.line.rig">Rig</label></td>
+                    <td><select data-f="Source" data-i18n="settings.rig.source.hover" title="Where this VFO is: a rig of its own, with its own connection, or the second VFO (VFO B, or Sub) of a rig set up in another box" onchange="rigVfoSourceChanged(this);"></select></td>
+                  </tr>
+                  <tr data-f="ProtocolTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Protocol" data-i18n="settings.rotor.protocol.label">Protocol</label></td>
+                    <td><select data-f="Protocol" onchange="rigSettingsChanged(this);"></select></td>
+                  </tr>
+                  <!-- Under Kenwood CAT and Yaesu CAT: the other rigs that speak it (rig.js, rigSettingsRenderOne) -->
+                  <tr data-f="ProtocolNoteTr" style="display: none;">
+                    <td></td>
+                    <td><span data-f="ProtocolNote" style="color: #aaa; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                  </tr>
+                  <tr data-f="PortTr">
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
+                    <td><div data-f="Choose" class="button mapInlineButton" data-i18n="settings.rig.choose.hover" title="Pick the serial port the rig is on" onclick="rigChoosePort(this);"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span data-f="PortName" class="mapValue"></span><div data-f="PortError" style="display: none; color: orange; white-space: pre-line; max-width: 300px; margin-top: 2px;"></div></td>
+                  </tr>
+                  <tr data-f="LinuxTr" style="display: none;">
+                    <td></td>
+                    <td><span data-f="LinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                  </tr>
+                  <tr data-f="BaudTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Baud" data-i18n="settings.rotor.baud.label">Baud</label></td>
+                    <td><select data-f="Baud" onchange="rigSettingsChanged(this);"></select>
+                      <select data-f="DataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rigSettingsChanged(this);"><option value="8">8</option><option value="7">7</option></select>
+                      <select data-f="Parity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rigSettingsChanged(this);"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
+                      <select data-f="StopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rigSettingsChanged(this);"><option value="1">1</option><option value="2">2</option></select></td>
+                  </tr>
+                  <tr data-f="CivTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="CivValue" data-i18n="settings.rig.civ.label">CI-V Address</label></td>
+                    <td><input data-f="CivValue" type="text" class="inputTextValue" size="3" maxlength="2" data-i18n="settings.rig.civ.hover" title="Found by itself: the rig is asked for it. Set one here only to insist, in hex (IC-7300 94, IC-9700 A2, IC-705 A4, IC-7100 88)" onchange="rigSettingsChanged(this);" /> <span data-f="CivFound" class="mapValue"></span></td>
+                  </tr>
+                  <!-- Use Scope If Present: the rig's own band scope in the Multi-Mode Decoder (rig.js, rigScopeSync); in yellow why it can't come -->
+                  <tr data-f="ScopeTr">
+                    <td class="mapRowLabel mapIndent"></td>
+                    <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="UseScope" data-i18n="settings.rig.scope.hover" title="Shows the radio's own band scope in the Multi-Mode Decoder, if the radio sends it (Icom, over USB)" onclick="rigScopeChanged(this);" /> <label data-for="UseScope" data-i18n="settings.rig.scope.label">Use Scope If Present</label>
+                      <div data-f="ScopeWarn" style="display: none; color: yellow; white-space: normal; max-width: 300px;"></div></td>
+                  </tr>
+                  <tr data-f="HostTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
+                    <td><input data-f="Host" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rigSettingsChanged(this);" /> <label data-f="NetPortLabel" data-for="NetPort">TCP Port</label> <input data-f="NetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rigSettingsChanged(this);" /></td>
+                  </tr>
+                  <!-- The radio's own login (Icom LAN: the user set in the radio's Network menu; rig.js, rigSettingsRenderOne) -->
+                  <tr data-f="LanTr" style="display: none;">
+                    <td class="mapRowLabel mapIndent"><label data-for="LanUser" data-i18n="settings.lookup.Username.label">Username</label></td>
+                    <td><input data-f="LanUser" type="text" class="inputTextValue" maxlength="16" size="11" data-i18n="settings.rig.lanUser.hover" title="The user name set in the radio's Network menu" onchange="rigSettingsChanged(this);" /> <label data-for="LanPassword" data-i18n="settings.lookup.Password.label">Password</label> <input data-f="LanPassword" type="password" class="inputTextValue" maxlength="16" size="11" data-i18n="settings.rig.lanPassword.hover" title="That user's password, as set in the radio" onchange="rigSettingsChanged(this);" /></td>
+                  </tr>
+                  <tr data-f="SdrppSourceTr" style="display: none;">
+                    <td class="mapRowLabel mapIndent"><label data-for="SdrppSource" data-i18n="settings.rig.sdrpp.source.label">Source</label></td>
+                    <td><select data-f="SdrppSource" data-i18n="settings.rig.sdrpp.source.hover" title="The SDR++ Server's source, as its own menu has it" onchange="rigSdrppPick(this, 'source');"></select></td>
+                  </tr>
+                  <tr data-f="SdrppDeviceTr" style="display: none;">
+                    <td class="mapRowLabel mapIndent"><label data-for="SdrppDevice" data-i18n="settings.rig.sdrpp.device.label">Device</label></td>
+                    <td><select data-f="SdrppDevice" data-i18n="settings.rig.sdrpp.device.hover" title="The device the source uses" onchange="rigSdrppPick(this, 'device');"></select> <span data-f="SdrppRefresh" class="button mapInlineButton" data-i18n="settings.rig.sdrpp.refresh.hover" title="Looks for devices again" onclick="rigSdrppRefresh(this);"><span data-i18n="settings.rig.sdrpp.refresh.label">Refresh</span></span></td>
+                  </tr>
+                  <tr data-f="SdrppRateTr" style="display: none;">
+                    <td class="mapRowLabel mapIndent"><label data-for="SdrppRate" data-i18n="settings.rig.sdrpp.rate.label">Sample Rate</label></td>
+                    <td><select data-f="SdrppRate" data-i18n="settings.rig.sdrpp.rate.hover" title="The device's sample rate: the decoder takes what it needs from it" onchange="rigSdrppPick(this, 'rate');"></select></td>
+                  </tr>
+                  <tr data-f="ForceVfoTr">
+                    <td class="mapRowLabel mapIndent"></td>
+                    <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="ForceVfo" data-i18n="settings.rig.forceVfo.hover" title="Asks rigctld for its VFO mode on Rig Control's own connection, as rigctld --vfo gives, so each VFO is tuned by name. Needed for VFO-B on a radio whose VFOs are Main and Sub (Yaesu FTX-1). Other programs connected to the same rigctld keep its usual mode" onclick="rigSettingsChanged(this);" /> <label data-for="ForceVfo" data-i18n="settings.rig.forceVfo.label">Force VFO Mode</label></td>
+                  </tr>
+                  <!-- How the Multi-Mode Decoder keys this rig to transmit (rig.js, rigPtt); DTR and RTS only on a serial port -->
+                  <tr data-f="PttTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Ptt" data-i18n="settings.rig.ptt.label">PTT Method</label></td>
+                    <td><select data-f="Ptt" data-i18n="settings.rig.ptt.hover" title="How the Multi-Mode Decoder keys this rig to transmit: CAT (the protocol's PTT command), VOX (the rig's own, from the audio), DTR or RTS (the serial port's line, as the rig's PTT input is set up), or None (it isn't keyed)" onchange="rigPttChanged(this);"></select></td>
+                  </tr>
+                  <tr data-f="StatusTr">
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+                    <td><span data-f="Status" class="mapValue" style="margin-left: 0;"></span></td>
+                  </tr>
+                  <!-- The VFO's converter offset (an LNB, an upconverter, a transverter): the rig's dial is the frequency on the air plus it -->
+                  <tr data-f="OffsetTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Offset" data-i18n="settings.rig.offset.label">Offset Hz</label></td>
+                    <td><input data-f="Offset" type="text" class="inputTextValue" maxlength="15" size="14" data-i18n="settings.rig.offset.hover" title="A converter between the antenna and the rig (an LNB, an upconverter, a transverter): added to the frequency sent to the rig, and taken off what it reads. Negative or positive: an LNB with a 9750 MHz LO is -9750000000" onkeypress="return rigOffsetKey(event);" onchange="rigOffsetChanged(this);" /></td>
+                  </tr>
+                  <!-- SSB's Data: the digital modes set on this VFO in USB or LSB (the Multi-Mode Decoder's) set as its data mode; a rig of its own's -->
+                  <tr data-f="SsbTr">
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rig.ssb.label">SSB</td>
+                    <td class="mapRowLabel mapRowLabelLeft"><input type="checkbox" data-f="SsbData" data-i18n="settings.rig.ssbData.hover" title="Digital modes use the data mode (USB-D) on this VFO" onclick="rigSsbDataChanged(this);" /> <label data-for="SsbData" data-i18n="settings.rig.ssbData.label">Data</label></td>
+                  </tr>
+                  <!-- What BirdWatch uses this VFO for (rig.js, rigSatRender): ranges on the air to receive, transmit or both, every frequency
+                       receive only until changed; the list's order is the priority -->
+                  <tr data-f="SatTr">
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rig.sat.label">Satellites</td>
+                    <td style="white-space: normal; max-width: 340px;"><div data-f="SatList"></div>
+                      <div><select data-f="SatBand" data-i18n="settings.rig.sat.hover" title="What BirdWatch may use this VFO for: a band, every frequency, or a range of your own, to receive, transmit or both. The first VFO in the list that fits is used, unless a transmitter has a VFO picked of its own" onchange="rigSatBandChanged(this);"></select>
+                        <span data-f="SatCustom" style="display: none;"><input data-f="SatLo" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.lo.hover" title="From, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> - <input data-f="SatHi" type="text" class="inputTextValue" size="8" data-i18n="settings.rig.sat.hi.hover" title="To, in MHz on the air" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" /> MHz</span>
+                        <select data-f="SatDir"></select>
+                        <span class="button mapInlineButton" data-i18n="settings.rig.sat.add.hover" title="Adds the range picked" onclick="rigSatAdd(this);"><span data-i18n="settings.bands.add.label">Add</span></span></div></td>
+                  </tr>
+                </table>
+              </div>
+            </template>
+          </table>
+        </div>
+        <div id="radiosRotorGroup" class="mapGroup">
+          <div class="mapGroupTitle" data-i18n="settings.rotor.label">Rotor Control</div>
+          <table>
+            <!-- Rotor Control's rows, shown while it is on (rotor.js). Connect: checked, the rotator connected and its settings locked -->
+            <tr id="rotorConnectTr">
+              <td colspan="2" class="mapRowLabel mapIndent" style="text-align: left;"><input data-i18n="settings.rotor.connect.hover" title="Uncheck to disconnect the rotator and change its settings; checked, they are locked and it is connected with them" type="checkbox" id="rotorConnectValue" onclick="rotorConnectChanged();" /> <label data-i18n="settings.rig.connect.label" for="rotorConnectValue">Connect</label></td>
+            </tr>
+            <tr id="rotorProtocolTr">
+              <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.protocol.label" for="rotorProtocol">Protocol</label></td>
+              <td><select id="rotorProtocol" onchange="rotorSettingsChanged();"></select></td>
+            </tr>
+            <tr id="rotorPortTr">
+              <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.port.label">Port</td>
+              <!-- The port's name beside the button; an error opening it under the button (rotorStatusRender) -->
+              <td><div id="rotorChoose" class="button mapInlineButton" data-i18n="settings.rotor.choose.hover" title="Pick the serial port the rotator controller is on" onclick="rotorChoosePort();"><span data-i18n="settings.rotor.choose.label">Choose Port</span></div> <span id="rotorPortName" class="mapValue"></span><div id="rotorPortError" style="display: none; color: orange; white-space: normal; max-width: 260px; margin-top: 2px;"></div></td>
+            </tr>
+            <!-- Linux only: the user isn't in the group that owns the serial devices (serialLinuxCheck) -->
+            <tr id="rotorLinuxTr" style="display: none;">
+              <td></td>
+              <td><span id="rotorLinuxText" style="color: orange; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+            </tr>
+            <tr id="rotorBaudTr">
+              <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.baud.label" for="rotorBaud">Baud</label></td>
+              <!-- Baud, then data bits, parity and stop bits (8 N 1) -->
+              <td><select id="rotorBaud" onchange="rotorSettingsChanged();"></select>
+                <select id="rotorDataBits" data-i18n="settings.rotor.dataBits.hover" title="Data bits" onchange="rotorSettingsChanged();"><option value="8">8</option><option value="7">7</option></select>
+                <select id="rotorParity" data-i18n="settings.rotor.parity.hover" title="Parity: N none, E even, O odd" onchange="rotorSettingsChanged();"><option value="none">N</option><option value="even">E</option><option value="odd">O</option></select>
+                <select id="rotorStopBits" data-i18n="settings.rotor.stopBits.hover" title="Stop bits" onchange="rotorSettingsChanged();"><option value="1">1</option><option value="2">2</option></select></td>
+            </tr>
+            <tr id="rotorHostTr">
+              <td class="mapRowLabel mapIndent"><label data-i18n="settings.rotor.host.label" for="rotorHost">Host</label></td>
+              <td><input id="rotorHost" type="text" class="inputTextValue" maxlength="100" size="11" onchange="rotorSettingsChanged();" /> <label id="rotorNetPortLabel" data-i18n="settings.rotor.tcpPort.label" for="rotorNetPort">TCP Port</label> <input id="rotorNetPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="rotorSettingsChanged();" /></td>
+            </tr>
+            <tr id="rotorStatusTr">
+              <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+              <td><span id="rotorStatus" class="mapValue" style="margin-left: 0;"></span></td>
+            </tr>
+            <!-- The box lines up with the labels' right edge, its name with the values -->
+            <tr id="rotorFollowTr">
+              <td class="mapRowLabel mapIndent"><input data-i18n="settings.rotor.follow.hover" title="Keeps the rotator on BirdWatch's selected satellite while it is up, and points at where it will rise a few minutes before" type="checkbox" id="rotorFollow" onclick="rotorFollowChanged();" /></td>
+              <td><label class="mapRowLabelText" data-i18n="settings.rotor.follow.label" for="rotorFollow">Follow Satellite</label></td>
+            </tr>
+          </table>
+        </div>
+        <div id="radiosNetAudioGroup" class="mapGroup">
+          <div class="mapGroupTitle" data-i18n="settings.netAudio.label">Network Audio</div>
+          <table>
+            <tr id="netAudioStreamsTr">
+              <td>
+                <div id="netAudioStreamsDiv"></div>
+                <div id="netAudioAddButton" class="button mapInlineButton" data-i18n="settings.netAudio.add.hover" title="Adds an audio stream" onclick="netAudioAdd();"><span data-i18n="settings.netAudio.add.label">Add Stream</span></div>
+              </td>
+            </tr>
+            <!-- A stream's box (netAudio.js, netAudioBoxRender): its name and Connect on the title line, then the rows its protocol uses. Its
+                 fields are found by data-f -->
+            <template id="netAudioTemplate">
+              <div class="rigVfoBox">
+                <div class="rigVfoTitle"><input data-f="Name" type="text" class="inputTextValue" size="14" maxlength="24" data-i18n="settings.netAudio.name.hover" title="Your own name for this stream, shown in the Multi-Mode Decoder's device menus" onchange="netAudioFieldChanged(this);" />
+                  <span class="rigVfoConnect"><input data-f="Connect" data-i18n="settings.netAudio.connect.hover" title="Uncheck to close the stream and change its settings; checked, they are locked and the stream is opened with them" type="checkbox" onclick="netAudioConnectChanged(this);" /> <label data-for="Connect" data-i18n="settings.rig.connect.label">Connect</label> <span data-f="Remove" class="rigVfoRemove" data-i18n="settings.netAudio.remove.hover" title="Removes this stream" onclick="netAudioRemove(this);">✕</span></span></div>
+                <table>
+                  <tr>
+                    <td class="mapRowLabel mapIndent"><label data-for="Protocol" data-i18n="settings.rotor.protocol.label">Protocol</label></td>
+                    <td><select data-f="Protocol" onchange="netAudioFieldChanged(this);"></select></td>
+                  </tr>
+                  <tr>
+                    <td class="mapRowLabel mapIndent"><label data-for="Dir" data-i18n="settings.netAudio.dir.label">Direction</label></td>
+                    <td><select data-f="Dir" data-i18n="settings.netAudio.dir.hover" title="Input: audio the decoder hears. Output: audio it sends (SSTV)" onchange="netAudioFieldChanged(this);"><option value="in" data-i18n="settings.netAudio.dir.in">Input</option><option value="out" data-i18n="settings.netAudio.dir.out">Output</option></select></td>
+                  </tr>
+                  <!-- Streams the protocol has found on the LAN (RTP's announcements): one picked fills the fields -->
+                  <tr data-f="FoundTr" style="display: none;">
+                    <td class="mapRowLabel mapIndent"><label data-for="Found" data-i18n="settings.netAudio.found.label">Found</label></td>
+                    <td><select data-f="Found" data-i18n="settings.netAudio.found.hover" title="Streams announced on the network: pick one to fill in its settings" onchange="netAudioFoundPicked(this);"></select></td>
+                  </tr>
+                  <tr data-f="HostTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Host" data-i18n="settings.rotor.host.label">Host</label></td>
+                    <td><input data-f="Host" type="text" class="inputTextValue" maxlength="100" size="14" onchange="netAudioFieldChanged(this);" /></td>
+                  </tr>
+                  <tr data-f="PortTr">
+                    <td class="mapRowLabel mapIndent"><label data-f="PortLabel" data-for="Port">UDP Port</label></td>
+                    <td><input data-f="Port" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' onchange="netAudioFieldChanged(this);" /></td>
+                  </tr>
+                  <tr data-f="StreamNameTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="StreamName" data-i18n="settings.netAudio.streamName.label">Stream Name</label></td>
+                    <td><input data-f="StreamName" type="text" class="inputTextValue" maxlength="16" size="14" onchange="netAudioFieldChanged(this);" /></td>
+                  </tr>
+                  <tr data-f="RateTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Rate" data-i18n="settings.rig.sdrpp.rate.label">Sample Rate</label></td>
+                    <td><select data-f="Rate" onchange="netAudioFieldChanged(this);"></select> <select data-f="Channels" data-i18n="settings.netAudio.channels.hover" title="Channels: mono or stereo" onchange="netAudioFieldChanged(this);"><option value="1" data-i18n="settings.netAudio.channels.mono">Mono</option><option value="2" data-i18n="settings.netAudio.channels.stereo">Stereo</option></select></td>
+                  </tr>
+                  <tr data-f="ChannelTr">
+                    <td class="mapRowLabel mapIndent"><label data-for="Channel" data-i18n="settings.netAudio.channel.label">Channel</label></td>
+                    <td><select data-f="Channel" data-i18n="settings.netAudio.channel.hover" title="Of a stereo stream, what the decoder hears: the left channel, the right one, or both mixed" onchange="netAudioFieldChanged(this);"><option value="left" data-i18n="settings.netAudio.channel.left">Left</option><option value="right" data-i18n="settings.netAudio.channel.right">Right</option><option value="mix" data-i18n="settings.netAudio.channel.mix">Mix</option></select></td>
+                  </tr>
+                  <tr>
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
+                    <td><span data-f="Status" class="mapValue" style="margin-left: 0; white-space: normal; display: inline-block; max-width: 320px;"></span></td>
+                  </tr>
+                </table>
+              </div>
+            </template>
           </table>
         </div>
       </div>

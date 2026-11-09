@@ -19,7 +19,8 @@ function updateBirdWatchViews()
   // The Satellite Tracking button and its row of Settings tabs; BirdWatch's own buttons after it only while its tracking is toggled on
   birdWatchButton.style.display = GT.settings.BirdWatch.enable ? "" : "none";
   for (const button of [birdWatchAutoButton, birdWatchDopplerButton, birdWatchTimelineButton]) button.style.display = birdWatchPanelShown() ? "" : "none";
-  birdWatchTabRow.style.display = GT.settings.BirdWatch.enable ? "" : "none";
+  // (Its row also holds About when the main row is full: panel.js)
+  settingsTabsFit();
   birdWatchImg.style.filter = GT.settings.BirdWatch.active ? "" : "grayscale(1)";
   birdWatchAutoImg.style.filter = GT.settings.BirdWatch.auto ? "" : "grayscale(1)";
   birdWatchDopplerButtonUpdate();

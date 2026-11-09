@@ -5,7 +5,7 @@ GridTracker2 can talk to your radios and your antenna rotator itself, without WS
 * **Rig Control** reads and tunes your rigs and SDRs. The [Multi-Mode Decoder](Multi-Mode-Decoder/Multi-Mode-Decoder.md) and [BirdWatch](BirdWatch.md) use it.
 * **Rotor Control** turns your antenna toward a station, a point on the map, or a satellite.
 
-Both are in [Settings → Features](GridTracker-Overview/Settings-Sub-Menus.md#features-tab), in the **Service** box. Tick **Rotor Control** or **Rig Control** to show its settings under it.
+Tick **Rotor Control** or **Rig Control** in [Settings → Features](GridTracker-Overview/Settings-Sub-Menus.md#features-tab), in the **Service** box. Their settings are in the **Radios** tab, to the right of Features, which appears while either of them (or Network Audio) is on.
 
 ## Rig Control
 
@@ -14,6 +14,7 @@ Rig Control works with these:
 * Hamlib's **rigctld** and **flrig**, which can share one rig with WSJT-X and other programs.
 * An **Icom** (CI-V), a **Kenwood** or a **Yaesu** (CAT) on a serial or USB port.
 * An SDR through **SPY Server** or **SDR++**.
+* A **FlexRadio** through SmartSDR, and a networked **Icom** (IC-705, IC-7610, IC-9700, IC-905 ...) over the network, each with its audio too.
 
 ### VFOs
 
@@ -87,6 +88,25 @@ The menus show **Not Connected** until the server answers. The gain is set in SD
 **SDR++ (rigctl)**
 
 The VFO selected in the SDR++ window, through SDR++'s **Rigctl Server** module. Add that module in SDR++ and start it, then enter its **Host** and **TCP Port** (4532 by default). SDR++ keeps its own audio, and the module takes one client at a time.
+
+**FlexRadio SmartSDR**
+
+A FlexRadio 6000 or 8000 series radio, with SmartSDR (or a Maestro) running and connected to it. Enter the radio's address in **Host**, or leave it blank to use the first FlexRadio found on your network, and the **TCP Port** (4992).
+
+* **VFO-A** is the slice that transmits, of the SmartSDR client GridTracker2 joins; **VFO-B**, its second VFO, is that client's next slice.
+* Digital modes set in USB or LSB with **SSB Data** use DIGU or DIGL, shown as USB-D and LSB-D.
+* **PTT Method** CAT keys the radio (`xmit`).
+* Its DAX audio is offered to the Multi-Mode Decoder (see [Network Audio](Network-Audio.md)).
+
+**Icom LAN**
+
+An Icom with a network connection (IC-705, IC-7610, IC-9700, IC-905 ...), reached over your network the way Icom's Remote Utility does, with no computer at the radio. Enter the radio's address in **Host** and its **UDP Port** (50001), and the **Username** and **Password** of a network user set in the radio.
+
+On the radio: turn **Network Control** on, and set up a network user (the IC-705's MENU › SET › WLAN Set › Remote Settings › Network User1). Only one program can use the radio over the network at a time; if another has it, the status says which.
+
+* The radio tells GridTracker2 its CI-V address; **CI-V Address** is for insisting on another, as with a USB connection.
+* Frequency, mode, data mode, the second VFO and PTT work as with **Icom CI-V**.
+* Its receive and transmit audio is offered to the Multi-Mode Decoder (see [Network Audio](Network-Audio.md)).
 
 ```{note}
 An SDR has no mode of its own: a SPY Server or SDR++ (Server) VFO always shows USB, which is what its I/Q gives the Multi-Mode Decoder.

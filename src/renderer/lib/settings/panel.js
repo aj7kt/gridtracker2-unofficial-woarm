@@ -20,8 +20,51 @@ function showSettingsBox()
     if (aboutDiv.style.display != "none") startAboutFx();
     // Reopened on one of BirdWatch's tabs: its values filled in again
     if (document.querySelector(".settingstab .birdWatchTab.active")) birdWatchSettingsTabShown();
+    // The tabs fitted to the window as it is now
+    settingsTabsFit();
   }
 }
+
+// Radios: its tab while Rig Control, Rotor Control or Network Audio is on (Features -> Service), a box in it for each one that is on. Gone
+// while it was the tab shown: Features shows instead
+function settingsRadiosTabRender()
+{
+  if (typeof radiosSettingsButton == "undefined") return;
+  const rig = GT.settings.Rigs.enable === true;
+  const rotor = GT.settings.rotor.enable === true;
+  const net = GT.settings.NetAudio.enable === true;
+  radiosRigGroup.style.display = rig ? "" : "none";
+  radiosRotorGroup.style.display = rotor ? "" : "none";
+  radiosNetAudioGroup.style.display = net ? "" : "none";
+  const any = rig || rotor || net;
+  const was = radiosSettingsButton.style.display != "none";
+  radiosSettingsButton.style.display = any ? "" : "none";
+  if (!any && radiosSettingsButton.classList.contains("active")) openSettingsTab(featuresbut, "featuresSettingsDiv");
+  if (was != any) settingsTabsFit();
+}
+
+// The tabs fitted to the panel: About in the main row, or, when the main row would wrap, in the row above it (BirdWatch's, shown for it
+// alone while BirdWatch is off). Measured only while the panel shows (again as it opens, and as the window is resized)
+function settingsTabsFit()
+{
+  if (typeof birdWatchTabRow == "undefined") return;
+  const birdWatch = GT.settings.BirdWatch.enable === true;
+  for (const button of birdWatchTabRow.querySelectorAll(".birdWatchTab")) button.style.display = birdWatch ? "" : "none";
+  if (rootSettingsDiv.style.display == "inline-flex")
+  {
+    const row = birdWatchTabRow.parentElement;
+    if (aboutbut.parentElement !== row) row.appendChild(aboutbut);
+    const shown = [...row.children].filter((el) => el.classList.contains("settingsTablinks") && el.style.display != "none");
+    if (shown.length > 1 && shown[shown.length - 1].offsetTop > shown[0].offsetTop + 2) birdWatchTabRow.appendChild(aboutbut);
+  }
+  birdWatchTabRow.style.display = birdWatch || aboutbut.parentElement === birdWatchTabRow ? "" : "none";
+}
+
+window.addEventListener("resize", () =>
+{
+  clearTimeout(GT.settingsTabsFitTimer);
+  GT.settingsTabsFitTimer = setTimeout(settingsTabsFit, 200);
+});
 
 function openInfoTab(evt, tabName, callFunc, callObj)
 {
@@ -147,6 +190,8 @@ function openSettingsTab(evt, tabName)
   if (tabName == "aboutDiv") startAboutFx();
   // One of BirdWatch's tabs: its values filled in
   if (/^birdWatch/.test(tabName)) birdWatchSettingsTabShown();
+  // The tabs fitted once the panel shows (the ways in that open it on a tab show it after this)
+  setTimeout(settingsTabsFit, 0);
 }
 
 function initSettingsTabs()

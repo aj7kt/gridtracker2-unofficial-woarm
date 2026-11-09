@@ -37,6 +37,7 @@ const validSettings = [
   "rotor",
   "Rigs",
   "MMD",
+  "NetAudio",
   "HRDLogbookLog",
   "defaultsApplied"
 ];
@@ -567,6 +568,12 @@ const def_settings = {
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO)
   MMD: { vfos: {}, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", wefaxTrim: 0, pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", inputs: {}, inputCards: null, swGain: {} },
+  // Network Audio (Settings -> Features -> Service, its streams in the Radios tab; netAudio.js): audio streams on the LAN, each an Input Device or an Output Device of the
+  // Multi-Mode Decoder. streams: [{ id ("n1" ...), name (the user's own), connect (unchecked: not opened, its settings free to change),
+  // protocol ("vban", "rtp", "pulse": NET_AUDIO_PROTOCOLS), dir ("in", "out"), host, port, streamName, rate, channels, channel ("left",
+  // "right", "mix": what a stereo input gives the decoder) }]. The audio of a Rig Control VFO whose protocol carries it (FlexRadio DAX,
+  // Icom LAN) is listed too, without being set up here
+  NetAudio: { enable: false, streams: [] },
   audio: {
     alertMute: 0,
     speechRate: 1,

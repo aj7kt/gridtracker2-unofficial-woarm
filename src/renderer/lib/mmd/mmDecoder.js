@@ -499,16 +499,17 @@ async function mmdInputDevices()
   const devices = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind == "audioinput");
   const opener = window.opener;
   const sdrs = typeof opener.rigIqVfos == "function" ? opener.rigIqVfos() : [];
-  return devices.concat(sdrs.map((v) => ({ deviceId: "iq:" + v.id, label: I18N("cwViewer.input.iq").replace("{name}", opener.rigIqName(v)).replace("{vfo}", opener.rigVfoLabel(v)), kind: "audioinput", spyVfo: v.id })));
+  // Then the network's (Network Audio's streams, and the VFOs whose rig gives its audio over the LAN: mmdNetAudio.js)
+  return devices.concat(sdrs.map((v) => ({ deviceId: "iq:" + v.id, label: I18N("cwViewer.input.iq").replace("{name}", opener.rigIqName(v)).replace("{vfo}", opener.rigVfoLabel(v)), kind: "audioinput", spyVfo: v.id })), mmdNetInputDevices());
 }
 
 // The modes that transmit (each with an Output Device of its own in Settings, Decoders: the main window's MMD_OUTPUT_MODES)
 const MMD_TX_MODES = ["sstv"];
 
-// The audio outputs there are (enumerateDevices' audiooutput ones)
+// The audio outputs there are (enumerateDevices' audiooutput ones), then the network's (mmdNetAudio.js)
 async function mmdOutputDevices()
 {
-  return (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind == "audiooutput");
+  return (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind == "audiooutput").concat(mmdNetOutputDevices());
 }
 
 // The Output Device a mode sends to (mmdSstvTx.js), among those there are (DEC.outputDevices): the one picked (the common one or its own,
@@ -519,6 +520,12 @@ function mmdOutputFind(mode)
   const outputs = DEC.outputDevices || [];
   const picked = window.opener.mmDecoderOutputFind(mode, outputs);
   if (picked) return picked;
+  // A rig's own audio over the LAN heard (FlexRadio DAX, Icom LAN): the same rig's, where it takes audio to send
+  if (DEC.input && DEC.input.netAudio)
+  {
+    const same = outputs.find((d) => d.netAudio && d.netAudio == DEC.input.netAudio && d.netAudio.startsWith("rig:"));
+    return same || null;
+  }
   const input = DEC.input ? mmdInputLabel(DEC.input) : "";
   const card = (label) => (/\(([^()]*)\)/.exec(label) || [])[1];
   const name = card(input);
@@ -533,7 +540,7 @@ function mmdOutputFind(mode)
 function mmdLevelDevice()
 {
   const input = DEC.input;
-  if (!input || input.spyVfo) return null;
+  if (!input || input.spyVfo || input.netAudio) return null;
   const label = mmdInputLabel(input);
   const def = (DEC.inputDevices || []).find((d) => d.deviceId == "default");
   return { label: label, isDefault: input.deviceId == "default" || (def != null && mmdInputLabel(def) == "Default - " + label) };
@@ -737,6 +744,11 @@ async function mmdStart()
       DEC.spyVfo = device.spyVfo;
       DEC.spyRate = rate;
     }
+    else if (device.netAudio)
+    {
+      // A network stream (mmdNetAudio.js): at its own rate, known once its first audio comes
+      rate = await mmdNetStart(device, generation);
+    }
     else
     {
       // The rig's audio as it is: no echo cancelling, noise suppression or level riding, which would chop and pump the keying
@@ -750,7 +762,7 @@ async function mmdStart()
     // the computer's own output) has blocks of its samples dropped or doubled now and then to keep up. Nothing is played, but the context
     // is put on the output of the input's own sound card (the same device group) where it has one, so no sample is lost: a weather fax's
     // lines and an SSTV picture's stay straight. With none, or one that won't open: the default output, as before
-    const sink = device.spyVfo ? null : await mmdInputSink(device);
+    const sink = device.spyVfo || device.netAudio ? null : await mmdInputSink(device);
     const options = { latencyHint: "playback" };
     if (rate > 0) options.sampleRate = rate;
     try
@@ -780,6 +792,7 @@ async function mmdStart()
       source = new AudioWorkletNode(ctx, "iq-usb", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [1] });
       DEC.spyNode = source;
     }
+    else if (device.netAudio) source = mmdNetNode(ctx);
     else source = ctx.createMediaStreamSource(stream);
     // The SW level (mmdLevel): this mode's gain, before the decoder
     const gain = ctx.createGain();
@@ -808,6 +821,8 @@ async function mmdStart()
     if (stream) stream.getTracks().forEach((track) => track.stop());
     if (ctx) ctx.close().catch(() => {});
     mmdSpyStop();
+    // (Stopped meanwhile: mmdStop let go of its stream, and one started since is the new start's)
+    if (generation == DEC.generation) mmdNetStop();
     // Stopped (or started again) while starting: nothing to say
     if (generation != DEC.generation) return;
     DEC.running = false;
@@ -831,6 +846,7 @@ function mmdStop()
   if (DEC.stream) DEC.stream.getTracks().forEach((track) => track.stop());
   if (DEC.ctx) DEC.ctx.close().catch(() => {});
   mmdSpyStop();
+  mmdNetStop();
   DEC.stream = null;
   DEC.ctx = null;
   DEC.node = null;
@@ -1855,10 +1871,9 @@ function mmdFreqsShow(connected)
       cwFreqText.appendChild(span);
     }
   }
-  // A menu only where a pick may send the rig something (Rig Control, and the mode's Set Frequency or Set Mode), and none while
-  // BirdWatch follows a satellite on VFO-A
+  // A menu only where a pick may send the rig something (Rig Control, and the mode's Set Frequency or Set Mode)
   const S = GT.settings.MMD;
-  const allowed = S.rigControl === true && (S[DEC.mode + "SetFreq"] === true || S[DEC.mode + "SetMode"] === true) && !window.opener.mmDecoderRigShared();
+  const allowed = S.rigControl === true && (S[DEC.mode + "SetFreq"] === true || S[DEC.mode + "SetMode"] === true);
   const list = connected && allowed ? mmdBandFreqs(DEC.mode) : null;
   cwFreqs.style.display = list ? "" : "none";
   if (!list) return;
@@ -1874,7 +1889,7 @@ function mmdFreqsShow(connected)
     const notes = BANDS_NOTE_MODES.includes(DEC.mode);
     list.forEach(([hz, , note], i) => cwFreqs.add(new Option(notes ? "(" + mmdFreq(hz) + ")" + (note ? " " + note : "") : mmdBandFreq(hz), i)));
   }
-  // Greyed out while BirdWatch follows a satellite with the rig on VFO-B only (nothing is sent to it then), saying why
+  // Grayed out while BirdWatch follows a satellite with the rig (nothing is sent to it then), saying why
   const locked = window.opener.mmDecoderRigLocked();
   if (cwFreqs.disabled != locked)
   {

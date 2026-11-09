@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=284d4b89"></script>
+    <script src="_static/documentation_options.js?v=188202db"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261109.1</p>
+<p class="gt-cover-version">Version 2.261109.2</p>
 <p class="gt-cover-date">November 8, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -156,7 +156,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261109.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261109.2. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -170,7 +170,8 @@
 <li><p><strong>New map layers and buttons.</strong> Range Rings, Major Parallels and Meridians, a Tropospheric Inversion VHF prediction layer (with 6 m Es areas), a choice of grayline terminator (Horizon, Civil, Nautical or Astronomical), the US weather radar restored, new base maps, and the option to put the side panel on the left side of the window.</p></li>
 <li><p><strong>Multi-Mode Decoder.</strong> Decode CW, FT8, FT4, PSK, RTTY, MFSK, DominoEX and THOR, Olivia, NAVTEX, Feld-Hell, WEFAX, WSPR, SSTV, Packet and satellite data right in GridTracker2, from your rig’s or an SDR’s audio, with a waterfall of the whole passband. FT8, FT4 and WSPR decodes can go to the map and Call Roster, and SSTV pictures can be sent. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
 <li><p><strong>BirdWatch satellite tracking.</strong> Amateur satellites on the map with their footprints and ground tracks, a BirdWatch panel with each satellite’s position, AOS and LOS and sky views, a pass timeline you can export to your calendar, and pass alerts. With Rig Control your radio follows a satellite’s downlink and uplink, Doppler-corrected through the pass, and with Rotor Control your antenna follows it too. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></li>
-<li><p><strong>Rig and Rotor Control.</strong> GridTracker2 can now read and tune your rigs and SDRs itself (rigctld, flrig, Icom CI-V, Kenwood and Yaesu CAT, SPY Server, SDR++), and turn your antenna rotator (Yaesu GS-232, Easycomm II, SPID, rotctld, CatRotator / PstRotator). See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>.</p></li>
+<li><p><strong>Network Audio.</strong> Audio in and out over your home network, for the Multi-Mode Decoder: VBAN (Voicemeeter), RTP and the simple TCP protocol of PipeWire and PulseAudio, and the audio of a FlexRadio (DAX) or a networked Icom. See <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>.</p></li>
+<li><p><strong>Rig and Rotor Control.</strong> GridTracker2 can now read and tune your rigs and SDRs itself (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood and Yaesu CAT, SPY Server, SDR++), and turn your antenna rotator (Yaesu GS-232, Easycomm II, SPID, rotctld, CatRotator / PstRotator). See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>.</p></li>
 <li><p><strong>Event Viewer.</strong> What happened this session (QSOs logged, alerts, errors, BirdWatch announcements) in a list of its own, over the map or in a window. It replaces the side panel’s message list. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
 <li><p><strong>Rearrangeable side panel.</strong> Drag the band activity graph, Quick Stats and Map View Filters above or below each other and the buttons. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#rearranging-the-panel"><span class="std std-ref">Rearranging the Panel</span></a>.</p></li>
 <li><p><strong>Santa Tracker.</strong> From December 1st a button appears that follows Santa and his reindeer around the world.</p></li>
@@ -917,7 +918,7 @@
 <span id="document-GridTracker-Overview/Settings-Sub-Menus"></span><section id="gridtracker2-settings">
 <h2>GridTracker2 Settings<a class="headerlink" href="#gridtracker2-settings" title="Link to this heading">¶</a></h2>
 <p>Click the <strong>Settings</strong> button (the gear) in the button panel, or press <strong>Ctrl+S</strong>, to open the Settings panel over the map. Click the red <strong>X</strong> in the top right corner, press <strong>Esc</strong>, or click the gear again to close it.</p>
-<p>The tabs along the top are <strong>General</strong>, <strong>Features</strong>, <strong>Lookups</strong>, <strong>Audio</strong>, <strong>Map</strong>, <strong>Colors</strong>, <strong>Feeds</strong>, <strong>Logging</strong>, <strong>Audio Alerts</strong>, <strong>Custom Alerts</strong>, <strong>Logbook</strong> and <strong>About</strong>. The <strong>Feeds</strong> tab only appears while DX Feeds is turned on. While BirdWatch is turned on, its own tabs, <strong>BirdWatch</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>, appear too; see <a class="reference internal" href="#document-BirdWatch#settings-birdwatch-tab"><span class="std std-ref">BirdWatch</span></a>.</p>
+<p>The tabs along the top are <strong>General</strong>, <strong>Features</strong>, <strong>Radios</strong>, <strong>Lookups</strong>, <strong>Audio</strong>, <strong>Map</strong>, <strong>Colors</strong>, <strong>Feeds</strong>, <strong>Logging</strong>, <strong>Audio Alerts</strong>, <strong>Custom Alerts</strong>, <strong>Logbook</strong> and <strong>About</strong>. The <strong>Radios</strong> tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the <strong>Feeds</strong> tab while DX Feeds is. While BirdWatch is turned on, its own tabs, <strong>BirdWatch</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>, appear in a row above the others; see <a class="reference internal" href="#document-BirdWatch#settings-birdwatch-tab"><span class="std std-ref">BirdWatch</span></a>. In a narrow window, <strong>About</strong> moves up to that row so the others fit on one line.</p>
 <p>Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -1006,12 +1007,24 @@
 <section id="service">
 <h4>Service<a class="headerlink" href="#service" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>BirdWatch:</strong> satellite tracking: passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></li>
+<li><p><strong>BirdWatch (Satellite Tracking):</strong> passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></li>
 <li><p><strong>Multi-Mode Decoder:</strong> decodes CW, FT8, FT4, PSK, RTTY, SSTV and many other modes from your rig’s or an SDR’s audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
 <li><p><strong>Rotor Control:</strong> turns your antenna rotator toward a station (the roster’s <strong>Aim Rotator</strong>, or <strong>Ctrl</strong>+click on the map) or a BirdWatch satellite. The rotator can be on a serial port (Yaesu GS-232, Easycomm II, SPID), or reached through Hamlib’s rotctld, CatRotator or PstRotator. See <a class="reference internal" href="#document-Rig-and-Rotor-Control#rotor-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
-<li><p><strong>Rig Control:</strong> GridTracker2’s own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See <a class="reference internal" href="#document-Rig-and-Rotor-Control#rig-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
+<li><p><strong>Rig Control:</strong> GridTracker2’s own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See <a class="reference internal" href="#document-Rig-and-Rotor-Control#rig-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
+<li><p><strong>Network Audio:</strong> audio over your network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder. See <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>.</p></li>
 </ul>
+<p>Rotor Control, Rig Control and Network Audio are set up in the <a class="reference internal" href="#radios-tab">Radios</a> tab.</p>
 </section>
+</section>
+<section id="radios-tab">
+<h3>Radios Tab<a class="headerlink" href="#radios-tab" title="Link to this heading">¶</a></h3>
+<p>This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on. It has a box for each one that is on:</p>
+<ul class="simple">
+<li><p><strong>Rig Control:</strong> the VFOs, see <a class="reference internal" href="#document-Rig-and-Rotor-Control#rig-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
+<li><p><strong>Rotor Control:</strong> the rotator’s connection and Follow Satellite, see <a class="reference internal" href="#document-Rig-and-Rotor-Control#rotor-control"><span class="std std-ref">Rotor Control</span></a>.</p></li>
+<li><p><strong>Network Audio:</strong> the audio streams, see <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>.</p></li>
+</ul>
+<p><img alt="The Radios tab of the Settings panel" src="_images/GT2_Settings_Radios.png" /></p>
 <section id="online">
 <h4>Online<a class="headerlink" href="#online" title="Link to this heading">¶</a></h4>
 <ul class="simple">
@@ -2315,7 +2328,7 @@
 <li><p><strong>Rig Control</strong> reads and tunes your rigs and SDRs. The <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> and <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a> use it.</p></li>
 <li><p><strong>Rotor Control</strong> turns your antenna toward a station, a point on the map, or a satellite.</p></li>
 </ul>
-<p>Both are in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#features-tab"><span class="std std-ref">Settings → Features</span></a>, in the <strong>Service</strong> box. Tick <strong>Rotor Control</strong> or <strong>Rig Control</strong> to show its settings under it.</p>
+<p>Tick <strong>Rotor Control</strong> or <strong>Rig Control</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#features-tab"><span class="std std-ref">Settings → Features</span></a>, in the <strong>Service</strong> box. Their settings are in the <strong>Radios</strong> tab, to the right of Features, which appears while either of them (or Network Audio) is on.</p>
 <section id="rig-control">
 <h3>Rig Control<a class="headerlink" href="#rig-control" title="Link to this heading">¶</a></h3>
 <p>Rig Control works with these:</p>
@@ -2323,6 +2336,7 @@
 <li><p>Hamlib’s <strong>rigctld</strong> and <strong>flrig</strong>, which can share one rig with WSJT-X and other programs.</p></li>
 <li><p>An <strong>Icom</strong> (CI-V), a <strong>Kenwood</strong> or a <strong>Yaesu</strong> (CAT) on a serial or USB port.</p></li>
 <li><p>An SDR through <strong>SPY Server</strong> or <strong>SDR++</strong>.</p></li>
+<li><p>A <strong>FlexRadio</strong> through SmartSDR, and a networked <strong>Icom</strong> (IC-705, IC-7610, IC-9700, IC-905 …) over the network, each with its audio too.</p></li>
 </ul>
 <section id="vfos">
 <h4>VFOs<a class="headerlink" href="#vfos" title="Link to this heading">¶</a></h4>
@@ -2380,6 +2394,22 @@
 <p>The menus show <strong>Not Connected</strong> until the server answers. The gain is set in SDR++ itself. The server takes one client at a time, and sends its I/Q only while a decoder uses it.</p>
 <p><strong>SDR++ (rigctl)</strong></p>
 <p>The VFO selected in the SDR++ window, through SDR++’s <strong>Rigctl Server</strong> module. Add that module in SDR++ and start it, then enter its <strong>Host</strong> and <strong>TCP Port</strong> (4532 by default). SDR++ keeps its own audio, and the module takes one client at a time.</p>
+<p><strong>FlexRadio SmartSDR</strong></p>
+<p>A FlexRadio 6000 or 8000 series radio, with SmartSDR (or a Maestro) running and connected to it. Enter the radio’s address in <strong>Host</strong>, or leave it blank to use the first FlexRadio found on your network, and the <strong>TCP Port</strong> (4992).</p>
+<ul class="simple">
+<li><p><strong>VFO-A</strong> is the slice that transmits, of the SmartSDR client GridTracker2 joins; <strong>VFO-B</strong>, its second VFO, is that client’s next slice.</p></li>
+<li><p>Digital modes set in USB or LSB with <strong>SSB Data</strong> use DIGU or DIGL, shown as USB-D and LSB-D.</p></li>
+<li><p><strong>PTT Method</strong> CAT keys the radio (<code class="docutils literal notranslate"><span class="pre">xmit</span></code>).</p></li>
+<li><p>Its DAX audio is offered to the Multi-Mode Decoder (see <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>).</p></li>
+</ul>
+<p><strong>Icom LAN</strong></p>
+<p>An Icom with a network connection (IC-705, IC-7610, IC-9700, IC-905 …), reached over your network the way Icom’s Remote Utility does, with no computer at the radio. Enter the radio’s address in <strong>Host</strong> and its <strong>UDP Port</strong> (50001), and the <strong>Username</strong> and <strong>Password</strong> of a network user set in the radio.</p>
+<p>On the radio: turn <strong>Network Control</strong> on, and set up a network user (the IC-705’s MENU › SET › WLAN Set › Remote Settings › Network User1). Only one program can use the radio over the network at a time; if another has it, the status says which.</p>
+<ul class="simple">
+<li><p>The radio tells GridTracker2 its CI-V address; <strong>CI-V Address</strong> is for insisting on another, as with a USB connection.</p></li>
+<li><p>Frequency, mode, data mode, the second VFO and PTT work as with <strong>Icom CI-V</strong>.</p></li>
+<li><p>Its receive and transmit audio is offered to the Multi-Mode Decoder (see <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>).</p></li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>An SDR has no mode of its own: a SPY Server or SDR++ (Server) VFO always shows USB, which is what its I/Q gives the Multi-Mode Decoder.</p>
@@ -2473,6 +2503,111 @@
 <h4>CatRotator and PstRotator<a class="headerlink" href="#catrotator-and-pstrotator" title="Link to this heading">¶</a></h4>
 <p>CatRotator / PstRotator used to be an option of its own in the Service box. It is now a <strong>Protocol</strong> of Rotor Control. If you had it turned on, your address and port are carried over, and Rotor Control is turned on with that protocol.</p>
 </section>
+</section>
+</section>
+<span id="document-Network-Audio"></span><section id="network-audio">
+<h2>Network Audio<a class="headerlink" href="#network-audio" title="Link to this heading">¶</a></h2>
+<p>Network Audio brings audio into GridTracker2, and sends it out, over your home network instead of through a sound card. The <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> can then decode a rig that’s connected to another computer, and send SSTV pictures back to it.</p>
+<p>There are two kinds:</p>
+<ul class="simple">
+<li><p><strong>Streams</strong> you set up in Settings → Audio: <strong>VBAN</strong> (Voicemeeter and other VBAN programs), <strong>RTP</strong> (PipeWire, PulseAudio and AES67 equipment) and <strong>PipeWire / PulseAudio (TCP)</strong>.</p></li>
+<li><p><strong>A rig’s own network audio</strong>: a <strong>FlexRadio</strong> (DAX) or a networked <strong>Icom</strong> (IC-705, IC-7610, IC-9700, IC-905 …) set up as a VFO in <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig Control</span></a>. Its audio needs nothing set up here.</p></li>
+</ul>
+<p>Each stream and each such VFO appears in the Multi-Mode Decoder’s <strong>Input Device</strong> and <strong>Output Device</strong> menus, beside your sound cards.</p>
+<section id="setting-up-a-stream">
+<h3>Setting Up a Stream<a class="headerlink" href="#setting-up-a-stream" title="Link to this heading">¶</a></h3>
+<p>In <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#features-tab"><span class="std std-ref">Settings → Features</span></a>, under <strong>Service</strong>, tick <strong>Network Audio</strong>. Its streams are set up in the <strong>Radios</strong> tab, which appears to the right of Features (see <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#radios-tab"><span class="std std-ref">Radios Tab</span></a>). Click <strong>Add Stream</strong> for each stream, up to eight.</p>
+<p><a class="reference internal" href="_images/GT2_Network_Audio.png"><img alt="The Network Audio box with a PipeWire input and output" src="_images/GT2_Network_Audio.png" style="width: 450px;" /></a></p>
+<p>Each stream has a box of its own:</p>
+<ul class="simple">
+<li><p><strong>Name:</strong> your own name for the stream. The device menus show it after the protocol, for example <strong>VBAN: Shack PC</strong>.</p></li>
+<li><p><strong>Connect:</strong> a new stream starts with it unticked. Set the stream up, then tick <strong>Connect</strong>. While it is ticked the settings are grayed out; untick it to change them. <strong>✕</strong> removes a stream while <strong>Connect</strong> is unticked.</p></li>
+<li><p><strong>Protocol:</strong> VBAN, RTP, or PipeWire / PulseAudio (TCP).</p></li>
+<li><p><strong>Direction:</strong> <strong>Input</strong> (audio the decoder hears) or <strong>Output</strong> (audio it sends, such as SSTV pictures).</p></li>
+<li><p><strong>Found:</strong> streams announced on your network, if any (RTP’s and VBAN’s). Pick one to fill in its settings.</p></li>
+<li><p>The fields the protocol needs: <strong>Host</strong>, <strong>UDP Port</strong> or <strong>TCP Port</strong>, <strong>Stream Name</strong>, <strong>Sample Rate</strong> with <strong>Mono</strong> or <strong>Stereo</strong>, and <strong>Channel</strong> (for a stereo input: <strong>Left</strong>, <strong>Right</strong>, or <strong>Mix</strong> of both).</p></li>
+<li><p><strong>Status:</strong> what the stream is doing, for example “Receiving 48 kHz, 2 ch, 16-bit from 192.168.1.20 (Stream1)”, “No audio for 2 s”, or an error in orange.</p></li>
+</ul>
+<p>An input listens all the time while <strong>Connect</strong> is ticked, so its status shows straight away whether audio is arriving. A stream that fails, or whose far end restarts, is tried again by itself.</p>
+<p>Then pick the stream in the Multi-Mode Decoder: in its <strong>Settings</strong>, as the <strong>Input Device</strong> (or <strong>Output Device</strong>) of every mode with <strong>Common Input Device</strong> on, or of one mode on the <strong>Decoders</strong> tab.</p>
+</section>
+<section id="vban">
+<h3>VBAN<a class="headerlink" href="#vban" title="Link to this heading">¶</a></h3>
+<p>VBAN is VB-Audio’s protocol, used by Voicemeeter and many other programs and devices. It’s the easiest way to bring audio from another Windows PC.</p>
+<ul class="simple">
+<li><p><strong>Input:</strong> the <strong>UDP Port</strong> to listen on (6980 by default) and the <strong>Stream Name</strong> to hear. Leave <strong>Stream Name</strong> blank to hear the first stream that arrives; the status says which. Leave <strong>Host</strong> blank to hear the stream from any computer, or enter a computer’s address to hear only that one. VBAN streams heard on port 6980 are listed under <strong>Found</strong>.</p></li>
+<li><p><strong>Output:</strong> the <strong>Host</strong> to send to, its <strong>UDP Port</strong> (6980), the <strong>Stream Name</strong> the receiving program expects, and the <strong>Sample Rate</strong> and <strong>Mono</strong> or <strong>Stereo</strong>.</p></li>
+</ul>
+<p>An input takes whatever rate and format the sender uses: 8 to 32-bit, or 32 or 64-bit float. GridTracker2 sends 16-bit.</p>
+<p>In Voicemeeter, add a stream in its VBAN window: an outgoing stream to this computer’s address for GridTracker2’s input, or an incoming stream named as your GridTracker2 output.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>PipeWire’s VBAN receiver (<code class="docutils literal notranslate"><span class="pre">libpipewire-module-vban-recv</span></code>) plays every stream at its own rate, 44.1 kHz unless set, whatever the sender says. Set its <code class="docutils literal notranslate"><span class="pre">audio.rate</span></code> to the rate of your GridTracker2 output, or the audio comes out off pitch.</p>
+</div>
+</section>
+<section id="rtp">
+<h3>RTP<a class="headerlink" href="#rtp" title="Link to this heading">¶</a></h3>
+<p>RTP is the standard way PipeWire and PulseAudio send audio over a network, and what AES67 equipment uses.</p>
+<ul class="simple">
+<li><p><strong>Input:</strong> the <strong>Host</strong> is the multicast group to listen on (224.0.0.56, PipeWire’s and PulseAudio’s, by default), or blank for a stream sent straight to this computer. Enter the <strong>UDP Port</strong> (46000 by default), and the <strong>Sample Rate</strong> and <strong>Mono</strong> or <strong>Stereo</strong> the sender uses. A stream that announces itself (SAP) is listed under <strong>Found</strong> and sets them for you.</p></li>
+<li><p><strong>Output:</strong> the <strong>Host</strong> to send to (224.0.0.56 for every PipeWire and PulseAudio computer on your network, or one computer’s address), its <strong>UDP Port</strong>, and the rate and channels. GridTracker2 announces its stream, so PipeWire and PulseAudio computers listening for announcements pick it up by themselves: it shows as <strong>RTP Stream (</strong> and the stream’s name <strong>)</strong>.</p></li>
+</ul>
+<p>On the PipeWire or PulseAudio computer (including PipeWire with pipewire-pulse):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pactl</span> <span class="n">load</span><span class="o">-</span><span class="n">module</span> <span class="n">module</span><span class="o">-</span><span class="n">rtp</span><span class="o">-</span><span class="n">send</span> <span class="n">source</span><span class="o">=&lt;</span><span class="n">source</span> <span class="n">name</span><span class="o">&gt;</span> <span class="n">destination_ip</span><span class="o">=</span><span class="mf">224.0.0.56</span> <span class="n">port</span><span class="o">=</span><span class="mi">46000</span> <span class="n">rate</span><span class="o">=</span><span class="mi">48000</span> <span class="n">channels</span><span class="o">=</span><span class="mi">2</span> <span class="nb">format</span><span class="o">=</span><span class="n">s16be</span>
+<span class="n">pactl</span> <span class="n">load</span><span class="o">-</span><span class="n">module</span> <span class="n">module</span><span class="o">-</span><span class="n">rtp</span><span class="o">-</span><span class="n">recv</span> <span class="n">sap_address</span><span class="o">=</span><span class="mf">224.0.0.56</span>
+</pre></div>
+</div>
+<p>The first sends a source to GridTracker2; the second plays the streams GridTracker2 announces. <code class="docutils literal notranslate"><span class="pre">pactl</span> <span class="pre">list</span> <span class="pre">short</span> <span class="pre">sources</span></code> lists the source names; <code class="docutils literal notranslate"><span class="pre">&lt;sink</span> <span class="pre">name&gt;.monitor</span></code> sends what a sink plays.</p>
+</section>
+<section id="pipewire-pulseaudio-tcp">
+<h3>PipeWire / PulseAudio (TCP)<a class="headerlink" href="#pipewire-pulseaudio-tcp" title="Link to this heading">¶</a></h3>
+<p>The “simple protocol”: plain audio over one TCP connection, to a PipeWire or PulseAudio computer that serves it. Use it where multicast doesn’t get through, for example over Wi-Fi or a VPN.</p>
+<p>Enter the server’s <strong>Host</strong> and <strong>TCP Port</strong> (4711), and the <strong>Sample Rate</strong> and <strong>Mono</strong> or <strong>Stereo</strong> the server is set to. They must match: if they don’t, the status says so. An input and an output to the same server share one connection.</p>
+<p>On the server, PulseAudio or PipeWire with pipewire-pulse:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pactl</span> <span class="n">load</span><span class="o">-</span><span class="n">module</span> <span class="n">module</span><span class="o">-</span><span class="n">simple</span><span class="o">-</span><span class="n">protocol</span><span class="o">-</span><span class="n">tcp</span> <span class="n">rate</span><span class="o">=</span><span class="mi">48000</span> <span class="nb">format</span><span class="o">=</span><span class="n">s16le</span> <span class="n">channels</span><span class="o">=</span><span class="mi">2</span> <span class="n">record</span><span class="o">=</span><span class="n">true</span> <span class="n">playback</span><span class="o">=</span><span class="n">true</span> <span class="n">port</span><span class="o">=</span><span class="mi">4711</span> <span class="n">listen</span><span class="o">=</span><span class="mf">0.0.0.0</span> <span class="n">source</span><span class="o">=&lt;</span><span class="n">source</span> <span class="n">name</span><span class="o">&gt;</span> <span class="n">sink</span><span class="o">=&lt;</span><span class="n">sink</span> <span class="n">name</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>For a permanent setup, put the same line, without <code class="docutils literal notranslate"><span class="pre">pactl</span></code>, in <code class="docutils literal notranslate"><span class="pre">~/.config/pulse/default.pa</span></code>. Or with PipeWire itself, in a file such as <code class="docutils literal notranslate"><span class="pre">~/.config/pipewire/pipewire.conf.d/gridtracker-simple.conf</span></code>, then restart PipeWire (<code class="docutils literal notranslate"><span class="pre">systemctl</span> <span class="pre">--user</span> <span class="pre">restart</span> <span class="pre">pipewire</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">context</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="n">libpipewire</span><span class="o">-</span><span class="n">module</span><span class="o">-</span><span class="n">protocol</span><span class="o">-</span><span class="n">simple</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="n">capture</span> <span class="o">=</span> <span class="n">true</span>
+      <span class="n">playback</span> <span class="o">=</span> <span class="n">true</span>
+      <span class="n">audio</span><span class="o">.</span><span class="n">rate</span> <span class="o">=</span> <span class="mi">48000</span>
+      <span class="n">audio</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">S16</span>
+      <span class="n">audio</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+      <span class="n">audio</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">[</span> <span class="n">FL</span> <span class="n">FR</span> <span class="p">]</span>
+      <span class="n">server</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">"tcp:0.0.0.0:4711"</span> <span class="p">]</span>
+      <span class="n">capture</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{</span> <span class="n">target</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="s2">"&lt;source name&gt;"</span> <span class="p">}</span>
+      <span class="n">playback</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{</span> <span class="n">target</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="s2">"&lt;sink name&gt;"</span> <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">capture</span></code> sends audio to GridTracker2 (its input); <code class="docutils literal notranslate"><span class="pre">playback</span></code> takes GridTracker2’s output.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The simple protocol has no password: anyone on your network can listen or play. Use it on your own network only, and open TCP 4711 in the server’s firewall.</p>
+</div>
+</section>
+<section id="a-rig-s-own-network-audio">
+<h3>A Rig’s Own Network Audio<a class="headerlink" href="#a-rig-s-own-network-audio" title="Link to this heading">¶</a></h3>
+<p>A <strong>FlexRadio</strong> or a networked <strong>Icom</strong> set up as a VFO in <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig Control</span></a> brings its own audio. It is listed in the device menus by the protocol and the VFO, for example <strong>FlexRadio DAX: VFO-A (Flex)</strong> or <strong>Icom LAN: VFO-B (IC-9700)</strong>, and started only while the decoder uses it.</p>
+<p>With a rig’s network audio as the Input Device and no Output Device picked, SSTV pictures are sent to the same rig. The rig is keyed by its <strong>PTT Method</strong> (CAT), as usual.</p>
+<ul class="simple">
+<li><p><strong>FlexRadio:</strong> the audio of VFO-A’s slice through DAX, 24 kHz. If the slice has no DAX channel, GridTracker2 gives it the first free one. Sending uses DAX TX.</p></li>
+<li><p><strong>Icom LAN:</strong> the radio’s receive audio and transmit audio, 16-bit at 16 kHz. To transmit the decoder’s audio, set the radio’s modulation input for data to the network: on the IC-705, MENU › SET › Connectors › MOD Input › DATA MOD › <strong>WLAN</strong>.</p></li>
+</ul>
+</section>
+<section id="clocks-and-gaps">
+<h3>Clocks and Gaps<a class="headerlink" href="#clocks-and-gaps" title="Link to this heading">¶</a></h3>
+<p>A network stream comes from a computer with its own clock, and its packets arrive in bursts. GridTracker2 holds a short queue of the audio (about 0.2 s) and plays it a tiny bit faster or slower to keep up with the sender, so no samples are lost or doubled and SSTV pictures and weather faxes stay straight.</p>
+<p>Packets lost on the way (VBAN, RTP, FlexRadio DAX and Icom LAN number theirs) are replaced with the same length of silence, so the timing stays true. TCP never loses audio, but can’t tell when the server drops some.</p>
+</section>
+<section id="firewall">
+<h3>Firewall<a class="headerlink" href="#firewall" title="Link to this heading">¶</a></h3>
+<p>The first time a stream is opened, Windows may ask whether GridTracker2 may use the network: allow it on private networks. Inputs need these ports open on this computer: VBAN UDP 6980, RTP UDP 46000 (and UDP 9875 for announcements), FlexRadio and Icom LAN as their VFOs use them.</p>
 </section>
 </section>
 <span id="document-Multi-Mode-Decoder/Multi-Mode-Decoder"></span><section id="the-multi-mode-decoder">
@@ -2680,7 +2815,7 @@
 </ul>
 <p>To use it:</p>
 <ol class="arabic simple">
-<li><p>Set up your rig as a VFO in Settings → Features → <strong>Rig Control</strong>. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>.</p></li>
+<li><p>Set up your rig as a VFO in Settings → Radios → <strong>Rig Control</strong>. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>.</p></li>
 <li><p>In the decoder window, open <strong>Settings</strong>, and on the <strong>General</strong> tab tick <strong>Rig Control</strong>. It is off until you turn it on: while it is off, the decoder sends your rig nothing at all.</p></li>
 <li><p>Pick the VFO the decoder reads: under <strong>Common VFO</strong> on the <strong>General</strong> tab, or for each mode on the <strong>Decoders</strong> tab (see <a class="reference internal" href="#settings">Settings</a>).</p></li>
 </ol>
@@ -2688,7 +2823,7 @@
 <p class="admonition-title">Note</p>
 <p><strong>Common VFO</strong> is <strong>None</strong> until you pick one. With Rig Control on and no VFO picked, the decoder still shows audio frequencies only.</p>
 </div>
-<p>While BirdWatch follows a satellite with a rig, the decoder sends that rig nothing: the Frequency menu is grayed out, or hidden when BirdWatch uses the decoder’s own VFO.</p>
+<p>While BirdWatch follows a satellite with a rig, the decoder sends that rig nothing: the Frequency menu is grayed out until BirdWatch stops following it.</p>
 <section id="the-frequency-menu">
 <h4>The Frequency Menu<a class="headerlink" href="#the-frequency-menu" title="Link to this heading">¶</a></h4>
 <p>With Rig Control on and the mode’s VFO read, the Frequency menu appears on the second line. It lists the mode’s usual frequencies, each with its band, for example <strong>20m (14.074.00)</strong>. WEFAX and NAVTEX list their stations by name instead. The frequency your rig is on is picked in the menu; on another frequency, the menu shows <strong>-</strong>.</p>
@@ -2706,7 +2841,7 @@
 <h3>The Band Scope<a class="headerlink" href="#the-band-scope" title="Link to this heading">¶</a></h3>
 <p>An Icom radio that sends its spectrum scope over USB (the IC-7300 and others) can show its own scope in a strip above the decoder’s waterfall. You see the whole span the radio shows, not only the audio passband.</p>
 <p><img alt="An IC-7300's band scope above the decoder's waterfall" src="_images/GT2_MMD_Band_Scope.jpg" /></p>
-<p>To turn it on, tick <strong>Use Scope If Present</strong> in the Icom CI-V VFO’s box in Settings → Features → Rig Control (see <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode’s VFO is that radio.</p>
+<p>To turn it on, tick <strong>Use Scope If Present</strong> in the Icom CI-V VFO’s box in Settings → Radios → Rig Control (see <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode’s VFO is that radio.</p>
 <ul class="simple">
 <li><p>The frequencies run along its top, and the radio’s own waterfall under them, the newest at the top. Its colors start at the band’s noise floor, so it looks the same at every span.</p></li>
 <li><p>Where the radio is tuned is marked, and the audio the decoder takes (between <strong>[</strong> and <strong>]</strong>) is shaded.</p></li>
@@ -2731,6 +2866,15 @@
 <li><p>While the server can’t be reached, the status says <strong>Waiting for</strong> and the input’s name, and the decoder tries again by itself.</p></li>
 <li><p>The server only streams while a decoder uses it.</p></li>
 </ul>
+</section>
+<section id="network-inputs-and-outputs">
+<h3>Network Inputs and Outputs<a class="headerlink" href="#network-inputs-and-outputs" title="Link to this heading">¶</a></h3>
+<p>Audio from another computer, or from a networked rig, is in the <strong>Input Device</strong> and <strong>Output Device</strong> menus too:</p>
+<ul class="simple">
+<li><p>The streams set up in <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a> (Settings → Audio), by protocol and name, for example <strong>VBAN: Shack PC</strong> or <strong>RTP (PipeWire / PulseAudio / AES67): Desktop</strong>.</p></li>
+<li><p>A FlexRadio or Icom LAN VFO’s own audio, for example <strong>FlexRadio DAX: VFO-A (Flex)</strong> or <strong>Icom LAN: VFO-B (IC-9700)</strong>.</p></li>
+</ul>
+<p>While a network input’s first audio hasn’t arrived yet, the status says <strong>Waiting for audio from</strong> the input, with the stream’s own status after it. The decoder runs at the stream’s own sample rate, and starts again by itself if the stream changes rate. With a rig’s own network audio as the Input Device and no Output Device picked, SSTV pictures are sent back to the same rig.</p>
 <p>The HW level isn’t shown for an SDR input; SW still works.</p>
 </section>
 <section id="decodes-in-gridtracker2">
@@ -3113,7 +3257,7 @@
 </ul>
 <section id="turning-it-on">
 <h3>Turning It On<a class="headerlink" href="#turning-it-on" title="Link to this heading">¶</a></h3>
-<p>In <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#features-tab"><span class="std std-ref">Settings → Features</span></a>, under <strong>Service</strong>, tick <strong>BirdWatch</strong>. This adds:</p>
+<p>In <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#features-tab"><span class="std std-ref">Settings → Features</span></a>, under <strong>Service</strong>, tick <strong>BirdWatch (Satellite Tracking)</strong>. This adds:</p>
 <ul class="simple">
 <li><p>the <strong>Toggle Satellite Tracking</strong> button to the button panel;</p></li>
 <li><p>the <strong>BirdWatch</strong> panel on the map;</p></li>
@@ -3411,7 +3555,7 @@
 <p>With <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig Control</span></a> set up and connected, BirdWatch tunes your radio for the selected satellite and keeps correcting the Doppler shift through the pass: the downlink VFO is kept where the signal is heard, and the uplink VFO where the satellite will hear you.</p>
 <section id="which-vfo-does-what">
 <h4>Which VFO Does What<a class="headerlink" href="#which-vfo-does-what" title="Link to this heading">¶</a></h4>
-<p>In Settings → Features → Rig Control, each VFO has a <strong>Satellites</strong> row that tells BirdWatch what it may use that VFO for: a band (10m to 1.2cm), <strong>All Frequencies</strong>, or a <strong>Custom</strong> range in MHz, each for <strong>RX</strong>, <strong>TX</strong> or <strong>RX/TX</strong>. Add as many ranges as you need. A new VFO is set to All Frequencies RX; a VFO with no ranges is not used for satellites. For example, for a 2m/70cm FM satellite on a dual-band radio, you might give VFO-A “70cm RX” and its second VFO “2m TX”.</p>
+<p>In Settings → Radios → Rig Control, each VFO has a <strong>Satellites</strong> row that tells BirdWatch what it may use that VFO for: a band (10m to 1.2cm), <strong>All Frequencies</strong>, or a <strong>Custom</strong> range in MHz, each for <strong>RX</strong>, <strong>TX</strong> or <strong>RX/TX</strong>. Add as many ranges as you need. A new VFO is set to All Frequencies RX; a VFO with no ranges is not used for satellites. For example, for a 2m/70cm FM satellite on a dual-band radio, you might give VFO-A “70cm RX” and its second VFO “2m TX”.</p>
 <p>When BirdWatch needs a VFO for a downlink or an uplink, it uses the first VFO in the list whose ranges fit. Use the <strong>▲</strong> and <strong>▼</strong> beside a VFO’s name to change the order. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a> for setting up the VFOs themselves.</p>
 <p>To send one transmitter’s downlink or uplink to a particular VFO, right-click it in the transmitters window and pick the <strong>Downlink VFO</strong> or <strong>Uplink VFO</strong>. <strong>Automatic</strong> goes back to the first VFO that fits. A picked VFO’s letter is shown in yellow after the frequency.</p>
 </section>
@@ -3442,7 +3586,7 @@
 </section>
 <section id="rotor-control-follow-satellite">
 <h4>Rotor Control: Follow Satellite<a class="headerlink" href="#rotor-control-follow-satellite" title="Link to this heading">¶</a></h4>
-<p>With Rotor Control on, tick <strong>Follow Satellite</strong> under it in Settings → Features. Your rotator then follows the selected satellite while it is up, and a few minutes before it rises points at where it will come up. The rotator’s position is shown in the BirdWatch panel’s information. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a> for connecting the rotator.</p>
+<p>With Rotor Control on, tick <strong>Follow Satellite</strong> in its box in Settings → Radios. Your rotator then follows the selected satellite while it is up, and a few minutes before it rises points at where it will come up. The rotator’s position is shown in the BirdWatch panel’s information. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a> for connecting the rotator.</p>
 </section>
 <section id="multi-mode-decoder">
 <h4>Multi-Mode Decoder<a class="headerlink" href="#multi-mode-decoder" title="Link to this heading">¶</a></h4>
@@ -4313,6 +4457,7 @@ Linux users, please include the output of: uname -r)
 <p class="caption" role="heading"><span class="caption-text">Your Station: Rigs, Decoders and Satellites</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="#document-Rig-and-Rotor-Control">Rig and Rotor Control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#document-Network-Audio">Network Audio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder">The Multi-Mode Decoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes">Decoder Modes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#document-BirdWatch">BirdWatch</a></li>
@@ -4355,7 +4500,7 @@ Linux users, please include the output of: uname -r)
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2026, GridTracker.org.
-      Last updated on Nov 08, 2026.
+      Last updated on Nov 09, 2026.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>

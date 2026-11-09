@@ -92,7 +92,7 @@ const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: 
 // is a rig of its own, and has no other second VFO), its link that one's. A VFO with its Connect unchecked is let go (its settings free
 // to change)
 
-const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false, ptt: "cat", useScope: false };
+const RIG_LINK_DEFAULTS = { protocol: "rigctld", host: "127.0.0.1", netPort: 4532, flrigPort: 12345, spyPort: 5555, sdrppPort: 5259, flexPort: 4992, icomLanPort: 50001, lanUser: "", lanPassword: "", lanRate: 16000, port: null, baud: 19200, dataBits: 8, parity: "none", stopBits: 1, civAddress: "", forceVfo: false, ptt: "cat", useScope: false };
 // PTT Method (each rig's box): how the Multi-Mode Decoder keys the rig to transmit. none: it isn't keyed; cat: the protocol's PTT
 // command; vox: the rig's own VOX, from the audio; dtr, rts: the serial port's line (a serial rig only)
 const RIG_PTT_METHODS = ["none", "cat", "vox", "dtr", "rts"];
@@ -883,6 +883,8 @@ function rigSettingsRender()
   }
   rigAddVfo.style.display = rigVfos().length < RIG_VFOS_MAX ? "" : "none";
   for (const v of rigVfos()) rigVfoBoxRender(v);
+  // Its box in the Radios tab (panel.js)
+  settingsRadiosTabRender();
   // The VFOs (added, removed, their letters and names) in the Multi-Mode Decoder's menus (its window, when loaded)
   try
   {
@@ -1121,7 +1123,7 @@ function rigLockField(el, locked)
 // One rig's rows: shown (on) or not, their fields locked or not
 function rigSettingsRenderOne(R, on, locked = false)
 {
-  for (const name of ["Protocol", "Choose", "Baud", "DataBits", "Parity", "StopBits", "CivValue", "Host", "NetPort", "ForceVfo"]) rigLockField(rigEl(R, name), locked);
+  for (const name of ["Protocol", "Choose", "Baud", "DataBits", "Parity", "StopBits", "CivValue", "Host", "NetPort", "ForceVfo", "LanUser", "LanPassword"]) rigLockField(rigEl(R, name), locked);
   const S = rigSettingsOf(R);
   const protocolSelect = rigEl(R, "Protocol");
   const baudSelect = rigEl(R, "Baud");
@@ -1154,7 +1156,13 @@ function rigSettingsRenderOne(R, on, locked = false)
   rigEl(R, "UseScope").checked = S.useScope === true;
   rigScopeWarnRender(R);
   const protocol = rigProtocolChosen(R);
-  rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : protocol.portKey ? S[protocol.portKey] : S.netPort;
+  // (A VFO set up before its protocol was there has no port of its own for it yet: the protocol's default)
+  rigEl(R, "NetPort").value = protocol.http ? S.flrigPort : protocol.portKey ? S[protocol.portKey] || protocol.portDefault : S.netPort;
+  // Its port's kind beside it: TCP, or UDP for a protocol that is reached over UDP (Icom LAN)
+  rigEl(R, "NetPortLabel").textContent = I18N(protocol.udp ? "settings.rig.udpPort.label" : "settings.rotor.tcpPort.label");
+  // The radio's own login (Icom LAN: the user and password set in the radio's Network menu)
+  rigEl(R, "LanUser").value = S.lanUser || "";
+  rigEl(R, "LanPassword").value = S.lanPassword || "";
   const portName = rigEl(R, "PortName");
   portName.textContent = S.port ? serialPortShortName(S.port) + (serialPortModel(S.port) ? "  —  " + serialPortModel(S.port) : "") : I18N("settings.rotor.none.label");
   portName.title = S.port ? S.port.displayName || "" : "";
@@ -1176,7 +1184,7 @@ function rigSettingsRenderOne(R, on, locked = false)
   }
   pttSelect.value = pttChoices.some(([value]) => value == S.ptt) ? S.ptt : "none";
   const sdrpp = on && S.protocol == "sdrpp";
-  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && S.protocol == "civ", ScopeTr: on && S.protocol == "civ", HostTr: on && !serial, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, PttTr: on, StatusTr: on };
+  const rows = { ProtocolTr: on, ProtocolNoteTr: on && !!note, PortTr: on && serial, BaudTr: on && serial, CivTr: on && (S.protocol == "civ" || S.protocol == "icomlan"), ScopeTr: on && S.protocol == "civ", HostTr: on && !serial, LanTr: on && protocol.lanLogin === true, ForceVfoTr: on && S.protocol == "rigctld", SdrppSourceTr: sdrpp, SdrppDeviceTr: sdrpp, SdrppRateTr: sdrpp, PttTr: on, StatusTr: on };
   for (const [name, shown] of Object.entries(rows)) rigEl(R, name).style.display = shown ? "" : "none";
   serialLinuxRender(rigEl(R, "LinuxTr"), rigEl(R, "LinuxText"), S.port, on && serial);
   rigStatusRender(R);
@@ -1320,6 +1328,8 @@ function rigSettingsChanged(el)
   S.civAddress = rigEl(R, "CivValue").value.trim().toUpperCase();
   S.host = rigEl(R, "Host").value.trim();
   S.forceVfo = rigEl(R, "ForceVfo").checked;
+  S.lanUser = rigEl(R, "LanUser").value.trim();
+  S.lanPassword = rigEl(R, "LanPassword").value;
   if (sameProtocol)
   {
     const protocol = rigProtocolChosen(R);
@@ -1642,7 +1652,8 @@ async function rigConnect(R, retry = false)
   rigSetStatus(R, "connecting");
   await closing;
   if (generation != R.generation) return;
-  const open = R.protocol.serial ? rigOpenSerial(R, generation) : R.protocol.http ? rigOpenHttp(R, generation) : rigOpenNet(R, generation);
+  // A protocol with a transport of its own (Icom LAN's UDP streams) opens itself
+  const open = R.protocol.open ? R.protocol.open(R, generation) : R.protocol.serial ? rigOpenSerial(R, generation) : R.protocol.http ? rigOpenHttp(R, generation) : rigOpenNet(R, generation);
   open.catch((e) =>
   {
     if (generation == R.generation) rigFail(R, e && e.message ? e.message : String(e));

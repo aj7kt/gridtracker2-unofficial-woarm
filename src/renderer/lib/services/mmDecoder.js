@@ -244,7 +244,7 @@ function mmDecoderInputsCheck(deviceInfos)
     // An Input Device picked and in use (the common one, or each mode's own) that isn't there; one with none picked hears the first in
     // the list. An SDR server's I/Q isn't a sound card: not looked for here
     const keys = S.commonInput !== false ? ["common"] : MMD_INPUT_MODES;
-    const missing = (key) => mmDecoderInputs()[key] && !/^(iq|spy):/.test(String(mmDecoderInputs()[key].id)) && !mmDecoderInputFindOwn(key, inputs);
+    const missing = (key) => mmDecoderInputs()[key] && !/^(iq|spy|net|rig):/.test(String(mmDecoderInputs()[key].id)) && !mmDecoderInputFindOwn(key, inputs);
     if (keys.some(missing)) audioCardWarn(true, true);
     else if (Object.keys(S.inputCards).some((id) => !(id in found)) || Object.keys(found).some((id) => !(id in S.inputCards))) audioCardWarn(false, true);
   }
@@ -396,15 +396,6 @@ function mmDecoderSatellite()
   if (R && !["rx", "tx"].some((side) => rigVfoLink(rigRoleVfo(side)) === R)) return null;
   const tle = birdWatchTleGet(GT.rigDoppler.norad);
   return tle ? tle.name : null;
-}
-
-// BirdWatch follows the satellite on the decoder's VFO itself: its Frequency menu isn't shown at all
-function mmDecoderRigShared()
-{
-  if (!mmDecoderRigLocked()) return false;
-  const v = mmDecoderVfo();
-  const D = GT.rigDoppler;
-  return (D.rx && rigRoleVfo("rx") === v) || (D.tx && rigRoleVfo("tx") === v);
 }
 
 // An audio frequency in the receiver's passband as the frequency on the air (Hz), from the decoder's VFO: USB adds it to the dial, LSB

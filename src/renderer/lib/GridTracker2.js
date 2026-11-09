@@ -894,6 +894,8 @@ function postInit()
     rotorInit();
     section = "RigInit";
     rigInit();
+    section = "NetAudioInit";
+    netAudioInit();
     section = "MmDecoderInit";
     mmDecoderInit();
     projectionImg.style.filter = GT.settings.map.projection == "AEQD" ? "" : "grayscale(1)";

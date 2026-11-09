@@ -178,7 +178,7 @@ The decoder works on its own, from audio alone. Rig Control is optional. It lets
 
 To use it:
 
-1. Set up your rig as a VFO in Settings → Features → **Rig Control**. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md).
+1. Set up your rig as a VFO in Settings → Radios → **Rig Control**. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md).
 2. In the decoder window, open **Settings**, and on the **General** tab tick **Rig Control**. It is off until you turn it on: while it is off, the decoder sends your rig nothing at all.
 3. Pick the VFO the decoder reads: under **Common VFO** on the **General** tab, or for each mode on the **Decoders** tab (see [Settings](#settings)).
 
@@ -186,7 +186,7 @@ To use it:
 **Common VFO** is **None** until you pick one. With Rig Control on and no VFO picked, the decoder still shows audio frequencies only.
 ```
 
-While BirdWatch follows a satellite with a rig, the decoder sends that rig nothing: the Frequency menu is grayed out, or hidden when BirdWatch uses the decoder's own VFO.
+While BirdWatch follows a satellite with a rig, the decoder sends that rig nothing: the Frequency menu is grayed out until BirdWatch stops following it.
 
 ### The Frequency Menu
 
@@ -209,7 +209,7 @@ An Icom radio that sends its spectrum scope over USB (the IC-7300 and others) ca
 
 ![An IC-7300's band scope above the decoder's waterfall](../img/GT2_MMD_Band_Scope.jpg)
 
-To turn it on, tick **Use Scope If Present** in the Icom CI-V VFO's box in Settings → Features → Rig Control (see [Rig and Rotor Control](../Rig-and-Rotor-Control.md)). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode's VFO is that radio.
+To turn it on, tick **Use Scope If Present** in the Icom CI-V VFO's box in Settings → Radios → Rig Control (see [Rig and Rotor Control](../Rig-and-Rotor-Control.md)). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode's VFO is that radio.
 
 * The frequencies run along its top, and the radio's own waterfall under them, the newest at the top. Its colors start at the band's noise floor, so it looks the same at every span.
 * Where the radio is tuned is marked, and the audio the decoder takes (between **[** and **]**) is shaded.
@@ -233,6 +233,15 @@ A **SPY Server** (an Airspy or RTL-SDR shared over the network) or an **SDR++ (S
 * An SDR gives far more than a rig's 3 kHz: set **Bandpass** in [Settings → General](#general) to decode more of it, up to the whole of a 96 kHz stream.
 * While the server can't be reached, the status says **Waiting for** and the input's name, and the decoder tries again by itself.
 * The server only streams while a decoder uses it.
+
+## Network Inputs and Outputs
+
+Audio from another computer, or from a networked rig, is in the **Input Device** and **Output Device** menus too:
+
+* The streams set up in [Network Audio](../Network-Audio.md) (Settings → Audio), by protocol and name, for example **VBAN: Shack PC** or **RTP (PipeWire / PulseAudio / AES67): Desktop**.
+* A FlexRadio or Icom LAN VFO's own audio, for example **FlexRadio DAX: VFO-A (Flex)** or **Icom LAN: VFO-B (IC-9700)**.
+
+While a network input's first audio hasn't arrived yet, the status says **Waiting for audio from** the input, with the stream's own status after it. The decoder runs at the stream's own sample rate, and starts again by itself if the stream changes rate. With a rig's own network audio as the Input Device and no Output Device picked, SSTV pictures are sent back to the same rig.
 
 The HW level isn't shown for an SDR input; SW still works.
 

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261109.1]
+## [v2.261109.2]
 
 ### MD Markup Format
 #### Map / UI
@@ -130,8 +130,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Click one, on the waterfall or in the list, to decode it: its mode and submode are chosen and Detect Modes turns off (a CW signal pinned, an HF packet station locked onto, the FT8 or FT4 focus put on the station)
 - PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts
 
+#### Network Audio
+
+- New Network Audio (Settings, Features, Service): audio over your home network as the Multi-Mode Decoder's Input and Output Devices, beside your sound cards, to decode a rig connected to another computer and send SSTV pictures back to it
+  - VBAN, as Voicemeeter and many other programs and devices send it
+  - RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 sends
+  - PipeWire / PulseAudio (TCP), their simple protocol, where multicast doesn't get through
+  - Each stream in a box of its own (the new Radios tab): Input or Output, Found (streams announced on the network), and a status line saying what it hears or sends
+  - The audio is kept steady against the sender's clock, and lost packets are filled with silence, so SSTV pictures and weather faxes stay straight
+- Rig Control: two new protocols, each bringing the rig's own audio to the Multi-Mode Decoder too
+  - FlexRadio SmartSDR: the slice's frequency and mode, PTT, and DAX audio in and out (a blank Host finds the radio on your network)
+  - Icom LAN: an IC-705, IC-7610, IC-9700 or IC-905 over the network with no computer at the radio, with the user and password set in the radio: frequency, mode, PTT and its receive and transmit audio
+
 #### App
 
+- Settings: new Radios tab, to the right of Features, while Rig Control, Rotor Control or Network Audio is on: their settings are there now (turned on and off in Features, Service as before)
+  - In a narrow window, About moves up to the row above so the tabs fit on one line
 - Settings, Audio: Device is now Output Device
 - Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card
 - At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice
@@ -334,8 +348,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts</li>
 </ul>
+<h4>Network Audio</h4>
+<ul>
+  <li>New Network Audio (Settings, Features, Service): audio over your home network as the Multi-Mode Decoder's Input and Output Devices, beside your sound cards, to decode a rig connected to another computer and send SSTV pictures back to it
+    <ul>
+      <li>VBAN, as Voicemeeter and many other programs and devices send it</li>
+      <li>RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 sends</li>
+      <li>PipeWire / PulseAudio (TCP), their simple protocol, where multicast doesn't get through</li>
+      <li>Each stream in a box of its own (the new Radios tab): Input or Output, Found (streams announced on the network), and a status line saying what it hears or sends</li>
+      <li>The audio is kept steady against the sender's clock, and lost packets are filled with silence, so SSTV pictures and weather faxes stay straight</li>
+    </ul>
+  </li>
+  <li>Rig Control: two new protocols, each bringing the rig's own audio to the Multi-Mode Decoder too
+    <ul>
+      <li>FlexRadio SmartSDR: the slice's frequency and mode, PTT, and DAX audio in and out (a blank Host finds the radio on your network)</li>
+      <li>Icom LAN: an IC-705, IC-7610, IC-9700 or IC-905 over the network with no computer at the radio, with the user and password set in the radio: frequency, mode, PTT and its receive and transmit audio</li>
+    </ul>
+  </li>
+</ul>
 <h4>App</h4>
 <ul>
+  <li>Settings: new Radios tab, to the right of Features, while Rig Control, Rotor Control or Network Audio is on: their settings are there now (turned on and off in Features, Service as before)
+    <ul>
+      <li>In a narrow window, About moves up to the row above so the tabs fit on one line</li>
+    </ul>
+  </li>
   <li>Settings, Audio: Device is now Output Device</li>
   <li>Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card</li>
   <li>At startup the map goes back to the WSJT-X, JTDX or other instance it was showing when GridTracker2 was closed, once that instance starts sending (within 30 seconds), even if another one, such as the Multi-Mode Decoder, was heard first; picking an instance yourself before then keeps your choice</li>

@@ -196,6 +196,8 @@ function rotorSettingsRender()
   // The BirdWatch panel's Rotor row is there while the service is on (birdWatchInfo.js)
   if (typeof birdWatchInfoBuilt != "undefined" && birdWatchInfoBuilt) birdWatchInfoRebuild();
   rotorStatusRender();
+  // Its box in the Radios tab (panel.js)
+  settingsRadiosTabRender();
 }
 
 // The Settings checkbox
@@ -248,14 +250,13 @@ function rotorAimingChanged()
   if (GT.callRosterWindowInitialized) GT.callRosterWindowHandle.window.setPstrotatorEnable(GT.settings.rotor.enable);
 }
 
-// The Settings window on Features, where Rotor Control and Rig Control are (a click on the rotor's status, or the Rig box, in the
-// BirdWatch panel)
+// The Settings window on Radios, where Rotor Control's and Rig Control's settings are (a click on the rotor's status, or the Rig box, in
+// the BirdWatch panel); Features while neither is on (the Radios tab isn't there)
 function rotorOpenSettings()
 {
-  const button = document.querySelector(".settingstab button[onclick*='featuresSettingsDiv']");
-  if (!button) return;
   closeEventViewer();
-  openSettingsTab(button, "featuresSettingsDiv");
+  if (radiosSettingsButton.style.display != "none") openSettingsTab(radiosSettingsButton, "radiosSettingsDiv");
+  else openSettingsTab(featuresbut, "featuresSettingsDiv");
   helpDiv.style.display = "none";
   GT.helpShow = false;
   rootSettingsDiv.style.display = "inline-flex";

@@ -1,6 +1,6 @@
 # What's New in GridTracker2
 
-This guide was last revised for version 2.261109.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.
+This guide was last revised for version 2.261109.2. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.
 
 ## New Features
 
@@ -14,7 +14,8 @@ This guide was last revised for version 2.261109.1. If you used GridTracker2 bef
 * **New map layers and buttons.** Range Rings, Major Parallels and Meridians, a Tropospheric Inversion VHF prediction layer (with 6 m Es areas), a choice of grayline terminator (Horizon, Civil, Nautical or Astronomical), the US weather radar restored, new base maps, and the option to put the side panel on the left side of the window.
 * **Multi-Mode Decoder.** Decode CW, FT8, FT4, PSK, RTTY, MFSK, DominoEX and THOR, Olivia, NAVTEX, Feld-Hell, WEFAX, WSPR, SSTV, Packet and satellite data right in GridTracker2, from your rig's or an SDR's audio, with a waterfall of the whole passband. FT8, FT4 and WSPR decodes can go to the map and Call Roster, and SSTV pictures can be sent. See [The Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md).
 * **BirdWatch satellite tracking.** Amateur satellites on the map with their footprints and ground tracks, a BirdWatch panel with each satellite's position, AOS and LOS and sky views, a pass timeline you can export to your calendar, and pass alerts. With Rig Control your radio follows a satellite's downlink and uplink, Doppler-corrected through the pass, and with Rotor Control your antenna follows it too. See [BirdWatch](../BirdWatch.md).
-* **Rig and Rotor Control.** GridTracker2 can now read and tune your rigs and SDRs itself (rigctld, flrig, Icom CI-V, Kenwood and Yaesu CAT, SPY Server, SDR++), and turn your antenna rotator (Yaesu GS-232, Easycomm II, SPID, rotctld, CatRotator / PstRotator). See [Rig and Rotor Control](../Rig-and-Rotor-Control.md).
+* **Network Audio.** Audio in and out over your home network, for the Multi-Mode Decoder: VBAN (Voicemeeter), RTP and the simple TCP protocol of PipeWire and PulseAudio, and the audio of a FlexRadio (DAX) or a networked Icom. See [Network Audio](../Network-Audio.md).
+* **Rig and Rotor Control.** GridTracker2 can now read and tune your rigs and SDRs itself (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood and Yaesu CAT, SPY Server, SDR++), and turn your antenna rotator (Yaesu GS-232, Easycomm II, SPID, rotctld, CatRotator / PstRotator). See [Rig and Rotor Control](../Rig-and-Rotor-Control.md).
 * **Event Viewer.** What happened this session (QSOs logged, alerts, errors, BirdWatch announcements) in a list of its own, over the map or in a window. It replaces the side panel's message list. See [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer).
 * **Rearrangeable side panel.** Drag the band activity graph, Quick Stats and Map View Filters above or below each other and the buttons. See [Rearranging the Panel](../GridTracker-Overview/Control-Panel.md#rearranging-the-panel).
 * **Santa Tracker.** From December 1st a button appears that follows Santa and his reindeer around the world.

@@ -93,6 +93,7 @@ const TX = {
   timer: null,
   watchdog: null,
   pttVfo: null, // the VFO whose rig was keyed (Rig Control), until it is unkeyed
+  netToken: null, // a network Output Device's, while it is sent to (mmdNetAudio.js)
   logo: null,   // the GridTracker logo, loaded once
   image: null,  // the image file chosen, loaded (its path in image.src)
   built: null,  // the picture as last built (a canvas at the mode's size)
@@ -921,9 +922,28 @@ async function mmdSstvTxStart(kind, make, ended)
   let ctx = null;
   try
   {
-    const options = { latencyHint: "playback" };
-    if (ready.device.deviceId && ready.device.deviceId != "default") options.sinkId = ready.device.deviceId;
-    ctx = new AudioContext(options);
+    // A network stream (mmdNetAudio.js): its own context, at the stream's rate, what it plays sent; else the sound card's
+    let out = null;
+    if (ready.device.netAudio)
+    {
+      const net = await mmdNetOutput(ready.device);
+      if (TX.source)
+      {
+        net.ctx.close().catch(() => {});
+        mmdNetOutputStop(net.token);
+        return;
+      }
+      ctx = net.ctx;
+      out = net.node;
+      TX.netToken = net.token;
+    }
+    else
+    {
+      const options = { latencyHint: "playback" };
+      if (ready.device.deviceId && ready.device.deviceId != "default") options.sinkId = ready.device.deviceId;
+      ctx = new AudioContext(options);
+      out = ctx.destination;
+    }
     const audio = make(ctx.sampleRate, 1, ready.method);
     const buffer = ctx.createBuffer(1, audio.samples.length, ctx.sampleRate);
     buffer.copyToChannel(audio.samples, 0);
@@ -932,7 +952,7 @@ async function mmdSstvTxStart(kind, make, ended)
     const gain = ctx.createGain();
     gain.gain.value = mmdSstvTxAmp();
     source.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(out);
     TX.ctx = ctx;
     TX.source = source;
     TX.gain = gain;
@@ -960,7 +980,12 @@ async function mmdSstvTxStart(kind, make, ended)
   }
   catch (e)
   {
-    if (ctx && TX.ctx != ctx) ctx.close().catch(() => {});
+    if (ctx && TX.ctx != ctx)
+    {
+      ctx.close().catch(() => {});
+      mmdNetOutputStop(TX.netToken);
+      TX.netToken = null;
+    }
     mmdSstvTxStop(I18N("sstvTx.status.failed") + " " + ((e && e.message) || String(e)), true);
   }
 }
@@ -986,7 +1011,8 @@ function mmdSstvTxStop(text = "", error = false)
   clearTimeout(TX.watchdog);
   TX.timer = null;
   TX.watchdog = null;
-  const source = TX.source, ctx = TX.ctx;
+  const source = TX.source, ctx = TX.ctx, netToken = TX.netToken;
+  TX.netToken = null;
   TX.source = null;
   TX.ctx = null;
   TX.gain = null;
@@ -1007,6 +1033,8 @@ function mmdSstvTxStop(text = "", error = false)
   const unkey = () =>
   {
     if (ctx) ctx.close().catch(() => {});
+    // A network output let go with it (what was played has gone out by now)
+    mmdNetOutputStop(netToken);
     if (TX.pttVfo)
     {
       try

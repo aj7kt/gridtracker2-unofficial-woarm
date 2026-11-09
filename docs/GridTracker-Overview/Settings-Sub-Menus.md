@@ -2,7 +2,7 @@
 
 Click the **Settings** button (the gear) in the button panel, or press **Ctrl+S**, to open the Settings panel over the map. Click the red **X** in the top right corner, press **Esc**, or click the gear again to close it.
 
-The tabs along the top are **General**, **Features**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Feeds** tab only appears while DX Feeds is turned on. While BirdWatch is turned on, its own tabs, **BirdWatch**, **Telemetry** and **Satellites**, appear too; see [BirdWatch](../BirdWatch.md#settings-birdwatch-tab).
+The tabs along the top are **General**, **Features**, **Radios**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Radios** tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the **Feeds** tab while DX Feeds is. While BirdWatch is turned on, its own tabs, **BirdWatch**, **Telemetry** and **Satellites**, appear in a row above the others; see [BirdWatch](../BirdWatch.md#settings-birdwatch-tab). In a narrow window, **About** moves up to that row so the others fit on one line.
 
 Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.
 
@@ -80,10 +80,23 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
 
 ### Service
 
-* **BirdWatch:** satellite tracking: passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See [BirdWatch](../BirdWatch.md).
+* **BirdWatch (Satellite Tracking):** passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See [BirdWatch](../BirdWatch.md).
 * **Multi-Mode Decoder:** decodes CW, FT8, FT4, PSK, RTTY, SSTV and many other modes from your rig's or an SDR's audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See [The Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md).
 * **Rotor Control:** turns your antenna rotator toward a station (the roster's **Aim Rotator**, or **Ctrl**+click on the map) or a BirdWatch satellite. The rotator can be on a serial port (Yaesu GS-232, Easycomm II, SPID), or reached through Hamlib's rotctld, CatRotator or PstRotator. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).
-* **Rig Control:** GridTracker2's own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
+* **Rig Control:** GridTracker2's own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
+* **Network Audio:** audio over your network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder. See [Network Audio](../Network-Audio.md).
+
+Rotor Control, Rig Control and Network Audio are set up in the [Radios](#radios-tab) tab.
+
+## Radios Tab
+
+This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on. It has a box for each one that is on:
+
+* **Rig Control:** the VFOs, see [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
+* **Rotor Control:** the rotator's connection and Follow Satellite, see [Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).
+* **Network Audio:** the audio streams, see [Network Audio](../Network-Audio.md).
+
+![The Radios tab of the Settings panel](../img/GT2_Settings_Radios.png)
 
 ### Online
 

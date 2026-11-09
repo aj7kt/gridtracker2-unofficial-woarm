@@ -92,6 +92,7 @@ function loadViewSettings()
 
   rotorSettingsRender();
   rigSettingsRender();
+  netAudioSettingsRender();
 
   spotHistoryTimeValue.value = parseInt(
     GT.settings.reception.viewHistoryTimeSec / 60

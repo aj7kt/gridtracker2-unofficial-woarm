@@ -55,6 +55,7 @@ GridTracker2 User Guide
    :caption: Your Station: Rigs, Decoders and Satellites
 
    Rig-and-Rotor-Control
+   Network-Audio
    Multi-Mode-Decoder/Multi-Mode-Decoder
    Multi-Mode-Decoder/Decoder-Modes
    BirdWatch

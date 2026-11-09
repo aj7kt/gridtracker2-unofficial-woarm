@@ -11,7 +11,7 @@ A few terms used in this chapter:
 
 ## Turning It On
 
-In [Settings → Features](GridTracker-Overview/Settings-Sub-Menus.md#features-tab), under **Service**, tick **BirdWatch**. This adds:
+In [Settings → Features](GridTracker-Overview/Settings-Sub-Menus.md#features-tab), under **Service**, tick **BirdWatch (Satellite Tracking)**. This adds:
 
 * the **Toggle Satellite Tracking** button to the button panel;
 * the **BirdWatch** panel on the map;
@@ -275,7 +275,7 @@ With [Rig Control](Rig-and-Rotor-Control.md) set up and connected, BirdWatch tun
 
 ### Which VFO Does What
 
-In Settings → Features → Rig Control, each VFO has a **Satellites** row that tells BirdWatch what it may use that VFO for: a band (10m to 1.2cm), **All Frequencies**, or a **Custom** range in MHz, each for **RX**, **TX** or **RX/TX**. Add as many ranges as you need. A new VFO is set to All Frequencies RX; a VFO with no ranges is not used for satellites. For example, for a 2m/70cm FM satellite on a dual-band radio, you might give VFO-A "70cm RX" and its second VFO "2m TX".
+In Settings → Radios → Rig Control, each VFO has a **Satellites** row that tells BirdWatch what it may use that VFO for: a band (10m to 1.2cm), **All Frequencies**, or a **Custom** range in MHz, each for **RX**, **TX** or **RX/TX**. Add as many ranges as you need. A new VFO is set to All Frequencies RX; a VFO with no ranges is not used for satellites. For example, for a 2m/70cm FM satellite on a dual-band radio, you might give VFO-A "70cm RX" and its second VFO "2m TX".
 
 When BirdWatch needs a VFO for a downlink or an uplink, it uses the first VFO in the list whose ranges fit. Use the **▲** and **▼** beside a VFO's name to change the order. See [Rig and Rotor Control](Rig-and-Rotor-Control.md) for setting up the VFOs themselves.
 
@@ -311,7 +311,7 @@ If a VFO reads far from the frequency BirdWatch sent (for example the radio can'
 
 ### Rotor Control: Follow Satellite
 
-With Rotor Control on, tick **Follow Satellite** under it in Settings → Features. Your rotator then follows the selected satellite while it is up, and a few minutes before it rises points at where it will come up. The rotator's position is shown in the BirdWatch panel's information. See [Rig and Rotor Control](Rig-and-Rotor-Control.md) for connecting the rotator.
+With Rotor Control on, tick **Follow Satellite** in its box in Settings → Radios. Your rotator then follows the selected satellite while it is up, and a few minutes before it rises points at where it will come up. The rotator's position is shown in the BirdWatch panel's information. See [Rig and Rotor Control](Rig-and-Rotor-Control.md) for connecting the rotator.
 
 ### Multi-Mode Decoder
 
