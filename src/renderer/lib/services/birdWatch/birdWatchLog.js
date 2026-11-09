@@ -36,6 +36,17 @@ function birdWatchAutoMinElChange()
   if (GT.birdWatchTrack) birdWatchAutoUpdate();
 }
 
+// Auto-Track's mode: Next Pass, Skeds First (a mutual pass with an active station wins), Skeds Only (birdWatchSkedAutoPick)
+function birdWatchAutoModeChange()
+{
+  GT.settings.BirdWatch.autoMode = birdWatchAutoModeSelect.value;
+  if (GT.birdWatchTrack)
+  {
+    GT.birdWatchTrack.autoPick = null;
+    birdWatchAutoUpdate();
+  }
+}
+
 // BirdWatch's Rig Control (the Rig Control group's title box): the rig follows the selected satellite (Auto-Track's pick or yours); off,
 // BirdWatch sends the rig nothing. Which VFOs it uses: each VFO's Satellites (Settings, Rig Control) and a transmitter's own picks
 // (rigRoles)

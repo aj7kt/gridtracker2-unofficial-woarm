@@ -866,6 +866,18 @@ a {
   font-weight: bold;
 }
 
+/* The Mutual Pass item (birdWatchSkeds.js): a space between the callsign and the time in its row, a line break when it is featured */
+.birdInfoFeatured .birdSkedBreak {
+  display: block;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ... its time to AOS orange when featured, as the Time To AOS item is (light green to its LOS, and in its row) */
+.birdInfoFeatured .birdSkedAos {
+  color: orange;
+}
+
 .birdInfoFeaturedName {
   color: white;
   font-size: 11px;
@@ -1405,6 +1417,104 @@ table.darkTable.birdDopplerTable td {
   min-width: 18px;
   text-align: center;
   padding: 1px 6px;
+}
+
+/* BirdWatch's Skeds tab (birdWatchSkeds.js): the stations' rows and the Mutual Passes list */
+.birdSkedTable {
+  border-collapse: collapse;
+}
+
+.birdSkedTable th {
+  color: #9aa4b8;
+  font-weight: normal;
+  padding: 0 4px 2px 4px;
+  text-align: left;
+}
+
+.birdSkedTable td {
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+.birdSkedBad {
+  color: orange !important;
+}
+
+/* Under a station too far away for any tracked satellite */
+.birdSkedNever td {
+  color: orange;
+  white-space: normal;
+  padding-top: 0;
+}
+
+.birdSkedNote {
+  color: #9aa4b8;
+  white-space: normal;
+  max-width: 420px;
+  margin: 4px 2px;
+}
+
+.birdSkedMutualScroll {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.birdSkedMutual td {
+  border-bottom: 1px solid #2c3a52;
+}
+
+.birdSkedMutual .birdSkedSat {
+  color: cyan;
+  cursor: pointer;
+}
+
+.birdSkedMutual .birdSkedDur {
+  color: #ffff00;
+  text-align: right;
+}
+
+.birdSkedMutual .birdSkedCall {
+  color: lightgreen;
+}
+
+.birdSkedMutual .birdSkedEl {
+  color: #ffffff;
+  text-align: right;
+}
+
+.birdSkedMutual tr.birdSkedUp td {
+  background-color: #0b2a14;
+}
+
+/* A row picks its pass (birdWatchSkedPick); the active station's callsign yellow */
+.birdSkedMutual tr {
+  cursor: pointer;
+}
+
+.birdSkedMutual tr:hover td {
+  background-color: #1c2a44;
+}
+
+.birdSkedMutual tr.birdSkedFocus .birdSkedCall {
+  color: #ffff00;
+  font-weight: bold;
+}
+
+.birdSkedActions .button {
+  display: inline-block;
+}
+
+/* A box's buttons side by side on one line */
+.birdSkedButtons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.birdSkedButtons .button {
+  padding: 1px 10px;
 }
 
 /* BirdWatch's tabs and their content: the main Settings' yellow on blue answered with cyan on violet, a night-sky look for the

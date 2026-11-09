@@ -122,17 +122,23 @@ function birdWatchAlertsRender()
   birdWatchAlertSoonText.placeholder = birdWatchAlertBuiltIn("soon");
   birdWatchAlertRisingText.value = A.risingText || "";
   birdWatchAlertRisingText.placeholder = birdWatchAlertBuiltIn("rising");
+  birdWatchAlertMutual.checked = A.mutual === true;
+  birdWatchAlertMutualText.value = A.mutualText || "";
+  birdWatchAlertMutualText.placeholder = birdWatchSkedAlertBuiltIn();
   birdWatchAlertRowsShow();
 }
 
-// The rows under Announce Upcoming Passes are only there while it is on (and the rising wording only while that is announced)
+// The rows under the two announcements (their data-for): the passes' own only while Announce Upcoming Passes is on (the rising wording
+// only while that is announced), the mutual wording only while Announce Mutual Passes is, the minutes and the ways while either is
 function birdWatchAlertRowsShow()
 {
   const A = GT.settings.BirdWatch.alerts;
   for (const row of birdWatchAlertEnable.closest("table").rows)
   {
-    if (row.contains(birdWatchAlertEnable)) continue;
-    row.style.display = A.enable && (row !== birdWatchAlertRisingTextTr || A.atAos) ? "" : "none";
+    const kind = row.dataset.for;
+    if (!kind) continue;
+    const shown = kind == "pass" ? A.enable && (row !== birdWatchAlertRisingTextTr || A.atAos) : kind == "mutual" ? A.mutual === true : A.enable || A.mutual === true;
+    row.style.display = shown ? "" : "none";
   }
 }
 
@@ -148,6 +154,8 @@ function birdWatchAlertsChange()
   A.push = birdWatchAlertPush.checked;
   A.soonText = birdWatchAlertSoonText.value.trim();
   A.risingText = birdWatchAlertRisingText.value.trim();
+  A.mutual = birdWatchAlertMutual.checked;
+  A.mutualText = birdWatchAlertMutualText.value.trim();
   birdWatchAlertMinutesText.textContent = A.minutes;
   birdWatchAlertMinElText.textContent = A.minElevation + "°";
   birdWatchAlertRowsShow();

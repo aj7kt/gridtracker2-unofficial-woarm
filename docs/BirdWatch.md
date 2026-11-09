@@ -15,7 +15,7 @@ In [Settings → Features](GridTracker-Overview/Settings-Sub-Menus.md#features-t
 
 * the **Toggle Satellite Tracking** button to the button panel;
 * the **BirdWatch** panel on the map;
-* a row of three BirdWatch tabs in Settings: **BirdWatch**, **Telemetry** and **Satellites**.
+* a row of BirdWatch tabs in Settings: **BirdWatch**, **Skeds**, **Display**, **Alerts**, **Telemetry** and **Satellites**.
 
 BirdWatch works offline: the satellite data it needs comes with GridTracker2. While you are online (and BirdWatch is on), the data is kept up to date automatically.
 
@@ -44,7 +44,7 @@ The BirdWatch panel is as wide as the side panel and sits on the opposite side o
 
 * Click the title **BirdWatch** to hide the panel. Click the **☰** that appears in its place to bring it back.
 * Right-click the title (or the side panel's GridTracker2 title) to swap the two panels from one side to the other. This is the same as **Control Panel On Left Side** in Settings → General.
-* The boxes under the title can be put in another order: drag a box by its top border. **Reset Panels** in the BirdWatch tab of Settings puts them back.
+* The boxes under the title can be put in another order: drag a box by its top border. **Reset Panels** in the Display tab of Settings puts them back.
 
 Most of the panel is about the **selected satellite**. Click a satellite on the map to select it (click it again to clear the selection), or let [Auto-Track](#auto-track) select one for you. The selection is also noted in the Event Viewer.
 
@@ -94,7 +94,7 @@ While Rig Control is on, a box with a yellow border shows your radio's two frequ
 
 ### Sky Views
 
-Four drawings of the selected satellite's pass can be shown under the information. Pick them in **Panel View** in the BirdWatch tab of Settings. In each, AOS is green, LOS red, and a cyan dot shows where the satellite is now while it is up. Hold the mouse over one for a reminder of how to read it.
+Four drawings of the selected satellite's pass can be shown under the information. Pick them in **Panel View** in the Display tab of Settings. In each, AOS is green, LOS red, and a cyan dot shows where the satellite is now while it is up. Hold the mouse over one for a reminder of how to read it.
 
 * **Skybox** (on by default): the whole sky as a circle seen from below, north at the top and east on the right. The horizon is the outer circle and straight overhead is the center. The pass's track runs across it, with its highest point marked.
 * **Pass Profile:** the satellite's elevation through the pass, with the AOS and LOS times under its ends.
@@ -105,7 +105,7 @@ Four drawings of the selected satellite's pass can be shown under the informatio
 
 ![Satellites on the map: AO-91 selected, with its footprint and predicted path](img/GT2_BirdWatch_Map.jpg)
 
-Each tracked satellite is drawn on the map as a small satellite icon with its name under it, and moves as it goes around the Earth. An icon is drawn dim while the satellite is in the Earth's shadow (while the Grayline is on).
+Each tracked satellite is drawn on the map as a small satellite icon with its name under it (yellow on blue, and black on light green for the selected satellite), and moves as it goes around the Earth. An icon is drawn dim while the satellite is in the Earth's shadow (while the Grayline is on).
 
 * **Click** a satellite to select it; it is ringed. Click it again to clear the selection.
 * **Right-click** a satellite to select it and open its transmitters window.
@@ -116,7 +116,7 @@ For the selected satellite (and the one under the mouse) BirdWatch also draws:
 * its **Footprint:** the circle on the ground that can hear it right now. Stations inside it can work each other through the satellite.
 * its **Predicted Path:** its ground track, from a little behind it to up to an orbit ahead. The part already flown and the part to come are drawn differently, and a mark with its time is placed every ten minutes ahead.
 
-Their colors and styles are in **Map** in the BirdWatch tab of Settings.
+Their colors and styles are in **Map** in the Display tab of Settings. The stations of your [Skeds](#skeds-passes-with-another-station) are drawn on the map too.
 
 ## Pass Timeline
 
@@ -127,7 +127,8 @@ The **Pass Timeline** button opens a chart at the top of the map with the next 2
 * Each pass is a yellow bar from its AOS to its LOS. The higher the pass climbs, the taller and brighter the bar. Where there is room, its highest elevation and its length in minutes are written on it, and an 👁 marks a visible pass.
 * Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation.
 * Click a bar to select its satellite.
-* **Export Passes (.ics)** saves the next three days of passes as a calendar file you can open in your phone's or computer's calendar. Each pass has a reminder before it rises. Only passes that climb at least the **Lowest Max Elevation** of Pass Alerts are saved, and the reminder comes **Minutes Before AOS** (both in the BirdWatch tab of Settings).
+* Under the satellites, each active station of your [Skeds](#skeds-passes-with-another-station) has a row of its own (its callsign in light green), with a bar for each mutual pass: green for a two-way satellite, cyan for a listen-only one.
+* **Export Passes (.ics)** saves the next three days of passes as a calendar file you can open in your phone's or computer's calendar. Each pass has a reminder before it rises. Only passes that climb at least the **Lowest Max Elevation** of Pass Alerts are saved, and the reminder comes **Minutes Before AOS** (both in the Alerts tab of Settings).
 * The red **X** closes the timeline.
 
 ## The Transmitters Window
@@ -150,7 +151,7 @@ With Rig Control connected you can click the table to tune your radio, see [Foll
 
 ## Pass Alerts
 
-BirdWatch can announce a tracked satellite a few minutes before it rises, for example: "AO-91 rises in 5 minutes, max elevation 42 degrees". Each pass is announced only once, and only passes that climb high enough. Turn on **Announce Upcoming Passes** in the BirdWatch tab of Settings, see [Pass Alerts](#pass-alerts-settings) below.
+BirdWatch can announce a tracked satellite a few minutes before it rises, for example: "AO-91 rises in 5 minutes, max elevation 42 degrees". Each pass is announced only once, and only passes that climb high enough. Turn on **Announce Upcoming Passes** in the Alerts tab of Settings, see [Pass Alerts](#pass-alerts-settings) below.
 
 ## Logging Satellite QSOs
 
@@ -171,6 +172,10 @@ The box in the title turns BirdWatch's use of your radio on or off. While it is 
 
 ### Auto-Track
 
+* **Mode:** what Auto-Track picks, see [Auto-Track](#auto-track):
+  * **Next Pass:** the satellite that is up, or the next to rise.
+  * **Skeds First** (the default): a mutual pass with an active station in the [Skeds](#skeds-passes-with-another-station) tab wins, from three minutes before it opens. Otherwise, as Next Pass.
+  * **Skeds Only:** only mutual passes. Between them the selection is left as it is.
 * **Lowest Max Elevation:** Auto-Track only selects a satellite whose pass climbs at least this high, 0° to 60°. At 0° every pass counts.
 
 ### Logging
@@ -181,6 +186,50 @@ The box in the title turns BirdWatch's use of your radio on or off. While it is 
 
 * **Hide Rows With No Uplink:** leaves the transmitters you can't transmit to, such as beacons, out of the transmitters window.
 * **Sticky Mode:** when Auto-Track selects a satellite, the radio first follows a transmitter in the same mode as the one you followed before (FM to FM, for example). Otherwise, and for a satellite you select, it follows the transmitter you last followed on that satellite, else the first in the table. A click in the table always sets what you click.
+
+## Settings: Skeds Tab
+
+The stations you share passes with, and your mutual passes with them. See [Skeds: Passes With Another Station](#skeds-passes-with-another-station).
+
+![The Skeds tab](img/GT2_BirdWatch_Skeds.png)
+
+### Stations
+
+Each station is a row:
+
+* **Active:** the station counts for Auto-Track, the Mutual Passes, the Pass Timeline, the map and the alerts. Untick it to keep a station in the list without using it.
+* **Callsign** and **Grid:** a 6-character grid (CN87XX) puts the station within a few kilometers; a 4-character one only within about 100 km, which can move a low pass's start by up to a minute. A grid that isn't one is shown in orange.
+* **Height:** the station's height above sea level, if you know it (feet with miles or nautical miles as your distance unit, meters otherwise). It changes little.
+* **Min El:** the lowest elevation the station can work, for its trees and buildings. Leave it blank to use your own.
+* **Notes:** anything you like, such as "FM satellites only".
+* **✕** removes the station.
+
+A station too far away to ever share a pass with you, for the satellites you track, gets a note in orange under its row (and on the map), for example "A mutual pass will never happen: 5433 mi apart, too far for the satellites you track". Two stations can only both see a satellite when they are closer together than what each can see of it at its highest point; tracking a higher satellite (AO-07 reaches about 7,900 km, the ISS about 4,500 km) can change that.
+
+The buttons under the list:
+
+* **Add Station** adds an empty row.
+* **Paste Sked Line** adds the stations in the lines you have copied, for example from an email: each line needs a callsign and a grid, and may have a height (`120m`, `400ft`) and a lowest elevation (`min 15°`). A station already in the list, by its callsign, is updated.
+* **Copy My Sked Line** copies your own line, for example `K7ABC CN87XX 120m min 10°`, for the other station to paste.
+
+Under them:
+
+* **Your Min Elevation:** the lowest elevation you can work a mutual pass at, 0° to 45°. At 0°, your horizon.
+* **Minimum Mutual Duration:** mutual windows shorter than this, 1 to 10 minutes, are left out everywhere: the list, Auto-Track, the timeline and the alerts. Off by default.
+
+### Mutual Passes
+
+The mutual passes of the next 72 hours, in order. Each row shows the satellite (with **(RX only)** for one with no uplink), the day and time in UTC, how long it lasts, the station, and both elevations at the best moment (yours / theirs). A pass under way is shaded green. Hold the mouse over a row for each side's azimuths and highest elevation; click the satellite's name to select it.
+
+* **ICS** saves that pass as a calendar event, and **Copy** copies it as a line of text, for example:
+
+  `SO-50  2026-11-12 18:42–18:49 UTC (7m 10s)  K7ABC CN87 31° / W1XYZ FN31 22°  145.850 up / 436.795 down FM`
+
+* **Save All As ICS** and **Copy All** do the same for every pass in the list.
+
+The calendar event runs from the start to the end of the mutual window, with both callsigns and its length in the title. Its description has the line above, each station's whole pass, and the date of the satellite's TLE. A reminder comes the Alerts tab's **Minutes Before AOS** before it. Times hold to a few seconds only while both stations use fresh TLEs, so the TLE's date is included when you copy too.
+
+## Settings: Display Tab
 
 ### Panel View
 
@@ -193,15 +242,22 @@ The drawings shown in the BirdWatch panel: **Skybox**, **Pass Profile**, **Horiz
 
 Options are grayed out while their item is off.
 
+## Settings: Alerts Tab
+
 (pass-alerts-settings)=
 ### Pass Alerts
 
-* **Announce Upcoming Passes:** announces each pass of a tracked satellite before it rises. The options below it appear while it is on:
+* **Announce Upcoming Passes:** announces each pass of a tracked satellite before it rises.
+* **Announce Mutual Passes:** announces a mutual pass with an active station (see [Skeds](#skeds-passes-with-another-station)) before it opens, for example: "Mutual pass with W1XYZ on SO-50 in 5 minutes, 7 minutes long". It uses the same minutes and the same ways as the passes' announcements, and can be on by itself.
+
+The options below them appear while one of them is on:
+
   * **Minutes Before AOS:** how long before it rises, 1 to 30 minutes.
   * **Lowest Max Elevation:** only passes that climb at least this high, 0° to 80° (10° by default). This also chooses which passes Export Passes saves.
   * **Also When It Rises:** a second announcement at AOS, with the azimuth to look at.
   * **Speak:** says it aloud, with the voice, rate and volume of Audio Alerts (and their mute).
     * **Before AOS** and **When It Rises:** your own wording, if you like. In it, `{N}` is the satellite's name, `{T}` the minutes to AOS and `{D}` the degrees (its highest elevation before AOS, the azimuth it rises at). Leave a box empty to use the wording shown in gray.
+    * **Mutual Pass:** your own wording for mutual passes: `{C}` is the station's callsign, `{N}` the satellite's name, `{T}` the minutes to it and `{M}` how many minutes it lasts.
   * **Show In Traffic List:** adds the announcement to the Event Viewer.
   * **Send With Pushover / Simplepush:** sends it to your phone as well, with the services set up in Settings → Features → Online (see [Push Notifications](Third-Party-Integrations/PushNotifications-Integrations.md)). Not in Offline Mode.
   * **Test Alert:** makes an announcement now, in every way that is turned on.
@@ -268,6 +324,30 @@ With the **Auto Select Next AOS Satellite** button on (it is on by default), Bir
 * Only passes that climb at least Auto-Track's **Lowest Max Elevation** count.
 
 You can still click another satellite. Your choice stays until Auto-Track's pick moves on to the next pass. The Event Viewer notes each satellite Auto-Track selects.
+
+With an active station in the Skeds tab, Auto-Track's **Mode** (BirdWatch tab of Settings) also counts mutual passes:
+
+* **Skeds First** (the default): from three minutes before a mutual pass opens until it ends, its satellite is selected, even if another one is still up, so your rotator and radio are there in time. A two-way satellite wins over a listen-only one at the same time, then the one that lasts longer. The rest of the time, Auto-Track works as above.
+* **Skeds Only:** only mutual passes are selected; between them, the selection is left as it is.
+* **Next Pass:** mutual passes make no difference.
+
+In Skeds First and Skeds Only, a satellite you select yourself, even while a sked is under way, stays selected until its LOS; then Auto-Track picks again.
+
+## Skeds: Passes With Another Station
+
+Skeds help you set up a QSO through a satellite with a station you know, or listen to the same pass. Add the station's callsign and grid in the [Skeds tab](#settings-skeds-tab), and BirdWatch works out the **mutual passes** of the next three days: the times when a tracked satellite is up for you both at once, above your own lowest elevation and theirs. Satellites with an uplink count for a QSO; listen-only ones are marked **(RX only)**. Mutual passes are worked out again every ten minutes, and at once when you change a station, your QTH or the satellites you track.
+
+You see them:
+
+* In the Skeds tab's **Mutual Passes** list, with how long each lasts and both elevations.
+* In the [Pass Timeline](#pass-timeline): a row for each active station, under the satellites, with a bar for each mutual pass (green for a two-way satellite, cyan for a listen-only one) and its satellite and length on it. Hold the mouse over a bar for the details; click it to select the satellite.
+* On the map: each active station as a light green diamond with its callsign, larger and bright green while a mutual pass with it is under way. Hold the mouse over it for its next mutual passes in full: the satellite, the time, how long, the time to it (or left), both elevations at the best moment, and each side's azimuths and highest elevation.
+* In the BirdWatch panel: a **Mutual Pass** row with the station and the time to the selected satellite's next mutual pass (`W1XYZ  AOS 55m 11s`), or to its end while it is under way (`LOS 4m 12s`). Made the featured item, the time goes on its own line under the callsign. Hold the mouse over it for the details; click it to open the Skeds tab.
+* As an announcement, with **Announce Mutual Passes** (Alerts tab).
+
+**The active station.** Click a station's diamond on the map, a pass in the Mutual Passes list, or a bar in its timeline row to make that station the active one. Its satellite (for the map, the one of its next mutual pass) is selected, as if you had clicked it, and stays selected until its LOS. The Mutual Pass row then shows that station's pass, Skeds First prefers its passes over the others', and the station is marked in yellow on the map, in the list and in the timeline. It is kept when GridTracker2 restarts. Click the active station's diamond again to have no active station (the satellite stays selected).
+
+To arrange the sked, send the other station the pass: **Copy** (a line of text) or **ICS** (a calendar event) in the Mutual Passes list. If they use GridTracker2 too, **Copy My Sked Line** gives them your callsign, grid, height and lowest elevation to paste into their own list.
 
 ## Following a Satellite With Your Rig
 

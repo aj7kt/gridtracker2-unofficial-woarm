@@ -2,7 +2,7 @@
 
 Click the **Settings** button (the gear) in the button panel, or press **Ctrl+S**, to open the Settings panel over the map. Click the red **X** in the top right corner, press **Esc**, or click the gear again to close it.
 
-The tabs along the top are **General**, **Features**, **Radios**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Radios** tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the **Feeds** tab while DX Feeds is. While BirdWatch is turned on, its own tabs, **BirdWatch**, **Telemetry** and **Satellites**, appear in a row above the others; see [BirdWatch](../BirdWatch.md#settings-birdwatch-tab). In a narrow window, **About** moves up to that row so the others fit on one line.
+The tabs along the top are **General**, **Features**, **Radios**, **Lookups**, **Audio**, **Map**, **Colors**, **Feeds**, **Logging**, **Audio Alerts**, **Custom Alerts**, **Logbook** and **About**. The **Radios** tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the **Feeds** tab while DX Feeds is. While BirdWatch is turned on, its own tabs, **BirdWatch**, **Skeds**, **Display**, **Alerts**, **Telemetry** and **Satellites**, appear in a row above the others; see [BirdWatch](../BirdWatch.md#settings-birdwatch-tab). In a narrow window, **About** moves up to that row so the others fit on one line.
 
 Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.
 

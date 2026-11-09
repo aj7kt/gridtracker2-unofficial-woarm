@@ -55,7 +55,17 @@ function netAudioNormalize(s)
   s.channel = NET_AUDIO_CHANNELS.includes(s.channel) ? s.channel : defaults.channel || "left";
   s.name = typeof s.name == "string" ? s.name : "";
   s.connect = s.connect === true;
+  // Announce (an RTP output's): as picked, or until it is, on for a multicast group and off for one computer's address
+  if (s.announceSet !== true) s.announce = netAudioIsMulticast(s.host || defaults.host || "");
+  s.announce = s.announce === true;
   return s;
+}
+
+// An IPv4 multicast address (224.0.0.0 to 239.255.255.255)
+function netAudioIsMulticast(host)
+{
+  const m = /^(\d{1,3})\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.exec(String(host).trim());
+  return !!m && Number(m[1]) >= 224 && Number(m[1]) <= 239;
 }
 
 // The lowest id not in use ("n1", "n2" ...)
@@ -290,11 +300,12 @@ function netAudioBoxRender(s)
   netAudioEl(s.id, "Rate").title = I18N("settings.netAudio.rate.hover");
   netAudioEl(s.id, "Channels").value = String(s.channels);
   netAudioEl(s.id, "Channel").value = s.channel;
-  const rows = { HostTr: "host", PortTr: "port", StreamNameTr: "streamName", RateTr: "rate", ChannelTr: "channel" };
+  netAudioEl(s.id, "Announce").checked = s.announce === true;
+  const rows = { HostTr: "host", PortTr: "port", StreamNameTr: "streamName", RateTr: "rate", ChannelTr: "channel", AnnounceTr: "announce" };
   for (const [row, field] of Object.entries(rows)) netAudioEl(s.id, row).style.display = fields.includes(field) ? "" : "none";
   // Channels beside the Sample Rate where the protocol asks for it
   netAudioEl(s.id, "Channels").style.display = fields.includes("channels") ? "" : "none";
-  for (const name of ["Protocol", "Dir", "Found", "Host", "Port", "StreamName", "Rate", "Channels", "Channel"]) rigLockField(netAudioEl(s.id, name), locked);
+  for (const name of ["Protocol", "Dir", "Found", "Host", "Port", "StreamName", "Rate", "Channels", "Channel", "Announce"]) rigLockField(netAudioEl(s.id, name), locked);
   netAudioFoundRender(s.id);
   netAudioStatusRender(s.id);
 }
@@ -395,6 +406,17 @@ function netAudioFieldChanged(el)
   netAudioBoxRender(s);
   netAudioSync(s);
   netAudioDevicesChanged();
+}
+
+// Announce ticked or unticked: kept as picked from then on (the Host no longer decides it), the stream opened again with it
+function netAudioAnnounceChanged(el)
+{
+  const s = netAudioOfEl(el);
+  if (!s) return;
+  s.announce = el.checked;
+  s.announceSet = true;
+  netAudioBoxRender(s);
+  netAudioSync(s);
 }
 
 // A stream picked in the Found menu: its fields filled from it

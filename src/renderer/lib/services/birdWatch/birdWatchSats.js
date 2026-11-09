@@ -26,7 +26,10 @@ function birdWatchSatsRender()
   birdWatchSideEarthValue.checked = GT.settings.BirdWatch.sideEarth;
   birdWatchAutoMinEl.value = GT.settings.BirdWatch.autoMinElevation;
   birdWatchAutoMinElText.textContent = GT.settings.BirdWatch.autoMinElevation + "°";
+  birdWatchAutoModeSelect.value = GT.settings.BirdWatch.autoMode || "skedsFirst";
   birdWatchAutoRigRender();
+  // The Skeds tab (birdWatchSkeds.js)
+  birdWatchSkedsRender();
   birdWatchHideNoUplinkValue.checked = GT.settings.BirdWatch.hideNoUplink;
   birdWatchStickyValue.checked = GT.settings.BirdWatch.sticky;
   birdWatchSatUplink.checked = GT.settings.BirdWatch.uplinkOnly;

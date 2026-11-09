@@ -100,7 +100,7 @@ const RTP_SAP = { socket: null, users: new Set(), sessions: new Map(), joined: n
 NET_AUDIO_PROTOCOLS.rtp = {
   name: "RTP (PipeWire / PulseAudio / AES67)",
   dirs: ["in", "out"],
-  fields: { in: ["host", "port", "rate", "channels", "channel"], out: ["host", "port", "rate", "channels"] },
+  fields: { in: ["host", "port", "rate", "channels", "channel"], out: ["host", "port", "rate", "channels", "announce"] },
   defaults: { host: RTP_DEFAULT_GROUP, port: RTP_DEFAULT_PORT, rate: 48000, channels: 2, channel: "left" },
   discover: (onList) => rtpDiscover(onList),
   open: (stream, dir, sink) => (dir == "out" ? rtpOutOpen(stream, sink) : rtpInOpen(stream, sink))
@@ -1049,7 +1049,10 @@ function rtpOutOpen(stream, sink)
     local: null,
     sendError: null,
     retry: null,
-    sap: null
+    sap: null,
+    // Announced with SAP (the stream box's Announce): PipeWire and PulseAudio machines on the LAN pick it up by themselves. Unset (a
+    // stream from before it was there): announced only to a multicast group
+    announce: stream.announce === true || (stream.announce !== false && rtpIsMulticast(host))
   };
   if (!rtpPortValid(O.port))
   {
@@ -1120,7 +1123,7 @@ function rtpOutConnect(O)
     O.ready = true;
     O.sendError = null;
     rtpOutStatus(O);
-    rtpOutSapStart(O);
+    if (O.announce) rtpOutSapStart(O);
   });
 }
 

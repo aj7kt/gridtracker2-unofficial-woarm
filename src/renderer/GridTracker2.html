@@ -62,6 +62,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <script src="./lib/services/birdWatch/birdWatchAlerts.js" type="text/javascript"></script>
 <script src="./lib/services/birdWatch/birdWatchDoppler.js" type="text/javascript"></script>
 <script src="./lib/services/birdWatch/birdWatchExport.js" type="text/javascript"></script>
+<script src="./lib/services/birdWatch/birdWatchSkeds.js" type="text/javascript"></script>
 <script src="./lib/services/birdWatch/birdWatchLog.js" type="text/javascript"></script>
   <script src="./lib/services/birdWatch/birdWatchSync.js" type="text/javascript"></script>
   <script src="./lib/services/birdWatch/birdWatchTle.js" type="text/javascript"></script>
@@ -981,6 +982,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="birdWatchTabRow" class="birdWatchTabRow" style="display: none;">
           <button data-i18n="settings.birdWatch.label" id="birdWatchGeneralBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchGeneralDiv"
             onclick="openSettingsTab(event, 'birdWatchGeneralDiv')">BirdWatch</button>
+          <button data-i18n="birdWatch.skeds.label" id="birdWatchSkedsBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchSkedsDiv"
+            onclick="openSettingsTab(event, 'birdWatchSkedsDiv')">Skeds</button>
+          <button data-i18n="birdWatch.display.label" id="birdWatchDisplayBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchDisplayDiv"
+            onclick="openSettingsTab(event, 'birdWatchDisplayDiv')">Display</button>
+          <button data-i18n="birdWatch.alertsTab.label" id="birdWatchAlertsBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchAlertsDiv"
+            onclick="openSettingsTab(event, 'birdWatchAlertsDiv')">Alerts</button>
           <button data-i18n="birdWatch.telemetry.label" id="birdWatchTelemetryBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchTelemetryDiv"
             onclick="openSettingsTab(event, 'birdWatchTelemetryDiv')">Telemetry</button>
           <button data-i18n="birdWatch.satellites.label" id="birdWatchSatellitesBut" class="settingsTablinks birdWatchTab" data-tab="birdWatchSatellitesDiv"
@@ -1674,6 +1681,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <tr data-f="ChannelTr">
                     <td class="mapRowLabel mapIndent"><label data-for="Channel" data-i18n="settings.netAudio.channel.label">Channel</label></td>
                     <td><select data-f="Channel" data-i18n="settings.netAudio.channel.hover" title="Of a stereo stream, what the decoder hears: the left channel, the right one, or both mixed" onchange="netAudioFieldChanged(this);"><option value="left" data-i18n="settings.netAudio.channel.left">Left</option><option value="right" data-i18n="settings.netAudio.channel.right">Right</option><option value="mix" data-i18n="settings.netAudio.channel.mix">Mix</option></select></td>
+                  </tr>
+                  <!-- An RTP output's announcement (SAP), so PipeWire and PulseAudio machines pick it up by themselves: on by default for a
+                       multicast group, off for one computer's address, until changed (netAudio.js, netAudioAnnounceChanged) -->
+                  <tr data-f="AnnounceTr">
+                    <td class="mapRowLabel mapIndent"></td>
+                    <td class="mapRowLabel mapRowLabelLeft"><input data-f="Announce" type="checkbox" data-i18n="settings.netAudio.announce.hover" title="Announces the stream on the network, so PipeWire and PulseAudio machines pick it up by themselves (every such machine on the network then has it)" onclick="netAudioAnnounceChanged(this);" /> <label data-for="Announce" data-i18n="settings.netAudio.announce.label">Announce</label></td>
                   </tr>
                   <tr>
                     <td class="mapRowLabel mapIndent" data-i18n="settings.rotor.status.label">Status</td>
@@ -2607,6 +2620,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="birdWatch.auto.group.label">Auto-Track</div>
             <table class="mapChecks">
+              <!-- What it picks (birdWatchAutoUpdate): the next pass, or a mutual pass with an active station first (birdWatchSkeds.js) -->
+              <tr><td><label data-i18n="birdWatch.auto.mode.label" for="birdWatchAutoModeSelect">Mode</label> <select id="birdWatchAutoModeSelect" data-i18n="birdWatch.auto.mode.hover" title="Next Pass: the satellite up, or the next to rise. Skeds First: a mutual pass with an active station (Skeds tab) wins, from a few minutes before it opens. Skeds Only: only mutual passes, nothing picked between them" onchange="birdWatchAutoModeChange();">
+                <option value="next" data-i18n="birdWatch.auto.mode.next">Next Pass</option>
+                <option value="skedsFirst" data-i18n="birdWatch.auto.mode.skedsFirst">Skeds First</option>
+                <option value="skedsOnly" data-i18n="birdWatch.auto.mode.skedsOnly">Skeds Only</option>
+              </select></td></tr>
               <tr><td><label data-i18n="birdWatch.auto.minEl.label" for="birdWatchAutoMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="60" value="0" step="1" class="slider" id="birdWatchAutoMinEl" data-i18n="birdWatch.auto.minEl.hover" title="Auto-Track only selects a satellite whose pass climbs at least this high; 0° selects every pass" oninput="birdWatchAutoMinElChange()" /><span id="birdWatchAutoMinElText" class="mapValue" style="min-width: 26px;">0°</span></td></tr>
             </table>
           </div>
@@ -2616,8 +2635,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr><td><input type="checkbox" id="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.hover" title="A QSO logged while the selected satellite is up is logged as a satellite contact: PROP_MODE SAT and its SAT_NAME. A logger's own values are kept" onclick="birdWatchLogTagChange()" /> <label for="birdWatchLogTagValue" data-i18n="birdWatch.log.tag.label">Log Satellite Contacts</label></td></tr>
             </table>
           </div>
-          <!-- Rig Control, Auto-Track and Logging on the first row; the Doppler Table, Panel View and Map on the second; Pass Alerts alone
-               on the last -->
+          <!-- Rig Control, Auto-Track and Logging on the first row; the Doppler Table on the second -->
           <div style="flex-basis: 100%; height: 0;"></div>
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="birdWatch.doppler.group.label">Doppler Table</div>
@@ -2626,6 +2644,68 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr><td><input type="checkbox" id="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.hover" title="When a satellite is selected (by you or by Auto-Track), the rig follows one of its transmitters: one in the mode of the transmitter followed before, else the one last followed on this satellite, else the first in the table" onclick="birdWatchStickyChange()" /> <label for="birdWatchStickyValue" data-i18n="birdWatch.doppler.sticky.label">Sticky Mode</label></td></tr>
             </table>
           </div>
+        </div>
+      </div>
+      <!-- Skeds (birdWatchSkeds.js): the stations a pass is shared with, and the passes both can work -->
+      <div id="birdWatchSkedsDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
+          <!-- The stations: a row for each (birdWatchSkedsRender), made from #birdWatchSkedRowTemplate; Active, callsign, grid, height,
+               their lowest elevation (blank: yours), notes, ✕ -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.skeds.stations.label">Stations</div>
+            <table class="birdSkedTable">
+              <thead>
+                <tr>
+                  <th data-i18n="birdWatch.skeds.active.label" title="Counted for Auto-Track, the Mutual Passes, the timeline, the map and the alerts">Active</th>
+                  <th data-i18n="gt.callsignBox.callsign">Callsign</th>
+                  <th data-i18n="gt.callsignBox.Grid">Grid</th>
+                  <th data-i18n="birdWatch.skeds.height.label">Height</th>
+                  <th data-i18n="birdWatch.skeds.minEl.label">Min El</th>
+                  <th data-i18n="birdWatch.skeds.notes.label">Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="birdWatchSkedRows"></tbody>
+            </table>
+            <template id="birdWatchSkedRowTemplate">
+              <tr>
+                <td style="text-align: center;"><input data-f="Active" type="checkbox" data-i18n="birdWatch.skeds.active.hover" title="Counted for Auto-Track, the Mutual Passes, the timeline, the map and the alerts" onclick="birdWatchSkedFieldChanged(this);" /></td>
+                <td><input data-f="Call" type="text" class="inputTextValue" size="9" maxlength="16" onchange="birdWatchSkedFieldChanged(this);" /></td>
+                <td><input data-f="Grid" type="text" class="inputTextValue" size="6" maxlength="6" data-i18n="birdWatch.skeds.grid.hover" title="Their grid: 6 characters (CN87XX) put them within a few km, 4 within about 100 km" onchange="birdWatchSkedFieldChanged(this);" /></td>
+                <td><input data-f="Height" type="text" class="inputTextValue" size="5" maxlength="6" data-i18n="birdWatch.skeds.height.hover" title="Their height above sea level, if known" onkeypress="return validNumberKeys(event.charCode);" onchange="birdWatchSkedFieldChanged(this);" /></td>
+                <td><input data-f="MinEl" type="text" class="inputTextValue" size="4" maxlength="4" data-i18n="birdWatch.skeds.minEl.hover" title="The lowest elevation they can work, for their trees and buildings; blank: the same as yours" onchange="birdWatchSkedFieldChanged(this);" /></td>
+                <td><input data-f="Notes" type="text" class="inputTextValue" size="16" maxlength="60" onchange="birdWatchSkedFieldChanged(this);" /></td>
+                <td><span class="rigVfoRemove" data-i18n="birdWatch.skeds.remove.hover" title="Removes this station" onclick="birdWatchSkedRemove(this);">✕</span></td>
+              </tr>
+            </template>
+            <div id="birdWatchSkedEmpty" class="birdSkedNote" data-i18n="birdWatch.skeds.empty">No stations yet: add one, or paste a station's sked line</div>
+            <div class="birdSkedButtons">
+              <div id="birdWatchSkedAddButton" class="button" data-i18n="birdWatch.skeds.add.label" onclick="birdWatchSkedAdd();">Add Station</div>
+              <div class="button" data-i18n="birdWatch.skeds.paste.label" title="Adds the stations in the sked lines you have copied (callsign and grid, with height and lowest elevation if given)" onclick="birdWatchSkedPaste();">Paste Sked Line</div>
+              <div class="button" data-i18n="birdWatch.skeds.copyMine.label" title="Copies your own sked line (callsign, grid, height, lowest elevation) for the other station to paste" onclick="birdWatchSkedCopyMine();">Copy My Sked Line</div>
+            </div>
+            <table class="mapChecks">
+              <tr><td><label data-i18n="birdWatch.skeds.myMinEl.label" for="birdWatchSkedMyMinElValue">Your Min Elevation</label> <input type="range" min="0" max="45" value="0" step="1" class="slider" id="birdWatchSkedMyMinElValue" data-i18n="birdWatch.skeds.myMinEl.hover" title="The lowest elevation you can work a mutual pass at; 0° is your horizon" oninput="birdWatchSkedMyMinElChange()" /><span id="birdWatchSkedMyMinElText" class="mapValue" style="min-width: 26px;">0°</span></td></tr>
+              <tr><td><label data-i18n="birdWatch.skeds.minDuration.label" for="birdWatchSkedMinMinutes">Minimum Mutual Duration</label> <input type="range" min="0" max="10" value="0" step="1" class="slider" id="birdWatchSkedMinMinutes" data-i18n="birdWatch.skeds.minDuration.hover" title="Shorter mutual windows are left out everywhere: too short for a real exchange" oninput="birdWatchSkedMinMinutesChange()" /><span id="birdWatchSkedMinMinutesText" class="mapValue" style="min-width: 26px;">Off</span></td></tr>
+            </table>
+          </div>
+          <!-- The mutual passes of the next three days (birdWatchSkedsListRender): each with its own ICS and Copy -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="birdWatch.skeds.mutual.label">Mutual Passes (Next 72 Hours)</div>
+            <div id="birdWatchSkedMutualStatus" class="birdSkedNote"></div>
+            <div class="birdSkedMutualScroll">
+              <table class="birdSkedTable birdSkedMutual"><tbody id="birdWatchSkedMutualList"></tbody></table>
+            </div>
+            <div id="birdWatchSkedAllButtons" class="birdSkedButtons">
+              <div class="button" data-i18n="birdWatch.skeds.saveAll.label" onclick="birdWatchSkedSaveAll();">Save All As ICS</div>
+              <div class="button" data-i18n="birdWatch.skeds.copyAll.label" onclick="birdWatchSkedCopyAll();">Copy All</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Display: the BirdWatch panel's views and the satellites on the map -->
+      <div id="birdWatchDisplayDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
           <!-- The BirdWatch panel: the Bird Views it shows, and Reset Panels (its boxes back in their first order, birdWatchResetPanels) -->
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="birdWatch.panelView.title.label">Panel View</div>
@@ -2674,21 +2754,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               </tr>
             </table>
           </div>
-          <div style="flex-basis: 100%; height: 0;"></div>
+        </div>
+      </div>
+      <!-- Alerts: passes announced before they rise -->
+      <div id="birdWatchAlertsDiv" class="settingsTabcontent birdWatchSettingsTabcontent" style="display: none">
+        <div class="mapGroups">
           <div class="mapGroup">
             <div class="mapGroupTitle" data-i18n="birdWatch.alerts.title.label">Pass Alerts</div>
             <table class="mapChecks">
               <tr><td><input type="checkbox" id="birdWatchAlertEnable" data-i18n="birdWatch.alerts.enable.hover" title="Announce a tracked satellite before it rises" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertEnable" data-i18n="birdWatch.alerts.enable.label">Announce Upcoming Passes</label></td></tr>
-              <tr><td class="mapIndent"><label data-i18n="birdWatch.alerts.minutes.label" for="birdWatchAlertMinutes">Minutes Before AOS</label> <input type="range" min="1" max="30" value="5" step="1" class="slider" id="birdWatchAlertMinutes" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinutesText" class="mapValue">5</span></td></tr>
-              <tr><td class="mapIndent"><label data-i18n="birdWatch.alerts.minEl.label" for="birdWatchAlertMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="80" value="10" step="1" class="slider" id="birdWatchAlertMinEl" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinElText" class="mapValue">10°</span></td></tr>
-              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertAtAos" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertAtAos" data-i18n="birdWatch.alerts.atAos.label">Also When It Rises</label></td></tr>
-              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.hover" title="Uses the voice, rate and volume of Audio Alerts, and its mute" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.label">Speak</label></td></tr>
+              <!-- A mutual pass with an active station (Skeds, birdWatchSkeds.js), announced with the same minutes and ways as the passes -->
+              <tr><td><input type="checkbox" id="birdWatchAlertMutual" data-i18n="birdWatch.alerts.mutual.hover" title="Announce a mutual pass with an active station (Skeds tab) before it opens" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertMutual" data-i18n="birdWatch.alerts.mutual.label">Announce Mutual Passes</label></td></tr>
+              <tr data-for="both"><td class="mapIndent"><label data-i18n="birdWatch.alerts.minutes.label" for="birdWatchAlertMinutes">Minutes Before AOS</label> <input type="range" min="1" max="30" value="5" step="1" class="slider" id="birdWatchAlertMinutes" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinutesText" class="mapValue">5</span></td></tr>
+              <tr data-for="pass"><td class="mapIndent"><label data-i18n="birdWatch.alerts.minEl.label" for="birdWatchAlertMinEl">Lowest Max Elevation</label> <input type="range" min="0" max="80" value="10" step="1" class="slider" id="birdWatchAlertMinEl" oninput="birdWatchAlertsChange()" /><span id="birdWatchAlertMinElText" class="mapValue">10°</span></td></tr>
+              <tr data-for="pass"><td class="mapIndent"><input type="checkbox" id="birdWatchAlertAtAos" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertAtAos" data-i18n="birdWatch.alerts.atAos.label">Also When It Rises</label></td></tr>
+              <tr data-for="both"><td class="mapIndent"><input type="checkbox" id="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.hover" title="Uses the voice, rate and volume of Audio Alerts, and its mute" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertSpeech" data-i18n="birdWatch.alerts.speech.label">Speak</label></td></tr>
               <!-- The announcements' wording, the user's own ({N} {T} {D}); empty: the built-in one, shown as the placeholder -->
-              <tr><td class="mapIndent2"><label data-i18n="birdWatch.alerts.soonText.label" for="birdWatchAlertSoonText" style="display: inline-block; min-width: 90px;">Before AOS</label> <input type="text" id="birdWatchAlertSoonText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.soonText.hover" title="Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
-              <tr id="birdWatchAlertRisingTextTr"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.risingText.label" for="birdWatchAlertRisingText" style="display: inline-block; min-width: 90px;">When It Rises</label> <input type="text" id="birdWatchAlertRisingText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.risingText.hover" title="Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
-              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertTraffic" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertTraffic" data-i18n="birdWatch.alerts.traffic.label">Show In Traffic List</label></td></tr>
-              <tr><td class="mapIndent"><input type="checkbox" id="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.hover" title="Sent with Pushover and Simplepush, as set up under Settings, Features, Online" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.label">Send With Pushover / Simplepush</label></td></tr>
-              <tr><td class="mapIndent"><div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="birdWatch.alerts.test.label" onclick="birdWatchAlertTest();">Test Alert</div></td></tr>
+              <tr data-for="pass"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.soonText.label" for="birdWatchAlertSoonText" style="display: inline-block; min-width: 90px;">Before AOS</label> <input type="text" id="birdWatchAlertSoonText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.soonText.hover" title="Your own wording: {N} the satellite's name, {T} the minutes to AOS, {D} its max elevation in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
+              <tr id="birdWatchAlertRisingTextTr" data-for="pass"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.risingText.label" for="birdWatchAlertRisingText" style="display: inline-block; min-width: 90px;">When It Rises</label> <input type="text" id="birdWatchAlertRisingText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.risingText.hover" title="Your own wording: {N} the satellite's name, {D} the azimuth it rises at in degrees. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
+              <tr id="birdWatchAlertMutualTextTr" data-for="mutual"><td class="mapIndent2"><label data-i18n="birdWatch.alerts.mutualText.label" for="birdWatchAlertMutualText" style="display: inline-block; min-width: 90px;">Mutual Pass</label> <input type="text" id="birdWatchAlertMutualText" class="inputTextValue" maxlength="200" style="width: 300px;" data-i18n="birdWatch.alerts.mutualText.hover" title="Your own wording: {C} the station's callsign, {N} the satellite's name, {T} the minutes to it, {M} how many minutes it lasts. Empty: the message shown in gray" onchange="birdWatchAlertsChange()" /></td></tr>
+              <tr data-for="both"><td class="mapIndent"><input type="checkbox" id="birdWatchAlertTraffic" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertTraffic" data-i18n="birdWatch.alerts.traffic.label">Show In Traffic List</label></td></tr>
+              <tr data-for="both"><td class="mapIndent"><input type="checkbox" id="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.hover" title="Sent with Pushover and Simplepush, as set up under Settings, Features, Online" onclick="birdWatchAlertsChange()" /> <label for="birdWatchAlertPush" data-i18n="birdWatch.alerts.push.label">Send With Pushover / Simplepush</label></td></tr>
+              <tr data-for="both"><td class="mapIndent"><div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="birdWatch.alerts.test.label" onclick="birdWatchAlertTest();">Test Alert</div></td></tr>
             </table>
           </div>
         </div>

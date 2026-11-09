@@ -74,6 +74,18 @@ const BIRD_WATCH_INFO_ITEMS = [
     name: (n) => (n ? n.ttgoLabel : I18N("birdWatch.info.timeToAos")),
     value: (n) => [{ text: n.ttgo, color: n.up ? "lightgreen" : "orange" }],
     tip: (n) => n.ttgoFull
+  },
+  // The selected satellite's next mutual pass with an active station (Skeds, birdWatchSkeds.js), while there is one: magenta until it
+  // opens, green with the time left while it is under way; a click opens the Skeds tab
+  {
+    id: "sked", keys: ["sked"], when: () => birdWatchSkedsActive(), name: () => I18N("birdWatch.skeds.info.label"),
+    value: () =>
+    {
+      const info = birdWatchSkedInfo();
+      return [{ html: info.html, color: info.color }];
+    },
+    tip: () => birdWatchSkedInfo().tip,
+    click: () => showBirdWatchSettings("birdWatchSkedsDiv")
   }
 ];
 
@@ -230,7 +242,9 @@ function birdWatchInfoUpdate(n)
     if (entry.featured) entry.labels[0].textContent = "(" + item.name(n) + ")";
     else if (item.labels) item.labels(n).forEach((text, i) => (entry.labels[i].textContent = text));
     else entry.labels[0].textContent = item.name(n);
-    entry.row.title = item.tip ? item.tip(n) : "";
+    // (Set only when it changed: a tooltip showing isn't redrawn every tick)
+    const tip = item.tip ? item.tip(n) : "";
+    if (entry.row.title != tip) entry.row.title = tip;
   }
 }
 

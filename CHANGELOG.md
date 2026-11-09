@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261109.2]
+## [v2.261109.3]
 
 ### MD Markup Format
 #### Map / UI
@@ -130,11 +130,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Click one, on the waterfall or in the list, to decode it: its mode and submode are chosen and Detect Modes turns off (a CW signal pinned, an HF packet station locked onto, the FT8 or FT4 focus put on the station)
 - PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts
 
+#### BirdWatch
+
+- New Skeds (BirdWatch settings, Skeds): the stations you share passes with, by callsign and grid (and their height and lowest elevation if known), and the mutual passes of the next 72 hours, when a tracked satellite is up for you both
+  - Each with its time, how long it lasts and both elevations; listen-only satellites are marked RX only
+  - Save one or all as a calendar file (.ics), or copy them as text to send to the other station; Copy My Sked Line and Paste Sked Line swap stations between GridTracker2 users
+  - Minimum Mutual Duration leaves out windows too short for a QSO
+  - A station too far away to ever share a pass with you, for the satellites you track, says so
+  - Click a station on the map, a pass in the list or a bar in the timeline to make it the active station: its satellite is selected, the panel shows its mutual pass, and Skeds First prefers it
+  - Shown in the Pass Timeline (a row for each station), on the map (each station's marker, bright while a mutual pass is under way) and in the BirdWatch panel (the selected satellite's next mutual pass)
+  - Announce Mutual Passes (BirdWatch settings, Alerts) announces them before they open
+- Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens) or Skeds Only; a satellite you select yourself stays selected until its LOS
+- BirdWatch's settings are split into more tabs: BirdWatch, Skeds, Display (Panel View, Map), Alerts, Telemetry and Satellites
+- The selected satellite's name on the map is now black on light green, so it stands out
+
 #### Network Audio
 
 - New Network Audio (Settings, Features, Service): audio over your home network as the Multi-Mode Decoder's Input and Output Devices, beside your sound cards, to decode a rig connected to another computer and send SSTV pictures back to it
   - VBAN, as Voicemeeter and many other programs and devices send it
-  - RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 sends
+  - RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 announces (Announce: on for a multicast group, off for one computer's address)
   - PipeWire / PulseAudio (TCP), their simple protocol, where multicast doesn't get through
   - Each stream in a box of its own (the new Radios tab): Input or Output, Found (streams announced on the network), and a status line saying what it hears or sends
   - The audio is kept steady against the sender's clock, and lost packets are filled with silence, so SSTV pictures and weather faxes stay straight
@@ -348,12 +362,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>PSK31 and RTTY: a signal that starts with an RSID is now found as soon as it starts</li>
 </ul>
+<h4>BirdWatch</h4>
+<ul>
+  <li>New Skeds (BirdWatch settings, Skeds): the stations you share passes with, by callsign and grid (and their height and lowest elevation if known), and the mutual passes of the next 72 hours, when a tracked satellite is up for you both
+    <ul>
+      <li>Each with its time, how long it lasts and both elevations; listen-only satellites are marked RX only</li>
+      <li>Save one or all as a calendar file (.ics), or copy them as text to send to the other station; Copy My Sked Line and Paste Sked Line swap stations between GridTracker2 users</li>
+      <li>Minimum Mutual Duration leaves out windows too short for a QSO</li>
+      <li>A station too far away to ever share a pass with you, for the satellites you track, says so</li>
+      <li>Click a station on the map, a pass in the list or a bar in the timeline to make it the active station: its satellite is selected, the panel shows its mutual pass, and Skeds First prefers it</li>
+      <li>Shown in the Pass Timeline (a row for each station), on the map (each station's marker, bright while a mutual pass is under way) and in the BirdWatch panel (the selected satellite's next mutual pass)</li>
+      <li>Announce Mutual Passes (BirdWatch settings, Alerts) announces them before they open</li>
+    </ul>
+  </li>
+  <li>Auto-Track's Mode: Next Pass, Skeds First (a mutual pass wins, from a few minutes before it opens) or Skeds Only; a satellite you select yourself stays selected until its LOS</li>
+  <li>BirdWatch's settings are split into more tabs: BirdWatch, Skeds, Display (Panel View, Map), Alerts, Telemetry and Satellites</li>
+  <li>The selected satellite's name on the map is now black on light green, so it stands out</li>
+</ul>
 <h4>Network Audio</h4>
 <ul>
   <li>New Network Audio (Settings, Features, Service): audio over your home network as the Multi-Mode Decoder's Input and Output Devices, beside your sound cards, to decode a rig connected to another computer and send SSTV pictures back to it
     <ul>
       <li>VBAN, as Voicemeeter and many other programs and devices send it</li>
-      <li>RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 sends</li>
+      <li>RTP, the way PipeWire and PulseAudio send audio over a network: streams they announce are found by themselves, and they pick up the streams GridTracker2 announces (Announce: on for a multicast group, off for one computer's address)</li>
       <li>PipeWire / PulseAudio (TCP), their simple protocol, where multicast doesn't get through</li>
       <li>Each stream in a box of its own (the new Radios tab): Input or Output, Found (streams announced on the network), and a status line saying what it hears or sends</li>
       <li>The audio is kept steady against the sender's clock, and lost packets are filled with silence, so SSTV pictures and weather faxes stay straight</li>

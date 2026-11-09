@@ -892,6 +892,8 @@ function initHoverFunctors()
   GT.hoverFunctors.spot = { hover: mouseOverSpotItem, move: mouseMoveDataItem, out: mouseOutOfDataItem };
   GT.hoverFunctors.feed = { hover: mouseOverSpotItem, move: mouseMoveDataItem, out: mouseOutOfDataItem };
   GT.hoverFunctors.birdWatch = { hover: birdWatchHoverOver, move: birdWatchHoverMove, out: birdWatchHoverOut };
+  // A Skeds station's marker (birdWatchSkeds.js): its mutual passes
+  GT.hoverFunctors.birdWatchSked = { hover: birdWatchSkedHoverOver, move: birdWatchSkedHoverMove, out: mouseOutOfDataItem };
 }
 
 function mouseDownEvent(event)
@@ -915,6 +917,13 @@ function mouseDownEvent(event)
     // The right button: its transmitters in a window of their own (and it is the selected satellite)
     if (event.originalEvent && event.originalEvent.button == 2) birdWatchPopOut(satellite.get("norad"));
     else birdWatchSelect(satellite.get("norad"));
+    return true;
+  }
+  // A Skeds station's marker: it becomes the active station, the satellite of its next mutual pass selected (birdWatchSkeds.js)
+  const station = satellites ? satellites.find((feature) => feature.get("prop") == "birdWatchSked") : null;
+  if (station)
+  {
+    birdWatchSkedPickStation(station.get("sked"));
     return true;
   }
 

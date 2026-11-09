@@ -98,6 +98,19 @@ const def_settings = {
     auto: true,
     // Auto Select only picks a satellite whose pass climbs at least this many degrees (BirdWatch settings, General): 0 to 60
     autoMinElevation: 0,
+    // Auto-Track's mode (BirdWatch settings, General): "next" (the satellite up, or the next to rise), "skedsFirst" (a mutual pass with
+    // an active station wins), "skedsOnly" (only mutual passes)
+    autoMode: "skedsFirst",
+    // Skeds (BirdWatch settings, Skeds; birdWatchSkeds.js): the stations a pass is shared with, each { id ("s1" ...), call, grid,
+    // height (meters, 0 not known), minEl (the lowest elevation they work, degrees; null: yours), notes, active (counted for Auto-Track,
+    // the mutual passes, the timeline, the map and the alerts) }. skedMyMinEl: your own lowest elevation for a mutual pass (0: your
+    // horizon). skedMinSeconds: shorter mutual windows are left out (0: none)
+    skeds: [],
+    skedMyMinEl: 0,
+    skedMinSeconds: 0,
+    // The active station's id (picked on the map, in the Mutual Passes list or on the timeline): the panel's Mutual Pass row shows its
+    // pass, Skeds First prefers it; "" none
+    skedFocus: "",
     // A transmitter's own VFOs, picked in the transmitters window (a right-click on its downlink or uplink): { uuid: { rx, tx } }, by the
     // VFOs' ids; the others go to the first VFO whose Satellites ranges fit (settings.Rigs.vfos[].satRanges, rig.js rigRoles)
     vfoPins: {},
@@ -135,7 +148,9 @@ const def_settings = {
     // Pass alerts (BirdWatch settings, Alerts): a tracked satellite about to rise is announced this many minutes before its AOS (and at
     // it), when its pass climbs at least minElevation degrees, by voice, in the traffic list, and with Pushover / Simplepush
     // soonText / risingText: the user's own wording of the two announcements ({N} name, {T} minutes, {D} degrees); "" the built-in one
-    alerts: { enable: false, minutes: 5, minElevation: 10, atAos: true, speech: true, traffic: true, push: false, soonText: "", risingText: "" },
+    // mutual: a mutual pass with an active station (Skeds) announced too, with the same minutes and ways; mutualText its wording ({C}
+    // callsign, {N} name, {T} minutes to it, {M} minutes long)
+    alerts: { enable: false, minutes: 5, minElevation: 10, atAos: true, speech: true, traffic: true, push: false, soonText: "", risingText: "", mutual: false, mutualText: "" },
     // BirdWatch's colors (its settings window, Colors tab): the footprint's outline and fill, and how transparent the fill is
     colors: {
       footprintOn: true, footprintRing: "#000000", footprintFill: "#8f8f8f", footprintTransparency: 0.86,

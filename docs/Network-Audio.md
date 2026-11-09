@@ -49,7 +49,8 @@ PipeWire's VBAN receiver (`libpipewire-module-vban-recv`) plays every stream at 
 RTP is the standard way PipeWire and PulseAudio send audio over a network, and what AES67 equipment uses.
 
 * **Input:** the **Host** is the multicast group to listen on (224.0.0.56, PipeWire's and PulseAudio's, by default), or blank for a stream sent straight to this computer. Enter the **UDP Port** (46000 by default), and the **Sample Rate** and **Mono** or **Stereo** the sender uses. A stream that announces itself (SAP) is listed under **Found** and sets them for you.
-* **Output:** the **Host** to send to (224.0.0.56 for every PipeWire and PulseAudio computer on your network, or one computer's address), its **UDP Port**, and the rate and channels. GridTracker2 announces its stream, so PipeWire and PulseAudio computers listening for announcements pick it up by themselves: it shows as **RTP Stream (** and the stream's name **)**.
+* **Output:** the **Host** to send to (224.0.0.56 for every PipeWire and PulseAudio computer on your network, or one computer's address), its **UDP Port**, and the rate and channels.
+* **Announce** (output): announces the stream, so PipeWire and PulseAudio computers listening for announcements pick it up by themselves: it shows as **RTP Stream (** and the stream's name **)**. Every such computer on your network then has it. It is on for a multicast group and off for one computer's address until you change it.
 
 On the PipeWire or PulseAudio computer (including PipeWire with pipewire-pulse):
 

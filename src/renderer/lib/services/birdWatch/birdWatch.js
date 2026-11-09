@@ -153,6 +153,8 @@ function birdWatchTrackUpdate()
       T.worker = null;
     }
     birdWatchPredictReset();
+    birdWatchSkedMarkersClear();
+    birdWatchSkedsStop();
     T.markers.clear();
     T.rings.clear();
     T.last.clear();

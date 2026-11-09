@@ -44,6 +44,8 @@ function birdWatchPredictApply()
 function birdWatchPredictReset()
 {
   const T = GT.birdWatchTrack;
+  // The Skeds' mutual passes are worked out again too (birdWatchSkeds.js)
+  birdWatchSkedsReset();
   if (!T.predict) return;
   for (const norad of [...T.predict.features.keys()]) birdWatchPathRemove(norad);
   T.predict.paths.clear();
@@ -73,6 +75,8 @@ function birdWatchPredictUpdate()
   birdWatchAutoUpdate();
   birdWatchSatScanTick();
   birdWatchAlertsUpdate();
+  // The Skeds' mutual passes, their markers and alerts (birdWatchSkeds.js)
+  birdWatchSkedsTick();
   birdWatchDopplerUpdate();
   if (T.selected && GT.settings.BirdWatch.skybox) birdWatchSkyUpdate();
   if (T.selected) birdWatchSideViewUpdate();
@@ -243,6 +247,19 @@ function birdWatchAutoUpdate()
   let nextHeard = null;
   const minEl = GT.settings.BirdWatch.autoMinElevation || 0;
   const now = Date.now();
+  // Skeds First and Skeds Only (birdWatchSkeds.js): a mutual pass with an active station, from a little before it opens; Skeds Only
+  // leaves the selection as it is between them
+  const sked = birdWatchSkedAutoPick(now);
+  if (sked && sked.idle) return;
+  if (sked && sked.pick)
+  {
+    if (sked.pick != T.autoPick)
+    {
+      T.autoPick = sked.pick;
+      if (T.selected != sked.pick) birdWatchSelect(sked.pick, true);
+    }
+    return;
+  }
   for (const norad of GT.settings.BirdWatch.tracked)
   {
     const sat = T.last.get(norad);
@@ -670,9 +687,11 @@ function birdWatchTimelineDraw()
   const P = birdWatchPredictState();
   if (!T.worker) return;
   const tracked = GT.settings.BirdWatch.tracked;
+  // Then a row for each active station (Skeds, birdWatchSkeds.js): its mutual passes
+  const skeds = birdWatchSkedList().filter((s) => s.active && birdWatchSkedPlace(s));
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(420, Math.min(1000, window.innerWidth - 470));
-  const height = BIRD_WATCH_AXIS + tracked.length * BIRD_WATCH_ROW + 4;
+  const height = BIRD_WATCH_AXIS + (tracked.length + skeds.length) * BIRD_WATCH_ROW + 4;
   if (birdWatchTimelineCanvas.width != Math.ceil(width * dpr) || birdWatchTimelineCanvas.height != Math.ceil(height * dpr))
   {
     birdWatchTimelineCanvas.width = Math.ceil(width * dpr);
@@ -761,6 +780,45 @@ function birdWatchTimelineDraw()
     }
   });
 
+  // The stations' rows: each mutual window a bar, green for a two-way satellite and cyan for a listen-only one, its satellite and how
+  // long it lasts on it when there is room
+  const windows = birdWatchSkedWindows(now);
+  skeds.forEach((s, i) =>
+  {
+    const top = BIRD_WATCH_AXIS + (tracked.length + i) * BIRD_WATCH_ROW;
+    c.fillStyle = "#0b1f12";
+    c.fillRect(left, top + 1, right - left, BIRD_WATCH_ROW - 2);
+    // The active station's name yellow, as the selected satellite's is
+    c.fillStyle = s.id == birdWatchSkedFocus() ? "#ffff00" : "#90ee90";
+    c.font = "bold 12px sans-serif";
+    c.textAlign = "left";
+    c.fillText(s.call || s.grid, 4, top + BIRD_WATCH_ROW / 2, BIRD_WATCH_LABELS - 8);
+    for (const w of windows)
+    {
+      if (w.key != s.id || w.start > now + span) continue;
+      const x0 = Math.max(left, x(w.start));
+      const x1 = Math.min(right, x(w.end));
+      const y0 = top + 5;
+      const h = BIRD_WATCH_ROW - 10;
+      c.fillStyle = w.rank == 0 ? "rgba(46, 204, 64, 0.85)" : "rgba(0, 229, 255, 0.75)";
+      c.strokeStyle = w.norad == T.selected ? "#ffff00" : "#ffffff";
+      c.lineWidth = w.norad == T.selected ? 2 : 1;
+      c.beginPath();
+      c.roundRect(x0, y0, Math.max(3, x1 - x0), h, 3);
+      c.fill();
+      c.stroke();
+      c.lineWidth = 1;
+      if (x1 - x0 > 40)
+      {
+        c.fillStyle = "#000000";
+        c.font = "10px sans-serif";
+        c.textAlign = "center";
+        c.fillText(w.name + (x1 - x0 > 90 ? "  " + toDHMS(w.seconds) : ""), (x0 + x1) / 2, top + BIRD_WATCH_ROW / 2, x1 - x0 - 4);
+      }
+      P.blocks.push({ x0: x0, x1: Math.max(x0 + 3, x1), y0: y0, y1: y0 + h, norad: w.norad, sked: w });
+    }
+  });
+
   // Now, at the left edge
   c.strokeStyle = "#ff8080";
   c.lineWidth = 2;
@@ -788,6 +846,12 @@ function birdWatchTimelineMove(event)
     birdWatchTimelineCanvas.title = "";
     return;
   }
+  // A station's mutual window (birdWatchSkeds.js)
+  if (block.sked)
+  {
+    birdWatchTimelineCanvas.title = birdWatchSkedTip(block.sked);
+    return;
+  }
   const tle = birdWatchTleGet(block.norad);
   const pass = block.pass;
   // The times to go count from now: AOS only while it is still ahead
@@ -808,5 +872,7 @@ function birdWatchTimelineMove(event)
 function birdWatchTimelineClick(event)
 {
   const block = birdWatchTimelineBlock(event);
-  if (block && block.norad != GT.birdWatchTrack.selected) birdWatchSelect(block.norad);
+  // A station's mutual pass: picked (its satellite selected, the station the active one: birdWatchSkeds.js)
+  if (block && block.sked) birdWatchSkedPick(block.sked);
+  else if (block && block.norad != GT.birdWatchTrack.selected) birdWatchSelect(block.norad);
 }

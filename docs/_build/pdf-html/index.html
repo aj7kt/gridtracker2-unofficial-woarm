@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=188202db"></script>
+    <script src="_static/documentation_options.js?v=08c73a15"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261109.2</p>
+<p class="gt-cover-version">Version 2.261109.3</p>
 <p class="gt-cover-date">November 8, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -156,7 +156,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261109.2. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261109.3. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -918,7 +918,7 @@
 <span id="document-GridTracker-Overview/Settings-Sub-Menus"></span><section id="gridtracker2-settings">
 <h2>GridTracker2 Settings<a class="headerlink" href="#gridtracker2-settings" title="Link to this heading">¶</a></h2>
 <p>Click the <strong>Settings</strong> button (the gear) in the button panel, or press <strong>Ctrl+S</strong>, to open the Settings panel over the map. Click the red <strong>X</strong> in the top right corner, press <strong>Esc</strong>, or click the gear again to close it.</p>
-<p>The tabs along the top are <strong>General</strong>, <strong>Features</strong>, <strong>Radios</strong>, <strong>Lookups</strong>, <strong>Audio</strong>, <strong>Map</strong>, <strong>Colors</strong>, <strong>Feeds</strong>, <strong>Logging</strong>, <strong>Audio Alerts</strong>, <strong>Custom Alerts</strong>, <strong>Logbook</strong> and <strong>About</strong>. The <strong>Radios</strong> tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the <strong>Feeds</strong> tab while DX Feeds is. While BirdWatch is turned on, its own tabs, <strong>BirdWatch</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>, appear in a row above the others; see <a class="reference internal" href="#document-BirdWatch#settings-birdwatch-tab"><span class="std std-ref">BirdWatch</span></a>. In a narrow window, <strong>About</strong> moves up to that row so the others fit on one line.</p>
+<p>The tabs along the top are <strong>General</strong>, <strong>Features</strong>, <strong>Radios</strong>, <strong>Lookups</strong>, <strong>Audio</strong>, <strong>Map</strong>, <strong>Colors</strong>, <strong>Feeds</strong>, <strong>Logging</strong>, <strong>Audio Alerts</strong>, <strong>Custom Alerts</strong>, <strong>Logbook</strong> and <strong>About</strong>. The <strong>Radios</strong> tab only appears while Rig Control, Rotor Control or Network Audio is turned on, and the <strong>Feeds</strong> tab while DX Feeds is. While BirdWatch is turned on, its own tabs, <strong>BirdWatch</strong>, <strong>Skeds</strong>, <strong>Display</strong>, <strong>Alerts</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>, appear in a row above the others; see <a class="reference internal" href="#document-BirdWatch#settings-birdwatch-tab"><span class="std std-ref">BirdWatch</span></a>. In a narrow window, <strong>About</strong> moves up to that row so the others fit on one line.</p>
 <p>Most tabs are divided into titled boxes. An option that depends on another one is indented under it, and is only shown while the option above it is turned on.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -2550,7 +2550,8 @@
 <p>RTP is the standard way PipeWire and PulseAudio send audio over a network, and what AES67 equipment uses.</p>
 <ul class="simple">
 <li><p><strong>Input:</strong> the <strong>Host</strong> is the multicast group to listen on (224.0.0.56, PipeWire’s and PulseAudio’s, by default), or blank for a stream sent straight to this computer. Enter the <strong>UDP Port</strong> (46000 by default), and the <strong>Sample Rate</strong> and <strong>Mono</strong> or <strong>Stereo</strong> the sender uses. A stream that announces itself (SAP) is listed under <strong>Found</strong> and sets them for you.</p></li>
-<li><p><strong>Output:</strong> the <strong>Host</strong> to send to (224.0.0.56 for every PipeWire and PulseAudio computer on your network, or one computer’s address), its <strong>UDP Port</strong>, and the rate and channels. GridTracker2 announces its stream, so PipeWire and PulseAudio computers listening for announcements pick it up by themselves: it shows as <strong>RTP Stream (</strong> and the stream’s name <strong>)</strong>.</p></li>
+<li><p><strong>Output:</strong> the <strong>Host</strong> to send to (224.0.0.56 for every PipeWire and PulseAudio computer on your network, or one computer’s address), its <strong>UDP Port</strong>, and the rate and channels.</p></li>
+<li><p><strong>Announce</strong> (output): announces the stream, so PipeWire and PulseAudio computers listening for announcements pick it up by themselves: it shows as <strong>RTP Stream (</strong> and the stream’s name <strong>)</strong>. Every such computer on your network then has it. It is on for a multicast group and off for one computer’s address until you change it.</p></li>
 </ul>
 <p>On the PipeWire or PulseAudio computer (including PipeWire with pipewire-pulse):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pactl</span> <span class="n">load</span><span class="o">-</span><span class="n">module</span> <span class="n">module</span><span class="o">-</span><span class="n">rtp</span><span class="o">-</span><span class="n">send</span> <span class="n">source</span><span class="o">=&lt;</span><span class="n">source</span> <span class="n">name</span><span class="o">&gt;</span> <span class="n">destination_ip</span><span class="o">=</span><span class="mf">224.0.0.56</span> <span class="n">port</span><span class="o">=</span><span class="mi">46000</span> <span class="n">rate</span><span class="o">=</span><span class="mi">48000</span> <span class="n">channels</span><span class="o">=</span><span class="mi">2</span> <span class="nb">format</span><span class="o">=</span><span class="n">s16be</span>
@@ -3261,7 +3262,7 @@
 <ul class="simple">
 <li><p>the <strong>Toggle Satellite Tracking</strong> button to the button panel;</p></li>
 <li><p>the <strong>BirdWatch</strong> panel on the map;</p></li>
-<li><p>a row of three BirdWatch tabs in Settings: <strong>BirdWatch</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>.</p></li>
+<li><p>a row of BirdWatch tabs in Settings: <strong>BirdWatch</strong>, <strong>Skeds</strong>, <strong>Display</strong>, <strong>Alerts</strong>, <strong>Telemetry</strong> and <strong>Satellites</strong>.</p></li>
 </ul>
 <p>BirdWatch works offline: the satellite data it needs comes with GridTracker2. While you are online (and BirdWatch is on), the data is kept up to date automatically.</p>
 <div class="admonition tip">
@@ -3312,7 +3313,7 @@
 <ul class="simple">
 <li><p>Click the title <strong>BirdWatch</strong> to hide the panel. Click the <strong>☰</strong> that appears in its place to bring it back.</p></li>
 <li><p>Right-click the title (or the side panel’s GridTracker2 title) to swap the two panels from one side to the other. This is the same as <strong>Control Panel On Left Side</strong> in Settings → General.</p></li>
-<li><p>The boxes under the title can be put in another order: drag a box by its top border. <strong>Reset Panels</strong> in the BirdWatch tab of Settings puts them back.</p></li>
+<li><p>The boxes under the title can be put in another order: drag a box by its top border. <strong>Reset Panels</strong> in the Display tab of Settings puts them back.</p></li>
 </ul>
 <p>Most of the panel is about the <strong>selected satellite</strong>. Click a satellite on the map to select it (click it again to clear the selection), or let <a class="reference internal" href="#auto-track">Auto-Track</a> select one for you. The selection is also noted in the Event Viewer.</p>
 <section id="satellite-information">
@@ -3360,7 +3361,7 @@
 </section>
 <section id="sky-views">
 <h4>Sky Views<a class="headerlink" href="#sky-views" title="Link to this heading">¶</a></h4>
-<p>Four drawings of the selected satellite’s pass can be shown under the information. Pick them in <strong>Panel View</strong> in the BirdWatch tab of Settings. In each, AOS is green, LOS red, and a cyan dot shows where the satellite is now while it is up. Hold the mouse over one for a reminder of how to read it.</p>
+<p>Four drawings of the selected satellite’s pass can be shown under the information. Pick them in <strong>Panel View</strong> in the Display tab of Settings. In each, AOS is green, LOS red, and a cyan dot shows where the satellite is now while it is up. Hold the mouse over one for a reminder of how to read it.</p>
 <ul class="simple">
 <li><p><strong>Skybox</strong> (on by default): the whole sky as a circle seen from below, north at the top and east on the right. The horizon is the outer circle and straight overhead is the center. The pass’s track runs across it, with its highest point marked.</p></li>
 <li><p><strong>Pass Profile:</strong> the satellite’s elevation through the pass, with the AOS and LOS times under its ends.</p></li>
@@ -3372,7 +3373,7 @@
 <section id="satellites-on-the-map">
 <h3>Satellites on the Map<a class="headerlink" href="#satellites-on-the-map" title="Link to this heading">¶</a></h3>
 <p><img alt="Satellites on the map: AO-91 selected, with its footprint and predicted path" src="_images/GT2_BirdWatch_Map.jpg" /></p>
-<p>Each tracked satellite is drawn on the map as a small satellite icon with its name under it, and moves as it goes around the Earth. An icon is drawn dim while the satellite is in the Earth’s shadow (while the Grayline is on).</p>
+<p>Each tracked satellite is drawn on the map as a small satellite icon with its name under it (yellow on blue, and black on light green for the selected satellite), and moves as it goes around the Earth. An icon is drawn dim while the satellite is in the Earth’s shadow (while the Grayline is on).</p>
 <ul class="simple">
 <li><p><strong>Click</strong> a satellite to select it; it is ringed. Click it again to clear the selection.</p></li>
 <li><p><strong>Right-click</strong> a satellite to select it and open its transmitters window.</p></li>
@@ -3383,7 +3384,7 @@
 <li><p>its <strong>Footprint:</strong> the circle on the ground that can hear it right now. Stations inside it can work each other through the satellite.</p></li>
 <li><p>its <strong>Predicted Path:</strong> its ground track, from a little behind it to up to an orbit ahead. The part already flown and the part to come are drawn differently, and a mark with its time is placed every ten minutes ahead.</p></li>
 </ul>
-<p>Their colors and styles are in <strong>Map</strong> in the BirdWatch tab of Settings.</p>
+<p>Their colors and styles are in <strong>Map</strong> in the Display tab of Settings. The stations of your <a class="reference internal" href="#skeds-passes-with-another-station">Skeds</a> are drawn on the map too.</p>
 </section>
 <section id="pass-timeline">
 <h3>Pass Timeline<a class="headerlink" href="#pass-timeline" title="Link to this heading">¶</a></h3>
@@ -3393,7 +3394,8 @@
 <li><p>Each pass is a yellow bar from its AOS to its LOS. The higher the pass climbs, the taller and brighter the bar. Where there is room, its highest elevation and its length in minutes are written on it, and an 👁 marks a visible pass.</p></li>
 <li><p>Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation.</p></li>
 <li><p>Click a bar to select its satellite.</p></li>
-<li><p><strong>Export Passes (.ics)</strong> saves the next three days of passes as a calendar file you can open in your phone’s or computer’s calendar. Each pass has a reminder before it rises. Only passes that climb at least the <strong>Lowest Max Elevation</strong> of Pass Alerts are saved, and the reminder comes <strong>Minutes Before AOS</strong> (both in the BirdWatch tab of Settings).</p></li>
+<li><p>Under the satellites, each active station of your <a class="reference internal" href="#skeds-passes-with-another-station">Skeds</a> has a row of its own (its callsign in light green), with a bar for each mutual pass: green for a two-way satellite, cyan for a listen-only one.</p></li>
+<li><p><strong>Export Passes (.ics)</strong> saves the next three days of passes as a calendar file you can open in your phone’s or computer’s calendar. Each pass has a reminder before it rises. Only passes that climb at least the <strong>Lowest Max Elevation</strong> of Pass Alerts are saved, and the reminder comes <strong>Minutes Before AOS</strong> (both in the Alerts tab of Settings).</p></li>
 <li><p>The red <strong>X</strong> closes the timeline.</p></li>
 </ul>
 </section>
@@ -3414,7 +3416,7 @@
 </section>
 <section id="pass-alerts">
 <h3>Pass Alerts<a class="headerlink" href="#pass-alerts" title="Link to this heading">¶</a></h3>
-<p>BirdWatch can announce a tracked satellite a few minutes before it rises, for example: “AO-91 rises in 5 minutes, max elevation 42 degrees”. Each pass is announced only once, and only passes that climb high enough. Turn on <strong>Announce Upcoming Passes</strong> in the BirdWatch tab of Settings, see <a class="reference internal" href="#pass-alerts-settings">Pass Alerts</a> below.</p>
+<p>BirdWatch can announce a tracked satellite a few minutes before it rises, for example: “AO-91 rises in 5 minutes, max elevation 42 degrees”. Each pass is announced only once, and only passes that climb high enough. Turn on <strong>Announce Upcoming Passes</strong> in the Alerts tab of Settings, see <a class="reference internal" href="#pass-alerts-settings">Pass Alerts</a> below.</p>
 </section>
 <section id="logging-satellite-qsos">
 <h3>Logging Satellite QSOs<a class="headerlink" href="#logging-satellite-qsos" title="Link to this heading">¶</a></h3>
@@ -3435,6 +3437,13 @@
 <section id="auto-track">
 <h4>Auto-Track<a class="headerlink" href="#auto-track" title="Link to this heading">¶</a></h4>
 <ul class="simple">
+<li><p><strong>Mode:</strong> what Auto-Track picks, see <a class="reference internal" href="#auto-track">Auto-Track</a>:</p>
+<ul>
+<li><p><strong>Next Pass:</strong> the satellite that is up, or the next to rise.</p></li>
+<li><p><strong>Skeds First</strong> (the default): a mutual pass with an active station in the <a class="reference internal" href="#skeds-passes-with-another-station">Skeds</a> tab wins, from three minutes before it opens. Otherwise, as Next Pass.</p></li>
+<li><p><strong>Skeds Only:</strong> only mutual passes. Between them the selection is left as it is.</p></li>
+</ul>
+</li>
 <li><p><strong>Lowest Max Elevation:</strong> Auto-Track only selects a satellite whose pass climbs at least this high, 0° to 60°. At 0° every pass counts.</p></li>
 </ul>
 </section>
@@ -3451,6 +3460,49 @@
 <li><p><strong>Sticky Mode:</strong> when Auto-Track selects a satellite, the radio first follows a transmitter in the same mode as the one you followed before (FM to FM, for example). Otherwise, and for a satellite you select, it follows the transmitter you last followed on that satellite, else the first in the table. A click in the table always sets what you click.</p></li>
 </ul>
 </section>
+</section>
+<section id="settings-skeds-tab">
+<h3>Settings: Skeds Tab<a class="headerlink" href="#settings-skeds-tab" title="Link to this heading">¶</a></h3>
+<p>The stations you share passes with, and your mutual passes with them. See <a class="reference internal" href="#skeds-passes-with-another-station">Skeds: Passes With Another Station</a>.</p>
+<p><img alt="The Skeds tab" src="_images/GT2_BirdWatch_Skeds.png" /></p>
+<section id="stations">
+<h4>Stations<a class="headerlink" href="#stations" title="Link to this heading">¶</a></h4>
+<p>Each station is a row:</p>
+<ul class="simple">
+<li><p><strong>Active:</strong> the station counts for Auto-Track, the Mutual Passes, the Pass Timeline, the map and the alerts. Untick it to keep a station in the list without using it.</p></li>
+<li><p><strong>Callsign</strong> and <strong>Grid:</strong> a 6-character grid (CN87XX) puts the station within a few kilometers; a 4-character one only within about 100 km, which can move a low pass’s start by up to a minute. A grid that isn’t one is shown in orange.</p></li>
+<li><p><strong>Height:</strong> the station’s height above sea level, if you know it (feet with miles or nautical miles as your distance unit, meters otherwise). It changes little.</p></li>
+<li><p><strong>Min El:</strong> the lowest elevation the station can work, for its trees and buildings. Leave it blank to use your own.</p></li>
+<li><p><strong>Notes:</strong> anything you like, such as “FM satellites only”.</p></li>
+<li><p><strong>✕</strong> removes the station.</p></li>
+</ul>
+<p>A station too far away to ever share a pass with you, for the satellites you track, gets a note in orange under its row (and on the map), for example “A mutual pass will never happen: 5433 mi apart, too far for the satellites you track”. Two stations can only both see a satellite when they are closer together than what each can see of it at its highest point; tracking a higher satellite (AO-07 reaches about 7,900 km, the ISS about 4,500 km) can change that.</p>
+<p>The buttons under the list:</p>
+<ul class="simple">
+<li><p><strong>Add Station</strong> adds an empty row.</p></li>
+<li><p><strong>Paste Sked Line</strong> adds the stations in the lines you have copied, for example from an email: each line needs a callsign and a grid, and may have a height (<code class="docutils literal notranslate"><span class="pre">120m</span></code>, <code class="docutils literal notranslate"><span class="pre">400ft</span></code>) and a lowest elevation (<code class="docutils literal notranslate"><span class="pre">min</span> <span class="pre">15°</span></code>). A station already in the list, by its callsign, is updated.</p></li>
+<li><p><strong>Copy My Sked Line</strong> copies your own line, for example <code class="docutils literal notranslate"><span class="pre">K7ABC</span> <span class="pre">CN87XX</span> <span class="pre">120m</span> <span class="pre">min</span> <span class="pre">10°</span></code>, for the other station to paste.</p></li>
+</ul>
+<p>Under them:</p>
+<ul class="simple">
+<li><p><strong>Your Min Elevation:</strong> the lowest elevation you can work a mutual pass at, 0° to 45°. At 0°, your horizon.</p></li>
+<li><p><strong>Minimum Mutual Duration:</strong> mutual windows shorter than this, 1 to 10 minutes, are left out everywhere: the list, Auto-Track, the timeline and the alerts. Off by default.</p></li>
+</ul>
+</section>
+<section id="mutual-passes">
+<h4>Mutual Passes<a class="headerlink" href="#mutual-passes" title="Link to this heading">¶</a></h4>
+<p>The mutual passes of the next 72 hours, in order. Each row shows the satellite (with <strong>(RX only)</strong> for one with no uplink), the day and time in UTC, how long it lasts, the station, and both elevations at the best moment (yours / theirs). A pass under way is shaded green. Hold the mouse over a row for each side’s azimuths and highest elevation; click the satellite’s name to select it.</p>
+<ul>
+<li><p><strong>ICS</strong> saves that pass as a calendar event, and <strong>Copy</strong> copies it as a line of text, for example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">SO-50</span>&#160; <span class="pre">2026-11-12</span> <span class="pre">18:42–18:49</span> <span class="pre">UTC</span> <span class="pre">(7m</span> <span class="pre">10s)</span>&#160; <span class="pre">K7ABC</span> <span class="pre">CN87</span> <span class="pre">31°</span> <span class="pre">/</span> <span class="pre">W1XYZ</span> <span class="pre">FN31</span> <span class="pre">22°</span>&#160; <span class="pre">145.850</span> <span class="pre">up</span> <span class="pre">/</span> <span class="pre">436.795</span> <span class="pre">down</span> <span class="pre">FM</span></code></p>
+</li>
+<li><p><strong>Save All As ICS</strong> and <strong>Copy All</strong> do the same for every pass in the list.</p></li>
+</ul>
+<p>The calendar event runs from the start to the end of the mutual window, with both callsigns and its length in the title. Its description has the line above, each station’s whole pass, and the date of the satellite’s TLE. A reminder comes the Alerts tab’s <strong>Minutes Before AOS</strong> before it. Times hold to a few seconds only while both stations use fresh TLEs, so the TLE’s date is included when you copy too.</p>
+</section>
+</section>
+<section id="settings-display-tab">
+<h3>Settings: Display Tab<a class="headerlink" href="#settings-display-tab" title="Link to this heading">¶</a></h3>
 <section id="panel-view">
 <h4>Panel View<a class="headerlink" href="#panel-view" title="Link to this heading">¶</a></h4>
 <p>The drawings shown in the BirdWatch panel: <strong>Skybox</strong>, <strong>Pass Profile</strong>, <strong>Horizon</strong> and <strong>Earth</strong> (see <a class="reference internal" href="#sky-views">Sky Views</a>). <strong>Reset Panels</strong> puts the panel’s boxes back in their first order.</p>
@@ -3463,24 +3515,29 @@
 </ul>
 <p>Options are grayed out while their item is off.</p>
 </section>
+</section>
+<section id="settings-alerts-tab">
+<h3>Settings: Alerts Tab<a class="headerlink" href="#settings-alerts-tab" title="Link to this heading">¶</a></h3>
 <section id="pass-alerts-settings">
 <span id="id1"></span><h4>Pass Alerts<a class="headerlink" href="#pass-alerts-settings" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>Announce Upcoming Passes:</strong> announces each pass of a tracked satellite before it rises. The options below it appear while it is on:</p>
-<ul>
+<li><p><strong>Announce Upcoming Passes:</strong> announces each pass of a tracked satellite before it rises.</p></li>
+<li><p><strong>Announce Mutual Passes:</strong> announces a mutual pass with an active station (see <a class="reference internal" href="#skeds-passes-with-another-station">Skeds</a>) before it opens, for example: “Mutual pass with W1XYZ on SO-50 in 5 minutes, 7 minutes long”. It uses the same minutes and the same ways as the passes’ announcements, and can be on by itself.</p></li>
+</ul>
+<p>The options below them appear while one of them is on:</p>
+<ul class="simple">
 <li><p><strong>Minutes Before AOS:</strong> how long before it rises, 1 to 30 minutes.</p></li>
 <li><p><strong>Lowest Max Elevation:</strong> only passes that climb at least this high, 0° to 80° (10° by default). This also chooses which passes Export Passes saves.</p></li>
 <li><p><strong>Also When It Rises:</strong> a second announcement at AOS, with the azimuth to look at.</p></li>
 <li><p><strong>Speak:</strong> says it aloud, with the voice, rate and volume of Audio Alerts (and their mute).</p>
 <ul>
 <li><p><strong>Before AOS</strong> and <strong>When It Rises:</strong> your own wording, if you like. In it, <code class="docutils literal notranslate"><span class="pre">{N}</span></code> is the satellite’s name, <code class="docutils literal notranslate"><span class="pre">{T}</span></code> the minutes to AOS and <code class="docutils literal notranslate"><span class="pre">{D}</span></code> the degrees (its highest elevation before AOS, the azimuth it rises at). Leave a box empty to use the wording shown in gray.</p></li>
+<li><p><strong>Mutual Pass:</strong> your own wording for mutual passes: <code class="docutils literal notranslate"><span class="pre">{C}</span></code> is the station’s callsign, <code class="docutils literal notranslate"><span class="pre">{N}</span></code> the satellite’s name, <code class="docutils literal notranslate"><span class="pre">{T}</span></code> the minutes to it and <code class="docutils literal notranslate"><span class="pre">{M}</span></code> how many minutes it lasts.</p></li>
 </ul>
 </li>
 <li><p><strong>Show In Traffic List:</strong> adds the announcement to the Event Viewer.</p></li>
 <li><p><strong>Send With Pushover / Simplepush:</strong> sends it to your phone as well, with the services set up in Settings → Features → Online (see <a class="reference internal" href="#document-Third-Party-Integrations/PushNotifications-Integrations"><span class="std std-doc">Push Notifications</span></a>). Not in Offline Mode.</p></li>
 <li><p><strong>Test Alert:</strong> makes an announcement now, in every way that is turned on.</p></li>
-</ul>
-</li>
 </ul>
 </section>
 </section>
@@ -3549,6 +3606,27 @@
 <li><p>Only passes that climb at least Auto-Track’s <strong>Lowest Max Elevation</strong> count.</p></li>
 </ul>
 <p>You can still click another satellite. Your choice stays until Auto-Track’s pick moves on to the next pass. The Event Viewer notes each satellite Auto-Track selects.</p>
+<p>With an active station in the Skeds tab, Auto-Track’s <strong>Mode</strong> (BirdWatch tab of Settings) also counts mutual passes:</p>
+<ul class="simple">
+<li><p><strong>Skeds First</strong> (the default): from three minutes before a mutual pass opens until it ends, its satellite is selected, even if another one is still up, so your rotator and radio are there in time. A two-way satellite wins over a listen-only one at the same time, then the one that lasts longer. The rest of the time, Auto-Track works as above.</p></li>
+<li><p><strong>Skeds Only:</strong> only mutual passes are selected; between them, the selection is left as it is.</p></li>
+<li><p><strong>Next Pass:</strong> mutual passes make no difference.</p></li>
+</ul>
+<p>In Skeds First and Skeds Only, a satellite you select yourself, even while a sked is under way, stays selected until its LOS; then Auto-Track picks again.</p>
+</section>
+<section id="skeds-passes-with-another-station">
+<h3>Skeds: Passes With Another Station<a class="headerlink" href="#skeds-passes-with-another-station" title="Link to this heading">¶</a></h3>
+<p>Skeds help you set up a QSO through a satellite with a station you know, or listen to the same pass. Add the station’s callsign and grid in the <a class="reference internal" href="#settings-skeds-tab">Skeds tab</a>, and BirdWatch works out the <strong>mutual passes</strong> of the next three days: the times when a tracked satellite is up for you both at once, above your own lowest elevation and theirs. Satellites with an uplink count for a QSO; listen-only ones are marked <strong>(RX only)</strong>. Mutual passes are worked out again every ten minutes, and at once when you change a station, your QTH or the satellites you track.</p>
+<p>You see them:</p>
+<ul class="simple">
+<li><p>In the Skeds tab’s <strong>Mutual Passes</strong> list, with how long each lasts and both elevations.</p></li>
+<li><p>In the <a class="reference internal" href="#pass-timeline">Pass Timeline</a>: a row for each active station, under the satellites, with a bar for each mutual pass (green for a two-way satellite, cyan for a listen-only one) and its satellite and length on it. Hold the mouse over a bar for the details; click it to select the satellite.</p></li>
+<li><p>On the map: each active station as a light green diamond with its callsign, larger and bright green while a mutual pass with it is under way. Hold the mouse over it for its next mutual passes in full: the satellite, the time, how long, the time to it (or left), both elevations at the best moment, and each side’s azimuths and highest elevation.</p></li>
+<li><p>In the BirdWatch panel: a <strong>Mutual Pass</strong> row with the station and the time to the selected satellite’s next mutual pass (<code class="docutils literal notranslate"><span class="pre">W1XYZ</span>&#160; <span class="pre">AOS</span> <span class="pre">55m</span> <span class="pre">11s</span></code>), or to its end while it is under way (<code class="docutils literal notranslate"><span class="pre">LOS</span> <span class="pre">4m</span> <span class="pre">12s</span></code>). Made the featured item, the time goes on its own line under the callsign. Hold the mouse over it for the details; click it to open the Skeds tab.</p></li>
+<li><p>As an announcement, with <strong>Announce Mutual Passes</strong> (Alerts tab).</p></li>
+</ul>
+<p><strong>The active station.</strong> Click a station’s diamond on the map, a pass in the Mutual Passes list, or a bar in its timeline row to make that station the active one. Its satellite (for the map, the one of its next mutual pass) is selected, as if you had clicked it, and stays selected until its LOS. The Mutual Pass row then shows that station’s pass, Skeds First prefers its passes over the others’, and the station is marked in yellow on the map, in the list and in the timeline. It is kept when GridTracker2 restarts. Click the active station’s diamond again to have no active station (the satellite stays selected).</p>
+<p>To arrange the sked, send the other station the pass: <strong>Copy</strong> (a line of text) or <strong>ICS</strong> (a calendar event) in the Mutual Passes list. If they use GridTracker2 too, <strong>Copy My Sked Line</strong> gives them your callsign, grid, height and lowest elevation to paste into their own list.</p>
 </section>
 <section id="following-a-satellite-with-your-rig">
 <h3>Following a Satellite With Your Rig<a class="headerlink" href="#following-a-satellite-with-your-rig" title="Link to this heading">¶</a></h3>

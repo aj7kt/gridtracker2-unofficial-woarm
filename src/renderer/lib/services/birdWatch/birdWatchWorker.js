@@ -11,6 +11,9 @@
 //   { type: "path", norad }                            { type: "path", norad, points: [[ms, lat, lon]..], period } its ground track:
 //                                                        a little of the past and up to an orbit ahead
 //   { type: "arc", norad, from, to, stepSec, id }      { type: "arc", norad, id, points: [[ms, az, el]..] } the sky between two times
+//   { type: "mutual", id, norad, hours, minEl, minSeconds, stations: [{ key, lat, lon, alt, minEl }] }
+//                                                      { type: "mutual", id, norad, windows: [...] } the skeds: when the observer
+//                                                        (above minEl) and a station (above its own minEl) both see it
 //   { type: "clock", offset }  ms added to the real clock (time travel), 0 is real time
 //   { type: "interval", ms }   tick period, 1000 by default
 //   { type: "state" }                                  { type: "state", ... } what it holds (for checks)
@@ -18,6 +21,11 @@
 // A sat in "positions": { norad, lat, lon, alt (km), az, el, range (km), doppler (factor), up }
 //   `up` is true while el >= minEl. A pass: { aos, los, maxEl, maxElTime, maxAz, aosAz, losAz, inProgress }
 //   with times in ms since 1970; aos is the request time when the sat was already up (inProgress).
+// A mutual window: { key, start, end, seconds, inProgress, best: { time, myEl, theirEl, myAz, theirAz }, my, their, myPass, theirPass }
+//   best is when the lower of the two elevations is highest; my / their: { startAz, endAz, maxEl, maxElTime } over the window;
+//   myPass / theirPass: { aos, los, maxEl, clipped } the whole pass it is in (clipped: cut by the search's ends). Elevations to
+//   0.1 degree, azimuths to 1 degree, whole ms; start is the request time when both were already up (inProgress). Station
+//   alt in meters, minEl 0 by default; windows shorter than minSeconds are left out; hours as for "passes" (up to 72).
 
 importScripts("../../third-party/satellite.js");
 
@@ -36,6 +44,10 @@ const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
 const PASS_STEP = 20000;
 const PASS_MAX_HOURS = 72;
+const MUTUAL_STEP = 20000;
+const MUTUAL_SKIP = 600000;
+const MUTUAL_NEAR = 20;
+const MUTUAL_FINE = 0.05;
 
 const handlers = {
   observer: setObserver,
@@ -46,6 +58,7 @@ const handlers = {
   path: findPath,
   scan: scanSats,
   arc: findArc,
+  mutual: findMutual,
   clock: (m) =>
   {
     W.offset = Number(m.offset) || 0;
@@ -167,8 +180,9 @@ function schedule()
   }
 }
 
-// Where a satellite is at a time (ms), seen from the observer; null if it can't be propagated
-function look(sat, ms)
+// Where a satellite is at a time (ms), seen from the observer (or another place, { latitude, longitude, height } as the
+// observer is kept); null if it can't be propagated
+function look(sat, ms, obs = W.observer)
 {
   const date = new Date(ms);
   const pv = satellite.propagate(sat.rec, date);
@@ -176,7 +190,7 @@ function look(sat, ms)
   const gmst = satellite.gstime(date);
   const geo = satellite.eciToGeodetic(pv.position, gmst);
   const ecf = satellite.eciToEcf(pv.position, gmst);
-  const la = satellite.ecfToLookAngles(W.observer, ecf);
+  const la = satellite.ecfToLookAngles(obs, ecf);
   return { geo: geo, ecf: ecf, eci: pv.position, vel: pv.velocity, gmst: gmst, az: la.azimuth * R2D, el: la.elevation * R2D, range: la.rangeSat };
 }
 
@@ -219,37 +233,72 @@ function tick()
   postMessage({ type: "positions", time: t, sats: out });
 }
 
-function elevationAt(sat, ms)
+// The elevation (degrees) at a time, as look has it but without the rest of look's work (the searches call this a lot); -90 if
+// it can't be propagated
+function elevationAt(sat, ms, obs = W.observer)
 {
-  const p = look(sat, ms);
-  return p ? p.el : -90;
+  const date = new Date(ms);
+  const pv = satellite.propagate(sat.rec, date);
+  if (!pv || !pv.position || !pv.velocity) return -90;
+  return satellite.ecfToLookAngles(obs, satellite.eciToEcf(pv.position, satellite.gstime(date))).elevation * R2D;
 }
 
 // The time (ms) the elevation crosses `level` between a (below/above) and b (the other side), to a second
-function crossing(sat, a, b, level)
+function crossing(sat, a, b, level, obs = W.observer)
 {
-  const aboveA = elevationAt(sat, a) >= level;
+  const aboveA = elevationAt(sat, a, obs) >= level;
   while (b - a > 1000)
   {
     const mid = (a + b) / 2;
-    if ((elevationAt(sat, mid) >= level) == aboveA) a = mid;
+    if ((elevationAt(sat, mid, obs) >= level) == aboveA) a = mid;
     else b = mid;
   }
   return b;
 }
 
 // The highest point of a pass between two times that are both below its peak
-function peak(sat, a, b)
+function peak(sat, a, b, obs = W.observer)
 {
   while (b - a > 1000)
   {
     const m1 = a + (b - a) / 3;
     const m2 = b - (b - a) / 3;
-    if (elevationAt(sat, m1) < elevationAt(sat, m2)) a = m1;
+    if (elevationAt(sat, m1, obs) < elevationAt(sat, m2, obs)) a = m1;
     else b = m2;
   }
   const t = (a + b) / 2;
-  return { time: t, el: elevationAt(sat, t) };
+  return { time: t, el: elevationAt(sat, t, obs) };
+}
+
+// The highest value of fn(time) between two times, for a value with one peak there (to a second): { time, value }. A golden
+// section search, one fn call a step
+function highest(fn, a, b)
+{
+  const g = (Math.sqrt(5) - 1) / 2;
+  let c = b - g * (b - a);
+  let d = a + g * (b - a);
+  let fc = fn(c);
+  let fd = fn(d);
+  while (b - a > 1000)
+  {
+    if (fc < fd)
+    {
+      a = c;
+      c = d;
+      fc = fd;
+      d = a + g * (b - a);
+      fd = fn(d);
+    }
+    else
+    {
+      b = d;
+      d = c;
+      fd = fc;
+      c = b - g * (b - a);
+      fc = fn(c);
+    }
+  }
+  return fc > fd ? { time: c, value: fc } : { time: d, value: fd };
 }
 
 function findPasses(m)
@@ -304,6 +353,213 @@ function computePasses(sat, start, end, level)
   // Still up when the window ends: reported with the window's end as its LOS
   if (pass) finish(sat, pass, end, passes, true);
   return passes;
+}
+
+// The skeds: when the observer and each station can work a satellite at once. A window needs the observer up, so only the
+// observer's own passes are searched for the station's elevation
+function findMutual(m)
+{
+  const sat = W.sats.get(Number(m.norad));
+  if (!sat || !W.observer)
+  {
+    postMessage({ type: "mutual", id: m.id, norad: m.norad, windows: [], error: !sat ? "unknown satellite" : "no observer" });
+    return;
+  }
+  const level = m.minEl != null ? Number(m.minEl) : W.minEl;
+  const shortest = Math.max(0, Number(m.minSeconds) || 0) * 1000;
+  const start = now();
+  const end = start + Math.min(Math.max(Number(m.hours) || 24, 0.1), PASS_MAX_HOURS) * 3600000;
+  const passes = computePasses(sat, start, end, level);
+  const windows = [];
+  for (const s of [].concat(m.stations || []))
+  {
+    // A station without a place is left out
+    if (!s || s.lat == null || s.lon == null || !isFinite(Number(s.lat)) || !isFinite(Number(s.lon))) continue;
+    const station = {
+      key: s.key,
+      obs: { latitude: Number(s.lat) * D2R, longitude: Number(s.lon) * D2R, height: (Number(s.alt) || 0) / 1000 },
+      level: Number(s.minEl) || 0
+    };
+    for (const pass of passes)
+    {
+      const from = Math.max(pass.aos, start);
+      if (pass.los <= from) continue;
+      for (const span of stationSpans(sat, station, from, pass.los))
+      {
+        if (span.end - span.start >= shortest) windows.push(mutualWindow(sat, station, pass, span, start, end));
+      }
+    }
+  }
+  windows.sort((a, b) => a.start - b.start);
+  postMessage({ type: "mutual", id: m.id, norad: m.norad, windows: windows });
+}
+
+// The observer's and a station's view of a satellite at a time (ms), from one propagation: { time, myEl, myAz, theirEl, theirAz }
+// in degrees (elevations -90 if it can't be propagated, as elevationAt has them). Also how fast the elevations can be changing:
+// the line of sight turns no faster than the satellite's speed over the ground over its distance, and in `within` ms that
+// distance can't shrink to under half, so for that long neither elevation changes faster than `rate` (degrees a second)
+function skyPoint(sat, ms, obs)
+{
+  const date = new Date(ms);
+  const pv = satellite.propagate(sat.rec, date);
+  if (!pv || !pv.position || !pv.velocity) return { time: ms, myEl: -90, myAz: 0, theirEl: -90, theirAz: 0, rate: Infinity, within: 0 };
+  const gmst = satellite.gstime(date);
+  const ecf = satellite.eciToEcf(pv.position, gmst);
+  const mine = satellite.ecfToLookAngles(W.observer, ecf);
+  const theirs = satellite.ecfToLookAngles(obs, ecf);
+  // The velocity turned into the Earth's frame, less the Earth's turning (7.292115e-5 radians a second)
+  const v = satellite.eciToEcf(pv.velocity, gmst);
+  const vx = v.x + 7.292115e-5 * ecf.y;
+  const vy = v.y - 7.292115e-5 * ecf.x;
+  const speed = Math.sqrt(vx * vx + vy * vy + v.z * v.z);
+  const range = Math.min(mine.rangeSat, theirs.rangeSat);
+  return {
+    time: ms,
+    myEl: mine.elevation * R2D,
+    myAz: mine.azimuth * R2D,
+    theirEl: theirs.elevation * R2D,
+    theirAz: theirs.azimuth * R2D,
+    rate: 2 * speed / range * R2D,
+    within: range / speed / 2 * 1000
+  };
+}
+
+// The spans between two times (inside one of the observer's passes) when the station has the satellite above its level:
+// { start, end, startTheirs, endTheirs, points }, an end being the station's own crossing or else the time given. Sampled
+// every MUTUAL_STEP (less often where the elevations change slowly); a high or a low of the station's elevation near its level
+// is found exactly, so a short graze or a brief dip between two samples is not missed
+function stationSpans(sat, station, a, b)
+{
+  const points = [];
+  for (let t = a; ; )
+  {
+    const p = skyPoint(sat, t, station.obs);
+    points.push(p);
+    if (t >= b) break;
+    // Longer steps (up to MUTUAL_SKIP) while they are safe: under the level, while the station's elevation can't close half its
+    // gap to it; above, while neither elevation can change by more than MUTUAL_FINE
+    const most = p.theirEl < station.level ? (station.level - p.theirEl) / 2 : MUTUAL_FINE;
+    t = Math.min(b, t + Math.max(MUTUAL_STEP, Math.min(MUTUAL_SKIP, p.within, most / p.rate * 1000)));
+  }
+  const n = points.length;
+  const extra = [];
+  for (let i = 0; i < n; i++)
+  {
+    const el = points[i].theirEl;
+    const prev = i > 0 ? points[i - 1].theirEl : el;
+    const next = i < n - 1 ? points[i + 1].theirEl : el;
+    // Flat (or a lone sample), or too far from the level for the gap between samples to hide a crossing
+    if ((prev == el && next == el) || Math.abs(el - station.level) > MUTUAL_NEAR) continue;
+    const lo = points[Math.max(0, i - 1)].time;
+    const hi = points[Math.min(n - 1, i + 1)].time;
+    if (el < station.level && prev <= el && next <= el)
+    {
+      const top = highest((t) => elevationAt(sat, t, station.obs), lo, hi);
+      if (top.value >= station.level) extra.push(skyPoint(sat, top.time, station.obs));
+    }
+    else if (el >= station.level && prev >= el && next >= el)
+    {
+      const low = highest((t) => -elevationAt(sat, t, station.obs), lo, hi);
+      if (-low.value < station.level) extra.push(skyPoint(sat, low.time, station.obs));
+    }
+  }
+  const all = extra.length ? points.concat(extra).sort((x, y) => x.time - y.time) : points;
+  const spans = [];
+  let span = null;
+  for (let i = 0; i < all.length; i++)
+  {
+    const up = all[i].theirEl >= station.level;
+    if (up && !span)
+    {
+      const rise = i == 0 ? a : crossing(sat, all[i - 1].time, all[i].time, station.level, station.obs);
+      span = { start: rise, startTheirs: i > 0, points: [] };
+    }
+    else if (!up && span)
+    {
+      span.end = crossing(sat, all[i - 1].time, all[i].time, station.level, station.obs);
+      span.endTheirs = true;
+      spans.push(span);
+      span = null;
+    }
+    if (span) span.points.push(all[i]);
+  }
+  if (span)
+  {
+    span.end = b;
+    span.endTheirs = false;
+    spans.push(span);
+  }
+  return spans;
+}
+
+// The highest value of a window's samples (MUTUAL_STEP apart, or more where the elevations barely change), found exactly near
+// the best of them: { time, value }
+function windowTop(points, valueOf, fn, a, b)
+{
+  let top = points[0];
+  for (const p of points) if (valueOf(p) > valueOf(top)) top = p;
+  const near = highest(fn, Math.max(a, top.time - MUTUAL_STEP), Math.min(b, top.time + MUTUAL_STEP));
+  return near.value > valueOf(top) ? near : { time: top.time, value: valueOf(top) };
+}
+
+// The station's whole pass around a span: out from the span's ends to where its elevation crosses its level, not before 40
+// minutes ago (as computePasses looks back) nor after the search's end (clipped then)
+function stationPass(sat, station, span, start, end)
+{
+  const step = (t, toward) => (toward < t ? Math.max(toward, t - PASS_STEP) : Math.min(toward, t + PASS_STEP));
+  const limit = start - 2400000;
+  let clipped = false;
+  let aos = span.start;
+  if (!span.startTheirs)
+  {
+    while (aos > limit && elevationAt(sat, step(aos, limit), station.obs) >= station.level) aos = step(aos, limit);
+    if (aos > limit) aos = crossing(sat, step(aos, limit), aos, station.level, station.obs);
+    else clipped = true;
+  }
+  let los = span.end;
+  if (!span.endTheirs)
+  {
+    while (los < end && elevationAt(sat, step(los, end), station.obs) >= station.level) los = step(los, end);
+    if (los < end) los = crossing(sat, los, step(los, end), station.level, station.obs);
+    else clipped = true;
+  }
+  const top = highest((t) => elevationAt(sat, t, station.obs), aos, los);
+  return { aos: aos, los: los, maxEl: top.value, maxElTime: top.time, clipped: clipped };
+}
+
+// A window as it is sent: see the header
+function mutualWindow(sat, station, pass, span, start, end)
+{
+  const el = (v) => Math.round(v * 10) / 10;
+  const az = (v) => Math.round(v) % 360;
+  const first = skyPoint(sat, span.start, station.obs);
+  const last = skyPoint(sat, span.end, station.obs);
+  const points = [first].concat(span.points, [last]);
+  const theirPass = stationPass(sat, station, span, start, end);
+  // Each pass's own peak when it is in the window (and no sample is higher: a pass with more than one high), so the numbers
+  // match the pass lists
+  const topOf = (top, valueOf, fn) =>
+  {
+    if (top.time >= span.start && top.time <= span.end && !points.some((p) => valueOf(p) > top.value)) return top;
+    return windowTop(points, valueOf, fn, span.start, span.end);
+  };
+  const mine = topOf({ time: pass.maxElTime, value: pass.maxEl }, (p) => p.myEl, (t) => elevationAt(sat, t));
+  const theirs = topOf({ time: theirPass.maxElTime, value: theirPass.maxEl }, (p) => p.theirEl, (t) => elevationAt(sat, t, station.obs));
+  const lower = (p) => Math.min(p.myEl, p.theirEl);
+  const best = skyPoint(sat, windowTop(points, lower, (t) => lower(skyPoint(sat, t, station.obs)), span.start, span.end).time, station.obs);
+  return {
+    key: station.key,
+    start: Math.round(span.start),
+    end: Math.round(span.end),
+    seconds: Math.round((span.end - span.start) / 1000),
+    inProgress: span.start == start,
+    best: { time: Math.round(best.time), myEl: el(best.myEl), theirEl: el(best.theirEl), myAz: az(best.myAz), theirAz: az(best.theirAz) },
+    my: { startAz: az(first.myAz), endAz: az(last.myAz), maxEl: el(mine.value), maxElTime: Math.round(mine.time) },
+    their: { startAz: az(first.theirAz), endAz: az(last.theirAz), maxEl: el(theirs.value), maxElTime: Math.round(theirs.time) },
+    // A pass is never lower than the part of it in the window
+    myPass: { aos: Math.round(pass.aos), los: Math.round(pass.los), maxEl: el(Math.max(pass.maxEl, mine.value)), clipped: !!pass.cut },
+    theirPass: { aos: Math.round(theirPass.aos), los: Math.round(theirPass.los), maxEl: el(Math.max(theirPass.maxEl, theirs.value)), clipped: theirPass.clipped }
+  };
 }
 
 // The scan (BirdWatch settings, Satellites): of the satellites asked about, those in AOS now that will be for the next minutes

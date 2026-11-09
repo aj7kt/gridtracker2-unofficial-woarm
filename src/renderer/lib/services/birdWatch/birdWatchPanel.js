@@ -107,6 +107,8 @@ function birdWatchSelect(norad, auto = false)
   T.selected = norad;
   // Auto-Track's pick or the user's: followed as Auto-Track's Rig Control says when Auto-Track's, also once the rig connects later
   T.selectedByAuto = !!(norad && auto);
+  // One you picked yourself holds Auto-Track's Skeds modes off until its LOS (birdWatchSkeds.js)
+  birdWatchSkedSelected(norad, auto);
   // The rig stops following the last satellite's transmitter (birdWatchDoppler.js)
   birdWatchDopplerStopFollow();
   for (const [id, marker] of T.markers) birdWatchStyleMarker(marker, id == norad);
@@ -409,15 +411,17 @@ function birdWatchStyleMarker(marker, selected)
   if (!marker.baseStyle)
   {
     const tle = birdWatchTleGet(marker.get("norad"));
-    // Santa's rounded label (seasonal.js), black outline, dark blue background, yellow text, clear of the selection ring
-    const label = santaLabelStyle(tle ? tle.name : String(marker.get("norad")), { fill: "#00008b", stroke: "#000000", text: "#ffff00" }, 30);
+    // Santa's rounded label (seasonal.js), black outline, clear of the selection ring: dark blue with yellow text, and for the selected
+    // satellite light green with black text (high contrast, it stands out from the others on every base map)
+    const name = tle ? tle.name : String(marker.get("norad"));
     marker.baseStyle = new ol.style.Style({ image: new ol.style.Icon({ src: "img/sat/" + BIRD_WATCH_ICONS[Number(marker.get("norad")) % BIRD_WATCH_ICONS.length] + ".png", scale: 0.07 }) });
-    marker.labelStyle = label;
+    marker.labelStyle = santaLabelStyle(name, { fill: "#00008b", stroke: "#000000", text: "#ffff00" }, 30);
+    marker.labelSelectedStyle = santaLabelStyle(name, { fill: "#90ee90", stroke: "#000000", text: "#000000" }, 30);
   }
   marker.setStyle(marker.baseStyle);
   if (selected) ringSelectedMarker(marker);
   // The label is part of the marker's own style, so it moves with the icon in the same draw
-  marker.setStyle([].concat(marker.getStyle(), marker.labelStyle));
+  marker.setStyle([].concat(marker.getStyle(), selected ? marker.labelSelectedStyle : marker.labelStyle));
 }
 
 // The fixed parts for a newly selected satellite
