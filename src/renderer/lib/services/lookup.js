@@ -156,7 +156,6 @@ function continueWithLookup(callsign, gridPass)
   // Not in the cache: this needs the network, so stop here in offline mode
   if (GT.settings.map.offlineMode == true) return;
 
-  // (lookupWait: the window keeps its size until the answer comes, lookupFit)
   setLookupDiv(
     "lookupInfoDiv",
     "<span class='lookupWait'>Looking up <span style='color:var(--gt-callsign)'>" + lookupHtml(callsign) + "</span>, please wait...</span>"

@@ -73,10 +73,6 @@
         ValidateCallsign(lookupCallsignInput, null);
         loadChildWindowI18n();
         registerCutAndPasteContextMenu();
-        // What lookup.js writes here, and a photo or flag loaded (or not), changes the content's size: the window follows it
-        new MutationObserver(lookupFit).observe(lookupWrap, { childList: true, subtree: true, characterData: true });
-        lookupWrap.addEventListener("load", lookupFit, true);
-        lookupWrap.addEventListener("error", lookupFit, true);
         GT.lookupWindowInitialized = true;
       }
 
@@ -89,41 +85,13 @@
           addTextToClipboard(GT.lastLookupAddress);
         }
       }
-
-      // The window fitted to what it shows, as the transmitters window is (birdWatchTransmitterWindowUpdate): the content's natural size,
-      // with a vertical scroll bar's room (it shows when the screen is too small for it all); the main process sets the window's content to
-      // that, no bigger than fits on the screen (fitWin). Each time the content changes, and the zoom. Not before the main process has
-      // placed the window (it puts the saved size back then), nor while a lookup is on its way (its "please wait" in place of the card),
-      // so the window doesn't shrink for that and grow again
-      let lookupPlaced = false;
-      let lookupFitRatio = 0;
-
-      function lookupFit() {
-        if (!lookupPlaced || lookupInfoDiv.querySelector(".lookupWait")) return;
-        lookupFitRatio = window.devicePixelRatio;
-        const box = lookupWrap.getBoundingClientRect();
-        const width = Math.ceil(box.width) + 16;
-        const height = Math.ceil(box.height);
-        if (Math.abs(window.innerWidth - width) > 1 || Math.abs(window.innerHeight - height) > 1) electron.ipcRenderer.send("fitWin", "gt_lookup", width, height, false);
-      }
-
-      electron.ipcRenderer.on("windowPlaced", () => {
-        lookupPlaced = true;
-        lookupFit();
-      });
-
-      // Zoomed in or out (the content's size on the screen changes with it); not the user's own resizing, which is kept until the content
-      // changes
-      window.addEventListener("resize", () => {
-        if (window.devicePixelRatio != lookupFitRatio) lookupFit();
-      });
     </script>
   </head>
 
   <body id="mainBody" onload="init();">
-    <!-- Fills the window, and scrolls what doesn't fit in it (a window made smaller than its content) -->
+    <!-- Fills the window, and scrolls what doesn't fit in it -->
     <div id="lookupBoxDiv">
-      <!-- The content at its natural size, which the window is fitted to (lookupFit) -->
+      <!-- The content at its natural size, in the middle of the window -->
       <div id="lookupWrap">
         <div class="lookupSearch">
           <label data-i18n="lookup.callsign.label" for="lookupCallsignInput">Callsign</label>

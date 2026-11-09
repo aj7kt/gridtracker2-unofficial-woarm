@@ -4482,8 +4482,8 @@ table.darkTable.birdDopplerTable td {
   white-space: normal;
 }
 
-/* The Callsign Lookup window (gt_lookup.html; its parts written by lookup.js). The content at its natural size in the middle, the window
-   fitted to it (lookupFit); a window made smaller scrolls */
+/* The Callsign Lookup window (gt_lookup.html; its parts written by lookup.js). The content at its natural size in the middle; what doesn't
+   fit in the window scrolls */
 #lookupBoxDiv {
   position: absolute;
   inset: 0;

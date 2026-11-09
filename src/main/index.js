@@ -167,10 +167,9 @@ const allowedWindows = {
     window: null,
     honorVisibility: true,
     options: { x: 75, y: 75, width: 680, height: 200, show: false, zoom: 0 },
-    // Small enough for the window to fit its content (gt_lookup.html, lookupFit)
     static: {
-      minWidth: 200,
-      minHeight: 60,
+      minWidth: 680,
+      minHeight: 200,
       icon: join(__dirname, '../renderer/img/lookup-icon.png'),
     },
   },

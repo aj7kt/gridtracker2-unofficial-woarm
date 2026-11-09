@@ -21,7 +21,7 @@ The lookup service is chosen in [Settings → Lookups](../GridTracker-Overview/S
 * your own log for that call: the bands and modes you have worked and confirmed it on, your last QSO, and the bands you have worked its DXCC entity on. A band with a dashed outline is worked but not yet confirmed; a filled one is confirmed;
 * the **Details**: license class, DXCC entity, zones, IOTA, time zone, county, latitude and longitude, QSL information, and whether the station uses LoTW, eQSL and ClubLog OQRS.
 
-The window resizes itself to fit each lookup. If you make it smaller, the rest scrolls.
+If a lookup doesn't fit in the window, the rest scrolls.
 
 With **Open Lookup on Transmit** on in Settings → Lookups, the station you start calling is looked up automatically. The Lookup window isn't available in Offline Mode.
 

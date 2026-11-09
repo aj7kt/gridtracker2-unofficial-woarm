@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261109.3]
+## [v2.261110.0]
 
 ### MD Markup Format
 #### Map / UI
@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - New Casting (Settings, General, Display, Enable Casting; off unless turned on): shows the map live on a TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
   - Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found
   - While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops
+  - While Enable Casting is on, the last few seconds of the map are kept ready, so the TV starts within a few seconds; the TV shows the map about 10 seconds behind
   - Needs a computer with a hardware video encoder; without one, the setting can't be turned on
 
 #### Multi-Mode Decoder
@@ -181,7 +182,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - In a narrow window, About moves up to the row above so the tabs fit on one line
 - Settings, Audio: Device is now Output Device
 - Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card
-- Lookup: the Callsign Lookup window has a new look, and resizes itself to fit each lookup
+- Lookup: the Callsign Lookup window has a new look
   - Clear and Generate Messages are at the top, under GridTracker's acknowledgement of the station
   - The grid, distance and bearing are under the station's card; in your log for the call, bands only worked have a dashed outline and confirmed ones are filled
   - The Details are laid out in columns, so the window is shorter
@@ -229,6 +230,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     <ul>
       <li>Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found</li>
       <li>While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops</li>
+      <li>While Enable Casting is on, the last few seconds of the map are kept ready, so the TV starts within a few seconds; the TV shows the map about 10 seconds behind</li>
       <li>Needs a computer with a hardware video encoder; without one, the setting can't be turned on</li>
     </ul>
   </li>
@@ -454,7 +456,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>Settings, Audio: Device is now Output Device</li>
   <li>Lookup: a callsign pasted or typed with a space before it, or in lower case, no longer shows its country as Unknown under the card</li>
-  <li>Lookup: the Callsign Lookup window has a new look, and resizes itself to fit each lookup
+  <li>Lookup: the Callsign Lookup window has a new look
     <ul>
       <li>Clear and Generate Messages are at the top, under GridTracker's acknowledgement of the station</li>
       <li>The grid, distance and bearing are under the station's card; in your log for the call, bands only worked have a dashed outline and confirmed ones are filled</li>

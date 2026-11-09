@@ -155,6 +155,7 @@ Turn on **Enable Casting** in [Settings → General → Display](Settings-Sub-Me
 * **Right-click** the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it for next time. While casting, the menu also has **Stop Casting**.
 * While casting, the button is in color and its tooltip names the device. The main window is sized to the TV's 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.
 * Starting and stopping, and a device that can't be reached, are shown in the [Event Viewer](#event-viewer).
+* While **Enable Casting** is on, GridTracker2 keeps the last few seconds of the map ready, so the TV starts within a few seconds of the click. The TV shows the map about 10 seconds behind.
 
 Casting needs a computer with a hardware video encoder. On a computer without one, **Enable Casting** can't be turned on.
 

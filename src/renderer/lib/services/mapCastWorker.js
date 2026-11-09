@@ -2,27 +2,36 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Map Cast's video (mapCast.js), off the main window's thread: each frame of the main window's capture of its map (Element Capture, at
-// the video's size) encoded as H.264 by a hardware encoder (WebCodecs; the config comes from mapCast.js, which casts only where there is one), muxed
-// into an endless fragmented MP4 and sent by a small HTTP server (Node's http: the main window has nodeIntegrationInWorker) to whoever
-// asks. Each request gets the stream's header (ftyp, moov), then the video from the next key frame on, its time starting there; a
-// request asks for a key frame, and one comes every CAST_KEY_SECONDS anyway.
-//   The MP4: one video track, no samples in the moov (mvex/trex: all in fragments), then a fragment per frame: moof (mfhd, traf: tfhd,
-//   tfdt with the frame's time, trun with its one sample) and mdat. Times in 90 kHz; each frame's duration the nominal one.
-// Each frame is encoded as it comes; the capture sends one only when the picture changes (and none while the window is minimized), so
-// at each tick of the frame rate when none came since the tick before the last is sent again: the video keeps its frame rate (a player
-// buffers through a gap; the same picture again costs next to nothing).
-// In:  { type: "start", address, config, quantizer } (the VideoEncoder's config: its size and frame rate the video's; each frame's QP), { type: "track", track } or
-//      { type: "frames", readable } (the capture, replacing any before), { type: "untrack" }, { type: "stop" }
-// Out: { type: "listening", port, codec }, { type: "error", text }, { type: "clients", count },
-//      { type: "stats", frames, outputs, keys, keyBytes, deltaBytes, grabs, repeats, sent, encodeMs }, { type: "log", text }
+// Map Cast's video (mapCast.js), off the main window's thread: the main window's capture of its map (Element Capture, at the video's
+// size) encoded as H.264 by a hardware encoder (WebCodecs; the config comes from mapCast.js, which casts only where there is one), all
+// the time while Enable Casting is on, and kept as HLS: CAST_SEGMENT_SECONDS segments (fragmented MP4), each from a key frame, the last
+// CAST_SEGMENTS_LISTED of them listed. While casting a small HTTP server (Node's http: the main window has nodeIntegrationInWorker) serves
+// them to the device: map.m3u8 (the master playlist: the video's codec, size, frame rate and bandwidth, which a media playlist can't
+// tell), video.m3u8 (the live playlist), init.mp4 (ftyp, moov) and seg<n>.m4s; the device starts near the oldest listed, so it has
+// most of what is kept at once.
+//   The MP4: one video track, no samples in the moov (mvex/trex: all in fragments), then a segment is one fragment: moof (mfhd, traf:
+//   tfhd, tfdt with its first frame's time, trun with all its frames) and mdat. Times in 90 kHz; each frame lasts until the next.
+// The video's frames are a fixed rate's: one in each 1/fps of a second (its time that slot's start), the capture's latest picture. The
+// capture sends one only when the picture changes (and none while the window is minimized), so mostly it is the same picture again,
+// which costs next to nothing. A picture not at the video's size (the window not 16:9 before casting snaps it) is fitted into it.
+// In:  { type: "start", config, quantizer } (the VideoEncoder's config: its size and frame rate the video's; each frame's QP),
+//      { type: "serve", address }, { type: "unserve" }, { type: "track", track } or { type: "frames", readable } (the capture, replacing
+//      any before), { type: "untrack" }, { type: "stop" }
+// Out: { type: "listening", port, codec }, { type: "segments", count } (those listed), { type: "error", text, serving },
+//      { type: "stats", frames, outputs, keys, keyBytes, deltaBytes, grabs, repeats, sent, encodeMs, segments, sequence },
+//      { type: "log", text }
 
 const http = require("http");
 const { Buffer } = require("buffer");
 
-const CAST_KEY_SECONDS = 10;
-// A viewer this far behind is dropped (it can ask again)
-const CAST_CLIENT_BACKLOG = 8 * 1024 * 1024;
+// A segment's length (a key frame starts each)
+const CAST_SEGMENT_SECONDS = 2;
+// The segments listed (the video a device starts with), and those kept: one that leaves the list is kept for its own length and the
+// list's (RFC 8216: a device may still be fetching it)
+const CAST_SEGMENTS_LISTED = 6;
+const CAST_SEGMENTS_KEPT = CAST_SEGMENTS_LISTED * 2 + 1;
+// The master playlist's BANDWIDTH (bits a second) at the least: the most any kept segment needed, when more
+const CAST_BANDWIDTH_MIN = 1000000;
 // Frames waiting to be encoded past this are skipped
 const CAST_ENCODE_QUEUE = 2;
 const MP4_TIMESCALE = 90000;
@@ -34,21 +43,32 @@ const MP4_FLAGS_DELTA = 0x01010000;
 const W = {
   server: null,
   encoder: null,
+  // The codec's string (as in CODECS), and with the video's size and rate (the log's)
+  codecString: "",
   codec: "",
   fps: 30,
   quantizer: 20,
   width: 0,
   height: 0,
   description: null,
-  clients: new Set(),
-  forceKey: true,
-  sinceKey: 0,
+  // The segment being filled: [{ time, key, data }], a key frame first
+  pending: [],
+  // Those done: [{ sequence, duration (seconds), data }], oldest first
+  segments: [],
+  sequence: 0,
+  // The slot whose frame is the next key frame
+  nextKeySlot: 0,
   last: null,
+  // Where a picture not at the video's size is fitted into it
+  canvas: null,
   tick: null,
   reader: null,
   track: null,
-  // A captured frame came since the last tick
+  // A captured frame came since the last frame encoded
   fresh: false,
+  // When the video's first slot began (performance.now), and the last slot encoded
+  start: 0,
+  slot: -1,
   grabs: 0,
   repeats: 0,
   frames: 0,
@@ -113,20 +133,45 @@ function mp4Init()
   return Buffer.concat([ftyp, mp4Box("moov", mvhd, trak, mvex)]);
 }
 
-// A frame's moof and the head of its mdat (the frame's bytes follow it)
-function mp4Fragment(sequence, time, key, size)
+// A segment: one moof for its frames (each lasting until the next, the last until end), then their mdat
+function mp4Segment(sequence, frames, end)
 {
   // Offsets from the moof's start (default-base-is-moof)
   const tfhd = mp4FullBox("tfhd", 0, 0x020000, mp4U32(1));
-  const tfdt = mp4FullBox("tfdt", 1, 0, mp4U32(Math.floor(time / 2 ** 32), time % 2 ** 32));
-  // One sample: the data offset (filled in below), its duration, size and flags
-  const trun = mp4FullBox("trun", 0, 0x000701, mp4U32(1, 0, Math.round(MP4_TIMESCALE / W.fps), size, key ? MP4_FLAGS_KEY : MP4_FLAGS_DELTA));
+  const first = frames[0].time;
+  const tfdt = mp4FullBox("tfdt", 1, 0, mp4U32(Math.floor(first / 2 ** 32), first % 2 ** 32));
+  // Each sample: its duration, size and flags; after the count, the data offset (filled in below)
+  const samples = frames.map((frame, i) => mp4U32((i + 1 < frames.length ? frames[i + 1].time : end) - frame.time, frame.data.length, frame.key ? MP4_FLAGS_KEY : MP4_FLAGS_DELTA));
+  const trun = mp4FullBox("trun", 0, 0x000701, mp4U32(frames.length, 0), ...samples);
   const moof = mp4Box("moof", mp4FullBox("mfhd", 0, 0, mp4U32(sequence)), mp4Box("traf", tfhd, tfdt, trun));
   moof.writeUInt32BE(moof.length + 8, moof.length - trun.length + 16);
+  const data = frames.map((frame) => frame.data);
+  const size = data.reduce((total, bytes) => total + bytes.length, 0);
   const mdat = Buffer.alloc(8);
   mdat.writeUInt32BE(8 + size, 0);
   mdat.write("mdat", 4, "ascii");
-  return Buffer.concat([moof, mdat]);
+  return Buffer.concat([moof, mdat, ...data]);
+}
+
+// The master playlist: the one video, so the device's player is set up for its codec and size (without CODECS the Cast player
+// assumes H.264 Main 3.0)
+function workerMasterPlaylist()
+{
+  const peak = Math.max(CAST_BANDWIDTH_MIN, ...W.segments.map((segment) => Math.ceil((segment.data.length * 8) / segment.duration)));
+  const info = "BANDWIDTH=" + peak + ",CODECS=\"" + W.codecString + "\",RESOLUTION=" + W.width + "x" + W.height + ",FRAME-RATE=" + W.fps.toFixed(3);
+  return ["#EXTM3U", "#EXT-X-VERSION:7", "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-STREAM-INF:" + info, "video.m3u8"].join("\n") + "\n";
+}
+
+// The live playlist: the last CAST_SEGMENTS_LISTED segments (none until the first is done). The player asked to start all but one
+// segment back from the end (EXT-X-START), not at the newest: else it plays right at the edge, and waits for each new segment
+function workerPlaylist()
+{
+  const listed = W.segments.slice(-CAST_SEGMENTS_LISTED);
+  const target = Math.max(CAST_SEGMENT_SECONDS, ...listed.map((segment) => Math.round(segment.duration)));
+  const back = (CAST_SEGMENTS_LISTED - 1) * CAST_SEGMENT_SECONDS;
+  const lines = ["#EXTM3U", "#EXT-X-VERSION:7", "#EXT-X-TARGETDURATION:" + target, "#EXT-X-MEDIA-SEQUENCE:" + (listed.length ? listed[0].sequence : W.sequence + 1), "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-START:TIME-OFFSET=-" + back, "#EXT-X-MAP:URI=\"init.mp4\""];
+  for (const segment of listed) lines.push("#EXTINF:" + segment.duration.toFixed(3) + ",", "seg" + segment.sequence + ".m4s");
+  return lines.join("\n") + "\n";
 }
 
 function workerStart(msg)
@@ -136,44 +181,77 @@ function workerStart(msg)
   W.height = config.height;
   W.fps = config.framerate;
   W.quantizer = msg.quantizer;
+  W.codecString = config.codec;
   W.codec = config.codec + " " + W.width + "x" + W.height + " " + W.fps + " fps";
   W.encoder = new VideoEncoder({
     output: workerOutput,
     error: (e) =>
     {
       workerLog("encoder " + e.message);
-      self.postMessage({ type: "error", text: "encoder " + e.message });
+      self.postMessage({ type: "error", text: "encoder " + e.message, serving: false });
     }
   });
   W.encoder.configure(config);
-  const server = http.createServer(workerRequest);
-  server.on("error", (e) => self.postMessage({ type: "error", text: "server " + e.message }));
-  server.listen(0, msg.address, () => self.postMessage({ type: "listening", port: server.address().port, codec: W.codec }));
-  W.server = server;
-  W.tick = setInterval(workerTick, 1000 / W.fps);
+  // A few looks a frame, so a slot is seldom missed (a late timer)
+  W.tick = setInterval(workerTick, 1000 / W.fps / 3);
 }
 
-// The stream, whatever the path; it starts at the next key frame
+// Serving the video on address (the one the device is reached from), on a port of its own
+function workerServe(msg)
+{
+  workerUnserve();
+  const server = http.createServer(workerRequest);
+  server.on("error", (e) => self.postMessage({ type: "error", text: "server " + e.message, serving: true }));
+  server.listen(0, msg.address, () => self.postMessage({ type: "listening", port: server.address().port, codec: W.codec }));
+  W.server = server;
+}
+
+function workerUnserve()
+{
+  if (!W.server) return;
+  W.server.close();
+  W.server.closeAllConnections();
+  W.server = null;
+}
+
 function workerRequest(request, response)
 {
-  const range = request.headers.range ? " (" + request.headers.range + ")" : "";
-  workerLog(request.method + " " + request.url + range + " from " + request.socket.remoteAddress);
-  response.writeHead(200, { "Content-Type": "video/mp4", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" });
-  if (request.method == "HEAD")
+  const path = request.url.split("?")[0];
+  workerLog(request.method + " " + path + " from " + request.socket.remoteAddress);
+  const headers = { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" };
+  if (request.method == "OPTIONS")
   {
+    response.writeHead(204, { ...headers, "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS", "Access-Control-Allow-Headers": "*" });
     response.end();
     return;
   }
-  const client = { response: response, started: false, base: 0, sequence: 0 };
-  W.clients.add(client);
-  W.forceKey = true;
-  self.postMessage({ type: "clients", count: W.clients.size });
-  response.on("close", () =>
+  let body = null;
+  let type = "video/mp4";
+  if (path == "/map.m3u8" || path == "/video.m3u8")
   {
-    W.clients.delete(client);
-    workerLog("stream closed");
-    self.postMessage({ type: "clients", count: W.clients.size });
-  });
+    body = Buffer.from(path == "/map.m3u8" ? workerMasterPlaylist() : workerPlaylist(), "utf8");
+    type = "application/vnd.apple.mpegurl";
+  }
+  else if (path == "/init.mp4" && W.description) body = mp4Init();
+  else
+  {
+    const match = path.match(/^\/seg(\d+)\.m4s$/);
+    const segment = match && W.segments.find((kept) => kept.sequence == Number(match[1]));
+    if (segment) body = segment.data;
+  }
+  if (!body)
+  {
+    response.writeHead(404, headers);
+    response.end();
+    return;
+  }
+  response.writeHead(200, { ...headers, "Content-Type": type, "Content-Length": body.length });
+  if (request.method == "HEAD") response.end();
+  else
+  {
+    response.end(body);
+    W.sent += body.length;
+  }
 }
 
 function workerOutput(chunk, metadata)
@@ -193,55 +271,48 @@ function workerOutput(chunk, metadata)
   }
   else W.deltaBytes += data.length;
   const time = Math.round((chunk.timestamp * MP4_TIMESCALE) / 1000000);
-  for (const client of W.clients)
-  {
-    const response = client.response;
-    if (response.destroyed || response.writableEnded) continue;
-    if (!client.started)
-    {
-      if (!key) continue;
-      client.started = true;
-      client.base = time;
-      response.write(mp4Init());
-    }
-    const head = mp4Fragment(++client.sequence, time - client.base, key, data.length);
-    response.write(head);
-    response.write(data);
-    W.sent += head.length + data.length;
-    if (response.writableLength > CAST_CLIENT_BACKLOG)
-    {
-      workerLog("viewer too far behind: dropped");
-      response.destroy();
-    }
-  }
-  self.postMessage({ type: "stats", frames: W.frames, outputs: W.outputs, keys: W.keys, keyBytes: W.keyBytes, deltaBytes: W.deltaBytes, grabs: W.grabs, repeats: W.repeats, sent: W.sent, encodeMs: W.encodeMs });
+  // A key frame ends the segment before it and starts the next
+  if (key && W.pending.length) workerSegment(time);
+  if (key || W.pending.length) W.pending.push({ time: time, key: key, data: data });
+  self.postMessage({ type: "stats", frames: W.frames, outputs: W.outputs, keys: W.keys, keyBytes: W.keyBytes, deltaBytes: W.deltaBytes, grabs: W.grabs, repeats: W.repeats, sent: W.sent, encodeMs: W.encodeMs, segments: W.segments.length, sequence: W.sequence });
 }
 
-// The video's next frame, while anyone watches (key frames as they're due)
-function workerEncode(frame)
+// The segment being filled done (end: the next one's start), the oldest let go
+function workerSegment(end)
 {
-  if (!W.clients.size || !W.encoder || W.encoder.state != "configured" || W.encoder.encodeQueueSize > CAST_ENCODE_QUEUE) return;
-  const key = W.forceKey || W.sinceKey >= CAST_KEY_SECONDS * W.fps - 1;
-  W.forceKey = false;
-  W.sinceKey = key ? 0 : W.sinceKey + 1;
+  const frames = W.pending;
+  W.pending = [];
+  const sequence = ++W.sequence;
+  W.segments.push({ sequence: sequence, duration: (end - frames[0].time) / MP4_TIMESCALE, data: mp4Segment(sequence, frames, end) });
+  while (W.segments.length > CAST_SEGMENTS_KEPT) W.segments.shift();
+  self.postMessage({ type: "segments", count: Math.min(W.segments.length, CAST_SEGMENTS_LISTED) });
+}
+
+// The video's frame for slot (a key frame each CAST_SEGMENT_SECONDS)
+function workerEncode(frame, slot)
+{
+  if (!W.encoder || W.encoder.state != "configured" || W.encoder.encodeQueueSize > CAST_ENCODE_QUEUE) return;
+  const key = slot >= W.nextKeySlot;
+  if (key) W.nextKeySlot = slot + CAST_SEGMENT_SECONDS * W.fps;
   W.encodeStart = performance.now();
   W.encoder.encode(frame, { keyFrame: key, avc: { quantizer: W.quantizer } });
   W.frames++;
 }
 
-// No grab since the last tick: the last one again
+// The next slot's frame, once it has begun: the latest picture, timed at the slot's start
 function workerTick()
 {
-  if (W.fresh)
-  {
-    W.fresh = false;
-    return;
-  }
   if (!W.last) return;
-  const frame = new VideoFrame(W.last, { timestamp: Math.round(performance.now() * 1000) });
-  workerEncode(frame);
+  const now = performance.now();
+  if (!W.start) W.start = now;
+  const slot = Math.floor(((now - W.start) * W.fps) / 1000);
+  if (slot <= W.slot) return;
+  W.slot = slot;
+  const frame = new VideoFrame(W.last, { timestamp: Math.round((slot * 1000000) / W.fps), duration: Math.round(1000000 / W.fps) });
+  workerEncode(frame, slot);
   frame.close();
-  W.repeats++;
+  if (!W.fresh) W.repeats++;
+  W.fresh = false;
 }
 
 // The capture's frames as they come (a track handed over, or its frames' stream), until it ends or another replaces it
@@ -279,29 +350,34 @@ function workerUntrack()
   W.track = null;
 }
 
-// A captured frame, given the time it came (the repeats' clock)
+// A captured frame: the picture the next slot shows (fitted into the video's size, black round it, when it isn't that size)
 function workerFrame(captured)
 {
   W.grabs++;
-  const frame = new VideoFrame(captured, { timestamp: Math.round(performance.now() * 1000) });
-  captured.close();
+  let picture = captured;
+  if (captured.displayWidth != W.width || captured.displayHeight != W.height)
+  {
+    if (!W.canvas) W.canvas = new OffscreenCanvas(W.width, W.height);
+    const context = W.canvas.getContext("2d", { alpha: false });
+    const scale = Math.min(W.width / captured.displayWidth, W.height / captured.displayHeight);
+    const width = Math.round(captured.displayWidth * scale);
+    const height = Math.round(captured.displayHeight * scale);
+    context.fillStyle = "#000";
+    context.fillRect(0, 0, W.width, W.height);
+    context.drawImage(captured, Math.floor((W.width - width) / 2), Math.floor((W.height - height) / 2), width, height);
+    picture = new VideoFrame(W.canvas, { timestamp: captured.timestamp });
+    captured.close();
+  }
   if (W.last) W.last.close();
-  W.last = frame;
+  W.last = picture;
   W.fresh = true;
-  workerEncode(frame);
 }
 
 function workerStop()
 {
   clearInterval(W.tick);
   workerUntrack();
-  for (const client of W.clients) client.response.end();
-  W.clients.clear();
-  if (W.server)
-  {
-    W.server.close();
-    W.server.closeAllConnections();
-  }
+  workerUnserve();
   if (W.encoder && W.encoder.state != "closed") W.encoder.close();
   if (W.last) W.last.close();
   self.close();
@@ -313,6 +389,8 @@ self.onmessage = (event) =>
   try
   {
     if (msg.type == "start") workerStart(msg);
+    else if (msg.type == "serve") workerServe(msg);
+    else if (msg.type == "unserve") workerUnserve();
     else if (msg.type == "track") workerRead(new MediaStreamTrackProcessor({ track: msg.track }).readable, msg.track);
     else if (msg.type == "frames") workerRead(msg.readable, null);
     else if (msg.type == "untrack") workerUntrack();
@@ -321,6 +399,6 @@ self.onmessage = (event) =>
   catch (e)
   {
     workerLog(msg.type + " " + e.message);
-    if (msg.type == "start") self.postMessage({ type: "error", text: e.message });
+    if (msg.type == "start" || msg.type == "serve") self.postMessage({ type: "error", text: e.message, serving: msg.type == "serve" });
   }
 };
