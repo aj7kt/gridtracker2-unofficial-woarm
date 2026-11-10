@@ -1943,5 +1943,7 @@
   "settings.map.cast.softwareFps.hover": "Sin codificador de vídeo por hardware: los fotogramas por segundo del vídeo del mapa. Más es más fluido y usa más CPU; se aplica la próxima vez que empiece el vídeo",
   "settings.map.cast.softwareSize.label": "Resolución por software",
   "settings.map.cast.softwareSize.hover": "Sin codificador de vídeo por hardware: el tamaño del vídeo del mapa. Más grande es más nítido y usa más CPU; se aplica la próxima vez que empiece el vídeo",
-  "events.source.mmd": "MMD"
+  "events.source.mmd": "MMD",
+  "events.source.rig": "Equipo",
+  "rig.event.webSerial": "{port}: abierto sin el módulo serialport, que activa DTR y RTS un instante al abrir el puerto y puede poner el equipo en transmisión. Ejecuta npm ci en la carpeta del código o reinstala GridTracker2"
 }

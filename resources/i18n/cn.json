@@ -1951,5 +1951,7 @@
   "settings.map.cast.softwareFps.hover": "没有硬件视频编码器时地图视频的每秒帧数。越多越流畅，占用 CPU 越多；在下次视频开始时生效",
   "settings.map.cast.softwareSize.label": "软件分辨率",
   "settings.map.cast.softwareSize.hover": "没有硬件视频编码器时地图视频的大小。越大越清晰，占用 CPU 越多；在下次视频开始时生效",
-  "events.source.mmd": "MMD"
+  "events.source.mmd": "MMD",
+  "events.source.rig": "电台",
+  "rig.event.webSerial": "{port}: 未使用 serialport 模块打开，打开端口时 DTR 和 RTS 会短暂拉高，可能使电台发射。请在源代码文件夹中运行 npm ci，或重新安装 GridTracker2"
 }

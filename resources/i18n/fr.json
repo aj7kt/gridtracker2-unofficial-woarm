@@ -1950,5 +1950,7 @@
 	"settings.map.cast.softwareFps.hover": "Sans encodeur vidéo matériel : les images par seconde de la vidéo de la carte. Plus est plus fluide et utilise plus de processeur; s'applique au prochain démarrage de la vidéo",
 	"settings.map.cast.softwareSize.label": "Résolution logicielle",
 	"settings.map.cast.softwareSize.hover": "Sans encodeur vidéo matériel : la taille de la vidéo de la carte. Plus grand est plus net et utilise plus de processeur; s'applique au prochain démarrage de la vidéo",
-	"events.source.mmd": "MMD"
+	"events.source.mmd": "MMD",
+	"events.source.rig": "Poste",
+	"rig.event.webSerial": "{port} : ouvert sans le module serialport, ce qui lève DTR et RTS un instant à l'ouverture du port et peut faire passer le poste en émission. Lancez npm ci dans le dossier source, ou réinstallez GridTracker2"
 }

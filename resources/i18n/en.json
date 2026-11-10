@@ -1950,5 +1950,7 @@
 	"settings.map.cast.softwareFps.hover": "Without a hardware video encoder: the frames a second of the map's video. More is smoother and uses more CPU; it takes effect the next time the video starts",
 	"settings.map.cast.softwareSize.label": "Software Resolution",
 	"settings.map.cast.softwareSize.hover": "Without a hardware video encoder: the size of the map's video. Bigger is sharper and uses more CPU; it takes effect the next time the video starts",
-	"events.source.mmd": "MMD"
+	"events.source.mmd": "MMD",
+	"events.source.rig": "Rig",
+	"rig.event.webSerial": "{port}: opened without the serialport module, which raises DTR and RTS for a moment as the port opens and can key the rig. Run npm ci in the source folder, or reinstall GridTracker2"
 }

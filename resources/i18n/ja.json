@@ -1950,5 +1950,7 @@
 	"settings.map.cast.softwareFps.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像の毎秒フレーム数です。多いほど滑らかになり CPU を多く使います。次に映像が始まるときから適用されます",
 	"settings.map.cast.softwareSize.label": "ソフトウェアの解像度",
 	"settings.map.cast.softwareSize.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像のサイズです。大きいほど鮮明になり CPU を多く使います。次に映像が始まるときから適用されます",
-	"events.source.mmd": "MMD"
+	"events.source.mmd": "MMD",
+	"events.source.rig": "無線機",
+	"rig.event.webSerial": "{port}: serialport モジュールなしで開きました。ポートを開くときに DTR と RTS が一瞬上がり、無線機が送信になることがあります。ソースフォルダーで npm ci を実行するか、GridTracker2 を再インストールしてください"
 }

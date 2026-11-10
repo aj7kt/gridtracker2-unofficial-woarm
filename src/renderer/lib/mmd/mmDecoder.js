@@ -526,8 +526,10 @@ async function mmdOutputDevices()
 }
 
 // The Output Device a mode sends to (mmdSstvTx.js), among those there are (DEC.outputDevices): the one picked (the common one or its own,
-// window.opener.mmDecoderOutputFind), else the output on the same sound card as the input heard (the part of the names in brackets: an
-// input "Microphone (USB Audio CODEC)" and an output "Speakers (USB Audio CODEC)"), else null
+// window.opener.mmDecoderOutputFind), else the output on the same sound card as the input heard: on Windows the part of the names in
+// brackets (an input "Microphone (USB Audio CODEC)" and an output "Speakers (USB Audio CODEC)"); else (Linux: PipeWire and PulseAudio
+// name a card's input and output alike, without brackets, "USB Audio Device Analog Stereo") the output in the input's device group, else
+// the one of its name; else null
 function mmdOutputFind(mode)
 {
   const outputs = DEC.outputDevices || [];
@@ -542,10 +544,22 @@ function mmdOutputFind(mode)
   const input = DEC.input ? mmdInputLabel(DEC.input) : "";
   const card = (label) => (/\(([^()]*)\)/.exec(label) || [])[1];
   const name = card(input);
-  if (!name) return null;
-  // The device itself before Windows' "Default - " and "Communications - " names for it
-  const same = outputs.filter((d) => card(d.label || "") == name);
-  return same.find((d) => !/^(Default|Communications) - /.test(d.label || "")) || same[0] || null;
+  if (name)
+  {
+    // The device itself before Windows' "Default - " and "Communications - " names for it
+    const same = outputs.filter((d) => card(d.label || "") == name);
+    const found = same.find((d) => !/^(Default|Communications) - /.test(d.label || "")) || same[0];
+    if (found) return found;
+  }
+  if (!DEC.input) return null;
+  // A sound card's own output, not one of the system's aliases for the default
+  const own = (d) => d.deviceId && d.deviceId != "default" && d.deviceId != "communications";
+  if (DEC.input.groupId)
+  {
+    const group = outputs.find((d) => own(d) && d.groupId == DEC.input.groupId);
+    if (group) return group;
+  }
+  return (input && outputs.find((d) => own(d) && d.label == input)) || null;
 }
 
 // This mode's Input Device as the system knows it: its label, and whether it is the system's default input (a SPY Server's I/Q: none,

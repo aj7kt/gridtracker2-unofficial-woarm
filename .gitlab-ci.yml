@@ -458,12 +458,18 @@ upload-gtserv:
     - ssh-keyscan ${GT_SERV_ADDRESS} >> ~/.ssh/known_hosts
   script:
     - echo ${APPNAME}-${VERSION}
-    - scp -r dist/GridTracker2* ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/
-    # The guide is copied with the files above (GridTracker2-<version>-help-en.pdf); help-en.pdf always points at the latest one
-    - ssh ${GT_SERV_USER}@${GT_SERV_ADDRESS} "ln -sf ${APPNAME}-${VERSION}-help-en.pdf ~/gt2_download/help-en.pdf"
+    # The installers beside the released ones, but not the User Guide (GridTracker2-<version>-help-en.pdf): the live help-en.pdf must
+    # stay the released version's until this build is released
+    - scp -r $(ls dist/GridTracker2* | grep -v -- '-help-en\.pdf$') ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/
     - scp -r dist/*.yml ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/stage/
+    # The guide staged with the .yml files, released with them: stage/help-en.pdf points at this version's (beside it)
+    - scp dist/${APPNAME}-${VERSION}-help-en.pdf ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/stage/
+    - ssh ${GT_SERV_USER}@${GT_SERV_ADDRESS} "ln -sf ${APPNAME}-${VERSION}-help-en.pdf ~/gt2_download/stage/help-en.pdf"
     - scp -r dist/win7/GridTracker2* ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/win7/
     - scp -r dist/win7/*.yml ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/win7/stage/
+    # Win7's stage the same (the guide is made by mac:build, in dist/)
+    - scp dist/${APPNAME}-${VERSION}-help-en.pdf ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/win7/stage/
+    - ssh ${GT_SERV_USER}@${GT_SERV_ADDRESS} "ln -sf ${APPNAME}-${VERSION}-help-en.pdf ~/gt2_download/win7/stage/help-en.pdf"
 
 
 auto-release-main:

@@ -1815,7 +1815,11 @@ async function rigOpenSerial(R, generation)
   R.writer = port.node ? port.writer : port.writable.getWriter();
   // Web Serial: both lines set as its box says (the port opens with them asserted), the one PTT Method names low, so the rig isn't keyed
   // by connecting
-  if (!port.node) rigPttLineDrop(R);
+  if (!port.node)
+  {
+    rigPttLineDrop(R);
+    rigWebSerialWarn(S.port);
+  }
   port.addEventListener("disconnect", () =>
   {
     if (generation == R.generation) rigFail(R, "disconnected");
@@ -1834,6 +1838,20 @@ async function rigOpenSerial(R, generation)
   }
   else rigReadSerial(R, port, generation);
   rigConnected(R);
+}
+
+// The ports a rig opened through Web Serial that the Event Viewer has been told of (once each a session)
+GT.rigWebSerialWarned = new Set();
+
+// A rig's serial port opened through Web Serial, Node's serialport not being there (a source folder without npm ci, or a build where it
+// doesn't load: main/serial.js): Chromium raises DTR and RTS as it opens a port, before they're set as the rig's box says, and that pulse
+// keys a rig whose menu has a line as its PTT (the FTX-1's RPTT SELECT). An error in the Event Viewer (opened for it, as set), once a port
+function rigWebSerialWarn(portWanted)
+{
+  const name = serialPortShortName(portWanted);
+  if (GT.rigWebSerialWarned.has(name)) return;
+  GT.rigWebSerialWarned.add(name);
+  addEvent("rig", "<font style='color:var(--gt-error)'>" + htmlEntities(I18N("rig.event.webSerial").replace("{port}", name)) + "</font>", true);
 }
 
 async function rigReadSerial(R, port, generation)

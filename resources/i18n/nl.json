@@ -1950,5 +1950,7 @@
   "settings.map.cast.softwareFps.hover": "Zonder hardware-video-encoder: de beelden per seconde van de kaartvideo. Meer is vloeiender en gebruikt meer CPU; geldt vanaf de volgende start van de video",
   "settings.map.cast.softwareSize.label": "Software-resolutie",
   "settings.map.cast.softwareSize.hover": "Zonder hardware-video-encoder: de grootte van de kaartvideo. Groter is scherper en gebruikt meer CPU; geldt vanaf de volgende start van de video",
-  "events.source.mmd": "MMD"
+  "events.source.mmd": "MMD",
+  "events.source.rig": "Rig",
+  "rig.event.webSerial": "{port}: geopend zonder de serialport-module, die DTR en RTS bij het openen even hoog maakt en de rig kan laten zenden. Voer npm ci uit in de bronmap, of installeer GridTracker2 opnieuw"
 }

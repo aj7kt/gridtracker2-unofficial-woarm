@@ -1952,5 +1952,7 @@
   "settings.map.cast.softwareFps.hover": "沒有硬體視訊編碼器時地圖視訊的每秒畫面數。越多越流暢，佔用 CPU 越多；在下次視訊開始時生效",
   "settings.map.cast.softwareSize.label": "軟體解析度",
   "settings.map.cast.softwareSize.hover": "沒有硬體視訊編碼器時地圖視訊的大小。越大越清晰，佔用 CPU 越多；在下次視訊開始時生效",
-  "events.source.mmd": "MMD"
+  "events.source.mmd": "MMD",
+  "events.source.rig": "電台",
+  "rig.event.webSerial": "{port}: 未使用 serialport 模組開啟，開啟連接埠時 DTR 和 RTS 會短暫拉高，可能使電台發射。請在原始碼資料夾中執行 npm ci，或重新安裝 GridTracker2"
 }

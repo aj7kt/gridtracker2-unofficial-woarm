@@ -1950,5 +1950,7 @@
   "settings.map.cast.softwareFps.hover": "Bez sprzętowego kodera wideo: liczba klatek na sekundę wideo mapy. Więcej to płynniej i większe użycie CPU; działa od następnego uruchomienia wideo",
   "settings.map.cast.softwareSize.label": "Rozdzielczość (programowo)",
   "settings.map.cast.softwareSize.hover": "Bez sprzętowego kodera wideo: rozmiar wideo mapy. Większy to ostrzej i większe użycie CPU; działa od następnego uruchomienia wideo",
-  "events.source.mmd": "MMD"
+  "events.source.mmd": "MMD",
+  "events.source.rig": "Radio",
+  "rig.event.webSerial": "{port}: otwarty bez modułu serialport, co przy otwieraniu portu na chwilę podnosi DTR i RTS i może włączyć nadawanie. Uruchom npm ci w folderze źródłowym lub zainstaluj GridTracker2 ponownie"
 }
