@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Cast to one TV or to several at once; GridTracker2 remembers them and casts to them again at the next start
   - A number on the Cast button shows how many are watching
   - The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too
-- DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call on that band and mode (DX Feeds), or worked that summit today (SOTA)
+- DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)
 - Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)
 - The Kp button now grows smoothly under the mouse, like the other buttons
 
@@ -84,7 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too</li>
     </ul>
   </li>
-  <li>DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call on that band and mode (DX Feeds), or worked that summit today (SOTA)</li>
+  <li>DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)</li>
   <li>Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)</li>
   <li>The Kp button now grows smoothly under the mouse, like the other buttons</li>
 </ul>

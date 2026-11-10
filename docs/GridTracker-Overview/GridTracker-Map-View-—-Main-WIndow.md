@@ -160,7 +160,7 @@ Each kind of marker has three looks:
 | --- | --- | --- |
 | **DX Feeds** | | |
 | ![](../img/markers/feed_target.png){width=24px} A radio is on the spot's band and mode | ![](../img/markers/feed_on_band.png){width=24px} A radio is on the spot's band, in another mode | ![](../img/markers/feed_idle.png){width=24px} No radio is on the spot's band |
-| ![](../img/markers/feed_worked.png){width=24px} A radio is on the spot's band and mode, and you've worked that call on this band and mode | | |
+| ![](../img/markers/feed_worked.png){width=24px} A radio is on the spot's band and mode, and you've worked that call (as the Feed Roster's Logbook setting counts it: on this band and mode unless you change it) | | |
 | **SOTA** | | |
 | ![](../img/markers/sota_target.png){width=24px} A radio is on the spot's band and mode | ![](../img/markers/sota_on_band.png){width=24px} A radio is on the spot's band, in another mode | ![](../img/markers/sota_idle.png){width=24px} No radio is on the spot's band |
 | ![](../img/markers/sota_worked.png){width=24px} A radio is on the spot's band and mode, and you've worked the summit today | | |

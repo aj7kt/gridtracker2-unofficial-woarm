@@ -1525,7 +1525,10 @@ function isEchoOfLoggedQso(record)
   return GT.recentLoggedQsos.has(key);
 }
 
-function sendToLogger(ADIF)
+// A QSO logged (an ADIF message) filled in and logged everywhere GridTracker logs to (finishSendingReport). Options, for a
+// QSO from a logger GridTracker doesn't log to (n3fjpContest.js): potaRef, the park of the spot it came from (an inbound
+// POTA_REF isn't taken); localOnly, only GridTracker's own log and the backup log
+function sendToLogger(ADIF, options = {})
 {
   let regex = new RegExp("<EOH>", "i");
   let message = ADIF.split(regex)[1].trim();
@@ -1572,6 +1575,11 @@ function sendToLogger(ADIF)
     {
       record.POTA_REF = GT.liveCallsigns[localHash].pota;
     }
+  }
+  // The park of the spot a logger's QSO came from (options.potaRef), when the decodes gave none
+  if (GT.settings.app.potaFeatureEnabled && !record.POTA_REF && /^[A-Z0-9]{1,4}-\d{4,5}$/.test(String(options.potaRef || "")))
+  {
+    record.POTA_REF = options.potaRef;
   }
 
   // SOTA Chasing: the summit from a Feed Roster spot of this call on this band (WSJT-X doesn't know it); a SOTA_REF
@@ -1651,7 +1659,7 @@ function sendToLogger(ADIF)
     }
   }
 
-  finishSendingReport(record);
+  finishSendingReport(record, options.localOnly === true);
 }
 
 // A QSO (report: its ADIF record, as text) to GridTracker's backup log, when that's on (Settings -> Logging): the file named
@@ -1691,7 +1699,9 @@ function writeBackupLogQso(report, record)
   }
 }
 
-function finishSendingReport(record)
+// localOnly (a logger's QSO without Also Log To My Other Logs, n3fjpContest.js): only GridTracker's own log and the backup log;
+// nothing goes out (no POTA spot, no logging program or service)
+function finishSendingReport(record, localOnly = false)
 {
   let report = "";
   for (const key in record)
@@ -1735,13 +1745,13 @@ function finishSendingReport(record)
 
     addEvent("log", "<font style='color:#FFA500'>▲ </font><font style='color:var(--gt-title)'> " + I18N("gt.log.newQSO") + " </font><font style='color:var(--gt-callsign)'>" + record.CALL + "</font><font style='color:#FFA500'> ▲</font>");
     
-    if (GT.settings.app.potaFeatureEnabled && "POTA_REF" in record)
+    if (!localOnly && GT.settings.app.potaFeatureEnabled && "POTA_REF" in record)
     {
       reportPotaQSO(record);
       addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.spottedPota") + "</font>");
     }
 
-    if (GT.settings.N1MM.enable == true && GT.settings.N1MM.port > 1024 && GT.settings.N1MM.ip.length > 4)
+    if (!localOnly && GT.settings.N1MM.enable == true && GT.settings.N1MM.port > 1024 && GT.settings.N1MM.ip.length > 4)
     {
       sendUdpMessage(
         report,
@@ -1752,7 +1762,7 @@ function finishSendingReport(record)
       addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "N1MM") + "</font>");
     }
 
-    if (GT.settings.log4OM.enable == true && GT.settings.log4OM.port > 1024 && GT.settings.log4OM.ip.length > 4)
+    if (!localOnly && GT.settings.log4OM.enable == true && GT.settings.log4OM.port > 1024 && GT.settings.log4OM.ip.length > 4)
     {
       sendUdpMessage(
         "ADD " + report,
@@ -1772,6 +1782,12 @@ function finishSendingReport(record)
       addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionInternal") + "</font>");
     }
     writeBackupLogQso(report, record);
+    // (the logging programs and services below: not for a local-only QSO)
+    if (localOnly)
+    {
+      afterQsoLogged();
+      return;
+    }
 
     try
     {
@@ -1915,27 +1931,34 @@ function finishSendingReport(record)
       }
     }
 
+    afterQsoLogged();
+  }
+}
+
+// After a QSO is logged (finishSendingReport): the logging sound (Settings -> Audio Alerts), and the lookup window closed when
+// set to (Close On Log)
+function afterQsoLogged()
+{
+  try
+  {
+    alertLogMessage();
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionAlert") + "</font>");
+    console.error(e);
+  }
+
+  if (lookupCloseLog.checked == true)
+  {
     try
     {
-      alertLogMessage();
+      openLookupWindow(false);
     }
     catch (e)
     {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionAlert") + "</font>");
+      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionHideLookup") + "</font>");
       console.error(e);
-    }
-
-    if (lookupCloseLog.checked == true)
-    {
-      try
-      {
-        openLookupWindow(false);
-      }
-      catch (e)
-      {
-        addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionHideLookup") + "</font>");
-        console.error(e);
-      }
     }
   }
 }

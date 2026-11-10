@@ -314,8 +314,9 @@ function potaSpotCallObj(spot, key)
 }
 
 // Map left-click on a park (or parks grouped at this zoom): a spot a rig is already on the band and mode of goes to that
-// rig (WSJT-X / JTDX: its call and grid; AC Log: its entry tab). Otherwise the first spot the tooltip lists goes to a
-// connected AC Log (with Enable Rig Control, the rig tuned to it), else to Gen Msgs on the active WSJT-X / JTDX
+// rig (WSJT-X / JTDX: its call and grid; a logger: its entry). Otherwise the first spot the tooltip lists goes where any
+// spot clicked would (rtsn.js feedSpotTarget: a connected N3FJP Contest Log, AC Log or Log4OM, with Enable Rig Control the
+// rig tuned to it), else to Gen Msgs on the active WSJT-X / JTDX
 function leftClickPota(feature)
 {
   const keys = feature.parkKeys || [feature.key];
@@ -332,35 +333,21 @@ function leftClickPota(feature)
   if (keys.length > 1) spots.sort((a, b) => b.spot.spotTime - a.spot.spotTime);
   if (spots.length == 0) return;
 
+  // (the same rules as any spot clicked: rtsn.js feedSpotOnBandInstance, feedSpotTarget, workSpotOn)
   for (const { key, spot } of spots)
   {
     const callObj = potaSpotCallObj(spot, key);
-    const instance = feedSpotInstance(callObj);
-    // A connected N3FJP Contest Log comes before the loggers (as workFeedCallObj): it takes the first spot no WSJT-X / JTDX is on
-    if (n3fjpContestCanWork(callObj) && (instance == null || isLoggerInstance(instance))) continue;
-    if (instance == GT.acLogInstanceId)
-    {
-      acLogWorkSpot(callObj);
-      return;
-    }
-    if (instance == GT.log4OMInstanceId)
-    {
-      log4OMWorkSpot(callObj);
-      return;
-    }
+    const instance = feedSpotOnBandInstance(callObj);
     if (instance != null)
     {
-      setCallAndGrid(callObj.DEcall, callObj.grid, instance);
+      workSpotOn(instance, callObj);
       return;
     }
   }
 
-  // Otherwise the first spot the tooltip lists: through a connected AC Log, else Log4OM, else Gen Msgs on the active
-  // WSJT-X / JTDX (as DX Feeds and SOTA markers do)
   const first = potaSpotCallObj(spots[0].spot, spots[0].key);
-  if (n3fjpContestCanWork(first)) n3fjpContestWorkSpot(first);
-  else if (acLogCanWork(first)) acLogWorkSpot(first);
-  else if (log4OMCanWork(first)) log4OMWorkSpot(first);
+  const instance = feedSpotTarget(first);
+  if (instance != null) workSpotOn(instance, first);
   else setCallAndGrid(first.DEcall, first.grid, null);
 }
 

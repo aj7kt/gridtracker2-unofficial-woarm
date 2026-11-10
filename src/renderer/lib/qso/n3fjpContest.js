@@ -13,12 +13,15 @@
 //     them: a spot writes only the call
 //   - Its log holds the contest's QSOs only: AC Log (or the other logs) stays GridTracker's logbook
 // Like AC Log and Log4OM it is a rig source (its band, mode and frequency: an instance of its own), and while it is connected
-// a Feed Roster or map spot clicked goes to it, before AC Log and Log4OM (rtsn.js, pota.js). A QSO logged in it (ENTEREVENT,
-// which carries the whole QSO) is GridTracker's at once: worked on the map and in the rosters, in the backup log when that's
-// on, and with Also Log To My Other Logs to the logs and services GridTracker logs to, as a WSJT-X QSO is (sendToLogger)
+// a Feed Roster or map spot clicked goes to it, before AC Log and Log4OM (rtsn.js feedSpotTarget). A QSO logged in it
+// (ENTEREVENT, which carries the whole QSO) goes the way a WSJT-X QSO does (sendToLogger): GridTracker's at once, worked on
+// the map and in the rosters, in the backup log when that's on, and with Also Log To My Other Logs to the logs and services
+// GridTracker logs to as well
 
 GT.n3fjpContestInstanceId = "N3FJP-Contest";
 GT.n3fjpContestSocket = null;
+// The address and port it is connected to ("ip:port"): another set in Settings reconnects (connectToN3fjpContest)
+GT.n3fjpContestTarget = "";
 GT.n3fjpContestPollTimer = null;
 GT.n3fjpContestStatus = {
   Id: GT.n3fjpContestInstanceId,
@@ -119,16 +122,19 @@ function updateN3fjpContestConnectStatus()
   if (n3fjpContestConnectStatus.title != title) n3fjpContestConnectStatus.title = title;
 }
 
-// Every second (ui.js): opens or closes the connection with the Connect setting
+// Every second (ui.js): opens or closes the connection with the Connect setting; another address or port typed while connected:
+// closed, and opened there on the next tick
 function connectToN3fjpContest()
 {
-  if (GT.n3fjpContestSocket && !GT.settings.n3fjpContest.connect) closeN3fjpContest();
+  const target = String(GT.settings.n3fjpContest.ip).trim() + ":" + Number(GT.settings.n3fjpContest.port);
+  if (GT.n3fjpContestSocket && (!GT.settings.n3fjpContest.connect || GT.n3fjpContestTarget != target)) closeN3fjpContest();
   if (GT.n3fjpContestSocket || !GT.settings.n3fjpContest.connect) return;
   if (!(GT.settings.n3fjpContest.port > 0 && String(GT.settings.n3fjpContest.ip).length > 4)) return;
 
   const net = window.require("net");
   const socket = new net.Socket();
   GT.n3fjpContestSocket = socket;
+  GT.n3fjpContestTarget = target;
   let buffer = "";
   socket.on("error", () => closeN3fjpContest());
   socket.on("end", () => closeN3fjpContest());
@@ -152,6 +158,8 @@ function connectToN3fjpContest()
       if (!GT.n3fjpContestSocket) return;
       n3fjpContestSend("<CMD><RIGENABLED></CMD>");
       n3fjpContestSend("<CMD><READBMF></CMD>");
+      // Its entry's call (cleared there by hand, or typed without tabbing out: no event says so)
+      n3fjpContestSend("<CMD><READ><CONTROL>TXTENTRYCALL</CONTROL></CMD>");
     }, N3FJP_CONTEST_POLL_MS);
     updateN3fjpContestConnectStatus();
   });
@@ -186,6 +194,9 @@ function closeN3fjpContest()
     GT.n3fjpContestSocket = null;
   }
   GT.n3fjpContest = { program: "", rig: "", band: "", mode: "" };
+  GT.n3fjpContestTarget = "";
+  // (not the last entry's call when it's connected again)
+  GT.n3fjpContestStatus.DXcall = GT.n3fjpContestStatus.DXgrid = "";
   const instance = GT.instances[GT.n3fjpContestInstanceId];
   if (instance && instance.open)
   {
@@ -195,11 +206,15 @@ function closeN3fjpContest()
   updateN3fjpContestConnectStatus();
 }
 
-// A contest log's mode as GridTracker's: phone and the sidebands are SSB
+// A contest log's mode as GridTracker's (and ADIF's): phone and the sidebands are SSB, N3FJP's RY is RTTY, and its DIG (Field Day's
+// digital) DATA
 function n3fjpContestMode(mode)
 {
   mode = String(mode || "").trim().toUpperCase();
-  return ["PH", "SSB", "USB", "LSB", "PHONE"].includes(mode) ? "SSB" : mode;
+  if (["PH", "SSB", "USB", "LSB", "PHONE"].includes(mode)) return "SSB";
+  if (mode == "RY" || mode == "RTTY") return "RTTY";
+  if (mode == "DIG") return "DATA";
+  return mode;
 }
 
 function handleN3fjpContestMessage(message)
@@ -248,6 +263,12 @@ function handleN3fjpContestMessage(message)
     status.DXgrid = object.LAT && object.LON ? latLonToGridSquare(Number(object.LAT), Number(object.LON)) : "";
     changed = true;
   }
+  else if (object.type == "READRESPONSE" && String(object.CONTROL || "").toUpperCase() == "TXTENTRYCALL")
+  {
+    // The same call keeps its grid; another (typed without tabbing out) has none yet; none clears both
+    const call = String(object.VALUE || "").trim().toUpperCase();
+    n3fjpContestDxCall(call, call == status.DXcall ? status.DXgrid : "");
+  }
   else if (object.type == "ENTEREVENT")
   {
     n3fjpContestQsoLogged(object);
@@ -269,9 +290,9 @@ function handleN3fjpContestMessage(message)
 }
 
 // A QSO logged in the contest log (its ENTEREVENT: call, band, mode, frequency, date, time, RSTs, DXCC, its operator's call),
-// as an ADIF record. With Also Log To My Other Logs it goes on as a WSJT-X QSO does (sendToLogger: the logs and services
-// GridTracker logs to, the backup log, and GridTracker's own); otherwise it is only GridTracker's (worked on the map and in
-// the rosters) and in the backup log when that's on
+// as an ADIF record, with the grid and park of the Feed Roster spot it came from. It goes the way a WSJT-X QSO does
+// (sendToLogger: filled in as every QSO is, SOTA_REF and the summit's grid among them, then GridTracker's own log and the backup
+// log), and with Also Log To My Other Logs on to the logs and services GridTracker logs to as well (otherwise local only)
 function n3fjpContestQsoLogged(object)
 {
   const record = {};
@@ -285,8 +306,12 @@ function n3fjpContestQsoLogged(object)
   set("MODE", n3fjpContestMode(object.MODE));
   const freq = Number(object.FREQ);
   if (freq > 0) set("FREQ", freq.toFixed(6));
-  set("QSO_DATE", object.QSO_DATE);
-  set("TIME_ON", object.TIME_ON);
+  // ADIF's YYYYMMDD and HHMMSS (N3FJP's other replies write 2026/11/10 and 12:34:56; an HHMM time gets its seconds)
+  const date = String(object.QSO_DATE || "").replace(/\D/g, "");
+  let time = String(object.TIME_ON || "").replace(/\D/g, "");
+  if (time.length == 4) time += "00";
+  if (date.length == 8) set("QSO_DATE", date);
+  if (time.length == 6) set("TIME_ON", time);
   set("RST_SENT", object.RST_SENT);
   set("RST_RCVD", object.RST_RCVD);
   set("STATION_CALLSIGN", String(object.MYCALL || "").toUpperCase());
@@ -294,39 +319,40 @@ function n3fjpContestQsoLogged(object)
   set("CONT", object.CONT);
   if (!record.CALL || !record.BAND || !record.MODE || !record.QSO_DATE || !record.TIME_ON) return;
 
-  if (GT.settings.n3fjpContest.logOthers)
-  {
-    let adif = "<EOH>";
-    for (const key in record) adif += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
-    sendToLogger(adif + "<EOR>");
-    return;
-  }
+  // The spot it came from (this call on this band): its grid, and its park (sendToLogger takes no inbound POTA_REF)
+  const spot = n3fjpContestSpotOf(record.CALL, record.BAND);
+  const grid = spot ? String((spot.fullGrid && spot.fullGrid.length >= 4 ? spot.fullGrid : spot.grid) || "").toUpperCase() : "";
+  if (/^[A-R]{2}[0-9]{2}([A-X]{2})?$/.test(grid)) record.GRIDSQUARE = grid;
 
-  // Only GridTracker's: the station's call and grid, and the country, as sendToLogger fills them in
-  if (!record.STATION_CALLSIGN && GT.settings.app.myCall != "NOCALL" && GT.settings.app.myCall.length > 0) record.STATION_CALLSIGN = GT.settings.app.myCall;
-  if (GT.settings.app.myGrid.length > 1) record.MY_GRIDSQUARE = GT.settings.app.myGrid;
-  if (!record.DXCC)
+  // The contest log empties its entry once a QSO is logged: its call no longer the DX call
+  n3fjpContestDxCall("");
+
+  let adif = "<EOH>";
+  for (const key in record) adif += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
+  sendToLogger(adif + "<EOR>", { localOnly: GT.settings.n3fjpContest.logOthers !== true, potaRef: spot ? spot.pota : "" });
+}
+
+// The newest Feed Roster spot of a call on a band, else null
+function n3fjpContestSpotOf(call, band)
+{
+  let best = null;
+  for (const hash in GT.feedCallsigns)
   {
-    const dxcc = callsignToDxcc(record.CALL);
-    if (dxcc > 0) record.DXCC = String(dxcc);
+    const callObj = GT.feedCallsigns[hash];
+    if (callObj.DEcall == call && callObj.band == band && (!best || callObj.age > best.age)) best = callObj;
   }
-  if (Number(record.DXCC) > 0 && GT.dxccToADIFName[Number(record.DXCC)]) record.COUNTRY = GT.dxccToADIFName[Number(record.DXCC)];
-  let report = "";
-  for (const key in record)
-  {
-    // As finishSendingReport: no value that isn't plain ASCII
-    if (record[key].length != Buffer.byteLength(record[key])) continue;
-    report += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
-  }
-  report += "<EOR>";
-  addEvent("log", "<font style='color:#FFA500'>▲ </font><font style='color:var(--gt-title)'> " + I18N("gt.log.newQSO") + " </font><font style='color:var(--gt-callsign)'>" + record.CALL + "</font><font style='color:#FFA500'> ▲</font>");
-  try
-  {
-    onAdiLoadComplete(report, null, true);
-  }
-  catch (e)
-  {
-    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionInternal") + "</font>");
-  }
-  writeBackupLogQso(report, record);
+  return best;
+}
+
+// The contest log's DX call (and its grid) as GridTracker shows it, changed: an empty entry clears it
+function n3fjpContestDxCall(call, grid = "")
+{
+  const status = GT.n3fjpContestStatus;
+  call = String(call || "").toUpperCase();
+  if (!call) grid = "";
+  if (call == status.DXcall && grid == status.DXgrid) return;
+  status.DXcall = call;
+  status.DXgrid = grid;
+  const instance = GT.instances[GT.n3fjpContestInstanceId];
+  if (instance && instance.open) handleInstanceStatus(status);
 }

@@ -79,7 +79,7 @@ The **Log POTA / SOTA QSO** window opens with the details filled in from the spo
 Click the **DX Feed Spots** button to show the spots on the map. The markers show all bands, following only the Map View Filters and the Modes and Bands in Settings → Feeds:
 
 * ![](../img/markers/feed_target.png){width=20px} green target: a radio is on the spot's band and mode;
-* ![](../img/markers/feed_worked.png){width=20px} green check: a radio is on the spot's band and mode, and you've already worked that call on this band and mode (as the roster shows it worked);
+* ![](../img/markers/feed_worked.png){width=20px} green check: a radio is on the spot's band and mode, and you've already worked that call, as the roster shows it worked (by its Logbook setting: on this band and mode unless you change it);
 * ![](../img/markers/feed_on_band.png){width=20px} teal triangle: a radio is on the spot's band, in another mode;
 * ![](../img/markers/feed_idle.png){width=20px} gray triangle: no radio is on the spot's band.
 

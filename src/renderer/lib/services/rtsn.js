@@ -382,10 +382,43 @@ GT.dxcwRedrawTimeout = null;
 // By level (0 no rig on the band, 1 on the band, 2 on the band and mode), built once (sota.js has the summit icons)
 const FEED_LEVEL_ICONS = [GT.feedIdleIcon, GT.feedOnBandIcon, GT.feedTargetIcon];
 
-// A feed spot's call worked on its band and mode, at any time (the key the Feed Roster's worked status uses)
+// A feed spot's call worked, as the Feed Roster counts it: by its Logbook choice (band and mode unless changed), at any time
 function feedSpotWorked(callObj)
 {
-  return (callObj.DEcall + callObj.band + callObj.mode) in GT.tracker.worked.call;
+  return (callObj.DEcall + feedLogbookSuffix(callObj)) in GT.tracker.worked.call;
+}
+
+// The worked key's suffix after the call for a spot, by the Feed Roster's Logbook choice (feedRoster.logbook.referenceNeed),
+// as the roster's own (rosterWindow.js hashMaker; the Award Tracker's is band and mode)
+function feedLogbookSuffix(callObj)
+{
+  const b = callObj.band || "";
+  const m = callObj.mode || "";
+  switch (String(GT.settings.feedRoster?.logbook?.referenceNeed ?? "0"))
+  {
+    case "0": // Spots Band & Mode
+    case "6": // Award Tracker
+      return b + m;
+    case "1": // Spots Band, Mix Modes
+      return b;
+    case "2": // Spots Band, Digi Modes
+      return b + "dg";
+    case "3": // Mix Band, Spots Mode
+      return m;
+    case "5": // Mix Band, Digi Modes
+      return "dg";
+    case "7": // Spots Band, Phone Modes
+      return b + "ph";
+    case "8": // Spots Band, CW Mode
+      return b + "CW";
+    case "9": // Mix Band, Phone Modes
+      return "ph";
+    case "10": // Mix Band, CW Mode
+      return "CW";
+    case "4": // Mix Band & Modes
+    default:
+      return "";
+  }
 }
 
 function scheduleDxcwRedraw()
@@ -597,14 +630,16 @@ function redrawDxcwSpots()
   {
     const group = summits[ref];
     const summit = GT.sota.summits[ref];
-    const icon = group.level == 2 && sotaSummitWorkedToday(ref) ? GT.sotaWorkedIcon : summitIcons[group.level];
+    const worked = group.level == 2 && sotaSummitWorkedToday(ref);
+    const icon = worked ? GT.sotaWorkedIcon : summitIcons[group.level];
     const feature = iconFeature(ol.proj.fromLonLat([summit.lon, summit.lat]), icon, group.level + 1, "feed");
     feature.feedHash = group.best;
     feature.summitRef = ref;
     feature.summitHashes = group.hashes;
     // The summits it shows (more than one when they overlap at this zoom, see below): [{ ref, hashes }]
     feature.summitGroups = [{ ref, hashes: group.hashes }];
-    feature.rank = group.level;
+    // In a group, the summit a rig is closest to leads, one not chased today before one chased (as the DX Feeds spots)
+    feature.rank = group.level * 2 + (group.level == 2 && !worked ? 1 : 0);
     // Grouped only with summits activated from the same DXCC entity (its activator's)
     feature.dxcc = summitSpotObj(group.best).dxcc;
     feature.size = 6;
@@ -738,16 +773,50 @@ function workFeedSpot(hash)
   if (entry) workFeedCallObj(entry.callObj);
 }
 
-// A feed spot clicked (Feed Roster or map): a rig already on the spot's band and mode (WSJT-X, JTDX, AC Log or Log4OM)
-// takes it; otherwise a connected AC Log, else a connected Log4OM, takes it, on any band and mode (with Enable Rig
-// Control it tunes the rig to it); otherwise Gen Msgs on the active WSJT-X / JTDX. A connected N3FJP Contest Log comes
-// before the loggers (the program running the radio in a contest): it takes any spot no WSJT-X / JTDX is on
-function workFeedCallObj(callObj)
+// Which rig takes a spot clicked (one rule for the Feed Roster, DX Feeds and SOTA markers: workFeedCallObj, and POTA's parks:
+// pota.js leftClickPota). First one already on the spot's band and mode (feedSpotOnBandInstance), then a connected N3FJP Contest
+// Log, AC Log or Log4OM, in that order, on any band and mode; null: none (Gen Msgs on the active WSJT-X / JTDX)
+function feedSpotTarget(callObj)
 {
-  let instance = feedSpotInstance(callObj);
-  if (n3fjpContestCanWork(callObj) && (instance == null || isLoggerInstance(instance))) instance = GT.n3fjpContestInstanceId;
+  let instance = feedSpotOnBandInstance(callObj);
+  if (instance == null && n3fjpContestCanWork(callObj)) instance = GT.n3fjpContestInstanceId;
   if (instance == null && acLogCanWork(callObj)) instance = GT.acLogInstanceId;
   if (instance == null && log4OMCanWork(callObj)) instance = GT.log4OMInstanceId;
+  return instance;
+}
+
+// A rig already on the spot's band and mode that takes it: a WSJT-X / JTDX, or a logger. While an N3FJP Contest Log is connected
+// (the program running the radio in a contest) the other loggers don't: their spots go to it (feedSpotTarget)
+function feedSpotOnBandInstance(callObj)
+{
+  const contest = n3fjpContestCanWork(callObj);
+  for (const id in GT.instances)
+  {
+    const instance = GT.instances[id];
+    if (contest && isLoggerInstance(id) && id != GT.n3fjpContestInstanceId) continue;
+    if (instance.valid && instance.open && instance.status && instance.status.Band == callObj.band && instance.status.MO == callObj.mode)
+    {
+      return id;
+    }
+  }
+  return null;
+}
+
+// A spot to a rig (feedSpotTarget's): the loggers through their own APIs (n3fjpContest.js, acLog.js, log4om.js), a WSJT-X / JTDX
+// its call and grid
+function workSpotOn(instance, callObj)
+{
+  if (instance == GT.n3fjpContestInstanceId) n3fjpContestWorkSpot(callObj);
+  else if (instance == GT.acLogInstanceId) acLogWorkSpot(callObj);
+  else if (instance == GT.log4OMInstanceId) log4OMWorkSpot(callObj);
+  else setCallAndGrid(callObj.DEcall, callObj.grid, instance);
+}
+
+// A feed spot clicked (Feed Roster or map): to the rig feedSpotTarget picks (with Enable Rig Control a logger tunes the rig to
+// it), made the active rig with Focus Rig; otherwise Gen Msgs on the active WSJT-X / JTDX
+function workFeedCallObj(callObj)
+{
+  const instance = feedSpotTarget(callObj);
   if (instance == null)
   {
     setCallAndGrid(callObj.DEcall, callObj.grid, null);
@@ -758,23 +827,7 @@ function workFeedCallObj(callObj)
   {
     setRig(instance);
   }
-  // The loggers aren't WSJT-X instances: their own APIs (n3fjpContest.js, acLog.js, log4om.js)
-  if (instance == GT.n3fjpContestInstanceId)
-  {
-    n3fjpContestWorkSpot(callObj);
-    return;
-  }
-  if (instance == GT.acLogInstanceId)
-  {
-    acLogWorkSpot(callObj);
-    return;
-  }
-  if (instance == GT.log4OMInstanceId)
-  {
-    log4OMWorkSpot(callObj);
-    return;
-  }
-  setCallAndGrid(callObj.DEcall, callObj.grid, instance);
+  workSpotOn(instance, callObj);
 }
 
 // Gen Msgs on a feed spot: a rig on the spot's band and mode if there is one, otherwise the active rig
