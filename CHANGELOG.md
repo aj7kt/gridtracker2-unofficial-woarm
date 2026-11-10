@@ -36,12 +36,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 #### BirdWatch
 
-- New Skeds: the stations you share satellite passes with, and your mutual passes for the next 72 hours
-  - Save them as calendar files, copy them as text to send, or swap Sked Lines with other GridTracker2 users
-  - Shown in the Pass Timeline, on the map and in the BirdWatch panel; Announce Mutual Passes tells you before one opens
-- Auto-Track can prefer mutual passes (Skeds First) or follow only them (Skeds Only)
-- BirdWatch's settings are split into more tabs
-- The selected satellite's name on the map now stands out in black on light green
+- New BirdWatch (Settings, Features): amateur satellite tracking, right in GridTracker2
+  - See your satellites move on the map with their footprints and ground tracks, and when each will pass over you
+  - A BirdWatch panel for the selected satellite: when it rises or sets, where to point your antenna, its next pass, and views of it in your sky and over the Earth
+  - A Pass Timeline of the next 24 hours, which you can also save to your calendar
+  - The Transmitters window lists each satellite's downlinks and uplinks, corrected for Doppler as it moves
+  - With Rig Control your radio follows the satellite's downlink and uplink through the whole pass, and with Rotor Control your antenna points at it
+  - Auto-Track selects the next satellite to rise, and Pass Alerts tell you a few minutes before a pass begins
+  - Skeds: the stations you share passes with, and your mutual passes for the next 72 hours; save them to your calendar, send them as text, or swap Sked Lines with other GridTracker2 users
+  - QSOs you log while a satellite is up are logged as satellite contacts, with its name
+  - The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows
+  - Works offline with the satellite data that comes with GridTracker2, and keeps it up to date while you're online, thanks to SatNOGS DB (Libre Space Foundation) and AMSAT
+  - The User Guide's BirdWatch chapter describes it all
 
 #### Network Audio
 
@@ -97,15 +103,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 </ul>
 <h4>BirdWatch</h4>
 <ul>
-  <li>New Skeds: the stations you share satellite passes with, and your mutual passes for the next 72 hours
+  <li>New BirdWatch (Settings, Features): amateur satellite tracking, right in GridTracker2
     <ul>
-      <li>Save them as calendar files, copy them as text to send, or swap Sked Lines with other GridTracker2 users</li>
-      <li>Shown in the Pass Timeline, on the map and in the BirdWatch panel; Announce Mutual Passes tells you before one opens</li>
+      <li>See your satellites move on the map with their footprints and ground tracks, and when each will pass over you</li>
+      <li>A BirdWatch panel for the selected satellite: when it rises or sets, where to point your antenna, its next pass, and views of it in your sky and over the Earth</li>
+      <li>A Pass Timeline of the next 24 hours, which you can also save to your calendar</li>
+      <li>The Transmitters window lists each satellite's downlinks and uplinks, corrected for Doppler as it moves</li>
+      <li>With Rig Control your radio follows the satellite's downlink and uplink through the whole pass, and with Rotor Control your antenna points at it</li>
+      <li>Auto-Track selects the next satellite to rise, and Pass Alerts tell you a few minutes before a pass begins</li>
+      <li>Skeds: the stations you share passes with, and your mutual passes for the next 72 hours; save them to your calendar, send them as text, or swap Sked Lines with other GridTracker2 users</li>
+      <li>QSOs you log while a satellite is up are logged as satellite contacts, with its name</li>
+      <li>The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows</li>
+      <li>Works offline with the satellite data that comes with GridTracker2, and keeps it up to date while you're online, thanks to SatNOGS DB (Libre Space Foundation) and AMSAT</li>
+      <li>The User Guide's BirdWatch chapter describes it all</li>
     </ul>
   </li>
-  <li>Auto-Track can prefer mutual passes (Skeds First) or follow only them (Skeds Only)</li>
-  <li>BirdWatch's settings are split into more tabs</li>
-  <li>The selected satellite's name on the map now stands out in black on light green</li>
 </ul>
 <h4>Network Audio</h4>
 <ul>
