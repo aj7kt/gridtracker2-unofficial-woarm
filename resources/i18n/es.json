@@ -1589,10 +1589,6 @@
   "sstvTx.refresh.hover": "Vuelve a tomar el fondo (el mapa tal como está ahora, el archivo de imagen leído de nuevo) y recompone la imagen",
   "sstvTx.zoom.label": "Zoom",
   "sstvTx.stamp.hover": "Marca la imagen con la hora UTC en que se envía",
-  "sstvTx.stamp.topLeft": "Arriba izquierda",
-  "sstvTx.stamp.topRight": "Arriba derecha",
-  "sstvTx.stamp.bottomLeft": "Abajo izquierda",
-  "sstvTx.stamp.bottomRight": "Abajo derecha",
   "sstvTx.stamp.box.label": "Recuadro",
   "sstvTx.group.picture": "Imagen",
   "sstvTx.group.text": "Texto",
@@ -1600,7 +1596,6 @@
   "sstvTx.group.transmit": "Transmitir",
   "sstvTx.date.label": "Fecha",
   "sstvTx.date.hover": "Marca la imagen con la fecha UTC en que se envía",
-  "sstvTx.corner.label": "Esquina",
   "sstvTx.utc.label": "UTC",
   "sstvTx.time.label": "Hora",
   "sstvTx.textOn.hover": "Pone tu línea de texto en la imagen",
@@ -1945,5 +1940,7 @@
   "settings.map.cast.softwareSize.hover": "Sin codificador de vídeo por hardware: el tamaño del vídeo del mapa. Más grande es más nítido y usa más CPU; se aplica la próxima vez que empiece el vídeo",
   "events.source.mmd": "MMD",
   "events.source.rig": "Equipo",
-  "rig.event.webSerial": "{port}: abierto sin el módulo serialport, que activa DTR y RTS un instante al abrir el puerto y puede poner el equipo en transmisión. Ejecuta npm ci en la carpeta del código o reinstala GridTracker2"
+  "rig.event.webSerial": "{port}: abierto sin el módulo serialport, que activa DTR y RTS un instante al abrir el puerto y puede poner el equipo en transmisión. Ejecuta npm ci en la carpeta del código o reinstala GridTracker2",
+  "sstvTx.size.tiny": "Diminuto",
+  "sstvTx.size.smaller": "Más pequeño"
 }

@@ -21,12 +21,13 @@ const SSTV_TX_TUNE_S = 30;
 // the audio plays, so the slider acts at once; powerByBand: kept for the band it was set on, { "20m": dB } (mmdSstvTxPower)
 // logoZoom, logoX, logoY and imageZoom, imageX, imageY: the GridTracker logo's and the image file's own size over covering the picture
 // (0.25 to 4: under 1 it is smaller than the picture, the color round it) and where it sits (each -100 to 100: half its size either way),
-// each kept for its own background (mmdSstvTxPlace). stampDate, stampTime: the UTC date and time it is sent (either or both), in a corner
-// (stampPos), its color, in a box (stampBox "color", its stampBoxColor) or not ("none"), in stampFont. call, grid, textOn: your call, your
+// each kept for its own background (mmdSstvTxPlace). stampDate, stampTime: the UTC date and time it is sent (either or both), its color,
+// size (stampSize) and place (stampPos) as a line of the text's, in a box (stampBox "color", its stampBoxColor) or not ("none"), in
+// stampFont. call, grid, textOn: your call, your
 // grid and your line of text on the picture, each its own color (callColor ...), size (callSize: SSTV_TX_SIZES) and place (callPos: one of
 // SSTV_TX_PLACES), all in textFont (SSTV_TX_FONTS). textShow, stampShow: the Text and the Time Stamp on the picture at all (their titles'
 // checkboxes; off, the rest of each is kept as it was)
-const SSTV_TX_DEFAULTS = { mode: "Martin 1", back: "logo", color: "#1a2a5a", image: "", logoZoom: 1, logoX: 0, logoY: 0, imageZoom: 1, imageX: 0, imageY: 0, textFont: "arial", call: true, callColor: "#ffff00", callSize: "xlarge", callPos: "4-2", grid: true, gridColor: "#ffff00", gridSize: "medium", gridPos: "4-2", textOn: true, text: "CQ SSTV", textColor: "#ffff00", textSize: "medium", textPos: "4-2", stampFont: "arial", stampDate: false, stampTime: false, stampPos: "topRight", stampColor: "#ffffff", stampBox: "none", stampBoxColor: "#000000", textShow: true, stampShow: true, powerDb: -28, powerByBand: null };
+const SSTV_TX_DEFAULTS = { mode: "Martin 1", back: "logo", color: "#1a2a5a", image: "", logoZoom: 1, logoX: 0, logoY: 0, imageZoom: 1, imageX: 0, imageY: 0, textFont: "arial", call: true, callColor: "#ffff00", callSize: "xlarge", callPos: "4-2", grid: true, gridColor: "#ffff00", gridSize: "medium", gridPos: "4-2", textOn: true, text: "CQ SSTV", textColor: "#ffff00", textSize: "medium", textPos: "4-2", stampFont: "arial", stampDate: false, stampTime: false, stampPos: "0-4", stampSize: "small", stampColor: "#ffffff", stampBox: "none", stampBoxColor: "#000000", textShow: true, stampShow: true, powerDb: -28, powerByBand: null };
 const SSTV_TX_ZOOM = [0.25, 4];
 // The fonts there are to pick (the Text's and the Time Stamp's): each one's name as shown, and the families tried in turn (Windows' own
 // first, then the macOS and Linux ones nearest it). monospace: the computer's own monospaced font (its name in the locale)
@@ -40,8 +41,8 @@ const SSTV_TX_FONTS = {
   comic: ["Comic Sans MS", "'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', cursive"],
   monospace: [null, "monospace"]
 };
-// The text's sizes, as shares of the picture's height
-const SSTV_TX_SIZES = { small: 0.07, medium: 0.1, large: 0.14, xlarge: 0.2 };
+// The text's sizes, as shares of the picture's height (tiny and smaller: the time stamp's menu only)
+const SSTV_TX_SIZES = { tiny: 0.04, smaller: 0.055, small: 0.07, medium: 0.1, large: 0.14, xlarge: 0.2 };
 // The places the text can go: the picture split SSTV_TX_GRID by SSTV_TX_GRID, each "row-column" ("0-0" top left, "4-4" bottom right). The
 // places of before ("top", "bottomLeft", ...) are read as theirs (mmdSstvTxSettings)
 const SSTV_TX_GRID = 5;
@@ -53,23 +54,24 @@ function mmdSstvTxFont(key, px)
   return "bold " + Math.round(px) + "px " + (SSTV_TX_FONTS[key] || SSTV_TX_FONTS.arial)[1];
 }
 
-// The time stamp (the UTC date and/or time of the build: Send builds the picture as it sends it) and its box in its corner: { text, px,
-// bx, by, bw, bh, top (in a top corner), cx, baseline (where its text goes) }; null when neither is on
+// The time stamp (the UTC date and/or time of the build: Send builds the picture as it sends it) and its box, at its size (one of
+// SSTV_TX_SIZES, as a line of the text) and place (one of SSTV_TX_PLACES: its row and column as shares of the room the box leaves, the
+// corners a margin in from the edges): { text, px, bx, by, bw, bh, cx, baseline (where its text goes) }; null when neither is on
 function mmdSstvTxStamp(ctx, T, w, h)
 {
   if (!T.stampShow || (!T.stampDate && !T.stampTime)) return null;
   const now = new Date().toISOString();
   const text = [T.stampDate ? now.slice(0, 10) : "", T.stampTime ? now.slice(11, 19) : "", "UTC"].filter(Boolean).join(" ");
-  const px = Math.max(8, h * 0.065), padX = px * 0.45, padY = px * 0.3, margin = h * 0.025;
-  const right = T.stampPos == "topRight" || T.stampPos == "bottomRight", top = T.stampPos == "topLeft" || T.stampPos == "topRight";
+  const px = Math.max(8, h * (SSTV_TX_SIZES[T.stampSize] || SSTV_TX_SIZES.small)), padX = px * 0.45, padY = px * 0.3, margin = h * 0.025;
+  const [rowAt, colAt] = (SSTV_TX_PLACES.includes(T.stampPos) ? T.stampPos : SSTV_TX_DEFAULTS.stampPos).split("-").map((n) => Number(n) / (SSTV_TX_GRID - 1));
   ctx.font = mmdSstvTxFont(T.stampFont, px);
   ctx.textBaseline = "alphabetic";
   const m = ctx.measureText(text);
   const ascent = m.actualBoundingBoxAscent, descent = m.actualBoundingBoxDescent;
   const bw = m.width + 2 * padX, bh = ascent + descent + 2 * padY;
-  const bx = right ? w - margin - bw : margin, by = top ? margin : h - margin - bh;
+  const bx = margin + colAt * Math.max(0, w - 2 * margin - bw), by = margin + rowAt * Math.max(0, h - 2 * margin - bh);
   // The text's middle on the box's: its baseline set so its ink sits as far from the top as from the bottom
-  return { text, px, bx, by, bw, bh, top, cx: bx + bw / 2, baseline: by + padY + ascent };
+  return { text, px, bx, by, bw, bh, cx: bx + bw / 2, baseline: by + padY + ascent };
 }
 
 // The background's own Zoom and Position (the logo's or the image file's: "logo" or "image" keys), { zoom, x, y }; null for another
@@ -113,7 +115,8 @@ function mmdSstvTxSettings()
   const S = GT.settings.MMD;
   if (!S.sstvTx || typeof S.sstvTx != "object") S.sstvTx = {};
   for (const key in SSTV_TX_DEFAULTS) if (!(key in S.sstvTx)) S.sstvTx[key] = SSTV_TX_DEFAULTS[key];
-  for (const key of ["callPos", "gridPos", "textPos"])
+  // (The time stamp's corners of before, "topRight" ..., are places too)
+  for (const key of ["callPos", "gridPos", "textPos", "stampPos"])
   {
     if (S.sstvTx[key] in SSTV_TX_OLD_PLACES) S.sstvTx[key] = SSTV_TX_OLD_PLACES[S.sstvTx[key]];
     if (!SSTV_TX_PLACES.includes(S.sstvTx[key])) S.sstvTx[key] = SSTV_TX_DEFAULTS[key];
@@ -192,9 +195,9 @@ function mmdSstvTxInit()
       select.add(option);
     }
   }
-  // Each line's place: a small grid of cells standing for the picture's places (SSTV_TX_PLACES), the one picked lit; hovered, the zoom box
-  // opens beside it (mmdSstvTxZoomOpen), where one is picked
-  for (const name of ["Call", "Grid", "Text"])
+  // Each line's place, and the time stamp's: a small grid of cells standing for the picture's places (SSTV_TX_PLACES), the one picked lit;
+  // hovered, the zoom box opens beside it (mmdSstvTxZoomOpen), where one is picked
+  for (const name of ["Call", "Grid", "Text", "Stamp"])
   {
     const grid = window["sstvTx" + name + "Pos"];
     for (const place of SSTV_TX_PLACES)
@@ -208,7 +211,7 @@ function mmdSstvTxInit()
   }
   mmdSstvTxZoomInit();
   const styles = ["Call", "Grid", "Text"].flatMap((name) => [window["sstvTx" + name + "Color"], window["sstvTx" + name + "Size"], window["sstvTx" + name + "Pos"]]);
-  for (const el of [sstvTxMode, sstvTxBack, sstvTxColor, sstvTxZoom, sstvTxImgX, sstvTxImgY, sstvTxTextShow, sstvTxStampShow, sstvTxTextFont, sstvTxCall, sstvTxGrid, sstvTxTextOn, sstvTxText, ...styles, sstvTxStampFont, sstvTxStampDate, sstvTxStampTime, sstvTxStampPos, sstvTxStampColor, sstvTxStampBox, sstvTxStampBoxColor, sstvTxPower])
+  for (const el of [sstvTxMode, sstvTxBack, sstvTxColor, sstvTxZoom, sstvTxImgX, sstvTxImgY, sstvTxTextShow, sstvTxStampShow, sstvTxTextFont, sstvTxCall, sstvTxGrid, sstvTxTextOn, sstvTxText, ...styles, sstvTxStampFont, sstvTxStampDate, sstvTxStampTime, sstvTxStampPos, sstvTxStampSize, sstvTxStampColor, sstvTxStampBox, sstvTxStampBoxColor, sstvTxPower])
   {
     el.addEventListener(el.type == "text" || el.type == "range" || el.type == "color" ? "input" : "change", mmdSstvTxChanged);
   }
@@ -291,6 +294,8 @@ function mmdSstvTxForm()
   sstvTxStampDate.checked = T.stampDate;
   sstvTxStampTime.checked = T.stampTime;
   sstvTxStampPos.value = T.stampPos;
+  mmdSstvTxPlaceShow(sstvTxStampPos);
+  sstvTxStampSize.value = T.stampSize;
   sstvTxStampColor.value = T.stampColor;
   sstvTxStampBox.value = T.stampBox;
   sstvTxStampBoxColor.value = T.stampBoxColor;
@@ -424,7 +429,8 @@ function mmdSstvTxChanged()
   T.stampShow = sstvTxStampShow.checked;
   T.stampDate = sstvTxStampDate.checked;
   T.stampTime = sstvTxStampTime.checked;
-  T.stampPos = sstvTxStampPos.value;
+  T.stampPos = SSTV_TX_PLACES.includes(sstvTxStampPos.value) ? sstvTxStampPos.value : SSTV_TX_DEFAULTS.stampPos;
+  T.stampSize = sstvTxStampSize.value in SSTV_TX_SIZES ? sstvTxStampSize.value : SSTV_TX_DEFAULTS.stampSize;
   T.stampColor = sstvTxStampColor.value;
   T.stampBox = sstvTxStampBox.value == "color" ? "color" : "none";
   T.stampBoxColor = sstvTxStampBoxColor.value;

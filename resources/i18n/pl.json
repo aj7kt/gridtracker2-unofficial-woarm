@@ -1596,10 +1596,6 @@
   "sstvTx.refresh.hover": "Pobiera tło ponownie (mapę taką, jaka jest teraz, plik obrazu odczytany ponownie) i tworzy obraz ponownie",
   "sstvTx.zoom.label": "Powiększenie",
   "sstvTx.stamp.hover": "Nanosi na obraz czas UTC wysłania",
-  "sstvTx.stamp.topLeft": "Lewy górny",
-  "sstvTx.stamp.topRight": "Prawy górny",
-  "sstvTx.stamp.bottomLeft": "Lewy dolny",
-  "sstvTx.stamp.bottomRight": "Prawy dolny",
   "sstvTx.stamp.box.label": "Ramka",
   "sstvTx.group.picture": "Obraz",
   "sstvTx.group.text": "Tekst",
@@ -1607,7 +1603,6 @@
   "sstvTx.group.transmit": "Nadawanie",
   "sstvTx.date.label": "Data",
   "sstvTx.date.hover": "Nanosi na obraz datę UTC wysłania",
-  "sstvTx.corner.label": "Róg",
   "sstvTx.utc.label": "UTC",
   "sstvTx.time.label": "Czas",
   "sstvTx.textOn.hover": "Umieszcza twój wiersz tekstu na obrazie",
@@ -1952,5 +1947,7 @@
   "settings.map.cast.softwareSize.hover": "Bez sprzętowego kodera wideo: rozmiar wideo mapy. Większy to ostrzej i większe użycie CPU; działa od następnego uruchomienia wideo",
   "events.source.mmd": "MMD",
   "events.source.rig": "Radio",
-  "rig.event.webSerial": "{port}: otwarty bez modułu serialport, co przy otwieraniu portu na chwilę podnosi DTR i RTS i może włączyć nadawanie. Uruchom npm ci w folderze źródłowym lub zainstaluj GridTracker2 ponownie"
+  "rig.event.webSerial": "{port}: otwarty bez modułu serialport, co przy otwieraniu portu na chwilę podnosi DTR i RTS i może włączyć nadawanie. Uruchom npm ci w folderze źródłowym lub zainstaluj GridTracker2 ponownie",
+  "sstvTx.size.tiny": "Bardzo mały",
+  "sstvTx.size.smaller": "Mniejszy"
 }

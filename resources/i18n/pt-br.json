@@ -1596,10 +1596,6 @@
   "sstvTx.refresh.hover": "Captura o fundo de novo (o mapa como está agora, o arquivo de imagem lido de novo) e monta a imagem de novo",
   "sstvTx.zoom.label": "Zoom",
   "sstvTx.stamp.hover": "Marca a imagem com a hora UTC do envio",
-  "sstvTx.stamp.topLeft": "Superior esquerdo",
-  "sstvTx.stamp.topRight": "Superior direito",
-  "sstvTx.stamp.bottomLeft": "Inferior esquerdo",
-  "sstvTx.stamp.bottomRight": "Inferior direito",
   "sstvTx.stamp.box.label": "Caixa",
   "sstvTx.group.picture": "Imagem",
   "sstvTx.group.text": "Texto",
@@ -1607,7 +1603,6 @@
   "sstvTx.group.transmit": "Transmitir",
   "sstvTx.date.label": "Data",
   "sstvTx.date.hover": "Marca a imagem com a data UTC do envio",
-  "sstvTx.corner.label": "Canto",
   "sstvTx.utc.label": "UTC",
   "sstvTx.time.label": "Hora",
   "sstvTx.textOn.hover": "Coloca sua linha de texto na imagem",
@@ -1952,5 +1947,7 @@
   "settings.map.cast.softwareSize.hover": "Sem codificador de vídeo por hardware: o tamanho do vídeo do mapa. Maior é mais nítido e usa mais CPU; vale a partir do próximo início do vídeo",
   "events.source.mmd": "MMD",
   "events.source.rig": "Rádio",
-  "rig.event.webSerial": "{port}: aberta sem o módulo serialport, que ativa DTR e RTS por um instante ao abrir a porta e pode colocar o rádio em transmissão. Execute npm ci na pasta do código ou reinstale o GridTracker2"
+  "rig.event.webSerial": "{port}: aberta sem o módulo serialport, que ativa DTR e RTS por um instante ao abrir a porta e pode colocar o rádio em transmissão. Execute npm ci na pasta do código ou reinstale o GridTracker2",
+  "sstvTx.size.tiny": "Minúsculo",
+  "sstvTx.size.smaller": "Menor"
 }

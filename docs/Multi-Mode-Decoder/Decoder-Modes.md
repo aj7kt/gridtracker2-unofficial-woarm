@@ -228,7 +228,7 @@ The **Send** tab builds a picture and transmits it. The picture is shown on the 
 **Time Stamp** (tick its title to put it on the picture)
 
 * **UTC:** **Date**, **Time** or both, as they are when the picture is sent.
-* **Font**, **Corner** (**Top Left**, **Top Right**, **Bottom Left** or **Bottom Right**) and its color.
+* **Font**, and as for a line of **Text**: its color, its size (**Tiny**, **Smaller**, **Small**, **Medium**, **Large** or **Extra Large**) and its place, picked on the small grid (hover over it for a larger one over the picture). Text in the same place moves clear of it.
 * **Box:** **None**, or **Color** for a box of that color behind it.
 
 **Transmit**

@@ -1596,10 +1596,6 @@
 	"sstvTx.refresh.hover": "Riprende lo sfondo (la mappa com'è ora, il file immagine riletto) e ricompone l'immagine",
 	"sstvTx.zoom.label": "Zoom",
 	"sstvTx.stamp.hover": "Imprime sull'immagine l'ora UTC dell'invio",
-	"sstvTx.stamp.topLeft": "In alto a sinistra",
-	"sstvTx.stamp.topRight": "In alto a destra",
-	"sstvTx.stamp.bottomLeft": "In basso a sinistra",
-	"sstvTx.stamp.bottomRight": "In basso a destra",
 	"sstvTx.stamp.box.label": "Riquadro",
 	"sstvTx.group.picture": "Immagine",
 	"sstvTx.group.text": "Testo",
@@ -1607,7 +1603,6 @@
 	"sstvTx.group.transmit": "Trasmissione",
 	"sstvTx.date.label": "Data",
 	"sstvTx.date.hover": "Imprime sull'immagine la data UTC dell'invio",
-	"sstvTx.corner.label": "Angolo",
 	"sstvTx.utc.label": "UTC",
 	"sstvTx.time.label": "Ora",
 	"sstvTx.textOn.hover": "Mette la tua riga di testo sull'immagine",
@@ -1952,5 +1947,7 @@
 	"settings.map.cast.softwareSize.hover": "Senza codificatore video hardware: la dimensione del video della mappa. Più grande è più nitido e usa più CPU; vale dal prossimo avvio del video",
 	"events.source.mmd": "MMD",
 	"events.source.rig": "Radio",
-	"rig.event.webSerial": "{port}: aperta senza il modulo serialport, che alza DTR e RTS per un attimo all'apertura della porta e può mandare la radio in trasmissione. Esegui npm ci nella cartella sorgente o reinstalla GridTracker2"
+	"rig.event.webSerial": "{port}: aperta senza il modulo serialport, che alza DTR e RTS per un attimo all'apertura della porta e può mandare la radio in trasmissione. Esegui npm ci nella cartella sorgente o reinstalla GridTracker2",
+	"sstvTx.size.tiny": "Minuscolo",
+	"sstvTx.size.smaller": "Più piccolo"
 }

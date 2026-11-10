@@ -1597,10 +1597,6 @@
 	"sstvTx.refresh.hover": "Holt den Hintergrund neu (die Karte, wie sie jetzt ist; die Bilddatei neu gelesen) und erstellt das Bild neu",
 	"sstvTx.zoom.label": "Zoom",
 	"sstvTx.stamp.hover": "Setzt die UTC-Zeit des Sendens ins Bild",
-	"sstvTx.stamp.topLeft": "Oben links",
-	"sstvTx.stamp.topRight": "Oben rechts",
-	"sstvTx.stamp.bottomLeft": "Unten links",
-	"sstvTx.stamp.bottomRight": "Unten rechts",
 	"sstvTx.stamp.box.label": "Kasten",
 	"sstvTx.group.picture": "Bild",
 	"sstvTx.group.text": "Text",
@@ -1608,7 +1604,6 @@
 	"sstvTx.group.transmit": "Senden",
 	"sstvTx.date.label": "Datum",
 	"sstvTx.date.hover": "Setzt das UTC-Datum des Sendens ins Bild",
-	"sstvTx.corner.label": "Ecke",
 	"sstvTx.utc.label": "UTC",
 	"sstvTx.time.label": "Zeit",
 	"sstvTx.textOn.hover": "Setzt deine Textzeile ins Bild",
@@ -1953,5 +1948,7 @@
 	"settings.map.cast.softwareSize.hover": "Ohne Hardware-Video-Encoder: die Größe des Kartenvideos. Größer ist schärfer und braucht mehr CPU; gilt ab dem nächsten Start des Videos",
 	"events.source.mmd": "MMD",
 	"events.source.rig": "Rig",
-	"rig.event.webSerial": "{port}: ohne das serialport-Modul geöffnet, was DTR und RTS beim Öffnen kurz anhebt und das Gerät tasten kann. npm ci im Quellordner ausführen oder GridTracker2 neu installieren"
+	"rig.event.webSerial": "{port}: ohne das serialport-Modul geöffnet, was DTR und RTS beim Öffnen kurz anhebt und das Gerät tasten kann. npm ci im Quellordner ausführen oder GridTracker2 neu installieren",
+	"sstvTx.size.tiny": "Winzig",
+	"sstvTx.size.smaller": "Kleiner"
 }

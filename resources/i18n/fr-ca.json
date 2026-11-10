@@ -1596,10 +1596,6 @@
 	"sstvTx.refresh.hover": "Reprend le fond (la carte telle qu'elle est maintenant, le fichier image relu) et recompose l'image",
 	"sstvTx.zoom.label": "Zoom",
 	"sstvTx.stamp.hover": "Marque l'image de l'heure UTC de l'envoi",
-	"sstvTx.stamp.topLeft": "Haut gauche",
-	"sstvTx.stamp.topRight": "Haut droite",
-	"sstvTx.stamp.bottomLeft": "Bas gauche",
-	"sstvTx.stamp.bottomRight": "Bas droite",
 	"sstvTx.stamp.box.label": "Cadre",
 	"sstvTx.group.picture": "Image",
 	"sstvTx.group.text": "Texte",
@@ -1607,7 +1603,6 @@
 	"sstvTx.group.transmit": "Émission",
 	"sstvTx.date.label": "Date",
 	"sstvTx.date.hover": "Marque l'image de la date UTC de l'envoi",
-	"sstvTx.corner.label": "Coin",
 	"sstvTx.utc.label": "UTC",
 	"sstvTx.time.label": "Heure",
 	"sstvTx.textOn.hover": "Met votre ligne de texte sur l'image",
@@ -1952,5 +1947,7 @@
 	"settings.map.cast.softwareSize.hover": "Sans encodeur vidéo matériel : la taille de la vidéo de la carte. Plus grand est plus net et utilise plus de processeur; s'applique au prochain démarrage de la vidéo",
 	"events.source.mmd": "MMD",
 	"events.source.rig": "Poste",
-	"rig.event.webSerial": "{port} : ouvert sans le module serialport, ce qui lève DTR et RTS un instant à l'ouverture du port et peut faire passer le poste en émission. Lancez npm ci dans le dossier source, ou réinstallez GridTracker2"
+	"rig.event.webSerial": "{port} : ouvert sans le module serialport, ce qui lève DTR et RTS un instant à l'ouverture du port et peut faire passer le poste en émission. Lancez npm ci dans le dossier source, ou réinstallez GridTracker2",
+	"sstvTx.size.tiny": "Minuscule",
+	"sstvTx.size.smaller": "Plus petit"
 }

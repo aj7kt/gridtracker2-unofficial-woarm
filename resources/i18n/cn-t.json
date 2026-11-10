@@ -1598,10 +1598,6 @@
   "sstvTx.refresh.hover": "重新取得背景（目前的地圖、重新讀取圖片檔案）並重新產生圖片",
   "sstvTx.zoom.label": "縮放",
   "sstvTx.stamp.hover": "在圖片上標註傳送時的 UTC 時間",
-  "sstvTx.stamp.topLeft": "左上",
-  "sstvTx.stamp.topRight": "右上",
-  "sstvTx.stamp.bottomLeft": "左下",
-  "sstvTx.stamp.bottomRight": "右下",
   "sstvTx.stamp.box.label": "底框",
   "sstvTx.group.picture": "圖片",
   "sstvTx.group.text": "文字",
@@ -1609,7 +1605,6 @@
   "sstvTx.group.transmit": "發射",
   "sstvTx.date.label": "日期",
   "sstvTx.date.hover": "在圖片上標註傳送時的 UTC 日期",
-  "sstvTx.corner.label": "角落",
   "sstvTx.utc.label": "UTC",
   "sstvTx.time.label": "時間",
   "sstvTx.textOn.hover": "在圖片上加入你的文字行",
@@ -1954,5 +1949,7 @@
   "settings.map.cast.softwareSize.hover": "沒有硬體視訊編碼器時地圖視訊的大小。越大越清晰，佔用 CPU 越多；在下次視訊開始時生效",
   "events.source.mmd": "MMD",
   "events.source.rig": "電台",
-  "rig.event.webSerial": "{port}: 未使用 serialport 模組開啟，開啟連接埠時 DTR 和 RTS 會短暫拉高，可能使電台發射。請在原始碼資料夾中執行 npm ci，或重新安裝 GridTracker2"
+  "rig.event.webSerial": "{port}: 未使用 serialport 模組開啟，開啟連接埠時 DTR 和 RTS 會短暫拉高，可能使電台發射。請在原始碼資料夾中執行 npm ci，或重新安裝 GridTracker2",
+  "sstvTx.size.tiny": "極小",
+  "sstvTx.size.smaller": "較小"
 }

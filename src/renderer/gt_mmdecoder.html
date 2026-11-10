@@ -1663,7 +1663,7 @@
               </tr>
             </table>
           </div>
-          <!-- Time Stamp: the UTC time (and date) it is sent, in a corner, in a box or outlined -->
+          <!-- Time Stamp: the UTC time (and date) it is sent, its color, size and place as a Text line's, in a box or outlined -->
           <div class="mapGroup" id="sstvTxStampGroup">
             <div class="mapGroupTitle" style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sstvTxStampShow" style="margin: 0;" data-i18n="sstvTx.stampShow.hover" title="Puts the time stamp on the picture" /><label for="sstvTxStampShow" data-i18n="sstvTx.group.stamp">Time Stamp</label></div>
             <table>
@@ -1676,8 +1676,8 @@
                 <td><select id="sstvTxStampFont"></select></td>
               </tr>
               <tr>
-                <td class="mapRowLabel"><label for="sstvTxStampPos" data-i18n="sstvTx.corner.label">Corner</label></td>
-                <td><select id="sstvTxStampPos"><option value="topLeft" data-i18n="sstvTx.stamp.topLeft">Top Left</option><option value="topRight" data-i18n="sstvTx.stamp.topRight">Top Right</option><option value="bottomLeft" data-i18n="sstvTx.stamp.bottomLeft">Bottom Left</option><option value="bottomRight" data-i18n="sstvTx.stamp.bottomRight">Bottom Right</option></select> <input type="color" id="sstvTxStampColor" class="sstvTxGap" value="#ffffff" /></td>
+                <td class="mapRowLabel"></td>
+                <td><input type="color" id="sstvTxStampColor" value="#ffffff" /> <select id="sstvTxStampSize" class="sstvTxGap" style="width: 80px;"><option value="tiny" data-i18n="sstvTx.size.tiny">Tiny</option><option value="smaller" data-i18n="sstvTx.size.smaller">Smaller</option><option value="small" data-i18n="sstvTx.size.small">Small</option><option value="medium" data-i18n="sstvTx.size.medium">Medium</option><option value="large" data-i18n="sstvTx.size.large">Large</option><option value="xlarge" data-i18n="sstvTx.size.xlarge">Extra Large</option></select> <span id="sstvTxStampPos" class="sstvTxPlace sstvTxGap"></span></td>
               </tr>
               <tr>
                 <td class="mapRowLabel"><label for="sstvTxStampBox" data-i18n="sstvTx.stamp.box.label">Box</label></td>

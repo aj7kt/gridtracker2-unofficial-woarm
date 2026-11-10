@@ -1596,10 +1596,6 @@
   "sstvTx.refresh.hover": "Neemt de achtergrond opnieuw (de kaart zoals die nu is, het afbeeldingsbestand opnieuw gelezen) en maakt de afbeelding opnieuw",
   "sstvTx.zoom.label": "Zoom",
   "sstvTx.stamp.hover": "Zet de UTC-tijd van verzending in de afbeelding",
-  "sstvTx.stamp.topLeft": "Linksboven",
-  "sstvTx.stamp.topRight": "Rechtsboven",
-  "sstvTx.stamp.bottomLeft": "Linksonder",
-  "sstvTx.stamp.bottomRight": "Rechtsonder",
   "sstvTx.stamp.box.label": "Vak",
   "sstvTx.group.picture": "Afbeelding",
   "sstvTx.group.text": "Tekst",
@@ -1607,7 +1603,6 @@
   "sstvTx.group.transmit": "Zenden",
   "sstvTx.date.label": "Datum",
   "sstvTx.date.hover": "Zet de UTC-datum van verzending in de afbeelding",
-  "sstvTx.corner.label": "Hoek",
   "sstvTx.utc.label": "UTC",
   "sstvTx.time.label": "Tijd",
   "sstvTx.textOn.hover": "Zet je tekstregel in de afbeelding",
@@ -1952,5 +1947,7 @@
   "settings.map.cast.softwareSize.hover": "Zonder hardware-video-encoder: de grootte van de kaartvideo. Groter is scherper en gebruikt meer CPU; geldt vanaf de volgende start van de video",
   "events.source.mmd": "MMD",
   "events.source.rig": "Rig",
-  "rig.event.webSerial": "{port}: geopend zonder de serialport-module, die DTR en RTS bij het openen even hoog maakt en de rig kan laten zenden. Voer npm ci uit in de bronmap, of installeer GridTracker2 opnieuw"
+  "rig.event.webSerial": "{port}: geopend zonder de serialport-module, die DTR en RTS bij het openen even hoog maakt en de rig kan laten zenden. Voer npm ci uit in de bronmap, of installeer GridTracker2 opnieuw",
+  "sstvTx.size.tiny": "Piepklein",
+  "sstvTx.size.smaller": "Kleiner"
 }

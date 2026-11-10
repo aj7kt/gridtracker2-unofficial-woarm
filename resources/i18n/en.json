@@ -1596,10 +1596,6 @@
 	"sstvTx.refresh.hover": "Takes the background again (the map as it is now, the image file read again) and builds the picture again",
 	"sstvTx.zoom.label": "Zoom",
 	"sstvTx.stamp.hover": "Stamps the picture with the UTC time it is sent",
-	"sstvTx.stamp.topLeft": "Top Left",
-	"sstvTx.stamp.topRight": "Top Right",
-	"sstvTx.stamp.bottomLeft": "Bottom Left",
-	"sstvTx.stamp.bottomRight": "Bottom Right",
 	"sstvTx.stamp.box.label": "Box",
 	"sstvTx.group.picture": "Picture",
 	"sstvTx.group.text": "Text",
@@ -1607,7 +1603,6 @@
 	"sstvTx.group.transmit": "Transmit",
 	"sstvTx.date.label": "Date",
 	"sstvTx.date.hover": "Stamps the picture with the UTC date it is sent",
-	"sstvTx.corner.label": "Corner",
 	"sstvTx.utc.label": "UTC",
 	"sstvTx.time.label": "Time",
 	"sstvTx.textOn.hover": "Puts your line of text on the picture",
@@ -1952,5 +1947,7 @@
 	"settings.map.cast.softwareSize.hover": "Without a hardware video encoder: the size of the map's video. Bigger is sharper and uses more CPU; it takes effect the next time the video starts",
 	"events.source.mmd": "MMD",
 	"events.source.rig": "Rig",
-	"rig.event.webSerial": "{port}: opened without the serialport module, which raises DTR and RTS for a moment as the port opens and can key the rig. Run npm ci in the source folder, or reinstall GridTracker2"
+	"rig.event.webSerial": "{port}: opened without the serialport module, which raises DTR and RTS for a moment as the port opens and can key the rig. Run npm ci in the source folder, or reinstall GridTracker2",
+	"sstvTx.size.tiny": "Tiny",
+	"sstvTx.size.smaller": "Smaller"
 }

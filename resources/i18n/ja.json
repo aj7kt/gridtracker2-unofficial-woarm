@@ -1596,10 +1596,6 @@
 	"sstvTx.refresh.hover": "背景を取り直し（今の地図、画像ファイルの再読み込み）、画像を作り直します",
 	"sstvTx.zoom.label": "ズーム",
 	"sstvTx.stamp.hover": "送信時のUTC時刻を画像に入れます",
-	"sstvTx.stamp.topLeft": "左上",
-	"sstvTx.stamp.topRight": "右上",
-	"sstvTx.stamp.bottomLeft": "左下",
-	"sstvTx.stamp.bottomRight": "右下",
 	"sstvTx.stamp.box.label": "枠",
 	"sstvTx.group.picture": "画像",
 	"sstvTx.group.text": "テキスト",
@@ -1607,7 +1603,6 @@
 	"sstvTx.group.transmit": "送信",
 	"sstvTx.date.label": "日付",
 	"sstvTx.date.hover": "送信時のUTCの日付を画像に入れます",
-	"sstvTx.corner.label": "位置",
 	"sstvTx.utc.label": "UTC",
 	"sstvTx.time.label": "時刻",
 	"sstvTx.textOn.hover": "あなたのテキスト行を画像に入れます",
@@ -1952,5 +1947,7 @@
 	"settings.map.cast.softwareSize.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像のサイズです。大きいほど鮮明になり CPU を多く使います。次に映像が始まるときから適用されます",
 	"events.source.mmd": "MMD",
 	"events.source.rig": "無線機",
-	"rig.event.webSerial": "{port}: serialport モジュールなしで開きました。ポートを開くときに DTR と RTS が一瞬上がり、無線機が送信になることがあります。ソースフォルダーで npm ci を実行するか、GridTracker2 を再インストールしてください"
+	"rig.event.webSerial": "{port}: serialport モジュールなしで開きました。ポートを開くときに DTR と RTS が一瞬上がり、無線機が送信になることがあります。ソースフォルダーで npm ci を実行するか、GridTracker2 を再インストールしてください",
+	"sstvTx.size.tiny": "極小",
+	"sstvTx.size.smaller": "やや小"
 }
