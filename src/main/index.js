@@ -476,18 +476,23 @@ ipcMain.on('mapCastCaptureAllowed', () => {
   mapCast.captureAllowed = true;
 });
 
-// The main window's content size as casting makes it: the nearest 16:9 (the TV's shape) that fits its screen (as it is while maximized,
-// full screen or snapped already)
-function mapCastSnapSize(win) {
+// The main window's content size as casting makes it: the nearest 16:9 (the TV's shape) that fits its screen, or with target (the
+// video's size picked, in the screen's pixels: the software encoder's Software Resolution) that size, so the map is captured at it
+// (the biggest 16:9 that fits the screen when it's bigger). As it is while maximized, full screen or snapped already
+function mapCastSnapSize(win, target = null) {
   const [width, height] = win.getContentSize();
   if (mapCast.restoreSize || win.isMaximized() || win.isFullScreen()) return { width: width, height: height };
   const bounds = win.getBounds();
-  const area = screen.getDisplayMatching(bounds).workArea;
+  const display = screen.getDisplayMatching(bounds);
+  const area = display.workArea;
   const maxWidth = area.width - (bounds.width - width);
   const maxHeight = area.height - (bounds.height - height);
   const byWidth = { width: width, height: Math.round((width * 9) / 16) };
   const byHeight = { width: Math.round((height * 16) / 9), height: height };
   let size = Math.abs(byWidth.height - height) <= Math.abs(byHeight.width - width) ? byWidth : byHeight;
+  if (target && target.width > 0 && target.height > 0) {
+    size = { width: Math.round(target.width / display.scaleFactor), height: Math.round(target.height / display.scaleFactor) };
+  }
   if (size.width > maxWidth || size.height > maxHeight) {
     const scale = Math.min(maxWidth / size.width, maxHeight / size.height);
     size = { width: Math.floor(size.width * scale), height: Math.floor((size.width * scale * 9) / 16) };
@@ -504,8 +509,9 @@ ipcMain.handle('mapCastSize', () => {
   return { width: Math.round(size.width * scale), height: Math.round(size.height * scale) };
 });
 
-// While casting the main window's content is snapped to that size, and the size it had after (not while maximized or full screen)
-ipcMain.handle('mapCastSnap', (event, on) => {
+// While casting the main window's content is snapped to that size (target: mapCastSnapSize's), and the size it had after (not while
+// maximized or full screen)
+ipcMain.handle('mapCastSnap', (event, on, target = null) => {
   const win = allowedWindows['GridTracker2']?.window;
   if (!win || win.isMaximized() || win.isFullScreen()) return false;
   if (!on) {
@@ -514,7 +520,7 @@ ipcMain.handle('mapCastSnap', (event, on) => {
     return true;
   }
   const [width, height] = win.getContentSize();
-  const size = mapCastSnapSize(win);
+  const size = mapCastSnapSize(win, target);
   const area = screen.getDisplayMatching(win.getBounds()).workArea;
   if (!mapCast.restoreSize) mapCast.restoreSize = [width, height];
   win.setContentSize(size.width, size.height);

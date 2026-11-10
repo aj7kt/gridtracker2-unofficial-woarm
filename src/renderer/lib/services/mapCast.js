@@ -272,7 +272,10 @@ async function mapCastStart(host, name = "")
   if (!(await mapCastSupported())) return "can't cast here: no video encoder (or no Element Capture)";
   CAST.supported = true;
   const start = ++CAST.starts;
-  const snapped = await electron.ipcRenderer.invoke("mapCastSnap", true);
+  // In software the window sized to the Software Resolution, so the map is captured at it (not scaled up from a smaller window)
+  const software = mapCastUseSoftware();
+  const target = software ? mapCastSoftwareSize() : null;
+  const snapped = await electron.ipcRenderer.invoke("mapCastSnap", true, target && { width: target.width, height: target.height });
   // (stopped meanwhile: the window put back)
   if (start != CAST.starts)
   {
@@ -280,7 +283,6 @@ async function mapCastStart(host, name = "")
     return "stopped";
   }
   CAST.snapped = snapped;
-  const software = mapCastUseSoftware();
   const size = await mapCastVideoSize(software);
   if (start != CAST.starts) return "stopped";
   // (served here when Enable Casting isn't on: from the console)
