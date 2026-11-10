@@ -1957,5 +1957,13 @@
 	"settings.mmDecoder.scopeOob.hover": "How strongly what's outside the amateur bands is shaded in the warning color: 0% not at all, 100% solid",
 	"gt.button.cast.onMany.hover": "Casting to {0} (click: pick the devices)",
 	"gt.button.cast.preparingMany.hover": "Preparing the video for {0} (click: pick the devices)",
-	"cast.menu.openBrowser.label": "Open In Default Browser"
+	"cast.menu.openBrowser.label": "Open In Default Browser",
+	"settings.logging.N3FJPContest.source": "N3FJP Contest Log",
+	"settings.logging.N3FJPContest.rigControl.hover": "Clicking a spot tunes the rig to its frequency through the contest log, keeping the contest's mode. Needs rig control set up in the contest log.",
+	"settings.logging.N3FJPContest.logOthers.label": "Also Log To My Other Logs",
+	"settings.logging.N3FJPContest.logOthers.hover": "Each QSO logged in the contest log also goes to the logs and services GridTracker2 logs to, as a WSJT-X QSO does",
+	"settings.logging.N3FJPContest.connected.hover": "Connected to {0}",
+	"events.source.aclog": "AC Log",
+	"events.source.log4om": "Log4OM",
+	"events.source.n3fjp": "N3FJP Contest"
 }

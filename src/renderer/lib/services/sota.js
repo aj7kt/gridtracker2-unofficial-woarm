@@ -135,6 +135,14 @@ function sotaSummitGrid(ref)
 GT.sotaIdleIcon = new ol.style.Icon({ src: "img/sota_idle.png", scale: 0.45 });
 GT.sotaOnBandIcon = new ol.style.Icon({ src: "img/sota_on_band.png", scale: 0.45 });
 GT.sotaTargetIcon = new ol.style.Icon({ src: "img/sota_target.png", scale: 0.45 });
+// The target's, worked: the summit chased today (sotaSummitWorkedToday)
+GT.sotaWorkedIcon = new ol.style.Icon({ src: "img/sota_worked.png", scale: 0.45 });
+
+// A summit chased today (UTC), on any band or mode: a summit counts once a day for a chaser (trackQSO keeps "<day>.<summit>")
+function sotaSummitWorkedToday(ref)
+{
+  return (Math.floor(timeNowSec() / 86400) + "." + ref) in GT.tracker.worked.sota;
+}
 
 // Tooltip of a summit marker, laid out like the POTA park tooltip: for each summit it shows (several when they overlap
 // at this zoom, feature.summitGroups), a header box with the summit, where it is and what it's worth, then every spot
@@ -603,11 +611,11 @@ function processSotaSummits(data)
 // ---- Hand-logging a POTA / SOTA QSO from the Feed Roster (click a park or summit in its POTA / SOTA column,
 // roster/sotaLogDialog.js; from Matt's SOTA work). For QSOs nothing else logs (CW, SSB). Never from the Call Roster
 
-// A logging service GridTracker hands QSOs to is connected (AC Log, Log4OM; others to be added here): it logs the QSO
-// itself
+// A logging service GridTracker hands QSOs to is connected (AC Log, Log4OM, an N3FJP contest log; others to be added
+// here): it logs the QSO itself
 function loggingServiceConnected()
 {
-  return acLogCanWork(null) || log4OMCanWork(null);
+  return acLogCanWork(null) || log4OMCanWork(null) || n3fjpContestCanWork(null);
 }
 
 // A Feed Roster spot's park (not the "?-????" of an unknown one), or ""

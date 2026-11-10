@@ -85,6 +85,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/mapCast.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
+  <script src="./lib/qso/n3fjpContest.js" type="text/javascript"></script>
   <script src="./lib/map/tropo.js" type="text/javascript"></script>
   <script src="./lib/wsjtxUdp.js" type="text/javascript"></script>
   <script src="./lib/wsjtx.js" type="text/javascript"></script>
@@ -2200,6 +2201,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <br />
                   <input type="checkbox" id="acLogRigControlCheckbox" onclick="acLogLoggerChanged()" />
                   <label data-i18n="settings.logging.N3FJP.rigControl.label" for="acLogRigControlCheckbox">Enable Rig Control</label>
+                </span>
+              </td>
+            </tr>
+            <!-- Any of N3FJP's contest logs, on a port of its own (n3fjpContest.js): spots clicked go to it, its QSOs come back -->
+            <tr>
+              <td class="mapName" data-i18n="settings.logging.N3FJPContest.source">N3FJP Contest Log</td>
+              <td class="mapCenter"><input type="checkbox" id="n3fjpContestConnectCheckbox" onclick="ValidateIPaddress(n3fjpContestIpInput,this); ValidatePort(n3fjpContestPortInput,this, null); n3fjpContestLoggerChanged();" /><span id="n3fjpContestConnectStatus"></span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td class="mapAddr">
+                <label class="mapSrOnly" data-i18n="settings.logging.N3FJP.details.IP" for="n3fjpContestIpInput">IP</label>
+                <input id="n3fjpContestIpInput" type="text" class="inputTextValue" maxlength="15" size="11" onkeypress='return validIpKeys(event.charCode);' oninput="ValidateIPaddress(this,n3fjpContestConnectCheckbox); n3fjpContestLoggerChanged();" />
+                <label class="mapSrOnly" data-i18n="settings.logging.N3FJP.details.Port" for="n3fjpContestPortInput">Port</label>
+                <input id="n3fjpContestPortInput" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress='return validNumberKeys(event.charCode);' oninput="ValidatePort(this,n3fjpContestConnectCheckbox, null); n3fjpContestLoggerChanged();" />
+                <!-- Shown while Connect is ticked (adif.js, loaders.js) -->
+                <span id="n3fjpContestOptionsSpan">
+                  <br />
+                  <span data-i18n="settings.logging.N3FJPContest.rigControl.hover" title="Clicking a spot tunes the rig to its frequency through the contest log, keeping the contest's mode. Needs rig control set up in the contest log.">
+                    <input type="checkbox" id="n3fjpContestRigControlCheckbox" onclick="n3fjpContestLoggerChanged()" />
+                    <label data-i18n="settings.logging.N3FJP.rigControl.label" for="n3fjpContestRigControlCheckbox">Enable Rig Control</label>
+                  </span>
+                  <br />
+                  <span data-i18n="settings.logging.N3FJPContest.logOthers.hover" title="Each QSO logged in the contest log also goes to the logs and services GridTracker2 logs to, as a WSJT-X QSO does">
+                    <input type="checkbox" id="n3fjpContestLogOthersCheckbox" onclick="n3fjpContestLoggerChanged()" />
+                    <label data-i18n="settings.logging.N3FJPContest.logOthers.label" for="n3fjpContestLogOthersCheckbox">Also Log To My Other Logs</label>
+                  </span>
                 </span>
               </td>
             </tr>

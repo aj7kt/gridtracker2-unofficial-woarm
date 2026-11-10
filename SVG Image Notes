@@ -129,6 +129,35 @@
   </g>
 </svg>
 
+<!-- feed_worked.png (64x64): a DX Feeds spot worked (its call on its band and mode), with a rig on its band and mode: the target's
+     triangle in a solid, lightly filled box, and a check mark -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bounding box, solid: worked -->
+  <rect x="5" y="5" width="90" height="90" fill="#00b347" fill-opacity="0.25" stroke="#00b347" stroke-width="5" />
+  <!-- Inner triangle, as the target's -->
+  <polygon points="50,16.7 14.9,87 85.1,87" fill="#00FF66" fill-opacity="0.5" stroke="#00b347" stroke-width="6" />
+  <!-- Check mark, white on a dark outline -->
+  <polyline points="29,57 44,73 74,35" fill="none" stroke="#000000" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" />
+  <polyline points="29,57 44,73 74,35" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+
+<!-- sota_worked.png (64x64): a summit worked today, with a rig on its band and mode: the target's mountain in a solid, lightly filled
+     box, and a check mark -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bounding box, solid: worked -->
+  <rect x="5" y="5" width="90" height="90" fill="#E67300" fill-opacity="0.25" stroke="#E67300" stroke-width="5" />
+  <g transform="translate(13.1,13.1) scale(0.738)">
+    <!-- Double peak, snow caps and outline, as the target's -->
+    <polygon points="8,85 40,15 55,45 68,32 92,85" fill="#FFA500" fill-opacity="0.6" />
+    <polygon points="40,15 24.9,48 30,43 35,50 41,42 47,47 55,45" fill="#FFFFFF" />
+    <polygon points="68,32 55,45 59,44 63,49 68,45 72,50 76.2,50" fill="#FFFFFF" />
+    <polygon points="8,85 40,15 55,45 68,32 92,85" fill="none" stroke="#E67300" stroke-width="8.1" stroke-linejoin="round" />
+  </g>
+  <!-- Check mark, white on a dark outline -->
+  <polyline points="29,57 44,73 74,35" fill="none" stroke="#000000" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" />
+  <polyline points="29,57 44,73 74,35" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+
 <!-- flag_gt_user.png (92x80, drawn at scale 0.25 so it stays sharp on high-DPI screens): a GridTracker user on the map -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 20" width="92" height="80">
   <!-- Drawn on the original 23x20 flag's grid, all of it 2 units left so the pennant's point has room at the right (the

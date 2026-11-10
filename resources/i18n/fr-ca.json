@@ -1957,5 +1957,13 @@
 	"settings.mmDecoder.scopeOob.hover": "L'intensité de l'ombrage, dans la couleur d'avertissement, de ce qui est hors des bandes amateur : 0 % aucun, 100 % opaque",
 	"gt.button.cast.onMany.hover": "Diffusion vers {0} (clic : choisir les appareils)",
 	"gt.button.cast.preparingMany.hover": "Préparation de la vidéo pour {0} (clic : choisir les appareils)",
-	"cast.menu.openBrowser.label": "Ouvrir Dans Le Navigateur Par Défaut"
+	"cast.menu.openBrowser.label": "Ouvrir Dans Le Navigateur Par Défaut",
+	"settings.logging.N3FJPContest.source": "Log De Concours N3FJP",
+	"settings.logging.N3FJPContest.rigControl.hover": "Un clic sur un spot accorde la radio sur sa fréquence par le log de concours, en gardant le mode du concours. Il faut que le contrôle de la radio soit configuré dans le log de concours.",
+	"settings.logging.N3FJPContest.logOthers.label": "Enregistrer Aussi Dans Mes Autres Logs",
+	"settings.logging.N3FJPContest.logOthers.hover": "Chaque QSO enregistré dans le log de concours va aussi aux logs et services où GridTracker2 enregistre, comme un QSO de WSJT-X",
+	"settings.logging.N3FJPContest.connected.hover": "Connecté à {0}",
+	"events.source.aclog": "AC Log",
+	"events.source.log4om": "Log4OM",
+	"events.source.n3fjp": "N3FJP Concours"
 }

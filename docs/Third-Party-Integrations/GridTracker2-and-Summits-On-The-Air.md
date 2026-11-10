@@ -29,6 +29,7 @@ In Settings → Audio Alerts → Feed Roster, choose alerts for **Wanted Feed Su
 The **SOTA** button shows or hides summits on the map. Each summit with activators has one marker, a snow-capped double peak:
 
 * ![](../img/markers/sota_target.png){width=24px} a radio is on the spot's band and mode;
+* ![](../img/markers/sota_worked.png){width=24px} a radio is on the spot's band and mode, and you've worked the summit today (UTC), on any band or mode: a summit counts once a day for a chaser;
 * ![](../img/markers/sota_on_band.png){width=24px} a radio is on the spot's band, in another mode;
 * ![](../img/markers/sota_idle.png){width=24px} no radio is on the spot's band.
 

@@ -59,3 +59,24 @@ When you click a callsign in the Feed Roster, or a POTA, SOTA or DX Feeds marker
 ```{tip}
 To have parks and summits filled in automatically, open AC Log's Other field settings and title one field `POTA_REF` and another `SOTA_REF`. GridTracker2 notices the titles when it connects, and when you change them.
 ```
+
+## N3FJP Contest Logs
+
+GridTracker2 can also connect to any of N3FJP's contest logs (CQ WW, CQ WPX, Field Day, NAQP, the State QSO Parties and the others) alongside AC Log. While you chase stations from the Feed Roster during a contest, the spots go to the contest log, and your contest QSOs come back to GridTracker2. AC Log stays your logbook.
+
+In the contest log, open **Settings → Application Program Interface (API)...**, tick **TCP API Enabled (server)**, and give it a **Port** of its own: AC Log already uses 1100, so use 1101, for example. In the contest log's **Settings → Setup**, pick the contest mode you're working (SSB, CW or RTTY).
+
+In [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab), on the **N3FJP Contest Log** row of the **Logging Programs** box, enter the contest log's **IP** and **Port**, and tick **Connect**. A dot next to it shows green while connected, red while not; hover over it to see which contest log answered. Two more choices show while Connect is ticked:
+
+* **Enable Rig Control:** clicking a spot tunes your rig to its frequency through the contest log. The contest's mode is kept. Needs rig control set up in the contest log.
+* **Also Log To My Other Logs:** each QSO logged in the contest log also goes to the logs and services GridTracker2 logs to (AC Log, QRZ.com, LoTW and the others you have on), as a WSJT-X QSO does. Off unless you tick it.
+
+With **Connect** ticked:
+
+* The contest log becomes one of your radios: its frequency, band and mode show at the top of the side panel.
+* When you click a callsign in the Feed Roster, or a POTA, SOTA or DX Feeds marker on the map, and no WSJT-X or JTDX is already on that spot's band and mode, the contest log gets the spot, ahead of AC Log. Its entry is cleared and filled with the call, and it fills in the country, zone and reports itself. Nothing else is written: a contest log keeps its hidden fields from one QSO to the next.
+* Each QSO you log in the contest log is added to GridTracker2 at once, so the station shows as worked in the Feed Roster and on the map. It's also written to GridTracker2's backup log when that's on.
+
+```{note}
+A contest log refuses a QSO in another mode than its contest's: it shows an "Incorrect Mode" message until you click **OK**. GridTracker2 never changes the contest log's mode, so pick the contest mode you're working in its Setup.
+```

@@ -288,6 +288,7 @@ Logging programs on this or another computer, each with its **IP** address and *
 * **ADIF UDP / N1MM:** sends each QSO as ADIF over UDP, for N1MM Logger+, HRD Logbook 6.9 and later, and other programs that accept it.
 * **Log4OM:** **Connect** links to Log4OM's remote control. With **Enable Rig Control** on, clicking a spot also tunes your rig through Log4OM. See [Log4OM](../Third-Party-Integrations/Log4OM-Integration.md).
 * **N3FJP Loggers:** AC Log and the other N3FJP loggers. **QSL By** picks which confirmation counts as a QSL. With **Enable Rig Control** on, clicking a spot tunes your rig through AC Log. See [N3FJP AC Log](../Third-Party-Integrations/N3FJP-AC-Log-Integration.md).
+* **N3FJP Contest Log:** any of N3FJP's contest logs, on a port of its own. While **Connect** is ticked, clicking a spot sends it to the contest log (with **Enable Rig Control**, it tunes your rig there too), and each QSO logged in it is added to GridTracker2. **Also Log To My Other Logs** sends those QSOs on to your other logs and services as well. See [N3FJP Contest Logs](../Third-Party-Integrations/N3FJP-AC-Log-Integration.md#n3fjp-contest-logs).
 * **DXKeeper:** DXLab's logbook.
 * **HRD Logbook <= v6.8.x:** older versions of Ham Radio Deluxe's logbook. For version 6.9 and later use ADIF UDP / N1MM.
 

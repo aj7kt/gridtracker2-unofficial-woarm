@@ -1957,5 +1957,13 @@
   "settings.mmDecoder.scopeOob.hover": "Jak mocno w kolorze ostrzeżenia cieniowane jest to, co leży poza pasmami amatorskimi: 0% wcale, 100% pełne",
   "gt.button.cast.onMany.hover": "Przesyłanie do {0} (kliknij: wybierz urządzenia)",
   "gt.button.cast.preparingMany.hover": "Przygotowywanie wideo dla {0} (kliknij: wybierz urządzenia)",
-  "cast.menu.openBrowser.label": "Otwórz W Domyślnej Przeglądarce"
+  "cast.menu.openBrowser.label": "Otwórz W Domyślnej Przeglądarce",
+  "settings.logging.N3FJPContest.source": "Log Zawodów N3FJP",
+  "settings.logging.N3FJPContest.rigControl.hover": "Kliknięcie spotu stroi radio na jego częstotliwość przez log zawodów, zachowując emisję zawodów. Wymaga skonfigurowanego sterowania radiem w logu zawodów.",
+  "settings.logging.N3FJPContest.logOthers.label": "Zapisuj Też W Moich Innych Logach",
+  "settings.logging.N3FJPContest.logOthers.hover": "Każde QSO zapisane w logu zawodów trafia też do logów i usług, do których zapisuje GridTracker2, jak QSO z WSJT-X",
+  "settings.logging.N3FJPContest.connected.hover": "Połączono z {0}",
+  "events.source.aclog": "AC Log",
+  "events.source.log4om": "Log4OM",
+  "events.source.n3fjp": "N3FJP Zawody"
 }

@@ -1957,5 +1957,13 @@
 	"settings.mmDecoder.scopeOob.hover": "アマチュアバンド外を警告色でどれだけ濃く網掛けするか：0% なし、100% 塗りつぶし",
 	"gt.button.cast.onMany.hover": "{0} にキャスト中（クリック：デバイスを選ぶ）",
 	"gt.button.cast.preparingMany.hover": "{0} 用の動画を準備中（クリック：デバイスを選ぶ）",
-	"cast.menu.openBrowser.label": "既定のブラウザーで開く"
+	"cast.menu.openBrowser.label": "既定のブラウザーで開く",
+	"settings.logging.N3FJPContest.source": "N3FJP コンテストログ",
+	"settings.logging.N3FJPContest.rigControl.hover": "スポットをクリックすると、コンテストログを通じて無線機をその周波数に合わせます（コンテストのモードはそのまま）。コンテストログでリグ制御の設定が必要です。",
+	"settings.logging.N3FJPContest.logOthers.label": "他のログにも記録",
+	"settings.logging.N3FJPContest.logOthers.hover": "コンテストログに記録した各 QSO も、WSJT-X の QSO と同じく、GridTracker2 が記録するログやサービスに送られます",
+	"settings.logging.N3FJPContest.connected.hover": "{0} に接続中",
+	"events.source.aclog": "AC Log",
+	"events.source.log4om": "Log4OM",
+	"events.source.n3fjp": "N3FJP コンテスト"
 }

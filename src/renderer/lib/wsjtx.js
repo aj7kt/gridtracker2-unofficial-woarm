@@ -15,6 +15,17 @@ const REGEX_GRID_4 = /^[A-R]{2}[0-9]{2}$/;
 
 // ---- Status and rig selection ----
 
+// The Event Viewer's source for an instance (events.source.<source>): the Multi-Mode Decoder's, a logger's (AC Log, Log4OM, an
+// N3FJP contest log), else WSJT-X (WSJT-X, JTDX and the like)
+function eventSourceOfInstance(id)
+{
+  if (id == MMD_INSTANCE_ID) return "mmd";
+  if (id == GT.acLogInstanceId) return "aclog";
+  if (id == GT.log4OMInstanceId) return "log4om";
+  if (id == GT.n3fjpContestInstanceId) return "n3fjp";
+  return "wsjtx";
+}
+
 function handleInstanceStatus(newMessage)
 {
   if (GT.ignoreMessages == 1) return;
@@ -167,8 +178,8 @@ function handleInstanceStatus(newMessage)
       redrawPins();
 
       let msg = "<span style='color:var(--gt-band)'>" + GT.settings.app.myBand + "</span> / <span style='color:var(--gt-mode)'>" + GT.settings.app.myMode + "</span>";
-      // Said as the Multi-Mode Decoder's when its instance is the active one (services/mmDecoder.js)
-      addEvent(newMessage.instance == MMD_INSTANCE_ID ? "mmd" : "wsjtx", msg);
+      // Said as the instance's own: the Multi-Mode Decoder's (services/mmDecoder.js), a logger's, else WSJT-X's
+      addEvent(eventSourceOfInstance(newMessage.instance), msg);
       ackAlerts();
 
       GT.startingUp = false;

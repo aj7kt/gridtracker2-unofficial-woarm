@@ -336,6 +336,8 @@ function leftClickPota(feature)
   {
     const callObj = potaSpotCallObj(spot, key);
     const instance = feedSpotInstance(callObj);
+    // A connected N3FJP Contest Log comes before the loggers (as workFeedCallObj): it takes the first spot no WSJT-X / JTDX is on
+    if (n3fjpContestCanWork(callObj) && (instance == null || isLoggerInstance(instance))) continue;
     if (instance == GT.acLogInstanceId)
     {
       acLogWorkSpot(callObj);
@@ -356,7 +358,8 @@ function leftClickPota(feature)
   // Otherwise the first spot the tooltip lists: through a connected AC Log, else Log4OM, else Gen Msgs on the active
   // WSJT-X / JTDX (as DX Feeds and SOTA markers do)
   const first = potaSpotCallObj(spots[0].spot, spots[0].key);
-  if (acLogCanWork(first)) acLogWorkSpot(first);
+  if (n3fjpContestCanWork(first)) n3fjpContestWorkSpot(first);
+  else if (acLogCanWork(first)) acLogWorkSpot(first);
   else if (log4OMCanWork(first)) log4OMWorkSpot(first);
   else setCallAndGrid(first.DEcall, first.grid, null);
 }

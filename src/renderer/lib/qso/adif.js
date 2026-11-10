@@ -1654,6 +1654,43 @@ function sendToLogger(ADIF)
   finishSendingReport(record);
 }
 
+// A QSO (report: its ADIF record, as text) to GridTracker's backup log, when that's on (Settings -> Logging): the file named
+// by its station call and grid. From finishSendingReport, and the N3FJP Contest Log's QSOs (n3fjpContest.js)
+function writeBackupLogQso(report, record)
+{
+  try
+  {
+    // Log worthy
+    if (logGTqsoCheckBox.checked == true)
+    {
+      let logNameArray = ["GridTracker2"];
+      if ("STATION_CALLSIGN" in record)
+      {
+        logNameArray.push(record["STATION_CALLSIGN"].replaceAll("/", "_"));
+      }
+      if ("MY_GRIDSQUARE" in record)
+      {
+        logNameArray.push(record["MY_GRIDSQUARE"].substring(0, 4));
+      }
+      let filename = logNameArray.filter((part) => part.length > 0).join("_") + ".adif";
+      let fullPath = path.join(GT.qsoBackupDir, filename);
+
+      if (!fs.existsSync(fullPath))
+      {
+        fs.writeFileSync(fullPath, backupAdifHeader);
+      }
+
+      fs.appendFileSync(fullPath, report + "\r\n", { flush: true });
+      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedBackup") + "</font>");
+    }
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionBackup") + "</font>");
+    console.error(e);
+  }
+}
+
 function finishSendingReport(record)
 {
   let report = "";
@@ -1734,37 +1771,7 @@ function finishSendingReport(record)
     {
       addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionInternal") + "</font>");
     }
-    try
-    {
-      // Log worthy
-      if (logGTqsoCheckBox.checked == true)
-      {
-        let logNameArray = ["GridTracker2"];
-        if (callsignFile.length > 0)
-        {
-          logNameArray.push(callsignFile);
-        }
-        if (gridFile.length > 0)
-        {
-          logNameArray.push(gridFile);
-        }
-        let filename = logNameArray.join("_") + ".adif";
-        let fullPath = path.join(GT.qsoBackupDir, filename);
-
-        if (!fs.existsSync(fullPath))
-        {
-          fs.writeFileSync(fullPath, backupAdifHeader);
-        }
-
-        fs.appendFileSync(fullPath, report + "\r\n", { flush: true });
-        addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedBackup") + "</font>");
-      }
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionBackup") + "</font>");
-      console.error(e);
-    }
+    writeBackupLogQso(report, record);
 
     try
     {
@@ -2195,6 +2202,22 @@ function log4OMLoggerChanged()
   }
   log4OMRigControlSpan.style.display = GT.settings.log4OM.connect ? "" : "none";
   updateLog4OMConnectStatus();
+}
+
+// N3FJP Contest Log (n3fjpContest.js): connectToN3fjpContest opens or closes it on its next tick
+function n3fjpContestLoggerChanged()
+{
+  GT.settings.n3fjpContest.ip = n3fjpContestIpInput.value;
+  GT.settings.n3fjpContest.port = n3fjpContestPortInput.value;
+  GT.settings.n3fjpContest.connect = n3fjpContestConnectCheckbox.checked;
+  GT.settings.n3fjpContest.logOthers = n3fjpContestLogOthersCheckbox.checked;
+  if (GT.settings.n3fjpContest.rigControl != n3fjpContestRigControlCheckbox.checked)
+  {
+    GT.settings.n3fjpContest.rigControl = n3fjpContestRigControlCheckbox.checked;
+    goProcessRoster();
+  }
+  n3fjpContestOptionsSpan.style.display = GT.settings.n3fjpContest.connect ? "" : "none";
+  updateN3fjpContestConnectStatus();
 }
 
 function acLogLoggerChanged()

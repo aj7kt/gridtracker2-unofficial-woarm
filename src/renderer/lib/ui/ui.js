@@ -263,6 +263,7 @@ function displayTime()
   checkAdifBroadcastListener();
   connectToAcLogAPI();
   connectToLog4OM();
+  connectToN3fjpContest();
 
   if (GT.timeNow % 22 == 0)
   {

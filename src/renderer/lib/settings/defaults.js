@@ -21,6 +21,7 @@ const validSettings = [
   "currentVersion",
   "dxkLog",
   "log4OM",
+  "n3fjpContest",
   "mapMemory",
   "map",
   "msg",
@@ -500,6 +501,15 @@ const def_settings = {
     qsl: "A",
     connect: false,
     rigControl: false
+  },
+  // N3FJP Contest Log (n3fjpContest.js): Connect, its API's address and port (AC Log keeps 1100), Enable Rig Control, and
+  // Also Log To My Other Logs (its QSOs to the logs and services GridTracker logs to)
+  n3fjpContest: {
+    connect: false,
+    ip: "127.0.0.1",
+    port: 1101,
+    rigControl: false,
+    logOthers: false
   },
   trustedQsl: {
     stationFile: "",

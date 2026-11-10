@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Cast to one TV or to several at once; GridTracker2 remembers them and casts to them again at the next start
   - A number on the Cast button shows how many are watching
   - The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too
+- DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call on that band and mode (DX Feeds), or worked that summit today (SOTA)
 - Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)
 - The Kp button now grows smoothly under the mouse, like the other buttons
 
@@ -56,6 +57,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 #### App
 
+- New N3FJP Contest Log (Settings, Logging): chase stations from the Feed Roster during a contest with any of N3FJP's contest logs (CQ WW, WPX, Field Day, NAQP, the State QSO Parties and more), alongside AC Log
+  - A spot you click goes to the contest log (with Enable Rig Control, your rig is tuned there too), and each QSO you log there shows as worked in GridTracker2 at once
+  - Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to
 - Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
 - Settings, Audio: Device is now called Output Device
@@ -80,6 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too</li>
     </ul>
   </li>
+  <li>DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call on that band and mode (DX Feeds), or worked that summit today (SOTA)</li>
   <li>Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)</li>
   <li>The Kp button now grows smoothly under the mouse, like the other buttons</li>
 </ul>
@@ -126,6 +131,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 </ul>
 <h4>App</h4>
 <ul>
+  <li>New N3FJP Contest Log (Settings, Logging): chase stations from the Feed Roster during a contest with any of N3FJP's contest logs (CQ WW, WPX, Field Day, NAQP, the State QSO Parties and more), alongside AC Log
+    <ul>
+      <li>A spot you click goes to the contest log (with Enable Rig Control, your rig is tuned there too), and each QSO you log there shows as worked in GridTracker2 at once</li>
+      <li>Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to</li>
+    </ul>
+  </li>
   <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio</li>
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
   <li>Settings, Audio: Device is now called Output Device</li>

@@ -49,11 +49,11 @@ function log4OMSend(name, fields = {})
   }
 }
 
-// A logger's own instance (AC Log, Log4OM), not a WSJT-X / JTDX: the status bar says CONNECTED for it, and it may have
-// no frequency (no rig)
+// A logger's own instance (AC Log, Log4OM, an N3FJP contest log), not a WSJT-X / JTDX: the status bar says CONNECTED for
+// it, and it may have no frequency (no rig)
 function isLoggerInstance(id)
 {
-  return id == GT.acLogInstanceId || id == GT.log4OMInstanceId;
+  return id == GT.acLogInstanceId || id == GT.log4OMInstanceId || id == GT.n3fjpContestInstanceId;
 }
 
 // Log4OM answered within the last LOG4OM_ALIVE_SECONDS

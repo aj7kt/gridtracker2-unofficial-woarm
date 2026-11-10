@@ -536,13 +536,21 @@
 <td><p><a class="reference internal" href="_images/feed_on_band.png"><img alt="" src="_images/feed_on_band.png" style="width: 24px;" /></a> A radio is on the spot’s band, in another mode</p></td>
 <td><p><a class="reference internal" href="_images/feed_idle.png"><img alt="" src="_images/feed_idle.png" style="width: 24px;" /></a> No radio is on the spot’s band</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>SOTA</strong></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/feed_worked.png"><img alt="" src="_images/feed_worked.png" style="width: 24px;" /></a> A radio is on the spot’s band and mode, and you’ve worked that call on this band and mode</p></td>
 <td><p></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/sota_target.png"><img alt="" src="_images/sota_target.png" style="width: 24px;" /></a> A radio is on the spot’s band and mode</p></td>
+<tr class="row-odd"><td><p><strong>SOTA</strong></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/sota_target.png"><img alt="" src="_images/sota_target.png" style="width: 24px;" /></a> A radio is on the spot’s band and mode</p></td>
 <td><p><a class="reference internal" href="_images/sota_on_band.png"><img alt="" src="_images/sota_on_band.png" style="width: 24px;" /></a> A radio is on the spot’s band, in another mode</p></td>
 <td><p><a class="reference internal" href="_images/sota_idle.png"><img alt="" src="_images/sota_idle.png" style="width: 24px;" /></a> No radio is on the spot’s band</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/sota_worked.png"><img alt="" src="_images/sota_worked.png" style="width: 24px;" /></a> A radio is on the spot’s band and mode, and you’ve worked the summit today</p></td>
+<td><p></p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><strong>POTA</strong></p></td>
 <td><p></p></td>
@@ -1274,6 +1282,7 @@
 <li><p><strong>ADIF UDP / N1MM:</strong> sends each QSO as ADIF over UDP, for N1MM Logger+, HRD Logbook 6.9 and later, and other programs that accept it.</p></li>
 <li><p><strong>Log4OM:</strong> <strong>Connect</strong> links to Log4OM’s remote control. With <strong>Enable Rig Control</strong> on, clicking a spot also tunes your rig through Log4OM. See <a class="reference internal" href="#document-Third-Party-Integrations/Log4OM-Integration"><span class="std std-doc">Log4OM</span></a>.</p></li>
 <li><p><strong>N3FJP Loggers:</strong> AC Log and the other N3FJP loggers. <strong>QSL By</strong> picks which confirmation counts as a QSL. With <strong>Enable Rig Control</strong> on, clicking a spot tunes your rig through AC Log. See <a class="reference internal" href="#document-Third-Party-Integrations/N3FJP-AC-Log-Integration"><span class="std std-doc">N3FJP AC Log</span></a>.</p></li>
+<li><p><strong>N3FJP Contest Log:</strong> any of N3FJP’s contest logs, on a port of its own. While <strong>Connect</strong> is ticked, clicking a spot sends it to the contest log (with <strong>Enable Rig Control</strong>, it tunes your rig there too), and each QSO logged in it is added to GridTracker2. <strong>Also Log To My Other Logs</strong> sends those QSOs on to your other logs and services as well. See <a class="reference internal" href="#document-Third-Party-Integrations/N3FJP-AC-Log-Integration#n3fjp-contest-logs"><span class="std std-ref">N3FJP Contest Logs</span></a>.</p></li>
 <li><p><strong>DXKeeper:</strong> DXLab’s logbook.</p></li>
 <li><p><strong>HRD Logbook &lt;= v6.8.x:</strong> older versions of Ham Radio Deluxe’s logbook. For version 6.9 and later use ADIF UDP / N1MM.</p></li>
 </ul>
@@ -1889,6 +1898,7 @@
 <p>Click the <strong>DX Feed Spots</strong> button to show the spots on the map. The markers show all bands, following only the Map View Filters and the Modes and Bands in Settings → Feeds:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="_images/feed_target.png"><img alt="" src="_images/feed_target.png" style="width: 20px;" /></a> green target: a radio is on the spot’s band and mode;</p></li>
+<li><p><a class="reference internal" href="_images/feed_worked.png"><img alt="" src="_images/feed_worked.png" style="width: 20px;" /></a> green check: a radio is on the spot’s band and mode, and you’ve already worked that call on this band and mode (as the roster shows it worked);</p></li>
 <li><p><a class="reference internal" href="_images/feed_on_band.png"><img alt="" src="_images/feed_on_band.png" style="width: 20px;" /></a> teal triangle: a radio is on the spot’s band, in another mode;</p></li>
 <li><p><a class="reference internal" href="_images/feed_idle.png"><img alt="" src="_images/feed_idle.png" style="width: 20px;" /></a> gray triangle: no radio is on the spot’s band.</p></li>
 </ul>
@@ -2022,6 +2032,7 @@
 <p>The <strong>SOTA</strong> button shows or hides summits on the map. Each summit with activators has one marker, a snow-capped double peak:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="_images/sota_target.png"><img alt="" src="_images/sota_target.png" style="width: 24px;" /></a> a radio is on the spot’s band and mode;</p></li>
+<li><p><a class="reference internal" href="_images/sota_worked.png"><img alt="" src="_images/sota_worked.png" style="width: 24px;" /></a> a radio is on the spot’s band and mode, and you’ve worked the summit today (UTC), on any band or mode: a summit counts once a day for a chaser;</p></li>
 <li><p><a class="reference internal" href="_images/sota_on_band.png"><img alt="" src="_images/sota_on_band.png" style="width: 24px;" /></a> a radio is on the spot’s band, in another mode;</p></li>
 <li><p><a class="reference internal" href="_images/sota_idle.png"><img alt="" src="_images/sota_idle.png" style="width: 24px;" /></a> no radio is on the spot’s band.</p></li>
 </ul>
@@ -3805,6 +3816,26 @@
 <p>To have parks and summits filled in automatically, open AC Log’s Other field settings and title one field <code class="docutils literal notranslate"><span class="pre">POTA_REF</span></code> and another <code class="docutils literal notranslate"><span class="pre">SOTA_REF</span></code>. GridTracker2 notices the titles when it connects, and when you change them.</p>
 </div>
 </section>
+</section>
+<section id="n3fjp-contest-logs">
+<h3>N3FJP Contest Logs<a class="headerlink" href="#n3fjp-contest-logs" title="Link to this heading">¶</a></h3>
+<p>GridTracker2 can also connect to any of N3FJP’s contest logs (CQ WW, CQ WPX, Field Day, NAQP, the State QSO Parties and the others) alongside AC Log. While you chase stations from the Feed Roster during a contest, the spots go to the contest log, and your contest QSOs come back to GridTracker2. AC Log stays your logbook.</p>
+<p>In the contest log, open <strong>Settings → Application Program Interface (API)…</strong>, tick <strong>TCP API Enabled (server)</strong>, and give it a <strong>Port</strong> of its own: AC Log already uses 1100, so use 1101, for example. In the contest log’s <strong>Settings → Setup</strong>, pick the contest mode you’re working (SSB, CW or RTTY).</p>
+<p>In <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#logging-tab"><span class="std std-ref">Settings → Logging</span></a>, on the <strong>N3FJP Contest Log</strong> row of the <strong>Logging Programs</strong> box, enter the contest log’s <strong>IP</strong> and <strong>Port</strong>, and tick <strong>Connect</strong>. A dot next to it shows green while connected, red while not; hover over it to see which contest log answered. Two more choices show while Connect is ticked:</p>
+<ul class="simple">
+<li><p><strong>Enable Rig Control:</strong> clicking a spot tunes your rig to its frequency through the contest log. The contest’s mode is kept. Needs rig control set up in the contest log.</p></li>
+<li><p><strong>Also Log To My Other Logs:</strong> each QSO logged in the contest log also goes to the logs and services GridTracker2 logs to (AC Log, QRZ.com, LoTW and the others you have on), as a WSJT-X QSO does. Off unless you tick it.</p></li>
+</ul>
+<p>With <strong>Connect</strong> ticked:</p>
+<ul class="simple">
+<li><p>The contest log becomes one of your radios: its frequency, band and mode show at the top of the side panel.</p></li>
+<li><p>When you click a callsign in the Feed Roster, or a POTA, SOTA or DX Feeds marker on the map, and no WSJT-X or JTDX is already on that spot’s band and mode, the contest log gets the spot, ahead of AC Log. Its entry is cleared and filled with the call, and it fills in the country, zone and reports itself. Nothing else is written: a contest log keeps its hidden fields from one QSO to the next.</p></li>
+<li><p>Each QSO you log in the contest log is added to GridTracker2 at once, so the station shows as worked in the Feed Roster and on the map. It’s also written to GridTracker2’s backup log when that’s on.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A contest log refuses a QSO in another mode than its contest’s: it shows an “Incorrect Mode” message until you click <strong>OK</strong>. GridTracker2 never changes the contest log’s mode, so pick the contest mode you’re working in its Setup.</p>
+</div>
 </section>
 </section>
 <span id="document-Third-Party-Integrations/Log4OM-Integration"></span><section id="log4om">

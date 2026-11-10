@@ -64,6 +64,16 @@ function loadViewSettings()
   log4OMRigControlSpan.style.display = GT.settings.log4OM.connect ? "" : "none";
   updateLog4OMConnectStatus();
 
+  n3fjpContestIpInput.value = GT.settings.n3fjpContest.ip;
+  n3fjpContestPortInput.value = GT.settings.n3fjpContest.port;
+  n3fjpContestConnectCheckbox.checked = GT.settings.n3fjpContest.connect;
+  n3fjpContestRigControlCheckbox.checked = GT.settings.n3fjpContest.rigControl;
+  n3fjpContestLogOthersCheckbox.checked = GT.settings.n3fjpContest.logOthers;
+  n3fjpContestOptionsSpan.style.display = GT.settings.n3fjpContest.connect ? "" : "none";
+  ValidatePort(n3fjpContestPortInput, null, null);
+  ValidateIPaddress(n3fjpContestIpInput, null);
+  updateN3fjpContestConnectStatus();
+
   acLogIpInput.value = GT.settings.acLog.ip;
   acLogPortInput.value = GT.settings.acLog.port;
   acLogCheckbox.checked = GT.settings.acLog.enable;
