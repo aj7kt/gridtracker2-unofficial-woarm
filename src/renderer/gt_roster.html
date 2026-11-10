@@ -286,13 +286,13 @@
               <input type="checkbox" id="watcherStartDateCheckbox" onchange="watcherStartDateEnable(this.checked)" />
             </td>
             <td id="watcherStartDateTd">
-              <input type="datetime-local" required id="watcherStartDate" style="background-color: green; color: yellow;" />
+              <input type="datetime-local" required id="watcherStartDate" style="background-color: var(--gt-date-bg); color: var(--gt-date-text);" />
             </td>
             <td>
               <input type="checkbox" id="watcherEndDateCheckbox" onchange="watcherEndDateEnable(this.checked)" />
             </td>
             <td id="watcherEndDateTd">
-              <input type="datetime-local" required id="watcherEndDate" style="background-color: green; color: yellow;" />
+              <input type="datetime-local" required id="watcherEndDate" style="background-color: var(--gt-date-bg); color: var(--gt-date-text);" />
             </td>
             <td id="watcherAutoDeleteTd">
               <input type="checkbox" id="watcherAutoDeleteCheckbox" />
@@ -420,7 +420,7 @@
           </select>
           <select id="ignoreCqzSelect"></select>
           <select id="ignoreItuzSelect"></select>
-          <button onclick="addNewIgnore()" class="flexButton" style="background-color: #000000;font-weight:bold;font-size:larger;color:lightgreen;">+</button>
+          <button onclick="addNewIgnore()" class="flexButton" style="background-color: #000000;font-weight:bold;font-size:larger;color:var(--gt-status-ok);">+</button>
           <label id="ingnoreAddResultLabel"></label>
         </div>
         <div id="ignoresEditView"></div>

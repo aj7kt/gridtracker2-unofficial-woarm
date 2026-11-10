@@ -26,7 +26,6 @@ function showCallsignBox() {
     const lotwCall = GT.lotwCallsigns;
     const eqslCall = GT.eqslCallsigns;
     const oqrsCall = GT.oqrsCallsigns;
-    const bandColors = GT.bandColors;
 
     // Table Header (using +=)
     html += `
@@ -59,8 +58,6 @@ function showCallsignBox() {
       const ituzone = callObj.ituz || "-";
       const geo = callObj.geo;
       
-      // Use cached bandColors and direct check (!== undefined)
-      const bandColor = bandColors[callObj.band] !== undefined ? bandColors[callObj.band] : bandColors.OOB;
       const age = now - callObj.time;
       let ageString = (age < 3601) ? toDHMS(age) : userTimeString(callObj.time * 1000);
 
@@ -69,7 +66,7 @@ function showCallsignBox() {
         <tr>
           <td align=left style='color:var(--gt-callsign);cursor:pointer' onClick='window.opener.startLookup("${thisCall}", "${grid}");'>${formatCallsign(thisCall)}</td>
           <td align=left style='color:var(--gt-grid);'>${grid}</td>
-          <td style='color:#${bandColor};'>${callObj.band}</td>
+          <td${statBandAttrs(callObj.band)}>${callObj.band}</td>
           <td style='color:var(--gt-country);'>${geo.name}<font style='color:var(--gt-prefix);'> (${geo.pp})</font></td>
           <td>${cqzone}</td>
           <td>${ituzone}</td>
@@ -158,7 +155,7 @@ function getBandSlots()
 
   const total = bands.reduce((acc, b) => acc + bSlots[b], 0);
 
-  const bandHeaders = bands.map(b => `<th><span style="color: #${GT.bandColors[b]}">${b}</span></th>`).join("");
+  const bandHeaders = bands.map(b => `<th><span${statBandAttrs(b)}>${b}</span></th>`).join("");
   const bandData = bands.map(b => `<td>${bSlots[b]}</td>`).join("");
 
   return `
@@ -229,7 +226,7 @@ function showZonesBox()
   html.push("</div>");
 
   html.push("<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.WASWACBox.WAC") + "</b><br>");
-  html.push(displayItemList(GT.wacZones, "#90EE90"));
+  html.push(displayItemList(GT.wacZones, "var(--gt-continent)"));
   html.push("</div>");
 
   setStatsDiv("zonesListDiv", html.join(""));
@@ -279,7 +276,7 @@ function displayItemList(table, color, clickFn = null)
   const confirmedStyle = "color:" + color + ";";
   const workedStyle = "color:" + color + ";background-clip:content-box;box-shadow: 0 0 8px 3px inset;";
   const workedClickStyle = "color:" + color + ";background-clip:content-box;box-shadow: 0 0 8px 3px inset;cursor:pointer;";
-  const neededStyle = "color:#000000;background-color:" + color + ";text-shadow: 0px 0px 1px black;";
+  const neededStyle = "color:var(--gt-needed-text);background-color:" + color + ";text-shadow: 0px 0px 1px black;";
 
   let rows = [];
 
@@ -362,12 +359,13 @@ function showDXCCsBox()
     list.sort((a, b) => a.name.localeCompare(b.name));
     
     let rows = list.map(item => {
-      let rowStyle = isNeeded ? "color:#000000;background-color:#ff0;text-shadow: 0px 0px 1px black;" : isConfirmed ? "" : "background-clip:content-box;box-shadow: 0 0 8px 3px inset; cursor:pointer;";
+      // A needed DXCC: a block of the country color, the color a worked one's glow is drawn in
+      let rowStyle = isNeeded ? "color:var(--gt-needed-text);background-color:var(--gt-country);text-shadow: 0px 0px 1px black;" : isConfirmed ? "" : "background-clip:content-box;box-shadow: 0 0 8px 3px inset; cursor:pointer;";
       let rowAttr =  isNeeded ? "" : isConfirmed ? "" : `onclick='searchWorked(${item.dxcc}, "${band}", "${mode}");'`;
       return `<tr>
         <td align=left style='color:var(--gt-country);${rowStyle}' ${rowAttr}>${item.name}</td>
         <td align='center' style='margin:0;padding:0'><img style='padding-top:3px' src='img/flags/16/${item.flag}'></td>
-        <td align=left style='color:cyan;'>${item.dxcc}</td>
+        <td align=left style='color:var(--gt-dxcc);'>${item.dxcc}</td>
       </tr>`;
     }).join("");
 
@@ -442,7 +440,7 @@ function showWPXBox()
       .forEach(function (key, i)
       {
         worker +=
-          "<tr><td align=left style='color:#ff0;' >" +
+          "<tr><td align=left style='color:var(--gt-prefix);' >" +
           formatCallsign(key) +
           "</td><td style='color:var(--gt-callsign);'>" +
           formatCallsign(GT.tracker.worked.px[key]) +
@@ -469,7 +467,7 @@ function showWPXBox()
       .forEach(function (key, i)
       {
         worker +=
-          "<tr><td align=left style='color:#ff0;' >" +
+          "<tr><td align=left style='color:var(--gt-prefix);' >" +
           formatCallsign(key) +
           "</td><td style='color:var(--gt-callsign);'>" +
           formatCallsign(GT.tracker.confirmed.px[key]) +
@@ -481,7 +479,7 @@ function showWPXBox()
   }
 
   worker += "<div style='vertical-align:top;display:inline-block;margin-right:8px;overflow:auto;overflow-x:hidden;color:var(--gt-title);'><b>" + I18N("gt.viewInfo.countyData") + "</b><br>";
-  worker += displayItemList(GT.countyData, "orange");
+  worker += displayItemList(GT.countyData, "var(--gt-county)");
   worker += "</div>";
   
   setStatsDiv("wpxListDiv", worker);
@@ -1075,10 +1073,10 @@ function renderStatsBox()
       ["DXCC", I18N("gt.awardNames.DXCC"), "DXWA", "var(--gt-country)"],
       ["CQ", I18N("gt.awardNames.CQ"), "WAZ", "var(--gt-zone)"],
       ["ITU", I18N("gt.awardNames.ITU"), "ITUz", "var(--gt-zone)"],
-      ["WAC", I18N("gt.awardNames.WAC"), "WAC", "cyan"],
+      ["WAC", I18N("gt.awardNames.WAC"), "WAC", "var(--gt-continent)"],
       ["WAS", I18N("gt.awardNames.WAS"), "WAS", "var(--gt-state)"],
-      ["USC", I18N("gt.awardNames.USC"), "USA-CA", "orange"],
-      ["WPX", I18N("gt.awardNames.WPX"), "WPX", "yellow"],
+      ["USC", I18N("gt.awardNames.USC"), "USA-CA", "var(--gt-county)"],
+      ["WPX", I18N("gt.awardNames.WPX"), "WPX", "var(--gt-prefix)"],
       ["WACP", "CA Provinces", "WACP", "var(--gt-state)"]
     ];
 
@@ -1198,9 +1196,9 @@ function createDistanceTable(obj, name)
     <tr><td></td><td><span style='color:var(--gt-worked)'>${I18N("gt.distanceTable.Worked")}</span></td><td colspan=2><span style='color:var(--gt-confirmed)'>${I18N("gt.distanceTable.Confirmed")}</span></td></tr>`;
 
   const categories = [
-    { id: "band", color: "var(--gt-band)", label: I18N("gt.distanceTable.Bands"), sort: numberSort },
-    { id: "mode", color: "var(--gt-mode)", label: I18N("gt.distanceTable.Modes") },
-    { id: "type", color: "#DD44DD", label: I18N("gt.distanceTable.Types") }
+    { id: "band", color: "var(--gt-band)", label: I18N("gt.distanceTable.Bands"), sort: numberSort, keyAttrs: statBandAttrs },
+    { id: "mode", color: "var(--gt-mode)", label: I18N("gt.distanceTable.Modes"), keyAttrs: statModeAttrs },
+    { id: "type", color: "var(--gt-type)", label: I18N("gt.distanceTable.Types"), keyAttrs: () => "" }
   ];
 
   const distUnit = distanceUnit.value.toLowerCase();
@@ -1217,7 +1215,7 @@ function createDistanceTable(obj, name)
       
       if (hash && GT.QSOhash[hash]) {
         let qso = GT.QSOhash[hash];
-        return `<tr><td align=right>${key}</td><td style='color:var(--gt-distance)' align=left>(${unit} ${distUnit})</td>
+        return `<tr><td align=right${cat.keyAttrs(key)}>${key}</td><td style='color:var(--gt-distance)' align=left>(${unit} ${distUnit})</td>
           <td style='color:var(--gt-callsign);cursor:pointer' align=left onclick='window.opener.startLookup("${qso.DEcall}","${qso.grid}");'>${qso.DEcall}</td>
           <td style='color:var(--gt-grid)' align=left>${qso.grid}</td></tr>`;
       }
@@ -1235,6 +1233,18 @@ function createDistanceTable(obj, name)
   }
 
   return html + "</table>";
+}
+
+// A band's or mode's name in the Statistics window (and the Lookup's last QSO): the attributes for its cell, its class and its own color (Settings -> Band
+// Colors; the modes' colors). style.css shows that color, or the theme's in the themes of shades of one color
+function statBandAttrs(band)
+{
+  return " class='statBand'" + (band in GT.bandColors ? ` style='--own-color:#${GT.bandColors[band]}'` : "");
+}
+
+function statModeAttrs(mode)
+{
+  return " class='statMode'" + (GT.modeColors[mode] ? ` style='--own-color:#${GT.modeColors[mode]}'` : "");
 }
 
 function numberSort(a, b)
@@ -1258,9 +1268,9 @@ function createStatTable(title, infoObject, awardName)
     <td colspan=2><span style='color:var(--gt-confirmed)'>${I18N("gt.statTable.Confirmed")}</span> <span style='color:var(--gt-count)'>(${infoObject.confirmed})</span></td></tr>`;
 
   const categories = [
-    { label: I18N("gt.statTable.Bands"), color: "var(--gt-band)", wDict: infoObject.worked_bands, cDict: infoObject.confirmed_bands, sort: numberSort, count: infoObject.worked_band_count },
-    { label: I18N("gt.statTable.Modes"), color: "var(--gt-mode)", wDict: infoObject.worked_modes, cDict: infoObject.confirmed_modes, sort: undefined, count: infoObject.worked_mode_count },
-    { label: I18N("gt.statTable.Types"), color: "#DD44DD", wDict: infoObject.worked_types, cDict: infoObject.confirmed_types, sort: undefined, count: infoObject.worked_type_count }
+    { label: I18N("gt.statTable.Bands"), color: "var(--gt-band)", wDict: infoObject.worked_bands, cDict: infoObject.confirmed_bands, sort: numberSort, count: infoObject.worked_band_count, keyAttrs: statBandAttrs },
+    { label: I18N("gt.statTable.Modes"), color: "var(--gt-mode)", wDict: infoObject.worked_modes, cDict: infoObject.confirmed_modes, sort: undefined, count: infoObject.worked_mode_count, keyAttrs: statModeAttrs },
+    { label: I18N("gt.statTable.Types"), color: "var(--gt-type)", wDict: infoObject.worked_types, cDict: infoObject.confirmed_types, sort: undefined, count: infoObject.worked_type_count, keyAttrs: () => "" }
   ];
 
   for (let cat of categories)
@@ -1269,8 +1279,8 @@ function createStatTable(title, infoObject, awardName)
 
     let keys = Object.keys(cat.wDict).sort(cat.sort);
     
-    let wRows = keys.map(k => `<tr><td align=right>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.wDict[k]})</span></td></tr>`).join("");
-    let cRows = keys.map(k => cat.cDict[k] ? `<tr><td align=right>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.cDict[k]})</span></td></tr>` : `<tr><td>&nbsp;</td></tr>`).join("");
+    let wRows = keys.map(k => `<tr><td align=right${cat.keyAttrs(k)}>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.wDict[k]})</span></td></tr>`).join("");
+    let cRows = keys.map(k => cat.cDict[k] ? `<tr><td align=right${cat.keyAttrs(k)}>${k}</td><td align=left> <span style='color:var(--gt-count)'>(${cat.cDict[k]})</span></td></tr>` : `<tr><td>&nbsp;</td></tr>`).join("");
 
     html += `<tr><td align=center><span style='color:${cat.color}'>${cat.label}</span></td>
       <td align=left><table class='subtable'>${wRows}</table></td>

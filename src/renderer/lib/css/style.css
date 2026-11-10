@@ -43,6 +43,19 @@ html, body {
   --gt-snr: white;
   --gt-dt: white;
   --gt-needed: white;
+  /* The Statistics window: counties, continents, DXCC numbers, POTA parks, SOTA summits, the mode types (Digital,
+     Phone, CW); a needed DXCC's text on its block of the country color, and the row of a low-confidence decode */
+  --gt-county: cyan;
+  --gt-continent: #90EE90;
+  --gt-dxcc: cyan;
+  --gt-pota: #fbb6fc;
+  --gt-sota: #40ffd8;
+  --gt-type: #DD44DD;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #880000;
+  /* The Statistics window's band and mode names, a complement of the band / mode color their labels use */
+  --gt-band-value: #9999FF;
+  --gt-mode-value: #00BFFF;
   --gt-time: lightblue;
   --gt-warning: orange;
   --gt-error: red;
@@ -145,6 +158,16 @@ html, body {
   --gt-snr: #f1f5f9;
   --gt-dt: #f1f5f9;
   --gt-needed: #f0abfc;
+  --gt-county: #fda4af;
+  --gt-continent: #a7f3d0;
+  --gt-dxcc: #7dd3fc;
+  --gt-pota: #f0abfc;
+  --gt-sota: #5eead4;
+  --gt-type: #e879f9;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #703333;
+  --gt-band-value: #d9f99d;
+  --gt-mode-value: #93c5fd;
   --gt-time: #a5b4fc;
   --gt-warning: #fb923c;
   --gt-error: #f87171;
@@ -235,6 +258,16 @@ html, body {
   --gt-snr: #fff8e1;
   --gt-dt: #fff8e1;
   --gt-needed: #ff80ab;
+  --gt-county: #ffcc80;
+  --gt-continent: #ffe0b2;
+  --gt-dxcc: #ffd180;
+  --gt-pota: #ff80ab;
+  --gt-sota: #ffab40;
+  --gt-type: #ff6e40;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #730a1f;
+  --gt-band-value: #ffee58;
+  --gt-mode-value: #ff8a80;
   --gt-time: #ffccbc;
   --gt-warning: #ffd600;
   --gt-error: #ff1744;
@@ -325,6 +358,16 @@ html, body {
   --gt-snr: #eceff1;
   --gt-dt: #eceff1;
   --gt-needed: #f48fb1;
+  --gt-county: #a5d6a7;
+  --gt-continent: #80deea;
+  --gt-dxcc: #4fc3f7;
+  --gt-pota: #f48fb1;
+  --gt-sota: #80cbc4;
+  --gt-type: #ce93d8;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #733030;
+  --gt-band-value: #e6ee9c;
+  --gt-mode-value: #ffcc80;
   --gt-time: #9fa8da;
   --gt-warning: #ffcc80;
   --gt-error: #ff6b6b;
@@ -415,6 +458,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ff55ff;
+  --gt-county: #ffff55;
+  --gt-continent: #55ffff;
+  --gt-dxcc: #ffffff;
+  --gt-pota: #ff55ff;
+  --gt-sota: #55ffff;
+  --gt-type: #ff55ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732626;
+  --gt-band-value: #55ffff;
+  --gt-mode-value: #ff55ff;
   --gt-time: #55ffff;
   --gt-warning: #ffff55;
   --gt-error: #ff5555;
@@ -505,6 +558,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ff55ff;
+  --gt-county: #55ffff;
+  --gt-continent: #55ff55;
+  --gt-dxcc: #55ffff;
+  --gt-pota: #ff55ff;
+  --gt-sota: #00aaaa;
+  --gt-type: #5555ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732626;
+  --gt-band-value: #5555ff;
+  --gt-mode-value: #55ff55;
   --gt-time: #aaaaff;
   --gt-warning: #ffaa00;
   --gt-error: #ff5555;
@@ -595,6 +658,16 @@ html, body {
   --gt-snr: #d0ffd0;
   --gt-dt: #d0ffd0;
   --gt-needed: #ffffff;
+  --gt-county: #a0ffb0;
+  --gt-continent: #66ff99;
+  --gt-dxcc: #d0ffd8;
+  --gt-pota: #ccffdd;
+  --gt-sota: #00ff41;
+  --gt-type: #7dffa0;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731616;
+  --gt-band-value: #00cc33;
+  --gt-mode-value: #e0ffe8;
   --gt-time: #7dffa0;
   --gt-warning: #ffb000;
   --gt-error: #ff3030;
@@ -665,7 +738,7 @@ html, body {
 }
 
 :root[data-app-theme="grayscale"] {
-  /* Grayscale: brightness only, values lighter than labels; red the one color, for errors */
+  /* Smallville (shown under that name; its id stays "grayscale", the saved setting): brightness only, values lighter than labels; red the one color, for errors, and the pops of color are the band and mode colors (the Statistics window's band and mode names) */
   --gt-frequency: #ffffff;
   --gt-band: #c8c8c8;
   --gt-mode: #a8a8a8;
@@ -685,6 +758,16 @@ html, body {
   --gt-snr: #e0e0e0;
   --gt-dt: #e0e0e0;
   --gt-needed: #ffffff;
+  --gt-county: #c8c8c8;
+  --gt-continent: #b8b8b8;
+  --gt-dxcc: #d0d0d0;
+  --gt-pota: #e0e0e0;
+  --gt-sota: #bcbcbc;
+  --gt-type: #a0a0a0;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #3a3a3a;
+  --gt-band-value: #f2f2f2;
+  --gt-mode-value: #dcdcdc;
   --gt-time: #a0a0a0;
   --gt-warning: #e6e6e6;
   --gt-error: #ff4d4d;
@@ -775,6 +858,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ff55ff;
+  --gt-county: #55ffff;
+  --gt-continent: #55ff55;
+  --gt-dxcc: #55ffff;
+  --gt-pota: #ff55ff;
+  --gt-sota: #00aaaa;
+  --gt-type: #5555ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732626;
+  --gt-band-value: #5555ff;
+  --gt-mode-value: #55ff55;
   --gt-time: #5555ff;
   --gt-warning: #ffff55;
   --gt-error: #ff5555;
@@ -865,6 +958,16 @@ html, body {
   --gt-snr: #fffde7;
   --gt-dt: #fffde7;
   --gt-needed: #f48fb1;
+  --gt-county: #81d4fa;
+  --gt-continent: #c5e1a5;
+  --gt-dxcc: #4fc3f7;
+  --gt-pota: #f48fb1;
+  --gt-sota: #80cbc4;
+  --gt-type: #ce93d8;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732525;
+  --gt-band-value: #90caf9;
+  --gt-mode-value: #80deea;
   --gt-time: #b3e5fc;
   --gt-warning: #ff9800;
   --gt-error: #ff5252;
@@ -955,6 +1058,16 @@ html, body {
   --gt-snr: #fdf6e3;
   --gt-dt: #fdf6e3;
   --gt-needed: #e8a0bf;
+  --gt-county: #8fb3d9;
+  --gt-continent: #c2d6a0;
+  --gt-dxcc: #b7c9e2;
+  --gt-pota: #e8a0bf;
+  --gt-sota: #9cc5a1;
+  --gt-type: #c9a0dc;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732323;
+  --gt-band-value: #a9b8e6;
+  --gt-mode-value: #8fc1d4;
   --gt-time: #b7c9e2;
   --gt-warning: #f0a050;
   --gt-error: #ff4d4d;
@@ -1045,6 +1158,16 @@ html, body {
   --gt-snr: #fff5fb;
   --gt-dt: #fff5fb;
   --gt-needed: #ff6fb5;
+  --gt-county: #9fd8ff;
+  --gt-continent: #b8f2a8;
+  --gt-dxcc: #c4c9ff;
+  --gt-pota: #ff6fb5;
+  --gt-sota: #a8f0d8;
+  --gt-type: #e0a0ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731b16;
+  --gt-band-value: #b3ffd4;
+  --gt-mode-value: #f0f5a0;
   --gt-time: #c4c9ff;
   --gt-warning: #ffb347;
   --gt-error: #ff3b30;
@@ -1135,6 +1258,16 @@ html, body {
   --gt-snr: #ffe6b0;
   --gt-dt: #ffe6b0;
   --gt-needed: #ffffff;
+  --gt-county: #ffd88f;
+  --gt-continent: #ffc84a;
+  --gt-dxcc: #fff1d0;
+  --gt-pota: #ffe2a8;
+  --gt-sota: #ffb000;
+  --gt-type: #e0a040;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731616;
+  --gt-band-value: #ffe9b8;
+  --gt-mode-value: #ff9f1a;
   --gt-time: #e0a040;
   --gt-warning: #ffffff;
   --gt-error: #ff3030;
@@ -1225,6 +1358,16 @@ html, body {
   --gt-snr: #fdf6ff;
   --gt-dt: #fdf6ff;
   --gt-needed: #ff71ce;
+  --gt-county: #01cdfe;
+  --gt-continent: #05ffa1;
+  --gt-dxcc: #00f0ff;
+  --gt-pota: #ff71ce;
+  --gt-sota: #05ffa1;
+  --gt-type: #b967ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #73131b;
+  --gt-band-value: #7dffb3;
+  --gt-mode-value: #4aa8ff;
   --gt-time: #9d8cff;
   --gt-warning: #ffb000;
   --gt-error: #ff2a3d;
@@ -1315,6 +1458,16 @@ html, body {
   --gt-snr: #e8fbff;
   --gt-dt: #e8fbff;
   --gt-needed: #ff8fcf;
+  --gt-county: #59c3ff;
+  --gt-continent: #9be3a0;
+  --gt-dxcc: #7fdbff;
+  --gt-pota: #ff8fcf;
+  --gt-sota: #4dffd2;
+  --gt-type: #b39dff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732929;
+  --gt-band-value: #8ab9ff;
+  --gt-mode-value: #80e1ff;
   --gt-time: #9fb4ff;
   --gt-warning: #ffb74d;
   --gt-error: #ff5c5c;
@@ -1405,6 +1558,16 @@ html, body {
   --gt-snr: #fff6e8;
   --gt-dt: #fff6e8;
   --gt-needed: #d88aa0;
+  --gt-county: #e8c07a;
+  --gt-continent: #c5d86d;
+  --gt-dxcc: #f2c48d;
+  --gt-pota: #d88aa0;
+  --gt-sota: #a3b86c;
+  --gt-type: #c8a2c8;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731b1b;
+  --gt-band-value: #8fa8d8;
+  --gt-mode-value: #6fb7c9;
   --gt-time: #c8a2c8;
   --gt-warning: #ffb347;
   --gt-error: #ff3b3b;
@@ -1495,6 +1658,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ffa0d0;
+  --gt-county: #d0c3ff;
+  --gt-continent: #72ffd0;
+  --gt-dxcc: #14cffd;
+  --gt-pota: #ffa0d0;
+  --gt-sota: #72ffd0;
+  --gt-type: #ff44fd;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731616;
+  --gt-band-value: #14f53c;
+  --gt-mode-value: #14cffd;
   --gt-time: #d0c3ff;
   --gt-warning: #d0dd8d;
   --gt-error: #ff3030;
@@ -1585,6 +1758,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #b43fff;
+  --gt-county: #e09fff;
+  --gt-continent: #8fe493;
+  --gt-dxcc: #4df0ff;
+  --gt-pota: #b43fff;
+  --gt-sota: #9af7fd;
+  --gt-type: #8290ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731d1d;
+  --gt-band-value: #e09fff;
+  --gt-mode-value: #9af7fd;
   --gt-time: #e09fff;
   --gt-warning: #ca5400;
   --gt-error: #ff4040;
@@ -1675,6 +1858,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ffffff;
+  --gt-county: #c87ed6;
+  --gt-continent: #a9ff9f;
+  --gt-dxcc: #75cec8;
+  --gt-pota: #fe9b9e;
+  --gt-sota: #75cec8;
+  --gt-type: #706deb;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731616;
+  --gt-band-value: #706deb;
+  --gt-mode-value: #75cec8;
   --gt-time: #706deb;
   --gt-warning: #ffa94d;
   --gt-error: #ff3030;
@@ -1765,6 +1958,16 @@ html, body {
   --gt-snr: #e8eaed;
   --gt-dt: #e8eaed;
   --gt-needed: #f0a6c8;
+  --gt-county: #81c4d9;
+  --gt-continent: #a8c8a0;
+  --gt-dxcc: #8ab4f8;
+  --gt-pota: #f0a6c8;
+  --gt-sota: #8fc9a8;
+  --gt-type: #b4a7d6;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #733030;
+  --gt-band-value: #7a91d9;
+  --gt-mode-value: #7ab8d9;
   --gt-time: #aab4c8;
   --gt-warning: #fdd663;
   --gt-error: #ff6b6b;
@@ -1855,6 +2058,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ff66ff;
+  --gt-county: #66b3ff;
+  --gt-continent: #00ff00;
+  --gt-dxcc: #00ffff;
+  --gt-pota: #ff66ff;
+  --gt-sota: #00ffff;
+  --gt-type: #66b3ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731717;
+  --gt-band-value: #6699ff;
+  --gt-mode-value: #00ccff;
   --gt-time: #66b3ff;
   --gt-warning: #ff9900;
   --gt-error: #ff3333;
@@ -1946,6 +2159,16 @@ html, body {
   --gt-snr: #ffffff;
   --gt-dt: #ffffff;
   --gt-needed: #ffffff;
+  --gt-county: #56b4e9;
+  --gt-continent: #009e73;
+  --gt-dxcc: #56b4e9;
+  --gt-pota: #cc79a7;
+  --gt-sota: #009e73;
+  --gt-type: #56b4e9;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #73290e;
+  --gt-band-value: #56b4e9;
+  --gt-mode-value: #009e73;
   --gt-time: #a0c8e8;
   --gt-warning: #f0e442;
   --gt-error: #ff5a1f;
@@ -2036,6 +2259,16 @@ html, body {
   --gt-snr: #f0fff8;
   --gt-dt: #f0fff8;
   --gt-needed: #ff9ecf;
+  --gt-county: #7cc8ff;
+  --gt-continent: #9effd1;
+  --gt-dxcc: #7cf5e0;
+  --gt-pota: #ff9ecf;
+  --gt-sota: #4fe3c1;
+  --gt-type: #e0b0ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732932;
+  --gt-band-value: #d4ff9b;
+  --gt-mode-value: #9effc0;
   --gt-time: #a9b8ff;
   --gt-warning: #ffc46b;
   --gt-error: #ff5a6e;
@@ -2126,6 +2359,16 @@ html, body {
   --gt-snr: #e0f7ff;
   --gt-dt: #e0f7ff;
   --gt-needed: #ff00ff;
+  --gt-county: #00f0ff;
+  --gt-continent: #39ff14;
+  --gt-dxcc: #00f0ff;
+  --gt-pota: #ff00ff;
+  --gt-sota: #39ff14;
+  --gt-type: #b388ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #730e1b;
+  --gt-band-value: #00f0ff;
+  --gt-mode-value: #39ff14;
   --gt-time: #b388ff;
   --gt-warning: #ff9f1c;
   --gt-error: #ff1f3d;
@@ -2216,6 +2459,16 @@ html, body {
   --gt-snr: #fff1e6;
   --gt-dt: #fff1e6;
   --gt-needed: #ff70a6;
+  --gt-county: #a2d2ff;
+  --gt-continent: #b5e48c;
+  --gt-dxcc: #b8c0ff;
+  --gt-pota: #ff70a6;
+  --gt-sota: #ffd166;
+  --gt-type: #e0aaff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #731b1b;
+  --gt-band-value: #b5e48c;
+  --gt-mode-value: #66ccff;
   --gt-time: #b8c0ff;
   --gt-warning: #ffb347;
   --gt-error: #ff3b3b;
@@ -2306,6 +2559,16 @@ html, body {
   --gt-snr: #e5e5e5;
   --gt-dt: #e5e5e5;
   --gt-needed: #7aa2ff;
+  --gt-county: #d4d4d4;
+  --gt-continent: #bdbdbd;
+  --gt-dxcc: #e5e5e5;
+  --gt-pota: #7aa2ff;
+  --gt-sota: #a3a3a3;
+  --gt-type: #7aa2ff;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #703333;
+  --gt-band-value: #ffffff;
+  --gt-mode-value: #9e9e9e;
   --gt-time: #a3a3a3;
   --gt-warning: #fbbf24;
   --gt-error: #f87171;
@@ -2397,6 +2660,16 @@ html, body {
   --gt-snr: #ffa894;
   --gt-dt: #ffa894;
   --gt-needed: #ffd0c4;
+  --gt-county: #ffa07a;
+  --gt-continent: #ff7a5c;
+  --gt-dxcc: #ffb39e;
+  --gt-pota: #ffd0c4;
+  --gt-sota: #ff8c66;
+  --gt-type: #d9583c;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #4a0d05;
+  --gt-band-value: #ffd0c4;
+  --gt-mode-value: #e04a30;
   --gt-time: #d9583c;
   --gt-warning: #ffb84d;
   --gt-error: #ffffff;
@@ -2487,6 +2760,16 @@ html, body {
   --gt-snr: #f1f8e9;
   --gt-dt: #f1f8e9;
   --gt-needed: #e091b8;
+  --gt-county: #80cbc4;
+  --gt-continent: #c5e1a5;
+  --gt-dxcc: #b3e5fc;
+  --gt-pota: #e091b8;
+  --gt-sota: #81c784;
+  --gt-type: #ce93d8;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732525;
+  --gt-band-value: #78b7ff;
+  --gt-mode-value: #a7d88f;
   --gt-time: #b3e5fc;
   --gt-warning: #ffb74d;
   --gt-error: #ff5252;
@@ -2577,6 +2860,16 @@ html, body {
   --gt-snr: #fbf6e9;
   --gt-dt: #fbf6e9;
   --gt-needed: #d9a5c8;
+  --gt-county: #8ecae6;
+  --gt-continent: #c8dba8;
+  --gt-dxcc: #9cc9e8;
+  --gt-pota: #d9a5c8;
+  --gt-sota: #8fbf9f;
+  --gt-type: #c3a6d8;
+  --gt-needed-text: #000000;
+  --gt-low-confidence-bg: #732929;
+  --gt-band-value: #8fa8e0;
+  --gt-mode-value: #5ab3e4;
   --gt-time: #b8d8f0;
   --gt-warning: #f4a259;
   --gt-error: #ff5c5c;
@@ -3755,9 +4048,10 @@ table.birdDopplerTable {
 }
 
 /* Fixed columns, so the names, numbers and descriptions line up from row to row */
-/* The names are yellow and the descriptions light green; the header's cells keep its own color */
+/* The names in the callsign color and the descriptions in the state color (GridTracker2: yellow, light green); the header's cells keep
+   its own color */
 .birdSatRow:not(.birdSatHead) .birdTleName {
-  color: yellow;
+  color: var(--gt-callsign);
 }
 
 .birdSatHead .birdSatLong {
@@ -3770,7 +4064,7 @@ table.birdDopplerTable {
   top: 0;
   z-index: 1;
   background: black;
-  border-bottom: 1px solid #666;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-label) 40%, black);
   color: var(--gt-title);
   font-weight: bold;
 }
@@ -3793,13 +4087,13 @@ table.birdDopplerTable {
 .birdSatLong {
   flex: none;
   width: var(--satLong, 160px);
-  color: lightgreen;
+  color: var(--gt-state);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* A scan's time to AOS: in the blue of the Decode bar (white on blue with a cyan edge); the header's cell is plain */
+/* A scan's time to AOS: in the colors of the Decode bar (GridTracker2: white on blue with a cyan edge); the header's cell is plain */
 .birdSatAos {
   flex: none;
   width: var(--satAos, 0px);
@@ -3809,9 +4103,9 @@ table.birdDopplerTable {
   text-align: center;
   font-weight: bold;
   font-variant-numeric: tabular-nums;
-  color: #ffffff;
-  background: Blue;
-  border: 1px solid Cyan;
+  color: var(--gt-status-text);
+  background: var(--gt-status-decode-bg);
+  border: 1px solid var(--gt-status-decode-border);
   border-radius: 4px;
   cursor: help;
 }
@@ -3826,7 +4120,7 @@ table.birdDopplerTable {
 .birdSatStatus {
   flex: none;
   width: var(--satStatus, 0px);
-  color: #f90;
+  color: var(--gt-warning);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -3837,7 +4131,7 @@ table.birdDopplerTable {
   text-align: center;
 }
 
-/* The add, remove, add all and remove all buttons: the symbol large, white, and centered in the button both ways */
+/* The add, remove, add all and remove all buttons: the symbol large, in the button text color, and centered in the button both ways */
 .birdSatRow .birdSatButton {
   display: flex;
   align-items: center;
@@ -3845,7 +4139,7 @@ table.birdDopplerTable {
   box-sizing: border-box;
   height: 20px;
   padding: 0;
-  color: #fff;
+  color: var(--gt-button-text);
   font-size: 17px;
   font-weight: bold;
   line-height: 1;
@@ -3869,7 +4163,7 @@ table.birdDopplerTable {
   padding: 4px 10px 6px;
   min-height: 0;
   text-align: left;
-  border: 1px solid #666;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 40%, black);
   border-radius: 6px;
   background: #00000066;
 }
@@ -3903,7 +4197,7 @@ table.birdDopplerTable {
 }
 
 .birdTleOverride {
-  color: #f90;
+  color: var(--gt-warning);
   font-weight: bold;
   white-space: nowrap;
 }
@@ -3950,23 +4244,23 @@ table.birdDopplerTable {
 .birdTleBoxTitle a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px dotted #aaa;
+  border-bottom: 1px dotted color-mix(in srgb, var(--gt-label) 67%, black);
 }
 
 /* Where BirdWatch's data comes from (SatNOGS DB, CC BY-SA 4.0; AMSAT): the Satellites tab */
 .birdWatchCredit {
   margin-top: 6px;
   font-size: 11px;
-  color: #aaa;
+  color: color-mix(in srgb, var(--gt-label) 67%, black);
   white-space: normal;
   text-align: center;
 }
 
 .birdWatchCredit a {
-  color: #8cf;
+  color: var(--gt-accent);
   cursor: pointer;
   text-decoration: none;
-  border-bottom: 1px dotted #8cf;
+  border-bottom: 1px dotted var(--gt-accent);
 }
 
 .birdTleHeading {
@@ -4096,13 +4390,13 @@ table.birdDopplerTable {
 }
 
 .birdTleKind {
-  color: #fc6;
+  color: var(--gt-mode);
   font-weight: bold;
   white-space: nowrap;
 }
 
 .birdTleStatus {
-  color: #9fd;
+  color: var(--gt-frequency);
   white-space: nowrap;
   max-width: 260px;
   overflow: hidden;
@@ -4110,7 +4404,7 @@ table.birdDopplerTable {
 }
 
 .birdTleError {
-  color: #f90;
+  color: var(--gt-warning);
 }
 
 .birdTleRefresh {
@@ -4135,7 +4429,7 @@ table.birdDopplerTable {
 }
 
 .birdSkedTable th {
-  color: #9aa4b8;
+  color: var(--gt-muted);
   font-weight: normal;
   padding: 0 4px 2px 4px;
   text-align: left;
@@ -4147,7 +4441,7 @@ table.birdDopplerTable {
 }
 
 .birdSkedBad {
-  color: orange !important;
+  color: var(--gt-warning) !important;
 }
 
 /* Under a station too far away for any tracked satellite */
@@ -4158,7 +4452,7 @@ table.birdDopplerTable {
 }
 
 .birdSkedNote {
-  color: #9aa4b8;
+  color: var(--gt-muted);
   white-space: normal;
   max-width: 420px;
   margin: 4px 2px;
@@ -4170,11 +4464,11 @@ table.birdDopplerTable {
 }
 
 .birdSkedMutual td {
-  border-bottom: 1px solid #2c3a52;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-title) 22%, black);
 }
 
 .birdSkedMutual .birdSkedSat {
-  color: cyan;
+  color: var(--gt-callsign-other);
   cursor: pointer;
 }
 
@@ -4193,7 +4487,7 @@ table.birdDopplerTable {
 }
 
 .birdSkedMutual tr.birdSkedUp td {
-  background-color: #0b2a14;
+  background-color: color-mix(in srgb, var(--gt-status-ok) 14%, black);
 }
 
 /* A row picks its pass (birdWatchSkedPick); the active station's callsign yellow */
@@ -4202,7 +4496,7 @@ table.birdDopplerTable {
 }
 
 .birdSkedMutual tr:hover td {
-  background-color: #1c2a44;
+  background-color: color-mix(in srgb, var(--gt-hover-accent) 18%, black);
 }
 
 .birdSkedMutual tr.birdSkedFocus .birdSkedCall {
@@ -4271,8 +4565,9 @@ table.birdDopplerTable {
   opacity: 1;
 }
 
-/* Settings -> Colors, Band Colors: as many 70px columns as fit, adding rows as the window narrows */
-#bandColorsBox {
+/* Settings -> Colors, Band Colors and Mode Colors: as many 70px columns as fit, adding rows as the window narrows */
+#bandColorsBox,
+#modeColorsBox {
   display: block;
 }
 
@@ -4367,7 +4662,7 @@ table.birdDopplerTable {
   padding: 8px 12px;
   border-bottom: 1px solid #444;
   font-weight: bold;
-  color: #40ffd8;
+  color: var(--gt-sota);
 }
 
 .sotaExportRange {
@@ -4581,11 +4876,24 @@ table.birdDopplerTable {
   overflow: auto;
 }
 
+/* Its colors from the App Theme: the theme's hover accent for the call, the buttons and (mixed with black) the frames and
+   panels; its value and label colors for the text. GridTracker2 keeps its own text grays */
+:root {
+  --gt-lookup-text: color-mix(in srgb, var(--gt-message) 85%, black);
+  --gt-lookup-muted: var(--gt-label);
+}
+
+:root:not([data-app-theme]),
+:root[data-app-theme="ega80s"] {
+  --gt-lookup-text: #ccd6da;
+  --gt-lookup-muted: #7f98a2;
+}
+
 #lookupWrap {
   width: max-content;
   margin: 0 auto;
   padding: 8px 10px;
-  color: #ccd6da;
+  color: var(--gt-lookup-text);
 }
 
 /* Each part a little below the one above it, while it has something to show */
@@ -4600,15 +4908,15 @@ table.birdDopplerTable {
   justify-content: center;
   gap: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #1c3440;
-  color: #8fb3c0;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-hover-accent) 22%, black);
+  color: var(--gt-lookup-muted);
   font-size: 13px;
 }
 
 .lookupSearch .inputTextValue {
   width: 8em;
   padding: 3px 10px;
-  border: 1px solid #3a6070;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 40%, black);
   border-radius: 14px;
   font-size: 14px;
   font-weight: bold;
@@ -4618,29 +4926,29 @@ table.birdDopplerTable {
 .lookupGo {
   cursor: pointer;
   padding: 3px 14px;
-  border: 1px solid #2cc;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 80%, black);
   border-radius: 14px;
-  background: linear-gradient(#0a8a9a, #05606c);
-  color: #fff;
+  background: linear-gradient(color-mix(in srgb, var(--gt-hover-accent) 55%, black), color-mix(in srgb, var(--gt-hover-accent) 38%, black));
+  color: var(--gt-count);
   font-weight: bold;
 }
 
 .lookupGo:hover {
-  background: linear-gradient(#0bb, #078);
+  background: linear-gradient(color-mix(in srgb, var(--gt-hover-accent) 72%, black), color-mix(in srgb, var(--gt-hover-accent) 47%, black));
 }
 
 .lookupGo:active {
   transform: translateY(1px);
 }
 
-/* "GridTracker would like to acknowledge": a gold pill */
+/* "GridTracker would like to acknowledge": a pill in the callsign color */
 .lookupAck {
   display: inline-block;
   padding: 3px 12px;
-  border: 1px solid #806a20;
+  border: 1px solid color-mix(in srgb, var(--gt-callsign) 50%, black);
   border-radius: 12px;
-  background: #2a2208;
-  color: #ffd75e;
+  background: color-mix(in srgb, var(--gt-callsign) 16%, black);
+  color: var(--gt-callsign);
   font-size: 13px;
   font-weight: bold;
 }
@@ -4654,15 +4962,15 @@ table.birdDopplerTable {
 .lookupAction {
   cursor: pointer;
   padding: 2px 14px;
-  border: 1px solid #456;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 35%, black);
   border-radius: 12px;
-  background: #0d1418;
-  color: #ddd;
+  background: color-mix(in srgb, var(--gt-hover-accent) 7%, black);
+  color: var(--gt-lookup-text);
 }
 
 .lookupAction:hover {
-  border-color: #fff;
-  color: #fff;
+  border-color: var(--gt-hover-border);
+  color: var(--gt-count);
 }
 
 .lookupAction:active {
@@ -4670,13 +4978,13 @@ table.birdDopplerTable {
 }
 
 .lookupPrimary {
-  border-color: #2aa;
-  color: cyan;
+  border-color: color-mix(in srgb, var(--gt-hover-accent) 67%, black);
+  color: var(--gt-hover-accent);
 }
 
 /* A lookup on its way */
 .lookupWait {
-  color: #9ab;
+  color: var(--gt-lookup-muted);
   animation: lookupPulse 0.9s ease-in-out infinite alternate;
 }
 
@@ -4695,9 +5003,9 @@ table.birdDopplerTable {
   align-items: center;
   gap: 14px;
   padding: 10px 16px 10px 10px;
-  border: 1px solid #1f4656;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 30%, black);
   border-radius: 10px;
-  background: linear-gradient(135deg, #0c2a36 0%, #06141a 55%, #000 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gt-hover-accent) 17%, black) 0%, color-mix(in srgb, var(--gt-hover-accent) 8%, black) 55%, #000 100%);
   box-shadow: inset 0 1px 0 #ffffff14;
   text-align: left;
 }
@@ -4706,7 +5014,7 @@ table.birdDopplerTable {
   display: block;
   max-width: 200px;
   max-height: 150px;
-  border: 1px solid #2a4a58;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 32%, black);
   border-radius: 8px;
 }
 
@@ -4721,31 +5029,31 @@ table.birdDopplerTable {
 }
 
 .lookupCall {
-  color: #3ff;
+  color: var(--gt-hover-accent);
   font-size: 36px;
   font-weight: bold;
   line-height: 1.1;
   letter-spacing: 1px;
-  text-shadow: 0 0 14px #00ffff50;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--gt-hover-accent) 31%, transparent);
 }
 
 .lookupName {
   margin: 2px 0 3px;
-  color: #fff;
+  color: var(--gt-count);
   font-size: 15px;
   font-weight: bold;
 }
 
 .lookupAddr {
-  color: #b8c8ce;
+  color: var(--gt-lookup-text);
   line-height: 1.4;
 }
 
 .lookupEmail {
   display: inline-block;
   margin-top: 3px;
-  border-bottom: 1px dotted #8cf;
-  color: #8cf;
+  border-bottom: 1px dotted var(--gt-accent);
+  color: var(--gt-accent);
 }
 
 .lookupChips {
@@ -4759,9 +5067,9 @@ table.birdDopplerTable {
   align-items: center;
   gap: 5px;
   padding: 2px 8px;
-  border: 1px solid #2a4a58;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 32%, black);
   border-radius: 10px;
-  background: #0a1a20;
+  background: color-mix(in srgb, var(--gt-hover-accent) 10%, black);
   font-weight: bold;
 }
 
@@ -4770,11 +5078,11 @@ table.birdDopplerTable {
 }
 
 .lookupChip[onClick]:hover {
-  border-color: #fff;
+  border-color: var(--gt-hover-border);
 }
 
 .lookupChipLabel {
-  color: #7f98a2;
+  color: var(--gt-lookup-muted);
   font-size: 10px;
   font-weight: normal;
 }
@@ -4789,9 +5097,9 @@ table.birdDopplerTable {
 .lookupLog,
 .lookupDetails {
   padding: 7px 12px;
-  border: 1px solid #1d2a30;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 16%, black);
   border-radius: 8px;
-  background: #070b0d;
+  background: color-mix(in srgb, var(--gt-hover-accent) 4%, black);
   text-align: left;
 }
 
@@ -4807,21 +5115,25 @@ table.birdDopplerTable {
 }
 
 .lookupLogTime {
-  color: #9ab;
+  color: var(--gt-lookup-muted);
 }
 
-/* A band (and mode) in its band color: a faint dashed outline while only worked, filled when confirmed (lookupBandChip) */
+/* A band (and mode) in its band color (--own-color, see .statBand; the theme's in the themes of shades of one color): a faint dashed
+   outline while only worked, filled when confirmed (lookupBandChip) */
 .lookupBand {
   display: inline-block;
   margin-right: 4px;
   padding: 0 6px;
-  border: 1px dashed;
+  border: 1px dashed color-mix(in srgb, var(--own-color, var(--gt-band-value)) 50%, transparent);
   border-radius: 8px;
   font-size: 11px;
+  color: var(--own-color, var(--gt-band-value));
 }
 
 .lookupBand.lookupConf {
   border-style: solid;
+  border-color: var(--own-color, var(--gt-band-value));
+  background: color-mix(in srgb, var(--own-color, var(--gt-band-value)) 28%, transparent);
   font-weight: bold;
 }
 
@@ -4842,7 +5154,7 @@ table.birdDopplerTable {
 }
 
 .lookupTileLabel {
-  color: #7f98a2;
+  color: var(--gt-lookup-muted);
   font-size: 10px;
 }
 
@@ -4850,7 +5162,7 @@ table.birdDopplerTable {
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #eee;
+  color: var(--gt-message);
 }
 
 .lookupYes {
@@ -4858,13 +5170,14 @@ table.birdDopplerTable {
 }
 
 .lookupNo {
-  color: #888;
+  color: var(--gt-lookup-muted);
 }
 
+/* A link (the Source): the theme's country color, GridTracker2's orange */
 .lookupLink {
   display: inline-block;
   cursor: pointer;
-  color: orange;
+  color: var(--gt-country);
   font-weight: bold;
 }
 
@@ -4911,29 +5224,29 @@ table.birdDopplerTable {
 
 table.darkTable {
   border-collapse: collapse;
-  border: 1px solid #888;
+  border: 1px solid var(--gt-table-line);
   text-align: center;
 }
 table.darkTable td,
 table.darkTable th {
-  border: 1px solid #888;
+  border: 1px solid var(--gt-table-line);
   padding: 2px;
 }
 
 table.darkTable thead {
-  border-bottom: 2px solid #888;
+  border-bottom: 2px solid var(--gt-table-line);
 }
 table.darkTable thead th {
   font-weight: bold;
   text-align: center;
-  border-left: 2px solid #888;
+  border-left: 2px solid var(--gt-table-line);
 }
 table.darkTable thead th:first-child {
   border-left: none;
 }
 
 .darkTable tr:hover td {
-  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+  box-shadow: inset 0px 11px 6px -8px var(--gt-table-line), inset 0px -11px 6px -8px var(--gt-table-line);
 }
 
 table {
@@ -4955,6 +5268,110 @@ table.subtable th {
 
 table.subtable thead {
   border-bottom: 0px;
+}
+
+/* Statistics band and mode names (statBandAttrs / statModeAttrs in statsBoxes.js): each in its own color (Settings -> Band
+   Colors; the modes' colors), carried by its cell as --own-color, except in the themes made of shades of one color (Smallville,
+   grays with pops of color, keeps them). There, and
+   for one without a color, the theme's complement of the band / mode color their labels ("Bands", "Modes") use */
+.statBand {
+  color: var(--own-color, var(--gt-band-value));
+}
+
+.statMode {
+  color: var(--own-color, var(--gt-mode-value));
+}
+
+/* The themes made of shades of one color drop the band and mode names' own colors (an inline --own-color: Statistics, the
+   Lookup's band chips), so the theme's color shows */
+:root[data-app-theme="matrix"] :is(.statBand, .statMode, .lookupBand),
+:root[data-app-theme="ambercrt"] :is(.statBand, .statMode, .lookupBand),
+:root[data-app-theme="nightvision"] :is(.statBand, .statMode, .lookupBand),
+:root[data-app-theme="oledminimal"] :is(.statBand, .statMode, .lookupBand) {
+  --own-color: initial !important;
+}
+
+/* The Statistics window's tables (gt_stats.html) in the theme's colors, like BirdWatch's Doppler table: a rounded frame, title
+   rows on the button color, faint lines between rows, every other row shaded and the row under the mouse highlighted.
+   html.statsModern is on gt_stats.html's root, so other windows' darkTables keep their look. Only a table's
+   own cells are styled (the child combinators), not those of the tables inside it (.subtable); rows keep their heights, which
+   the lists' heights are reckoned from */
+html.statsModern table.darkTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 22%, transparent);
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+html.statsModern table.darkTable > * > tr > th {
+  border: none;
+  padding: 3px 8px;
+  background: var(--gt-button-bg);
+  color: var(--gt-title);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--gt-title) 45%, transparent);
+}
+
+html.statsModern table.darkTable > * > tr > td {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--gt-label) 10%, transparent);
+  padding: 2px 8px;
+}
+
+html.statsModern table.darkTable > * > tr:nth-child(even) > td {
+  background: color-mix(in srgb, var(--gt-label) 4%, transparent);
+}
+
+html.statsModern table.darkTable tr:hover td {
+  box-shadow: none;
+}
+
+html.statsModern table.darkTable > * > tr:hover > td {
+  background: color-mix(in srgb, var(--gt-hover-accent) 20%, transparent);
+}
+
+/* The corners' cells rounded with the frame */
+html.statsModern table.darkTable > :first-child > tr:first-child > :first-child {
+  border-top-left-radius: 7px;
+}
+
+html.statsModern table.darkTable > :first-child > tr:first-child > :last-child {
+  border-top-right-radius: 7px;
+}
+
+html.statsModern table.darkTable > :last-child > tr:last-child > :first-child {
+  border-bottom-left-radius: 7px;
+}
+
+html.statsModern table.darkTable > :last-child > tr:last-child > :last-child {
+  border-bottom-right-radius: 7px;
+}
+
+/* The Scores tables' counts (tables in a cell) show the row's shade through them */
+html.statsModern table.subtable {
+  background-color: transparent;
+}
+
+/* Logbook (#logTable, its own lines for its sticky header above): the frame all round, the header on the button color, a line
+   above each row */
+html.statsModern #logTable {
+  border-width: 1px;
+}
+
+html.statsModern #logTable > thead th {
+  background-color: var(--gt-button-bg);
+  border-width: 0;
+}
+
+html.statsModern #logTable > tbody td {
+  border-width: 1px 0 0 0;
+}
+
+html.statsModern #logTable > tbody > tr.logbookSpacer > td {
+  border: none;
+  background: none;
 }
 
 table.subtable thead th {
@@ -5169,9 +5586,61 @@ button:focus {
   flex:auto;
 }
 
+/* The section titles of Settings -> Audio Alerts and of the rosters' controls (style_roster.css), their M badges, the
+   rosters' More / Fewer Controls links, Watcher and Ignores lists, the darkTables' lines, muted notes (BirdWatch's Skeds) and
+   Lookups' Callsign Databases values and dates: in the App Theme's colors. GridTracker2 keeps its own */
+:root {
+  --gt-head-alerts: var(--gt-mode);
+  --gt-head-reference: var(--gt-title);
+  --gt-head-exceptions: var(--gt-country);
+  --gt-head-exceptions-line: color-mix(in srgb, var(--gt-country) 70%, black);
+  --gt-head-rules: var(--gt-callsign);
+  --gt-head-wanted: var(--gt-title);
+  --gt-head-wanted-line: color-mix(in srgb, var(--gt-title) 55%, black);
+  --gt-head-feed: var(--gt-feed-accent);
+  --gt-head-feed-line: color-mix(in srgb, var(--gt-feed-accent) 55%, black);
+  --gt-badge-bg: var(--gt-label);
+  --gt-link: var(--gt-label);
+  --gt-link-hover: var(--gt-hover-accent);
+  --gt-list-head: var(--gt-title);
+  --gt-date-bg: var(--gt-input-bg);
+  --gt-date-text: var(--gt-input-text);
+  --gt-valid-bg: color-mix(in srgb, var(--gt-status-ok) 35%, black);
+  --gt-table-line: color-mix(in srgb, var(--gt-label) 53%, black);
+  --gt-box-line: color-mix(in srgb, var(--gt-label) 67%, black);
+  --gt-muted: var(--gt-label);
+  --gt-cell-value: var(--gt-count);
+  --gt-cell-date: var(--gt-time);
+}
+
+:root:not([data-app-theme]),
+:root[data-app-theme="ega80s"] {
+  --gt-head-alerts: rgb(206, 134, 0);
+  --gt-head-reference: rgb(89, 206, 206);
+  --gt-head-exceptions: rgb(206, 89, 89);
+  --gt-head-exceptions-line: rgba(253, 113, 113, 0.644);
+  --gt-head-rules: rgb(206, 204, 89);
+  --gt-head-wanted: #099;
+  --gt-head-wanted-line: #066;
+  --gt-head-feed: #990;
+  --gt-head-feed-line: #660;
+  --gt-badge-bg: #bbb;
+  --gt-link: #ffffaaa1;
+  --gt-link-hover: #ffff00;
+  --gt-list-head: #eee;
+  --gt-date-bg: green;
+  --gt-date-text: yellow;
+  --gt-valid-bg: darkgreen;
+  --gt-table-line: #888;
+  --gt-box-line: #aaa;
+  --gt-muted: #9aa4b8;
+  --gt-cell-value: yellow;
+  --gt-cell-date: lightgreen;
+}
+
 #exceptionDiv h3 {
-  color: rgb(206, 89, 89);
-  border-bottom: 2px solid rgb(206, 89, 89);
+  color: var(--gt-head-exceptions);
+  border-bottom: 2px solid var(--gt-head-exceptions);
   margin-bottom: 3px;
 }
 
@@ -5180,8 +5649,8 @@ button:focus {
 }
 
 #audioAlertRulesDiv h3 {
-  color: rgb(206, 204, 89);
-  border-bottom: 2px solid rgb(206, 204, 89);
+  color: var(--gt-head-rules);
+  border-bottom: 2px solid var(--gt-head-rules);
   margin-bottom: 3px;
 }
 
@@ -5201,16 +5670,14 @@ button:focus {
 }
 
 #huntingMatrixDiv h3 {
-  color: rgb(206, 134, 0);
-  border-bottom: 2px solid rgb(206, 134, 0);
+  color: var(--gt-head-alerts);
+  border-bottom: 2px solid var(--gt-head-alerts);
   margin-bottom: 3px;
 }
 
-
-
 #ReferenceAudioAlertControls h3 {
-  color: rgb(89, 206, 206);
-  border-bottom: 2px solid rgb(89, 206, 206);
+  color: var(--gt-head-reference);
+  border-bottom: 2px solid var(--gt-head-reference);
   margin-bottom: 3px;
 }
 
@@ -5312,7 +5779,7 @@ button:focus {
 /* Rig Control's VFO-A (Downlink) and VFO-B (Uplink): a box each, tabbed in a little under Rig Control, its title like a group's with
    its Connect to the right of it */
 .mapGroup .rigVfoBox {
-  border: 1px solid #555;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 33%, black);
   border-radius: 5px;
   padding: 2px 6px 3px 6px;
   margin: 3px 0 3px 6px;
@@ -5339,7 +5806,7 @@ button:focus {
   color: var(--gt-title);
   font-weight: bold;
   text-align: left;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-label) 27%, black);
   margin-bottom: 2px;
 }
 
@@ -5355,34 +5822,34 @@ button:focus {
 
 .mapGroup .rigVfoRemove {
   margin-left: 8px;
-  color: #ff8080;
+  color: color-mix(in srgb, var(--gt-error) 50%, white);
   cursor: pointer;
 }
 
 .mapGroup .rigVfoRemove:hover {
-  color: orange;
+  color: var(--gt-warning);
 }
 
 /* Move up and down (the list's order is BirdWatch's priority: rig.js, rigVfoMove) */
 .mapGroup .rigVfoMove {
   margin-left: 6px;
-  color: #aaa;
+  color: color-mix(in srgb, var(--gt-label) 67%, black);
   cursor: pointer;
   font-weight: normal;
 }
 
 .mapGroup .rigVfoMove:hover {
-  color: #fff;
+  color: var(--gt-hover-border);
 }
 
 /* Its Satellites row's ranges (rig.js, rigSatRender), each with its ✕ */
 .mapGroup .rigSatRange {
   display: inline-block;
-  border: 1px solid #555;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 33%, black);
   border-radius: 4px;
   padding: 0 4px;
   margin: 1px 4px 2px 0;
-  color: #ddd;
+  color: color-mix(in srgb, var(--gt-label) 87%, black);
 }
 
 .mapGroup .rigSatRange .rigVfoRemove {
@@ -6222,19 +6689,24 @@ button:focus {
   padding: 0 2px 2px;
 }
 
+/* Mode Colors: wider cells, for the longest mode names (DIGITALVOICE) beside their swatch */
+#modeColorsDiv {
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+}
+
 .mapGroup .bandColorCell {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  border: 1px solid #444;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 27%, black);
   border-radius: 4px;
   padding: 2px 4px;
   font-size: 12px;
 }
 
 .mapGroup .bandColorCell:hover {
-  border-color: #aaa;
+  border-color: var(--gt-box-line);
 }
 
 .mapGroup .bandColorCell br {
@@ -6279,7 +6751,7 @@ button:focus {
 }
 
 .mapApplyLine .button {
-  color: cyan;
+  color: var(--gt-hover-accent);
   font-size: 13px;
   font-weight: bold;
   padding: 2px 8px 1px;
@@ -6512,13 +6984,13 @@ button:focus {
 }
 
 .mapGroup td.mapCellValue {
-  color: yellow;
+  color: var(--gt-cell-value);
   font-size: 12px;
   font-weight: bold;
 }
 
 .mapGroup td.mapCellDate {
-  color: lightgreen;
+  color: var(--gt-cell-date);
 }
 
 /* A line of fields under a box's table (Lookups -> Username / Password / Test) */
@@ -6616,7 +7088,7 @@ button:focus {
 }
 
 .band-mode-indicator {
-  background-color: #bbb;
+  background-color: var(--gt-badge-bg);
   color: #000;
   border-radius: 4px;
   

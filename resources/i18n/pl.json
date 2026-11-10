@@ -1965,5 +1965,7 @@
   "settings.logging.N3FJPContest.connected.hover": "Połączono z {0}",
   "events.source.aclog": "AC Log",
   "events.source.log4om": "Log4OM",
-  "events.source.n3fjp": "N3FJP Zawody"
+  "events.source.n3fjp": "N3FJP Zawody",
+  "settings.ModeColors.label": "Kolory emisji",
+  "settings.ModeColors.reset.hover": "Przywróć domyślne kolory emisji"
 }

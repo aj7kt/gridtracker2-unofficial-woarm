@@ -1965,5 +1965,7 @@
 	"settings.logging.N3FJPContest.connected.hover": "{0} に接続中",
 	"events.source.aclog": "AC Log",
 	"events.source.log4om": "Log4OM",
-	"events.source.n3fjp": "N3FJP コンテスト"
+	"events.source.n3fjp": "N3FJP コンテスト",
+	"settings.ModeColors.label": "モードの色",
+	"settings.ModeColors.reset.hover": "モードの色をデフォルトに戻す"
 }

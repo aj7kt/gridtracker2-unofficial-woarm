@@ -354,16 +354,17 @@ body.rosterTabsShown #settingsDiv {
   padding: 0;
 }
 
+/* Wanted and Exceptions: the App Theme's colors (--gt-head-* in style.css) */
 #huntingMatrixDiv h3 {
-  color: #099;
-  border-bottom: 2px solid #066;
+  color: var(--gt-head-wanted);
+  border-bottom: 2px solid var(--gt-head-wanted-line);
   margin-bottom: 3px;
 }
 
 /* Feed Roster: the same dark shade in yellow, like its other cyan / yellow swaps */
 body.feedRosterShown #huntingMatrixDiv h3 {
-  color: #990;
-  border-bottom-color: #660;
+  color: var(--gt-head-feed);
+  border-bottom-color: var(--gt-head-feed-line);
 }
 
 /* Exceptions: which ones show varies (Only Wanted, Spotted Me, eQSL / OQRS, LoTW's "...": Call Roster 7-11 items,
@@ -383,8 +384,8 @@ body.feedRosterShown #huntingMatrixDiv h3 {
 }
 
 #exceptionDiv h3 {
-  color: rgb(206, 89, 89);
-  border-bottom: 2px solid rgba(253, 113, 113, 0.644);
+  color: var(--gt-head-exceptions);
+  border-bottom: 2px solid var(--gt-head-exceptions-line);
   margin-bottom: 3px;
 }
 
@@ -434,19 +435,20 @@ input.slider {
   width: 76px;
 }
 
+/* More Controls / Fewer Controls */
 .link {
   cursor: hand;
-  color: #ffffaaa1;
+  color: var(--gt-link);
 }
 
 .link:hover {
-  color: #ffff00;
+  color: var(--gt-link-hover);
   text-decoration: underline;
 }
 
 table.awardTableCSS {
   border-collapse: collapse;
-  border: 0px solid #888;
+  border: 0px solid var(--gt-table-line);
   background-color: black;
   text-align: center;
   padding: 0;
@@ -455,7 +457,7 @@ table.awardTableCSS {
 
 table.awardTableCSS td,
 table.awardTableCSS th {
-  border: 1px solid #888;
+  border: 1px solid var(--gt-table-line);
   padding: 0px;
   margin: 0px;
   border-left: none;
@@ -471,7 +473,7 @@ table.awardTableCSS tr {
 }
 
 table.awardTableCSS thead {
-  border-bottom: 0px solid #888;
+  border-bottom: 0px solid var(--gt-table-line);
 }
 table.awardTableCSS thead th {
   font-weight: bold;
@@ -483,7 +485,7 @@ table.awardTableCSS thead th:first-child {
 }
 
 .awardTableCSS tr:hover td {
-  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+  box-shadow: inset 0px 11px 6px -8px var(--gt-table-line), inset 0px -11px 6px -8px var(--gt-table-line);
 }
 
 /* The column titles stay at the top of the window while the roster scrolls (the controls above scroll away); rows pass
@@ -892,7 +894,7 @@ table.sotaLogFields td.sotaLogRst {
   width: auto;
   left:0;
   right:0;
-  border-top: 1px solid lightblue;
+  border-top: 1px solid var(--gt-subtab-border);
   vertical-align: top;
   white-space: normal;
   overflow:auto;
@@ -918,7 +920,7 @@ table.sotaLogFields td.sotaLogRst {
   height: 35px;
   width: 140px;
   border-width: 1px;
-  border-color: #aaa;
+  border-color: var(--gt-box-line);
   border-style: inset;
   vertical-align:baseline;
   border-radius: 4px;
@@ -1000,7 +1002,7 @@ p {
 
 .rowBuilder {
   border-width: 1px;
-  border-color: #aaa;
+  border-color: var(--gt-box-line);
   border-style: outset;
   vertical-align: top;
   border-radius: 4px;
@@ -1039,6 +1041,12 @@ p {
   overflow-x:hidden;
 }
 
+/* The Watcher and Ignores lists' titles */
+#watcherTable th,
+.ignoresTables th {
+  color: var(--gt-list-head);
+}
+
 #watcherTable  {
   margin: auto;
   left:0;
@@ -1066,7 +1074,7 @@ p {
   vertical-align: middle;
   position: absolute;
   z-index: 600;
-  border: 1px solid lightblue;
+  border: 1px solid var(--gt-subtab-border);
   border-radius: 4px;
   /* Opaque, so the roster tabs underneath don't show through the title */
   background-color: black;

@@ -34,6 +34,7 @@ const validSettings = [
   "trustedQsl",
   "legendColors",
   "bandColors",
+  "modeColors",
   "pstrotator",
   "rotor",
   "Rigs",
@@ -756,6 +757,8 @@ const def_settings = {
   ignoredITUz: {},
   // Band colors the user changed (band -> 6-digit hex); bands not listed use the built-in GT.bandColors table
   bandColors: {},
+  // Mode colors the user changed (mode -> 6-digit hex); modes not listed use their color in data/modes.json
+  modeColors: {},
   // Feed Roster: DX Cluster / CW Skimmer spotters (base callsign) whose spots are dropped
   ignoredSpotters: {},
   roster: {

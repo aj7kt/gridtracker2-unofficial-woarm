@@ -52,9 +52,9 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
   * **Retro computers:** EGA (the 16-color EGA palette, gray buttons and blue tabs), CGA (the classic cyan, magenta and white, yellow for warnings), VGA (the DOS 16-color look, with blue and cyan text boxes and tabs), Amber CRT (an amber monochrome terminal), and Apple ][e, VIC-20 and C-64 (each computer's own colors and text-box look).
   * **Nature and seasons:** Inferno (golds, ambers, flame orange and white-hot), Frost (ice blues, teal, lilac and white), Sunflower (petal yellows, leaf greens, sky blue and seed brown), Country Kitchen (butter yellow, sage, copper and cream with gingham-blue tabs), Autumn (pumpkin, mustard, olive and cream), Deep Sea (glowing aqua, coral, kelp green and sand on navy), Aurora (northern-lights greens, teals and violets), Sunset (gold, coral, rose and lavender on plum), Food Forest (layered leaf greens, apricot, plum, persimmon and fig on bark) and Prairie Home (wheat gold, prairie sage, big-sky blue, coneflower and barn rust on weathered barnwood).
   * **Just for fun:** Bubble Gum (pink, lavender, mint, baby blue and lemon), Synthwave (neon cyan, magenta, mint and sunset orange on purple), Cyberpunk (acid yellow, cyan, magenta and neon green) and Matrix (terminal greens with white for callsigns and titles, amber for warnings).
-  * **Modern and easy on the eyes:** Graphite (a modern dark mode, muted colors and one blue accent), High Contrast (pure colors, white text and borders, for low vision and bright rooms), Colorblind Safe (the Okabe-Ito colors, which stay apart with red-green color blindness), OLED Minimal (true black, white and gray, color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted; errors are white, since everything is red) and Grayscale (shades of gray only, values brighter than labels, with red kept for errors).
+  * **Modern and easy on the eyes:** Graphite (a modern dark mode, muted colors and one blue accent), High Contrast (pure colors, white text and borders, for low vision and bright rooms), Colorblind Safe (the Okabe-Ito colors, which stay apart with red-green color blindness), OLED Minimal (true black, white and gray, color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted; errors are white, since everything is red) and Smallville (shades of gray, values brighter than labels, with pops of color: red for errors, and the band and mode colors).
 
-  The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window, the rosters included. A theme you choose recolors every open window at once. The Call Roster and Feed Roster keep the callsign, grid and other colors set in their own Settings.
+  The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window, the rosters included. A theme you choose recolors every open window at once. The Call Roster and Feed Roster keep the callsign, grid and other colors set in their own Settings. Bands and modes keep the colors set in the Colors tab, except in the Statistics and Lookup windows with Matrix, Amber CRT, Night Vision or OLED Minimal, which show them in shades of their own color.
 * **Window Theme:** Dark, Light or System.
 * **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
 * **Control Panel On Left Side:** puts the side panel on the left of the window and the map on the right.
@@ -242,6 +242,12 @@ The colors of the grids on the map, also shown in the map legend:
 ### Band Colors
 
 The color of each band. Band colors are used for map spots, pins and paths, in both rosters, in the Statistics window and in the Lookup window.
+
+### Mode Colors
+
+The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab's mode list and in the Statistics window.
+
+The Matrix, Amber CRT, Night Vision and OLED Minimal App Themes show bands and modes in the Statistics and Lookup windows in shades of their own color instead.
 
 Each box has a **Reset Colors** button in its title to return to the defaults.
 

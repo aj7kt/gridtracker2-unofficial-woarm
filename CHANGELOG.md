@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)
 - Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)
 - The Kp button now grows smoothly under the mouse, like the other buttons
+- New Mode Colors (Settings, Colors): choose the color of each mode, as Band Colors does for bands; the rosters and the Statistics window show them
 
 #### Multi-Mode Decoder
 
@@ -63,7 +64,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
 - Settings, Audio: Device is now called Output Device
-- Lookup: the Callsign Lookup window has a new, shorter look, and a callsign pasted with a space or in lower case no longer shows Unknown
+- Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown
+- Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors
 - At startup the map goes back to the instance it was showing when you closed GridTracker2
 
 ### HTML List
@@ -87,6 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)</li>
   <li>Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)</li>
   <li>The Kp button now grows smoothly under the mouse, like the other buttons</li>
+  <li>New Mode Colors (Settings, Colors): choose the color of each mode, as Band Colors does for bands; the rosters and the Statistics window show them</li>
 </ul>
 <h4>Multi-Mode Decoder</h4>
 <ul>
@@ -140,7 +143,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio</li>
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
   <li>Settings, Audio: Device is now called Output Device</li>
-  <li>Lookup: the Callsign Lookup window has a new, shorter look, and a callsign pasted with a space or in lower case no longer shows Unknown</li>
+  <li>Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown</li>
+  <li>Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors</li>
   <li>At startup the map goes back to the instance it was showing when you closed GridTracker2</li>
 </ul>
 ```

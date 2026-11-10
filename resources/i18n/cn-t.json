@@ -1967,5 +1967,7 @@
   "settings.logging.N3FJPContest.connected.hover": "已連接到 {0}",
   "events.source.aclog": "AC Log",
   "events.source.log4om": "Log4OM",
-  "events.source.n3fjp": "N3FJP 競賽"
+  "events.source.n3fjp": "N3FJP 競賽",
+  "settings.ModeColors.label": "模式顏色",
+  "settings.ModeColors.reset.hover": "將模式顏色重設為預設值"
 }

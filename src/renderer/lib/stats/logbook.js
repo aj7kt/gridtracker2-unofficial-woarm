@@ -421,9 +421,9 @@ function renderLogbookView(sortIndex = null, nextPage = 0)
           const stateTitle = htmlEntities(key.state in GT.StateData ? GT.StateData[key.state].name : key.state.substr(3)).replace(/'/g, "&#39;");
           stateTd = `<td align=center style='color:var(--gt-state)' title='${stateTitle}'><div class='logClip'>${htmlEntities(key.state.substr(3))}</div></td>`;
         }
-        let cntyTd = (key.cnty && key.cnty in GT.countyData) ? `<td align=center style='color:cyan'>${GT.countyData[key.cnty].geo.properties.n}</td>` : `<td></td>`;
-        let potaTd = showPota ? (key.pota ? `<td align=center style='color:#fbb6fc'>${key.pota}</td>` : `<td></td>`) : "";
-        let sotaTd = showSota ? (key.sota ? `<td align=center style='color:#40ffd8'>${key.sota}</td>` : `<td></td>`) : "";
+        let cntyTd = (key.cnty && key.cnty in GT.countyData) ? `<td align=center style='color:var(--gt-county)'>${GT.countyData[key.cnty].geo.properties.n}</td>` : `<td></td>`;
+        let potaTd = showPota ? (key.pota ? `<td align=center style='color:var(--gt-pota)'>${key.pota}</td>` : `<td></td>`) : "";
+        let sotaTd = showSota ? (key.sota ? `<td align=center style='color:var(--gt-sota)'>${key.sota}</td>` : `<td></td>`) : "";
 
         let lotwTd = GT.settings.callsignLookups.lotwUseEnable ? `<td align=center>${key.DEcall in GT.lotwCallsigns ? "&#10004;" : ""}</td>` : "";
         let eqslTd = GT.settings.callsignLookups.eqslUseEnable ? `<td align=center>${key.DEcall in GT.eqslCallsigns ? "&#10004;" : ""}</td>` : "";
@@ -438,8 +438,8 @@ function renderLogbookView(sortIndex = null, nextPage = 0)
         return `<tr align=left>
           <td style='color:var(--gt-callsign);cursor:pointer' onclick='window.opener.startLookup("${key.DEcall}","${key.grid}");'>${formatCallsign(key.DEcall)}</td>
           <td style='color:var(--gt-grid);'>${key.grid}${key.vucc_grids.length ? ", " + key.vucc_grids.join(", ") : ""}</td>
-          <td style='color:var(--gt-band)'>${key.band}</td>
-          <td style='color:var(--gt-mode)'>${key.mode}</td>
+          <td${statBandAttrs(key.band)}>${key.band}</td>
+          <td${statModeAttrs(key.mode)}>${key.mode}</td>
           <td align=left ${confTitle}>${confTd}</td>
           <td>${key.RSTsent}</td>
           <td>${key.RSTrecv}</td>
@@ -631,6 +631,8 @@ function renderLogbookRows(scrollTop = null)
   view.first = first;
   view.last = last;
   const html = [];
+  // An empty row more when needed, so each QSO keeps its shade (every other row, html.statsModern in style.css) as the list scrolls
+  if (((first > 0 ? 1 : 0) - first) % 2 !== 0) html.push(logbookSpacerRow(0));
   if (first > 0) html.push(logbookSpacerRow(first * view.rowHeight));
   for (let i = first; i < last; i++) html.push(view.rowHtml(view.rows[i]));
   if (last < view.rows.length) html.push(logbookSpacerRow((view.rows.length - last) * view.rowHeight));

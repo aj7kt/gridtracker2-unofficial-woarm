@@ -1167,7 +1167,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <option value="foodforest">Food Forest</option>
                   <option value="frost">Frost</option>
                   <option value="graphite">Graphite</option>
-                  <option value="grayscale">Grayscale</option>
                   <option value="ega80s">GridTracker2</option>
                   <option value="highcontrast">High Contrast</option>
                   <option value="inferno">Inferno</option>
@@ -1176,6 +1175,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <option value="oledminimal">OLED Minimal</option>
                   <option value="opus">Opus' Choice</option>
                   <option value="prairiehome">Prairie Home</option>
+                  <option value="grayscale">Smallville</option>
                   <option value="sunflower">Sunflower</option>
                   <option value="sunset">Sunset</option>
                   <option value="synthwave">Synthwave</option>
@@ -1876,6 +1876,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </div>
           <!-- One cell per band, built by mapSettings.js (renderBandColorSettings): the band in its color, then its swatch -->
           <div id="bandColorsDiv" class="bandColorsGrid"></div>
+        </div>
+        <div class="mapGroup" id="modeColorsBox">
+          <div class="mapGroupTitle mapTitleBar">
+            <span data-i18n="settings.ModeColors.label">Mode Colors</span>
+            <span data-i18n="settings.ModeColors.reset.hover" title="Reset Mode Colors To Default"><div data-i18n="settings.grids.reset.label" class="button" onclick="resetModeColors()">Reset Colors</div></span>
+          </div>
+          <!-- One cell per mode (data/modes.json), built by mapSettings.js (renderModeColorSettings): the mode in its color, then its swatch -->
+          <div id="modeColorsDiv" class="bandColorsGrid"></div>
         </div>
       </div>
     </div>
@@ -2655,9 +2663,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </div>
     <div id="customAlertsDiv" class="settingsTabcontent">
       <div>
-      <div id="alertFormDiv" style="display: inline-block">
-        <table align="center" class="roundBorder" style="border: 3px groove darkred; margin: 0 auto">
-          <th data-i18n="settings.alerts.CustomAlerts.label" colspan="8">Custom Alerts</th>
+      <!-- New alert: a box with its title, like the other tabs' -->
+      <div class="mapGroups">
+      <div id="alertFormDiv" class="mapGroup">
+        <div class="mapGroupTitle" data-i18n="settings.alerts.CustomAlerts.label">Custom Alerts</div>
+        <table align="center" style="margin: 0 auto">
           <tr>
             <td data-i18n="settings.alerts.CustomAlerts.new.type.label">Type</td>
             <td data-i18n="settings.alerts.CustomAlerts.new.value.label">Value</td>
@@ -2705,7 +2715,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </tr>
         </table>
       </div>
-      <br />
+      </div>
       <div id="alertListDiv" style="margin: 4px; padding: 4px"></div>
       </div>
     </div>
@@ -2717,7 +2727,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           <div class="mapGroup">
             <div class="mapGroupTitle" style="display: flex; align-items: center; justify-content: center; gap: 6px;"><input type="checkbox" id="birdWatchAutoRigValue" style="margin: 0;" data-i18n="birdWatch.auto.rig.hover" title="A satellite Auto-Track selects is followed by the rig too (with Rig Control), as a satellite you select is; off, Auto-Track only selects it" onclick="birdWatchAutoRigChange()" /><label for="birdWatchAutoRigValue" data-i18n="settings.rig.label">Rig Control</label></div>
             <table class="mapChecks">
-              <tr><td colspan="2" style="white-space: normal; max-width: 300px; color: #ccc;" data-i18n="birdWatch.rig.vfos.note">Each VFO's Satellites row (Settings, Rig Control) says what it receives and transmits on; the first in the list that fits is used. Right-click a transmitter's downlink or uplink to pick its own VFO</td></tr>
+              <tr><td colspan="2" style="white-space: normal; max-width: 300px; color: var(--gt-note);" data-i18n="birdWatch.rig.vfos.note">Each VFO's Satellites row (Settings, Rig Control) says what it receives and transmits on; the first in the list that fits is used. Right-click a transmitter's downlink or uplink to pick its own VFO</td></tr>
               <tr><td colspan="2"><input type="checkbox" id="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.hover" title="Turning one VFO's dial tunes the other with it, for a linear transponder: by the same amount, the other way for an inverting one. Both keep following the Doppler" onclick="birdWatchLockVfosSet(this.checked)" /> <label for="birdWatchLockVfosValue" data-i18n="birdWatch.rig.lockVfos.label">Lock VFOs</label></td></tr>
             </table>
           </div>

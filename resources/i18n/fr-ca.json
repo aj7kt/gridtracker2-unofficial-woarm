@@ -1965,5 +1965,7 @@
 	"settings.logging.N3FJPContest.connected.hover": "Connecté à {0}",
 	"events.source.aclog": "AC Log",
 	"events.source.log4om": "Log4OM",
-	"events.source.n3fjp": "N3FJP Concours"
+	"events.source.n3fjp": "N3FJP Concours",
+	"settings.ModeColors.label": "Couleurs des modes",
+	"settings.ModeColors.reset.hover": "Rétablir les couleurs des modes par défaut"
 }

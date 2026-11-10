@@ -995,13 +995,14 @@ function rigVfoBoxRender(v)
 // A VFO's Satellites row (rigVfoSatRanges): each range as "2m RX", "28.0 - 29.7 MHz TX" or "All Frequencies RX" with its ✕; none: not
 // used with satellites. Under them a band (or All Frequencies, or Custom with its MHz), RX, TX or RX/TX, and Add
 const RIG_SAT_DIR_NAMES = { rx: "RX", tx: "TX", both: "RX/TX" };
-const RIG_SAT_DIR_COLORS = { rx: "cyan", tx: "orange", both: "yellow" };
+// The App Theme's (GridTracker2: cyan, orange, yellow)
+const RIG_SAT_DIR_COLORS = { rx: "var(--gt-hover-accent)", tx: "var(--gt-transmit)", both: "var(--gt-callsign)" };
 
 function rigSatRender(v)
 {
   const el = (name) => rigVfoEl(v.id, name);
   const ranges = rigVfoSatRanges(v);
-  const html = ranges.length == 0 ? "<span style='color:#aaa'>" + htmlEntities(I18N("settings.rig.sat.none")) + "</span>" : ranges.map((r, i) =>
+  const html = ranges.length == 0 ? "<span style='color:var(--gt-box-line)'>" + htmlEntities(I18N("settings.rig.sat.none")) + "</span>" : ranges.map((r, i) =>
     "<span class='rigSatRange'>" + htmlEntities(rigSatRangeName(r)) + " <span style='color:" + RIG_SAT_DIR_COLORS[r.dir] + "'>" + RIG_SAT_DIR_NAMES[r.dir] + "</span>" +
     "<span class='rigVfoRemove' data-i='" + i + "' title='" + htmlEntities(I18N("settings.rig.sat.remove.hover")).replace(/'/g, "&#39;") + "' onclick='rigSatRemove(this);'>✕</span></span>").join("");
   const list = el("SatList");

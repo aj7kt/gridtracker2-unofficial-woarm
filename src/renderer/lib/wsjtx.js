@@ -1224,7 +1224,7 @@ function finalWsjtxDecode(newMessage, useReformedMessage = false, reformedMessag
   }
 
   let bgColor = "black";
-  if (newMessage.LC > 0) bgColor = "#880000";
+  if (newMessage.LC > 0) bgColor = "var(--gt-low-confidence-bg)";
 
   GT.lastMessages.unshift(`
     <tr style='background-color:${bgColor}'>
@@ -1232,7 +1232,7 @@ function finalWsjtxDecode(newMessage, useReformedMessage = false, reformedMessag
       <td style='color:var(--gt-snr)'>${newMessage.SR}</td>
       <td style='color:var(--gt-dt)'>${newMessage.DT.toFixed(1)}</td>
       <td style='color:var(--gt-frequency)'>${newF}</td>
-      <td>${mode}</td>
+      <td${statModeAttrs(mode)}>${mode}</td>
       <td style='color:${CQ ? "var(--gt-cq)" : "var(--gt-message)"}'>${htmlEntities(theMessage)}</td>
       <td style='color:var(--gt-country)'>${countryName}</td>
     </tr>

@@ -1746,7 +1746,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>Callsigns</th>${clearString}</tr>`);
     Object.keys(CR.ignoredCalls).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:#FFFF00;'>${key}</td><td style='cursor:pointer;' onclick='deleteCallsignIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-callsign);'>${key}</td><td style='cursor:pointer;' onclick='deleteCallsignIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1760,7 +1760,7 @@ function renderIgnoresTab()
       let split = rawKey.split(":");
       let key = split[0];
       let dxcc = split.length === 2 ? parseInt(split[1]) : -1;
-      html.push(`<tr><td align='left' style='color:lightgreen;'>${key} from ${dxcc === -1 ? "All" : GT.dxccToAltName[dxcc]}</td><td style='cursor:pointer;' onclick='deleteCQIgnore("${rawKey}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-state);'>${key} from ${dxcc === -1 ? "All" : GT.dxccToAltName[dxcc]}</td><td style='cursor:pointer;' onclick='deleteCQIgnore("${rawKey}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1771,7 +1771,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${isFeedRoster() ? I18N("rosterColumns.DXCC.feedHeader") : "DXCC"}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredDxcc).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:#FFA500;'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-country);'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1782,7 +1782,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("rosterColumns.DEDXCC.header")}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredDeDxcc).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:#5caeff;'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDeDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-accent);'>${GT.dxccToAltName[key]} (${GT.dxccInfo[key].pp})</td><td style='cursor:pointer;' onclick='deleteDeDxccIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1793,7 +1793,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("rosterColumns.DECont.header")}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredDeCont).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:#5caeff;'>${key}</td><td style='cursor:pointer;' onclick='deleteDeContIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-accent);'>${key}</td><td style='cursor:pointer;' onclick='deleteDeContIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1804,7 +1804,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>Grid</th>${clearString}</tr>`);
     Object.keys(CR.ignoredGrid).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteGridIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-grid);'>${key}</td><td style='cursor:pointer;' onclick='deleteGridIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1815,7 +1815,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("gt.viewInfo.cqZones")}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredCQz).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteCQzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-zone);'>${key}</td><td style='cursor:pointer;' onclick='deleteCQzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1826,7 +1826,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("gt.awardNames.ITU")}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredITUz).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:cyan;'>${key}</td><td style='cursor:pointer;' onclick='deleteITUzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-zone);'>${key}</td><td style='cursor:pointer;' onclick='deleteITUzIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -1837,7 +1837,7 @@ function renderIgnoresTab()
     html.push(`<div class='ignoresTables'><table class='darkTable' align='center'><tr><th align='left'>${I18N("roster.ignores.spotters")}</th>${clearString}</tr>`);
     Object.keys(CR.ignoredSpotters).sort().forEach(function (key)
     {
-      html.push(`<tr><td align='left' style='color:#5caeff;'>${key}</td><td style='cursor:pointer;' onclick='deleteSpotterIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
+      html.push(`<tr><td align='left' style='color:var(--gt-accent);'>${key}</td><td style='cursor:pointer;' onclick='deleteSpotterIgnore("${key}")'><img src='img/trash_24x48.png' style='height:17px;margin:-1px;margin-bottom:-3px;padding:0px'></td></tr>`);
     });
     html.push("</table></div>");
   }
@@ -3457,7 +3457,7 @@ function ValidateTextInput(inputText, validDiv = null)
     if (passed)
     {
       inputText.style.color = "var(--gt-input-text)";
-      inputText.style.backgroundColor = "darkgreen";
+      inputText.style.backgroundColor = "var(--gt-valid-bg)";
       if (validDiv) validDiv.innerHTML = "";
       return true;
     }
@@ -3857,8 +3857,8 @@ function renderWatchersTab()
       let callsignDisplay = watcher.regex ? text : formatCallsign(text);
 
       html.push(`<tr><td style="cursor:pointer;font-size:larger;" onclick="toggleWatcher('${key}')">${watcher.watch ? "👀" : "🙈"}</td>` +
-                `<td align="left" style="color:yellow;">${watcher.name}</td><td>${watcher.type}</td><td>${watcher.regex ? "☑️" : ""}</td>` +
-                `<td style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:250px;color:cyan;">${callsignDisplay}</td>` +
+                `<td align="left" style="color:var(--gt-callsign);">${watcher.name}</td><td>${watcher.type}</td><td>${watcher.regex ? "☑️" : ""}</td>` +
+                `<td style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:250px;color:var(--gt-callsign-other);">${callsignDisplay}</td>` +
                 `<td>${watcher.start ? window.opener.userTimeString(watcher.startTime) : ""}</td>` +
                 `<td>${watcher.end ? window.opener.userTimeString(watcher.endTime) : ""}</td>` +
                 `<td style="cursor:pointer;font-size:larger;" onclick="editWatcher('${key}')">📝</td>` +

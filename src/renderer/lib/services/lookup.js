@@ -1038,7 +1038,7 @@ function lookupGridCellStyle(gridLocator, band, mode)
 
   return (g + suffix) in GT.tracker.confirmed.grid
     ? "color:var(--gt-grid);background-color:black;"
-    : "color:black;background-color:cyan;";
+    : "color:var(--gt-needed-text);background-color:var(--gt-grid);";
 }
 
 function makeRow(first, object, key)
@@ -1158,11 +1158,11 @@ function toggleLookupWindow(toggle = true)
 }
 
 // A band (or band and mode) as a chip in its band color, for the lookup's log: a faint dashed outline when only worked, filled when
-// confirmed
+// confirmed (style.css: the theme's color in the themes of shades of one color)
 function lookupBandChip(text, band, confirmed)
 {
-  const color = GT.bandColors[band] || "888888";
-  return `<span class='lookupBand${confirmed ? " lookupConf" : ""}' style='color:#${color};${confirmed ? "background:#" + color + "48" : "border-color:#" + color + "80"}'>${text}</span>`;
+  const own = band in GT.bandColors ? ` style='--own-color:#${GT.bandColors[band]}'` : "";
+  return `<span class='lookupBand${confirmed ? " lookupConf" : ""}'${own}>${text}</span>`;
 }
 
 // Your log for the call (above the Details): the bands and modes worked and confirmed, the last QSO, and its DXCC entity's bands; and
@@ -1221,7 +1221,7 @@ function searchLogForCallsign(call)
   if (lastRow)
   {
     const last = list[lastRow];
-    row(I18N("gt.lookup.lastQSO"), "var(--gt-title)","<span style='font-weight:bold;color:#" + (GT.bandColors[last.band] || "888888") + "'>" + last.band + " " + last.mode + "</span> <span class='lookupLogTime'>" + userTimeString(last.time * 1000) + "</span>");
+    row(I18N("gt.lookup.lastQSO"), "var(--gt-title)","<b" + statBandAttrs(last.band) + ">" + last.band + " " + last.mode + "</b> <span class='lookupLogTime'>" + userTimeString(last.time * 1000) + "</span>");
   }
 
   // The entity's bands: confirmed ones filled

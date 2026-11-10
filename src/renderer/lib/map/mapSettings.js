@@ -135,6 +135,7 @@ function loadMapSettings()
   rangeRingsImg.style.filter = GT.settings.map.showRangeRings ? "" : "grayscale(1)";
 
   applyBandColorSettings();
+  applyModeColorSettings();
 
   setGridOpacity();
   setMapColors();
@@ -355,6 +356,75 @@ function resetBandColors()
   GT.settings.bandColors = {};
   applyBandColorSettings();
   redrawBandColors();
+}
+
+// Mode colors (Settings -> Colors -> Mode Colors): GT.modeColors starts as data/modes.json's colors (audio.js mediaCheck),
+// GT.settings.modeColors holds only the modes the user changed. JS8CALL (the feeds' name for JS8) follows JS8
+GT.defaultModeColors = null;
+GT.redrawModeColorsTimeout = null;
+
+function applyModeColorSettings()
+{
+  if (GT.defaultModeColors == null)
+  {
+    GT.defaultModeColors = { ...GT.modeColors };
+    delete GT.defaultModeColors.JS8CALL;
+  }
+
+  for (const mode in GT.defaultModeColors)
+  {
+    const saved = GT.settings.modeColors[mode];
+    // Saved colors end up in HTML style attributes, so only plain 6-digit hex is used
+    GT.modeColors[mode] = (typeof saved === "string" && BAND_COLOR_REGEXP.test(saved)) ? saved : GT.defaultModeColors[mode];
+  }
+  GT.modeColors.JS8CALL = GT.modeColors.JS8;
+  renderModeColorSettings();
+}
+
+function renderModeColorSettings()
+{
+  modeColorsDiv.innerHTML = Object.keys(GT.defaultModeColors).sort().map((mode) =>
+    `<div class="bandColorCell">` +
+    `<b id="modeColorLabel_${mode}" style="color:#${GT.modeColors[mode]};">${mode}</b><br />` +
+    `<input type="color" value="#${GT.modeColors[mode]}" oninput="changeModeColor('${mode}', this)" />` +
+    `</div>`
+  ).join("");
+}
+
+function changeModeColor(mode, input)
+{
+  const hex = input.value.substring(1).toUpperCase();
+  GT.modeColors[mode] = hex;
+  if (mode === "JS8") GT.modeColors.JS8CALL = hex;
+
+  if (hex === GT.defaultModeColors[mode].toUpperCase())
+  {
+    delete GT.settings.modeColors[mode];
+  }
+  else
+  {
+    GT.settings.modeColors[mode] = hex;
+  }
+
+  document.getElementById("modeColorLabel_" + mode).style.color = "#" + hex;
+
+  nodeTimers.clearTimeout(GT.redrawModeColorsTimeout);
+  GT.redrawModeColorsTimeout = nodeTimers.setTimeout(redrawModeColors, 500);
+}
+
+function resetModeColors()
+{
+  GT.settings.modeColors = {};
+  applyModeColorSettings();
+  redrawModeColors();
+}
+
+// The rosters show mode colors; the Stats and Lookup windows and the Feeds settings pick them up on their next render
+function redrawModeColors()
+{
+  GT.redrawModeColorsTimeout = null;
+  goProcessRoster();
+  updateRosterFeeds();
 }
 
 // Everything drawn with band colors; Stats and Lookup windows pick them up on their next render
