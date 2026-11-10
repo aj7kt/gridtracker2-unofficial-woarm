@@ -167,7 +167,8 @@ function handleInstanceStatus(newMessage)
       redrawPins();
 
       let msg = "<span style='color:var(--gt-band)'>" + GT.settings.app.myBand + "</span> / <span style='color:var(--gt-mode)'>" + GT.settings.app.myMode + "</span>";
-      addEvent("wsjtx", msg);
+      // Said as the Multi-Mode Decoder's when its instance is the active one (services/mmDecoder.js)
+      addEvent(newMessage.instance == MMD_INSTANCE_ID ? "mmd" : "wsjtx", msg);
       ackAlerts();
 
       GT.startingUp = false;

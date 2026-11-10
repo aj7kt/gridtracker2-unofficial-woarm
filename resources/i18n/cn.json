@@ -1441,7 +1441,6 @@
   "settings.ft8Decoder.sendDecodes.label": "将解码发送到呼号列表",
   "settings.ft8Decoder.sendDecodes.hover": "FT8 解码除了地图外也发送到呼号列表",
   "settings.ft8Decoder.instance.note.label": "正在等待 Rig Control 读取 FT8 VFO 的频率",
-  "mmd.instance.event.started": "Multi-Mode Decoder：实例 MMD 已启动（{mode}，{freq}）",
   "mmd.instance.event.stopped": "Multi-Mode Decoder：实例 MMD 已关闭",
   "mmd.instance.background.hover": "Multi-Mode Decoder 正在后台监听：解码作为实例 MMD 发送到 GridTracker",
   "birdWatch.rig.connect.hover": "{vfo}：点击连接或断开",
@@ -1951,5 +1950,6 @@
   "settings.map.cast.softwareFps.label": "软件帧率",
   "settings.map.cast.softwareFps.hover": "没有硬件视频编码器时地图视频的每秒帧数。越多越流畅，占用 CPU 越多；在下次视频开始时生效",
   "settings.map.cast.softwareSize.label": "软件分辨率",
-  "settings.map.cast.softwareSize.hover": "没有硬件视频编码器时地图视频的大小。越大越清晰，占用 CPU 越多；在下次视频开始时生效"
+  "settings.map.cast.softwareSize.hover": "没有硬件视频编码器时地图视频的大小。越大越清晰，占用 CPU 越多；在下次视频开始时生效",
+  "events.source.mmd": "MMD"
 }

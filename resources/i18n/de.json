@@ -1441,7 +1441,6 @@
 	"settings.ft8Decoder.sendDecodes.label": "Dekodierungen an Call Roster senden",
 	"settings.ft8Decoder.sendDecodes.hover": "FT8-Dekodierungen gehen zusätzlich zur Karte auch an den Call Roster",
 	"settings.ft8Decoder.instance.note.label": "Wartet darauf, dass Rig Control die Frequenz des FT8-VFO liest",
-	"mmd.instance.event.started": "Multi-Mode Decoder: Instanz MMD gestartet ({mode}, {freq})",
 	"mmd.instance.event.stopped": "Multi-Mode Decoder: Instanz MMD geschlossen",
 	"mmd.instance.background.hover": "Multi-Mode Decoder hört im Hintergrund: Dekodierungen gehen als Instanz MMD an GridTracker",
 	"birdWatch.rig.connect.hover": "{vfo}: Klicken zum Verbinden oder Trennen",
@@ -1951,5 +1950,6 @@
 	"settings.map.cast.softwareFps.label": "Software-Bildrate",
 	"settings.map.cast.softwareFps.hover": "Ohne Hardware-Video-Encoder: die Bilder pro Sekunde des Kartenvideos. Mehr ist flüssiger und braucht mehr CPU; gilt ab dem nächsten Start des Videos",
 	"settings.map.cast.softwareSize.label": "Software-Auflösung",
-	"settings.map.cast.softwareSize.hover": "Ohne Hardware-Video-Encoder: die Größe des Kartenvideos. Größer ist schärfer und braucht mehr CPU; gilt ab dem nächsten Start des Videos"
+	"settings.map.cast.softwareSize.hover": "Ohne Hardware-Video-Encoder: die Größe des Kartenvideos. Größer ist schärfer und braucht mehr CPU; gilt ab dem nächsten Start des Videos",
+	"events.source.mmd": "MMD"
 }

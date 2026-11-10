@@ -1440,7 +1440,6 @@
   "settings.ft8Decoder.sendDecodes.label": "Enviar descodificações ao Call Roster",
   "settings.ft8Decoder.sendDecodes.hover": "As descodificações FT8 vão para o Call Roster além do mapa",
   "settings.ft8Decoder.instance.note.label": "A aguardar que o Rig Control leia a frequência do VFO do FT8",
-  "mmd.instance.event.started": "Multi-Mode Decoder: instância MMD iniciada ({mode}, {freq})",
   "mmd.instance.event.stopped": "Multi-Mode Decoder: instância MMD fechada",
   "mmd.instance.background.hover": "Multi-Mode Decoder a ouvir em segundo plano: as descodificações chegam ao GridTracker como instância MMD",
   "birdWatch.rig.connect.hover": "{vfo}: clique para ligar ou desligar",
@@ -1950,5 +1949,6 @@
   "settings.map.cast.softwareFps.label": "Taxa de imagens por software",
   "settings.map.cast.softwareFps.hover": "Sem codificador de vídeo por hardware: as imagens por segundo do vídeo do mapa. Mais é mais suave e usa mais CPU; aplica-se no próximo início do vídeo",
   "settings.map.cast.softwareSize.label": "Resolução por software",
-  "settings.map.cast.softwareSize.hover": "Sem codificador de vídeo por hardware: o tamanho do vídeo do mapa. Maior é mais nítido e usa mais CPU; aplica-se no próximo início do vídeo"
+  "settings.map.cast.softwareSize.hover": "Sem codificador de vídeo por hardware: o tamanho do vídeo do mapa. Maior é mais nítido e usa mais CPU; aplica-se no próximo início do vídeo",
+  "events.source.mmd": "MMD"
 }

@@ -20,7 +20,7 @@ GT.events = [];
 // The widest time, source and text seen, in px: the columns' widths, which only grow
 GT.eventsWidths = { time: 0, source: 0, text: 0 };
 
-// An event from a part of the app: source "app", "log", "decode", "wsjtx", "roster", "birdwatch", "rotor" or "sota"; html the text
+// An event from a part of the app: source "app", "log", "decode", "wsjtx", "mmd", "roster", "birdwatch", "rotor", "sota" or "cast"; html the text
 // (html coloring allowed; a message's line breaks become spaces). error: an error, which opens the Event Viewer (Settings -> General,
 // Open Event Viewer On Error); by default one said in red (the theme's error color), as the app says its errors
 function addEvent(source, html, error = /color:\s*red\b|color=["']red["']|var\(--gt-error\)/i.test(String(html)))

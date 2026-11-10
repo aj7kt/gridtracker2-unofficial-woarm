@@ -1440,7 +1440,6 @@
 	"settings.ft8Decoder.sendDecodes.label": "デコードをコールロスターへ送る",
 	"settings.ft8Decoder.sendDecodes.hover": "FT8のデコードを地図に加えてコールロスターへも送ります",
 	"settings.ft8Decoder.instance.note.label": "Rig ControlがFT8のVFOの周波数を読み取るのを待っています",
-	"mmd.instance.event.started": "Multi-Mode Decoder：インスタンスMMDを開始しました（{mode}、{freq}）",
 	"mmd.instance.event.stopped": "Multi-Mode Decoder：インスタンスMMDを閉じました",
 	"mmd.instance.background.hover": "Multi-Mode Decoderがバックグラウンドで受信中：デコードをインスタンスMMDとしてGridTrackerへ送ります",
 	"birdWatch.rig.connect.hover": "{vfo}：クリックで接続・切断",
@@ -1950,5 +1949,6 @@
 	"settings.map.cast.softwareFps.label": "ソフトウェアのフレームレート",
 	"settings.map.cast.softwareFps.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像の毎秒フレーム数です。多いほど滑らかになり CPU を多く使います。次に映像が始まるときから適用されます",
 	"settings.map.cast.softwareSize.label": "ソフトウェアの解像度",
-	"settings.map.cast.softwareSize.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像のサイズです。大きいほど鮮明になり CPU を多く使います。次に映像が始まるときから適用されます"
+	"settings.map.cast.softwareSize.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像のサイズです。大きいほど鮮明になり CPU を多く使います。次に映像が始まるときから適用されます",
+	"events.source.mmd": "MMD"
 }

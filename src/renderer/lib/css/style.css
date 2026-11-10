@@ -115,6 +115,14 @@ html, body {
   --gt-slider-thumb-end: #00f7ff;
 }
 
+/* GridTracker2's band activity bars: PSK Reporter's score red and its spots blue (their tooltip says so); the other themes draw them
+   in their transmit and accent colors (.barTx, .barRx) */
+:root:not([data-app-theme]),
+:root[data-app-theme="ega80s"] {
+  --gt-activity-psk: red;
+  --gt-activity-spots: #1e90ff;
+}
+
 :root[data-app-theme="opus"] {
   /* Opus' Choice: softer tones of one brightness, a different hue for each thing shown side by side, labels a step dimmer
      than values; red still only for errors */
@@ -2985,7 +2993,7 @@ html, body {
   padding: 0px;
   display: inline-block;
   position: relative;
-  background-color: var(--gt-transmit);
+  background-color: var(--gt-activity-psk, var(--gt-transmit));
   vertical-align: baseline;
 }
 .barRx {
@@ -2994,7 +3002,7 @@ html, body {
   padding: 0px;
   display: inline-block;
   position: relative;
-  background-color: #1e90ff;
+  background-color: var(--gt-activity-spots, var(--gt-accent));
   vertical-align: baseline;
 }
 
