@@ -69,7 +69,7 @@ function closeSotaLogDialog()
 {
   if (CR.sotaLog.closeTimer)
   {
-    clearTimeout(CR.sotaLog.closeTimer);
+    nodeTimers.clearTimeout(CR.sotaLog.closeTimer);
     CR.sotaLog.closeTimer = null;
   }
   sotaLogBox.style.display = "none";
@@ -121,5 +121,5 @@ function submitSotaLogQso()
   // The confirmation stays a moment, then the dialog closes (the roster repaints as the QSO is read back)
   CR.sotaLog.busy = true;
   sotaLogStatus(result.message, false);
-  CR.sotaLog.closeTimer = setTimeout(closeSotaLogDialog, 1400);
+  CR.sotaLog.closeTimer = nodeTimers.setTimeout(closeSotaLogDialog, 1400);
 }

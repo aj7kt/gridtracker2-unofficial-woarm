@@ -1114,7 +1114,7 @@
     </div>
     <!-- What is decoded: the mode and the mode's usual frequencies (its Bandpass is in Settings, General) (shown with Rig Control connected, mmdFreqsShow) -->
     <div id="cwBar">
-      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="thor">DominoEX / THOR</option><option value="hell">Feld-Hell</option><option value="ft4">FT4</option><option value="ft8">FT8</option><option value="mfsk">MFSK</option><option value="navtex">NAVTEX</option><option value="olivia">Olivia</option><option value="packet" data-i18n="settings.packetDecoder.label">Packet</option><option value="psk31">PSK</option><option value="rtty">RTTY</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wefax">WEFAX</option><option value="wspr">WSPR</option></select></span>
+      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="thor">DominoEX / THOR</option><option value="hell">Feld-Hell</option><option value="ft4">FT4</option><option value="ft8">FT8</option><option value="mfsk">MFSK</option><option value="olivia">Olivia</option><option value="packet" data-i18n="settings.packetDecoder.label">Packet</option><option value="psk31">PSK</option><option value="rtty">RTTY</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wspr">WSPR</option><option value="navtex">NAVTEX</option><option value="wefax">WEFAX</option></select></span>
       <span id="cwFreqsBox" class="cwPick"><select id="cwFreqs" style="display: none;" data-i18n="cwViewer.freqs.hover" title="The usual frequencies for this mode: pick one to set the rig to it, its frequency and its mode as this mode allows (Settings: Rig Control, then Decoders)"></select></span>
       <!-- The waterfall's UTC lines, every so often (not in FT8, FT4 and WSPR, which have their period lines: mmdModeSet) -->
       <span id="cwUtcBox" class="cwPick"><label for="cwUtc" data-i18n="cwViewer.utc.label">UTC</label><select id="cwUtc" data-i18n="cwViewer.utc.hover" title="Lines across the waterfall on the UTC clock, each with its time"><option value="0" data-i18n="cwViewer.utc.off">Off</option><option value="10">10s</option><option value="15">15s</option><option value="30">30s</option><option value="60">1m</option></select></span>
@@ -1139,6 +1139,7 @@
     <div id="mmdSettings">
       <div class="settingstab">
         <button id="mmdGeneralTabButton" class="settingsTablinks active" onclick="mmdSettingsTab('general');" data-i18n="cwViewer.settings.general.label">General</button>
+        <button id="mmdScopeTabButton" class="settingsTablinks" onclick="mmdSettingsTab('scope');" data-i18n="cwViewer.settings.scope.label">Rig Scope</button>
         <button id="mmdModesTabButton" class="settingsTablinks" onclick="mmdSettingsTab('modes');" data-i18n="cwViewer.settings.modes.label">Decoders</button>
         <button id="mmdBandsTabButton" class="settingsTablinks" onclick="mmdSettingsTab('bands');" data-i18n="settings.bands.tab.label">Band Plans</button>
         <button class="Xbutton" onclick="mmdSettingsShow(false);">X</button>
@@ -1169,6 +1170,13 @@
             <div class="mmdRigControl mmdRigRow"><input data-i18n="settings.mmDecoder.commonVfo.hover" title="One VFO for every decoder; off, each decoder uses its own" type="checkbox" id="mmdCommonVfoValue" onclick="mmdSetCommonVfo();" /> <label data-i18n="settings.mmDecoder.commonVfo.label" for="mmdCommonVfoValue">Common VFO</label></div>
             <div id="mmdCommonVfoRow" class="mmdCommonRow mmdRigRow"><select id="commonVfoSelect" data-i18n="settings.mmDecoder.commonVfoSelect.hover" title="The Rig Control VFO every decoder reads and, with Rig Control, tunes" onchange="mmdSetVfo('common');"></select></div>
           </div>
+        </div>
+      </div>
+      <!-- Rig Scope: the band scope strip (mmdScope.js): how strongly what's outside the amateur bands is shaded -->
+      <div id="mmdScopeTab" class="settingsTabcontent" style="display: none;">
+        <div class="mapGroups">
+          <div class="mapGroup">
+            <div class="mmdRigControl mmdFallRow"><span data-i18n="settings.mmDecoder.scopeOob.label">Out Of Band Shading</span> <input data-i18n="settings.mmDecoder.scopeOob.hover" title="How strongly what's outside the amateur bands is shaded in the warning color: 0% not at all, 100% solid" type="range" min="0" max="100" step="1" value="18" class="slider" id="mmdScopeOobValue" oninput="mmdScopeSetOob();" /><span id="mmdScopeOobTd" class="mapValue">18%</span></div>          </div>
         </div>
       </div>
       <!-- Decoders: each decoder's own settings, the same rows in each: its Input Device and its VFO (shown with their common ones off), then
@@ -1328,6 +1336,9 @@
                   <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="oliviaVfoSelect">VFO</label></td>
                   <td><select id="oliviaVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('olivia');"></select></td>
                 </tr>
+                <tr class="mmdRigRow">
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="oliviaSetFreqValue" onclick="mmdSetRigSend('olivia');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="oliviaSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="oliviaSetModeValue" onclick="mmdSetRigSend('olivia');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="oliviaSetModeValue">Set Mode</label></td>
+                </tr>
               </table>
             </div>
             <div class="rigVfoBox">
@@ -1473,9 +1484,9 @@
         <div class="rigVfoBox">
           <div class="rigVfoTitle"><span data-i18n="settings.bands.freqs.label">Frequencies</span> <select id="mmdBandsModeSelect" data-i18n="settings.bands.mode.hover" title="The mode whose frequencies are shown" onchange="mmdBandsPickMode();"></select></div>
           <table class="mmdBandsTable">
-            <thead><tr><th data-i18n="cwViewer.mode.label">Mode</th><th data-i18n="settings.bands.band.label">Band</th><th data-i18n="settings.bands.mhz.label">Frequency (MHz)</th><th data-i18n="settings.bands.rigMode.label">Rig Mode</th><th data-i18n="settings.bands.note.label">Note</th><th></th></tr></thead>
+            <thead><tr><th data-i18n="cwViewer.mode.label">Mode</th><th data-i18n="settings.bands.band.label">Band</th><th data-i18n="settings.bands.mhz.label">Frequency (MHz)</th><th data-i18n="settings.bands.rigMode.label">Rig Mode</th><th data-i18n="settings.bands.main.label">Main</th><th data-i18n="settings.bands.note.label">Note</th><th></th></tr></thead>
             <!-- A new one entered here, then Add -->
-            <tbody class="mmdBandsForm"><tr><td><input type="text" id="mmdBandsNewMode" style="width: 70px;" /></td><td><input type="text" id="mmdBandsNewBand" style="width: 50px;" /></td><td><input type="text" id="mmdBandsNewFreq" style="width: 90px;" /></td><td><select id="mmdBandsNewRig"><option value="USB">USB</option><option value="LSB">LSB</option><option value="CW">CW</option><option value="FM">FM</option><option value="AM">AM</option></select></td><td><input type="text" id="mmdBandsNewNote" style="width: 160px;" /></td><td><span class="cwButton" onclick="mmdBandsAddFreq();" data-i18n="settings.bands.addFreq.hover" title="Adds the frequency entered on this row"><span data-i18n="settings.bands.add.label">Add</span></span></td></tr></tbody>
+            <tbody class="mmdBandsForm"><tr><td><input type="text" id="mmdBandsNewMode" style="width: 70px;" /></td><td><input type="text" id="mmdBandsNewBand" style="width: 50px;" /></td><td><input type="text" id="mmdBandsNewFreq" style="width: 90px;" /></td><td><select id="mmdBandsNewRig"><option value="USB">USB</option><option value="LSB">LSB</option><option value="CW">CW</option><option value="FM">FM</option><option value="AM">AM</option></select></td><td><input type="checkbox" id="mmdBandsNewMain" data-i18n="settings.bands.main.hover" title="The frequency the rig is tuned to on this band when this mode is picked in the Mode menu (one per band)" /></td><td><input type="text" id="mmdBandsNewNote" style="width: 160px;" /></td><td><span class="cwButton" onclick="mmdBandsAddFreq();" data-i18n="settings.bands.addFreq.hover" title="Adds the frequency entered on this row"><span data-i18n="settings.bands.add.label">Add</span></span></td></tr></tbody>
             <tbody id="mmdBandsFreqRows"></tbody>
           </table>
         </div>

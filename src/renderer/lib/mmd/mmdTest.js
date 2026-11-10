@@ -172,8 +172,8 @@ function mmdTestStart(t, buffer, clear)
   TEST.endAt = TEST.startAt + buffer.duration * 1000;
   TEST.heardFrom = TEST.startAt;
   TEST.heardTo = TEST.endAt + TEST_AFTER_MS;
-  clearInterval(TEST.timer);
-  TEST.timer = setInterval(mmdTestRender, 500);
+  nodeTimers.clearInterval(TEST.timer);
+  TEST.timer = nodeTimers.setInterval(mmdTestRender, 500);
   mmdTestRender();
   return true;
 }
@@ -260,7 +260,7 @@ function mmdTestDone()
       mmdOliviaRestart();
     }
   }
-  clearInterval(TEST.timer);
+  nodeTimers.clearInterval(TEST.timer);
   TEST.timer = null;
   mmdTestRender();
   // SSTV Send's Simulate Rx back from Abort (mmdSstvTx.js)

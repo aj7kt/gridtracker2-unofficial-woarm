@@ -1942,5 +1942,13 @@
   "events.source.rig": "Equipo",
   "rig.event.webSerial": "{port}: abierto sin el módulo serialport, que activa DTR y RTS un instante al abrir el puerto y puede poner el equipo en transmisión. Ejecuta npm ci en la carpeta del código o reinstala GridTracker2",
   "sstvTx.size.tiny": "Diminuto",
-  "sstvTx.size.smaller": "Más pequeño"
+  "sstvTx.size.smaller": "Más pequeño",
+  "settings.bands.main.label": "Principal",
+  "settings.bands.main.hover": "La frecuencia a la que se sintoniza el equipo en esta banda cuando se elige este modo en el menú Modo (una por banda)",
+  "cwViewer.settings.scope.label": "Espectro Del Equipo",
+  "settings.mmDecoder.scopeOob.label": "Sombreado Fuera De Banda",
+  "settings.mmDecoder.scopeOob.hover": "Con qué intensidad se sombrea en el color de advertencia lo que está fuera de las bandas de aficionado: 0 % nada, 100 % sólido",
+  "gt.button.cast.onMany.hover": "Transmitiendo a {0} (clic: elegir los dispositivos)",
+  "gt.button.cast.preparingMany.hover": "Preparando el vídeo para {0} (clic: elegir los dispositivos)",
+  "cast.menu.openBrowser.label": "Abrir En El Navegador Predeterminado"
 }

@@ -1949,5 +1949,13 @@
   "events.source.rig": "Radio",
   "rig.event.webSerial": "{port}: otwarty bez modułu serialport, co przy otwieraniu portu na chwilę podnosi DTR i RTS i może włączyć nadawanie. Uruchom npm ci w folderze źródłowym lub zainstaluj GridTracker2 ponownie",
   "sstvTx.size.tiny": "Bardzo mały",
-  "sstvTx.size.smaller": "Mniejszy"
+  "sstvTx.size.smaller": "Mniejszy",
+  "settings.bands.main.label": "Główna",
+  "settings.bands.main.hover": "Częstotliwość, na którą radio jest strojone w tym paśmie po wybraniu tej emisji w menu Tryb (jedna na pasmo)",
+  "cwViewer.settings.scope.label": "Widmo Radia",
+  "settings.mmDecoder.scopeOob.label": "Cieniowanie Poza Pasmem",
+  "settings.mmDecoder.scopeOob.hover": "Jak mocno w kolorze ostrzeżenia cieniowane jest to, co leży poza pasmami amatorskimi: 0% wcale, 100% pełne",
+  "gt.button.cast.onMany.hover": "Przesyłanie do {0} (kliknij: wybierz urządzenia)",
+  "gt.button.cast.preparingMany.hover": "Przygotowywanie wideo dla {0} (kliknij: wybierz urządzenia)",
+  "cast.menu.openBrowser.label": "Otwórz W Domyślnej Przeglądarce"
 }

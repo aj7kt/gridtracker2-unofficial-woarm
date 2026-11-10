@@ -29,7 +29,8 @@
 // Characters are held a moment (8 characters, 1.1 s) before they go out, so the errors decoded after a signal stops, before the lock
 // drops, can be taken back. A channel nothing comes from for 15 s is dropped. A channel's id stays the same while it's tracked.
 // In:  { type: "init", rate }, { type: "audio", samples }, { type: "reset" }, { type: "config", minHz, maxHz }
-// Out: { type: "channels", list: [{ id, freq (Hz, midway between the tones), snr (dB in 100 Hz), active }] }, four times a second;
+// Out: { type: "channels", list: [{ id, freq (Hz, midway between the tones), snr (dB in 100 Hz), active, receiving (a message open) }] },
+//      four times a second;
 //      { type: "text", id, text }: what a channel decoded since its last one, every 100 ms or so;
 //      { type: "message", id, station, subject, number, subjectName, text, complete, errors, chars }: once a ZCZC ... NNNN message
 //      ends (complete), or is cut short (another ZCZC, the end of emission, the lock lost for NAVTEX_MESSAGE_TIMEOUT, the channel
@@ -347,7 +348,7 @@ function navtexFlush()
 function navtexPostChannels()
 {
   const list = navtexChannels.filter((c) => c.everActive).sort((a, b) => a.freq - b.freq);
-  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active })) });
+  self.postMessage({ type: "channels", list: list.map((c) => ({ id: c.id, freq: Math.round(c.freq * 10) / 10, snr: Math.round(c.snr), active: c.active, receiving: !!c.msg })) });
 }
 
 // ---- The spectrum: an FFT of the last n samples (a Hann window), its power averaged frame to frame, and the noise under it

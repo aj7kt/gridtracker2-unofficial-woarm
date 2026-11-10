@@ -84,7 +84,7 @@ function mmdSatClear()
   // The pictures too
   for (const pic of SAT.pictures)
   {
-    clearTimeout(pic.timer);
+    nodeTimers.clearTimeout(pic.timer);
     URL.revokeObjectURL(pic.url);
   }
   SAT.pictures = [];
@@ -146,7 +146,7 @@ function mmdSatSsdv(m, line)
     while (SAT.pictures.length > SAT_PICTURES_MAX)
     {
       const old = SAT.pictures.pop();
-      clearTimeout(old.timer);
+      nodeTimers.clearTimeout(old.timer);
       URL.revokeObjectURL(old.url);
       old.image.packets.clear();
       old.image.dropped = true;
@@ -157,7 +157,7 @@ function mmdSatSsdv(m, line)
     return;
   }
   pic.image = added.image;
-  if (!pic.timer) pic.timer = setTimeout(() => mmdSatPictureDraw(pic), SAT_PICTURE_MS);
+  if (!pic.timer) pic.timer = nodeTimers.setTimeout(() => mmdSatPictureDraw(pic), SAT_PICTURE_MS);
 }
 
 // A picture's JPEG made afresh, and its card shown with it (when on the row)
@@ -226,7 +226,7 @@ function mmdSatPictureCopy(pic)
 function mmdSatPictureDelete(pic)
 {
   SAT.pictures = SAT.pictures.filter((p) => p != pic);
-  clearTimeout(pic.timer);
+  nodeTimers.clearTimeout(pic.timer);
   URL.revokeObjectURL(pic.url);
   pic.image.packets.clear();
   pic.image.dropped = true;

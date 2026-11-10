@@ -33,7 +33,7 @@ function mmDecoderInit()
   // Nothing is sent to the rig unless Rig Control (the window's Settings, Decoders) is turned on; each mode's Set Frequency and Set Mode
   // (Decoders) are on unless turned off
   if (typeof GT.settings.MMD.rigControl != "boolean") GT.settings.MMD.rigControl = false;
-  for (const key of ["ft8SetMode", "ft4SetMode", "cwSetMode", "sstvSetMode", "packetSetMode", "psk31SetMode", "rttySetMode", "mfskSetMode", "thorSetMode", "navtexSetMode", "hellSetMode", "wefaxSetMode", "wsprSetMode", "ft8SetFreq", "ft4SetFreq", "cwSetFreq", "sstvSetFreq", "packetSetFreq", "psk31SetFreq", "rttySetFreq", "mfskSetFreq", "thorSetFreq", "navtexSetFreq", "hellSetFreq", "wefaxSetFreq", "wsprSetFreq"])
+  for (const key of ["ft8SetMode", "ft4SetMode", "cwSetMode", "sstvSetMode", "packetSetMode", "psk31SetMode", "rttySetMode", "mfskSetMode", "thorSetMode", "navtexSetMode", "hellSetMode", "wefaxSetMode", "wsprSetMode", "oliviaSetMode", "ft8SetFreq", "ft4SetFreq", "cwSetFreq", "sstvSetFreq", "packetSetFreq", "psk31SetFreq", "rttySetFreq", "mfskSetFreq", "thorSetFreq", "navtexSetFreq", "hellSetFreq", "wefaxSetFreq", "wsprSetFreq", "oliviaSetFreq"])
   {
     if (typeof GT.settings.MMD[key] != "boolean") GT.settings.MMD[key] = true;
   }
@@ -70,7 +70,7 @@ function mmDecoderEnableChanged()
 {
   GT.settings.MMD.enable = mmDecoderEnable.checked;
   mmDecoderRender();
-  // On: the window loaded (hidden) if it isn't yet, as at startup, or told, so FT8 or FT4 is listened to with it closed
+  // On: the window loaded (hidden) if it isn't yet, as at startup, or told, so its mode is listened to with it closed
   if (GT.settings.MMD.enable)
   {
     if (GT.mmDecoderHandle == null) mmDecoderOpen(false);
@@ -86,7 +86,7 @@ function mmDecoderEnableChanged()
       }
     }
   }
-  // Off: the window is hidden and stops its audio, even in FT8 or FT4 (and puts the filter back); the instance
+  // Off: the window is hidden and stops its audio, in every mode (and puts the filter back); the instance
   // closes (mmDecoderInstanceTick)
   if (!GT.settings.MMD.enable && GT.mmDecoderInitialized)
   {

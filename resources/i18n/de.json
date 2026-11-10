@@ -1950,5 +1950,13 @@
 	"events.source.rig": "Rig",
 	"rig.event.webSerial": "{port}: ohne das serialport-Modul geöffnet, was DTR und RTS beim Öffnen kurz anhebt und das Gerät tasten kann. npm ci im Quellordner ausführen oder GridTracker2 neu installieren",
 	"sstvTx.size.tiny": "Winzig",
-	"sstvTx.size.smaller": "Kleiner"
+	"sstvTx.size.smaller": "Kleiner",
+	"settings.bands.main.label": "Haupt",
+	"settings.bands.main.hover": "Die Frequenz, auf die das Funkgerät auf diesem Band abgestimmt wird, wenn diese Betriebsart im Modus-Menü gewählt wird (eine pro Band)",
+	"cwViewer.settings.scope.label": "Transceiver-Scope",
+	"settings.mmDecoder.scopeOob.label": "Schattierung Außerhalb Der Bänder",
+	"settings.mmDecoder.scopeOob.hover": "Wie stark alles außerhalb der Amateurfunkbänder in der Warnfarbe schattiert wird: 0 % gar nicht, 100 % deckend",
+	"gt.button.cast.onMany.hover": "Überträgt an {0} (Klick: Geräte wählen)",
+	"gt.button.cast.preparingMany.hover": "Video für {0} wird vorbereitet (Klick: Geräte wählen)",
+	"cast.menu.openBrowser.label": "Im Standardbrowser Öffnen"
 }

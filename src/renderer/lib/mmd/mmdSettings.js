@@ -75,13 +75,23 @@ function mmdSettingsRender()
   hellSetModeValue.checked = S.hellSetMode === true;
   wefaxSetModeValue.checked = S.wefaxSetMode === true;
   wsprSetModeValue.checked = S.wsprSetMode === true;
+  oliviaSetModeValue.checked = S.oliviaSetMode === true;
   sstvSaveValue.checked = S.sstvSave === true;
   navtexSaveValue.checked = S.navtexSave === true;
   sstvFolderTr.style.display = S.sstvSave === true ? "" : "none";
-  sstvFolderText.textContent = window.opener.mmDecoderSstvFolder();
+  mmdShortFolder(sstvFolderText, window.opener.mmDecoderSstvFolder(), "settings.sstvDecoder.folder.hover");
   wefaxSaveValue.checked = S.wefaxSave === true;
   wefaxFolderTr.style.display = S.wefaxSave === true ? "" : "none";
-  wefaxFolderText.textContent = window.opener.mmDecoderWefaxFolder();
+  mmdShortFolder(wefaxFolderText, window.opener.mmDecoderWefaxFolder(), "settings.wefaxDecoder.folder.hover");
+}
+
+// A save folder shown short, as … and its last two folders (its parent's and its own); the whole path in its tooltip, under what it is
+function mmdShortFolder(el, folder, hoverKey)
+{
+  const parts = String(folder || "").split(/[\\/]+/).filter(Boolean);
+  const text = parts.length > 2 ? "…" + path.sep + parts.slice(-2).join(path.sep) : String(folder || "");
+  if (el.textContent != text) el.textContent = text;
+  el.title = I18N(hoverKey) + "\n" + folder;
 }
 
 // Each mode's VFO menu, and Common VFO's: Rig Control's by their names, and None. With Follow BirdWatch, BirdWatch's downlink VFO, named so,

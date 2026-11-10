@@ -1949,5 +1949,13 @@
   "events.source.rig": "Rádio",
   "rig.event.webSerial": "{port}: aberta sem o módulo serialport, que ativa DTR e RTS por um instante ao abrir a porta e pode pôr o rádio em emissão. Execute npm ci na pasta do código ou reinstale o GridTracker2",
   "sstvTx.size.tiny": "Minúsculo",
-  "sstvTx.size.smaller": "Mais pequeno"
+  "sstvTx.size.smaller": "Mais pequeno",
+  "settings.bands.main.label": "Principal",
+  "settings.bands.main.hover": "A frequência em que o rádio é sintonizado nesta banda quando este modo é escolhido no menu Modo (uma por banda)",
+  "cwViewer.settings.scope.label": "Espectro Do Rádio",
+  "settings.mmDecoder.scopeOob.label": "Sombreado Fora Da Banda",
+  "settings.mmDecoder.scopeOob.hover": "Quanto o que está fora das bandas de radioamador é sombreado na cor de aviso: 0% nada, 100% sólido",
+  "gt.button.cast.onMany.hover": "A transmitir para {0} (clique: escolher os dispositivos)",
+  "gt.button.cast.preparingMany.hover": "A preparar o vídeo para {0} (clique: escolher os dispositivos)",
+  "cast.menu.openBrowser.label": "Abrir No Navegador Predefinido"
 }

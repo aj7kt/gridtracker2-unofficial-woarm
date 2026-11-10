@@ -1949,5 +1949,13 @@
 	"events.source.rig": "Poste",
 	"rig.event.webSerial": "{port} : ouvert sans le module serialport, ce qui lève DTR et RTS un instant à l'ouverture du port et peut faire passer le poste en émission. Lancez npm ci dans le dossier source, ou réinstallez GridTracker2",
 	"sstvTx.size.tiny": "Minuscule",
-	"sstvTx.size.smaller": "Plus petit"
+	"sstvTx.size.smaller": "Plus petit",
+	"settings.bands.main.label": "Principale",
+	"settings.bands.main.hover": "La fréquence sur laquelle la radio est accordée sur cette bande quand ce mode est choisi dans le menu Mode (une par bande)",
+	"cwViewer.settings.scope.label": "Spectre Du Transceiver",
+	"settings.mmDecoder.scopeOob.label": "Ombrage Hors Bande",
+	"settings.mmDecoder.scopeOob.hover": "L'intensité de l'ombrage, dans la couleur d'avertissement, de ce qui est hors des bandes amateur : 0 % aucun, 100 % opaque",
+	"gt.button.cast.onMany.hover": "Diffusion vers {0} (clic : choisir les appareils)",
+	"gt.button.cast.preparingMany.hover": "Préparation de la vidéo pour {0} (clic : choisir les appareils)",
+	"cast.menu.openBrowser.label": "Ouvrir Dans Le Navigateur Par Défaut"
 }

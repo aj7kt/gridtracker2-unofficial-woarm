@@ -38,6 +38,8 @@ const CW_SAME_SIGNAL_HZ = 40;
 // with none shows no menu
 // The modes there are (the Mode menu)
 const MMD_MODES = ["cw", "ft8", "ft4", "sstv", "wefax", "hell", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "olivia", "wspr"];
+// The modes whose list shows an SNR under 0 (measured over a band wider than the signal's own filter)
+const MMD_SNR_WIDE_MODES = ["mfsk", "thor", "olivia"];
 // After the viewer tunes the rig, how long it waits for Rig Control to read the new frequency back (ms)
 const CW_TUNE_SETTLE_MS = 2500;
 // The rig read back within this of what BirdWatch's Doppler last sent VFO-A (Hz on the air; the rig may round it): its move, not a
@@ -327,7 +329,11 @@ function mmdInit()
   mmdDetectInit();
   mmdNavtexInit();
   cwMode.value = MMD_MODES.includes(GT.settings.MMD.viewMode) ? GT.settings.MMD.viewMode : "cw";
-  cwMode.onchange = () => mmdModeSet(cwMode.value);
+  cwMode.onchange = () =>
+  {
+    mmdModeSet(cwMode.value);
+    mmdTuneForMode();
+  };
   mmdModeSet(cwMode.value);
   // Bandwidth: the decoder started again with it
   const bandwidth = mmdBandwidth();
@@ -351,19 +357,7 @@ function mmdInit()
   cwFreqs.onchange = () =>
   {
     const [hz, mode] = (mmdBandFreqs(DEC.mode) || [])[Number(cwFreqs.value)] || [];
-    if (!hz) return;
-    // What the mode allows (Settings: Rig Control, then the mode's Set Frequency and Set Mode, each on its own): the frequency, the
-    // mode (CW's CW, SSTV's the frequency's sideband, FT8's USB ...; USB and LSB as the data mode with the VFO's SSB Data, Rig Control),
-    // both, or nothing
-    const S = GT.settings.MMD;
-    const setFreq = S.rigControl === true && S[DEC.mode + "SetFreq"] === true;
-    const setMode = S.rigControl === true && S[DEC.mode + "SetMode"] === true;
-    if (!setFreq && !setMode) return;
-    // Picked here: a bar on the waterfall even within the band (another band's goes on as the rig is tuned, mmdBandFollow)
-    const band = mmdBandOf(hz);
-    if (setFreq && band && band == (DEC.band || mmdBandOf(mmdDial())) && hz != mmdDial()) mmdBandMark(band, hz);
-    const vfo = window.opener.mmDecoderVfo();
-    mmdTuneDial(setFreq ? hz : null, setMode ? mode : null, ["USB", "LSB"].includes(mode) ? !!vfo && vfo.ssbData === true : undefined);
+    if (hz) mmdTuneToFreq(hz, mode);
   };
   mmdResize();
   window.opener.mmDecoderReady();
@@ -403,12 +397,13 @@ function mmdVisible(visible)
   mmdListen();
 }
 
-// Listening while the window shows; with it closed too in FT8, FT4 and WSPR, whose decodes go on to GridTracker's instance MMD
-// (services/mmDecoder.js: the map, and FT8's and FT4's the Call Roster with Send Decodes To Call Roster on). The main window is told
-// whether it listens unseen
+// Listening whenever the decoder is on (the main window's Settings), in every mode, shown or not: hidden, nothing is drawn (the waterfall,
+// mmdFallRow), but every mode decodes as it does on screen, its decodes going on to GridTracker's instance MMD (services/mmDecoder.js:
+// the map, and FT8's and FT4's the Call Roster with Send Decodes To Call Roster on), its pictures, charts and messages kept and saved as
+// set. The main window is told whether it listens unseen (the button's green dot)
 function mmdListen()
 {
-  const want = GT.settings.MMD.enable && (DEC.shown || mmdFtx() || mmdWsprMode());
+  const want = !!GT.settings.MMD.enable;
   if (want && !DEC.running) mmdStart();
   else if (!want && DEC.running) mmdStop();
   mmdInstanceSay();
@@ -633,7 +628,7 @@ function mmdLevelShow(level)
 // The slider and meter shown under the button (read again: the level may have been changed in the system's settings), or hidden
 function mmdLevelPop(show)
 {
-  clearTimeout(MMD.levelHide);
+  nodeTimers.clearTimeout(MMD.levelHide);
   if (show == MMD.levelShown) return;
   MMD.levelShown = show;
   if (!show)
@@ -655,8 +650,8 @@ function mmdLevelPop(show)
 function mmdLevelLeave()
 {
   if (MMD.dragging) return;
-  clearTimeout(MMD.levelHide);
-  MMD.levelHide = setTimeout(() => mmdLevelPop(false), MMD_LEVEL_HIDE_MS);
+  nodeTimers.clearTimeout(MMD.levelHide);
+  MMD.levelHide = nodeTimers.setTimeout(() => mmdLevelPop(false), MMD_LEVEL_HIDE_MS);
 }
 
 // The peak meter, while shown: the loudest sample of the last frame, the highest held a moment; green, yellow within 6 dB of full scale,
@@ -690,7 +685,7 @@ function mmdLevelInit()
 {
   cwLevelButton.onmouseenter = () => mmdLevelPop(true);
   cwLevelButton.onmouseleave = mmdLevelLeave;
-  cwLevelPop.onmouseenter = () => clearTimeout(MMD.levelHide);
+  cwLevelPop.onmouseenter = () => nodeTimers.clearTimeout(MMD.levelHide);
   cwLevelPop.onmouseleave = mmdLevelLeave;
   cwLevelSlider.oninput = () => mmdLevelAsk(Number(cwLevelSlider.value) / 100);
   cwSwSlider.oninput = mmdSwPicked;
@@ -904,7 +899,7 @@ function mmdSpyIq(iq, rate, generation)
   if (rate != DEC.spyRate)
   {
     DEC.spyRate = rate;
-    setTimeout(mmDecoderRestart, 0);
+    nodeTimers.setTimeout(mmDecoderRestart, 0);
     return;
   }
   // Copied into this window's own array, handed over
@@ -915,8 +910,8 @@ function mmdSpyIq(iq, rate, generation)
 // Not connected yet: the start tried again in a moment, while it is still wanted and nothing else started meanwhile
 function mmdSpyRetry(generation)
 {
-  clearTimeout(DEC.spyRetry);
-  DEC.spyRetry = setTimeout(() =>
+  nodeTimers.clearTimeout(DEC.spyRetry);
+  DEC.spyRetry = nodeTimers.setTimeout(() =>
   {
     if (generation == DEC.generation && !DEC.running) mmdListen();
   }, MMD_SPY_RETRY_MS);
@@ -1024,7 +1019,7 @@ function mmdMessage(data, generation)
       // A signal new to the viewer, where one listed before the rig moved was: it is that one, found again
       if (!(id in DEC.signals) && air != null)
       {
-        const before = Object.values(DEC.signals).find((signal) => !signal.alive && signal.air != null && Math.abs(signal.air - air) < CW_SAME_SIGNAL_HZ);
+        const before = Object.values(DEC.signals).find((signal) => signal.id < KEY_ID_BASE && !signal.alive && signal.air != null && Math.abs(signal.air - air) < CW_SAME_SIGNAL_HZ);
         if (before)
         {
           delete DEC.signals[before.id];
@@ -1042,8 +1037,9 @@ function mmdMessage(data, generation)
       signal.key = data.channels[i + 4] > 0;
       signal.alive = true;
     }
-    // (Olivia's signal isn't one of the worklet's: oliviaWorker.js keeps it, mmdOlivia.js)
-    for (const id in DEC.signals) if (!seen[id] && id != OLIVIA_ID) DEC.signals[id].alive = false;
+    // Only CW's own: PSK's, RTTY's, MFSK's, DominoEX / THOR's and NAVTEX's (KEY_ID_BASE up, mmdKey.js) and Olivia's (OLIVIA_ID,
+    // mmdOlivia.js) are their workers' to say (marked gone here with each row, between their workers' word, they flickered)
+    for (const id in DEC.signals) if (!seen[id] && Number(id) < KEY_ID_BASE) DEC.signals[id].alive = false;
   }
   // The characters: each to its signal's row (decoded before a retune too: the signals that were there). A 1 starts a transmission (where
   // its text begins is kept); below 0, the transmission was read again with what the decoder has learned since, and its text takes the
@@ -1251,7 +1247,7 @@ function mmdFallSpeed()
 // audio's blocks, unevenly (40 and 60 ms apart), and at a speed below 1 some bring none
 function mmdFallRow(decoderRow, view)
 {
-  // Not drawn while the window is closed (listening for FT8's instance only)
+  // Not drawn while the window is closed (the modes go on decoding)
   if (!DEC.shown) return;
   if (!DEC.rowImage || decoderRow.length != DEC.bins) return;
   mmdFlip();
@@ -1363,10 +1359,21 @@ const MMD_BAND_EDGES = {
   "17m": [18.068, 18.168], "15m": [21.0, 21.45], "12m": [24.89, 24.99], "10m": [28.0, 29.7], "6m": [50.0, 54.0]
 };
 
+// The main window's band names by whole MHz (from 1 MHz up its formatBand goes by the whole MHz only; under it, 630m and 2200m, by the
+// frequency): asked once each, as the scope's guard bands ask for hundreds of frequencies at a time (mmdScopeGuards)
+const MMD_BAND_NAMES = new Map();
+
 function mmdBandOf(dial)
 {
   if (!(dial > 0)) return "";
-  const band = window.opener.formatBand(dial / 1e6) || "";
+  const mhz = Math.floor(dial / 1e6);
+  let band;
+  if (mhz < 1) band = window.opener.formatBand(dial / 1e6) || "";
+  else
+  {
+    if (!MMD_BAND_NAMES.has(mhz)) MMD_BAND_NAMES.set(mhz, window.opener.formatBand(dial / 1e6) || "");
+    band = MMD_BAND_NAMES.get(mhz);
+  }
   const edges = MMD_BAND_EDGES[band];
   return edges && (dial < edges[0] * 1e6 || dial > edges[1] * 1e6) ? "OOB" : band;
 }
@@ -1852,8 +1859,11 @@ function mmdRender()
     if (row.title != hover) row.title = hover;
     const [freqCell, dbCell, wpmCell, textCell] = row.children;
     const wpm = signal.wpm > 0 ? String(Math.round(signal.wpm)) : "";
-    // Its signal over the noise as last measured (dB, in its own filter)
-    const db = signal.snr > 0 ? String(Math.round(signal.snr)) : "";
+    // Its signal over the noise as last measured (dB, in its own filter). MFSK's (over its 16 tones), DominoEX / THOR's and Olivia's
+    // (in 2500 Hz, as WSJT-X's) are mostly under 0: shown down to their floor (-30, too weak to measure) once their worker has measured
+    // one (snrSeen: a signal made by its text first has the 0 it starts with)
+    const wide = MMD_SNR_WIDE_MODES.includes(DEC.mode);
+    const db = (wide ? signal.snrSeen === true && signal.snr > -30 : signal.snr > 0) ? String(Math.round(signal.snr)) : "";
     if (freqCell.textContent != freq) freqCell.textContent = freq;
     if (dbCell.textContent != db) dbCell.textContent = db;
     if (wpmCell.textContent != wpm) wpmCell.textContent = wpm;
@@ -1915,13 +1925,38 @@ function mmdFreqsShow(connected)
   if (cwFreqs.dataset.mode != DEC.mode + "|" + BANDS.version)
   {
     cwFreqs.dataset.mode = DEC.mode + "|" + BANDS.version;
-    cwFreqs.length = 0;
+    cwFreqs.replaceChildren();
     const off = new Option("-", "");
     off.hidden = true;
     cwFreqs.add(off);
-    // (WEFAX's and NAVTEX's as (frequency) and their station, no band: theirs are outside the amateur bands)
+    // (WEFAX's and NAVTEX's as (frequency) and their station, no band: theirs are outside the amateur bands; the others as band (frequency)
+    // and their note: Calling, DXpedition (Fox/Hound), IARU R3 ...)
     const notes = BANDS_NOTE_MODES.includes(DEC.mode);
-    list.forEach(([hz, , note], i) => cwFreqs.add(new Option(notes ? "(" + mmdFreq(hz) + ")" + (note ? " " + note : "") : mmdBandFreq(hz), i)));
+    const options = list.map(([hz, , note], i) => new Option((notes ? "(" + mmdFreq(hz) + ")" : mmdBandFreq(hz)) + (note ? " " + note : ""), i));
+    // WEFAX's grouped by the station's location (its note after the call sign: "NMC Point Reyes, CA (8682)"), the locations in
+    // alphabetical order, each one's frequencies lowest first; one with no location stays above the groups
+    if (DEC.mode == "wefax")
+    {
+      const groups = new Map();
+      list.forEach(([, , note], i) =>
+      {
+        const place = note.replace(/^\S+\s+/, "").split(" (")[0].trim();
+        if (!note.includes(" ") || !place) cwFreqs.add(options[i]);
+        else
+        {
+          if (!groups.has(place)) groups.set(place, []);
+          groups.get(place).push(options[i]);
+        }
+      });
+      for (const place of [...groups.keys()].sort((a, b) => a.localeCompare(b)))
+      {
+        const group = document.createElement("optgroup");
+        group.label = place;
+        group.append(...groups.get(place));
+        cwFreqs.appendChild(group);
+      }
+    }
+    else options.forEach((option) => cwFreqs.add(option));
   }
   // Grayed out while BirdWatch follows a satellite with the rig (nothing is sent to it then), saying why
   const locked = window.opener.mmDecoderRigLocked();
@@ -2270,12 +2305,12 @@ function mmdTuneToast(el, hz, to, add)
   el.replaceChildren(freq, change);
   el.style.transition = "none";
   el.style.opacity = "1";
-  clearTimeout(el.toastTimer);
-  el.toastTimer = setTimeout(() =>
+  nodeTimers.clearTimeout(el.toastTimer);
+  el.toastTimer = nodeTimers.setTimeout(() =>
   {
     el.style.transition = "opacity " + MMD_TOAST_FADE_MS + "ms";
     el.style.opacity = "0";
-    el.toastTimer = setTimeout(() =>
+    el.toastTimer = nodeTimers.setTimeout(() =>
     {
       el.toastShown = false;
     }, MMD_TOAST_FADE_MS);
@@ -2287,6 +2322,48 @@ function mmdHzChange(hz)
 {
   const size = Math.abs(Math.round(hz));
   return (hz < 0 ? "-" : "+") + (size < 1000 ? size + " Hz" : (size / 1000).toFixed(3).replace(/\.?0+$/, "") + " kHz");
+}
+
+// One of the mode's frequencies (the Frequency menu's: Hz, its rig mode) tuned to as the mode allows (Settings: Rig Control, then the
+// mode's Set Frequency and Set Mode, each on its own): the frequency, the mode (CW's CW, SSTV's the frequency's sideband, FT8's USB ...;
+// USB and LSB as the data mode with the VFO's SSB Data, Rig Control), both, or nothing
+function mmdTuneToFreq(hz, mode)
+{
+  const S = GT.settings.MMD;
+  const setFreq = S.rigControl === true && S[DEC.mode + "SetFreq"] === true;
+  const setMode = S.rigControl === true && S[DEC.mode + "SetMode"] === true;
+  if (!setFreq && !setMode) return;
+  // Picked here: a bar on the waterfall even within the band (another band's goes on as the rig is tuned, mmdBandFollow)
+  const band = mmdBandOf(hz);
+  if (setFreq && band && band == (DEC.band || mmdBandOf(mmdDial())) && hz != mmdDial()) mmdBandMark(band, hz);
+  const vfo = window.opener.mmDecoderVfo();
+  mmdTuneDial(setFreq ? hz : null, setMode ? mode : null, ["USB", "LSB"].includes(mode) ? !!vfo && vfo.ssbData === true : undefined);
+}
+
+// A mode picked in the Mode menu with its Set Frequency on: the rig tuned to the mode's main frequency on the band it's on (Band Plans'
+// Main: FT8's 14.074 on 20m, not its DXpedition one), else its nearest there; with none on that band, the band of its nearest
+// frequency, its main one there the same way (and the rig's mode set, with Set Mode). Already on one of the mode's frequencies: left
+// there. Not for a mode picked any other way (an RSID, Detect Modes, Follow BirdWatch): the signal is where the rig is
+function mmdTuneForMode()
+{
+  const S = GT.settings.MMD;
+  if (S.rigControl !== true || S[DEC.mode + "SetFreq"] !== true || window.opener.mmDecoderRigLocked()) return;
+  const list = mmdBandFreqs(DEC.mode);
+  const dial = mmdDial();
+  if (!list || dial == null) return;
+  if (list.some(([hz]) => Math.abs(hz - dial) < 5)) return;
+  const nearest = (l) => l.reduce((a, b) => (Math.abs(b[0] - dial) < Math.abs(a[0] - dial) ? b : a));
+  // (out of the bands, "OOB", is no band)
+  const onBand = (band) => (band && band != "OOB" ? list.filter(([hz]) => mmdBandOf(hz) == band) : []);
+  let pick = onBand(mmdBandOf(dial));
+  if (!pick.length)
+  {
+    const near = nearest(list);
+    pick = onBand(mmdBandOf(near[0]));
+    if (!pick.length) pick = [near];
+  }
+  const [hz, mode] = pick.find((f) => f[3]) || nearest(pick);
+  mmdTuneToFreq(hz, mode);
 }
 
 // The rig's dial to dial (Hz on the air) through Rig Control, in mode when given (data: its data variant, true, or plain, false);

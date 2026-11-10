@@ -62,8 +62,8 @@ function settingsTabsFit()
 
 window.addEventListener("resize", () =>
 {
-  clearTimeout(GT.settingsTabsFitTimer);
-  GT.settingsTabsFitTimer = setTimeout(settingsTabsFit, 200);
+  nodeTimers.clearTimeout(GT.settingsTabsFitTimer);
+  GT.settingsTabsFitTimer = nodeTimers.setTimeout(settingsTabsFit, 200);
 });
 
 function openInfoTab(evt, tabName, callFunc, callObj)
@@ -191,7 +191,7 @@ function openSettingsTab(evt, tabName)
   // One of BirdWatch's tabs: its values filled in
   if (/^birdWatch/.test(tabName)) birdWatchSettingsTabShown();
   // The tabs fitted once the panel shows (the ways in that open it on a tab show it after this)
-  setTimeout(settingsTabsFit, 0);
+  nodeTimers.setTimeout(settingsTabsFit, 0);
 }
 
 function initSettingsTabs()

@@ -119,7 +119,7 @@ function panelBoxDown(P, e)
       c.preventDefault();
     };
     window.addEventListener("click", swallow, { capture: true, once: true });
-    setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+    nodeTimers.setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);

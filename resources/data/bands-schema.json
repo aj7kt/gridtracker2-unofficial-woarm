@@ -54,6 +54,12 @@
                         "description": "Where or what it is for (a region, a use).",
                         "type": "string",
                         "examples": ["APRS: North America", "QRP calling (IARU)"]
+                    },
+                    "primary": {
+                        "title": "Main boolean",
+                        "description": "The band's main frequency for the mode (its usual calling or activity one): what the rig is tuned to when the mode is picked in the Mode menu with Set Frequency on. One per mode and band; without one, the nearest is.",
+                        "type": "boolean",
+                        "default": false
                     }
                 }
             }

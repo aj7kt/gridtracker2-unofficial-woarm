@@ -1949,5 +1949,13 @@
 	"events.source.rig": "無線機",
 	"rig.event.webSerial": "{port}: serialport モジュールなしで開きました。ポートを開くときに DTR と RTS が一瞬上がり、無線機が送信になることがあります。ソースフォルダーで npm ci を実行するか、GridTracker2 を再インストールしてください",
 	"sstvTx.size.tiny": "極小",
-	"sstvTx.size.smaller": "やや小"
+	"sstvTx.size.smaller": "やや小",
+	"settings.bands.main.label": "メイン",
+	"settings.bands.main.hover": "モードメニューでこのモードを選んだときに、このバンドで無線機を合わせる周波数（バンドごとに1つ）",
+	"cwViewer.settings.scope.label": "リグスコープ",
+	"settings.mmDecoder.scopeOob.label": "バンド外の網掛け",
+	"settings.mmDecoder.scopeOob.hover": "アマチュアバンド外を警告色でどれだけ濃く網掛けするか：0% なし、100% 塗りつぶし",
+	"gt.button.cast.onMany.hover": "{0} にキャスト中（クリック：デバイスを選ぶ）",
+	"gt.button.cast.preparingMany.hover": "{0} 用の動画を準備中（クリック：デバイスを選ぶ）",
+	"cast.menu.openBrowser.label": "既定のブラウザーで開く"
 }

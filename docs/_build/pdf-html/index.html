@@ -31,7 +31,7 @@
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
 <p class="gt-cover-version">Version 2.261110.0</p>
-<p class="gt-cover-date">November 9, 2026</p>
+<p class="gt-cover-date">November 10, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
             
@@ -898,16 +898,18 @@
 </section>
 <section id="casting-the-map">
 <h4>Casting the Map<a class="headerlink" href="#casting-the-map" title="Link to this heading">¶</a></h4>
-<p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">Settings → General → Display</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network.</p>
+<p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">Settings → General → Display</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network, or to several of them at once.</p>
 <ul class="simple">
 <li><p>The button is dimmed until GridTracker2 has found a Cast device on your network; it keeps looking every half minute until one answers. Right-click the button to look again.</p></li>
-<li><p><strong>Click</strong> the button to start casting. With one Cast device found, GridTracker2 casts to it; with more, it lists them, as a right-click does. Click the button again to stop.</p></li>
-<li><p><strong>Right-click</strong> the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it and checks it in the list. While casting, the menu also has <strong>Stop Casting</strong>.</p></li>
-<li><p>After the click, GridTracker2 makes about 12 seconds of the map’s video before it tells the TV to play it, so the TV has enough to start smoothly. Meanwhile the button is in color and its tooltip says the video is being prepared; a click stops. The TV shows the map about 10 seconds behind.</p></li>
-<li><p>While casting, the button is in color and its tooltip names the device. The main window is sized to the TV’s 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.</p></li>
-<li><p>Starting and stopping, and a device that can’t be reached, are shown in the <a class="reference internal" href="#event-viewer">Event Viewer</a>.</p></li>
+<li><p>With one Cast device found, <strong>click</strong> the button to cast to it, and click again to stop.</p></li>
+<li><p>With more than one, a click lists them, as a <strong>right-click</strong> does. Each device has a checkbox, ticked while you cast to it: tick a device to cast to it as well, untick it to stop casting to it. All of them show the same map. While casting, the list also has <strong>Stop Casting</strong>, which stops them all.</p></li>
+<li><p>If you were casting when you closed GridTracker2, it casts to the same devices again about 10 seconds after the next start, each one that is on and answers. Stop casting before you close it to start without a cast.</p></li>
+<li><p>After the first device is picked, GridTracker2 makes about 12 seconds of the map’s video before it tells the TV to play it, so the TV has enough to start smoothly. Meanwhile the button is in color and its tooltip says the video is being prepared. A device added while casting starts at once. The TVs show the map about 10 seconds behind.</p></li>
+<li><p>A number in the button’s top right corner shows how many are watching the map now: each device you cast to and each one on your network watching its video (below), counted once each.</p></li>
+<li><p>While casting, the button is in color and its tooltip names the devices. The main window is sized to the TV’s 16:9 shape, and goes back to its size when the last cast stops. A maximized or full screen window is left as it is.</p></li>
+<li><p>Starting and stopping each device, and a device that can’t be reached, are shown in the <a class="reference internal" href="#event-viewer">Event Viewer</a>.</p></li>
 <li><p>The video is served from this computer on the <strong>Port</strong> under <strong>Enable Casting</strong> (21575 unless you change it). If your firewall asks, allow GridTracker2 on your home network. The port can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; those watching the video then open its address again.</p></li>
-<li><p>The video’s address, such as <code class="docutils literal notranslate"><span class="pre">http://192.168.1.20:21575/map.m3u8</span></code>, is shown beside <strong>Enable Casting</strong>. Click it to copy it. While <strong>Enable Casting</strong> is on, anyone on your network can open it in VLC (Media → Open Network Stream) or in a browser that plays HLS video, to watch the map on another screen, with or without a cast. The video starts a few seconds after it’s opened, and stops being made when nobody has watched it for 30 seconds (a cast counts as watching; cast again within those 30 seconds and the TV starts at once).</p></li>
+<li><p>The video’s address, such as <code class="docutils literal notranslate"><span class="pre">http://192.168.1.20:21575/map.m3u8</span></code>, is shown beside <strong>Enable Casting</strong>. Click it to copy it, or right-click it for <strong>Open In Default Browser</strong>. The video isn’t only for a Chromecast: it’s standard HLS video, which most players can show. While <strong>Enable Casting</strong> is on, anyone on your network can open it to watch the map on another screen, with or without a cast: in VLC (Media → Open Network Stream, also on a Fire TV, an Android TV box or a phone), QuickTime Player (File → Open Location), Safari on a Mac, iPhone or iPad, Kodi, mpv, or a web page using a player such as Shaka Player or hls.js, among many others. The video starts a few seconds after it’s opened, and stops being made when nobody has watched it for 30 seconds (a cast counts as watching; cast again within those 30 seconds and the TV starts at once).</p></li>
 </ul>
 <p>GridTracker2 uses the computer’s hardware video encoder. On a computer without one (Linux with an NVIDIA graphics card, for example), the video is made in software, which uses more CPU; the <a class="reference internal" href="#event-viewer">Event Viewer</a> says so when it starts. Then <strong>Software Frame Rate</strong> (1 to 30 frames a second, 10 unless you change it) and <strong>Software Resolution</strong> (480p, 720p, 1080p, 1440p or 4K; 720p unless you change it) appear under <strong>Enable Casting</strong>: more frames are smoother and a bigger picture is sharper, and both use more of your CPU. While casting, the main window is sized to the Software Resolution (as far as your screen allows), so the map is captured at that size. A change takes effect the next time the video starts. An older Chromecast shows at most 1080p.</p>
 </section>
@@ -998,7 +1000,7 @@
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
 <li><p><strong>Control Panel On Left Side:</strong> puts the side panel on the left of the window and the map on the right.</p></li>
 <li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
-<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. While it’s on, the video’s address is shown beside it; click it to copy it, to watch the map in VLC or a browser on your network.</p></li>
+<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. While it’s on, the video’s address is shown beside it; click it to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), as it’s standard HLS video.</p></li>
 <li><p><strong>Port:</strong> the port the map’s video is served on (21575 unless changed). It can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; with <strong>Enable Casting</strong> off it’s grayed out.</p></li>
 <li><p><strong>Software Frame Rate</strong> and <strong>Software Resolution:</strong> shown only on a computer without a hardware video encoder, where the map’s video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
 </ul>
@@ -2663,8 +2665,8 @@
 <p>Turning <strong>Multi-Mode Decoder</strong> off hides the window, stops it listening and removes the button.</p>
 <section id="listening-in-the-background">
 <h4>Listening in the Background<a class="headerlink" href="#listening-in-the-background" title="Link to this heading">¶</a></h4>
-<p>In most modes the decoder only listens while its window is showing. When you hide the window, it lets go of the sound card.</p>
-<p>In <strong>FT8</strong>, <strong>FT4</strong> and <strong>WSPR</strong> it keeps listening with the window hidden, so their decodes keep reaching the map and the Call Roster (see <a class="reference internal" href="#decodes-in-gridtracker2">Decodes in GridTracker2</a>). A green dot on the <strong>Toggle Multi-Mode Decoder</strong> button shows that it is listening in the background. Hover over the button and its tooltip says so.</p>
+<p>While <strong>Multi-Mode Decoder</strong> is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. Its decodes keep reaching the map and the Call Roster (see <a class="reference internal" href="#decodes-in-gridtracker2">Decodes in GridTracker2</a>). Pictures, charts and NAVTEX messages keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.</p>
+<p>A green dot on the <strong>Toggle Multi-Mode Decoder</strong> button shows that it is listening in the background. Hover over the button and its tooltip says so. Turn <strong>Multi-Mode Decoder</strong> off to stop it listening and let go of the sound card.</p>
 </section>
 </section>
 <section id="the-window">
@@ -2869,8 +2871,9 @@
 <li><p><strong>Set Mode:</strong> sets the rig’s mode, for example CW for CW, USB for FT8 and the digital modes, LSB below 10 MHz and USB above for SSTV, FM for VHF packet and LSB for HF packet.</p></li>
 </ul>
 <p>Both are on unless you turn them off. With both off, the menu isn’t shown. With <strong>Data</strong> ticked for the VFO’s <strong>SSB</strong> in Rig Control, the digital modes use the rig’s data mode (USB-D, PKTUSB, DATA-U) instead of plain USB or LSB.</p>
-<p>Olivia and Sat Data have no Frequency menu.</p>
+<p>Sat Data has no Frequency menu.</p>
 <p>The frequencies come from the <a class="reference internal" href="#band-plans">Band Plans</a> tab, where you can change them.</p>
+<p>With a mode’s <strong>Set Frequency</strong> on, picking that mode in the <strong>Mode</strong> menu tunes the rig to the mode’s main frequency on the band you’re on (its usual calling or activity frequency, ticked <strong>Main</strong> in <a class="reference internal" href="#band-plans">Band Plans</a>: FT8 on 20 meters goes to 14.074, not its DXpedition frequency). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode’s nearest frequency, and to its main frequency there. A rig already on one of the mode’s frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn’t tune the rig, since the signal is where the rig already is.</p>
 </section>
 </section>
 <section id="the-band-scope">
@@ -2880,7 +2883,9 @@
 <p>To turn it on, tick <strong>Use Scope If Present</strong> in the Icom CI-V VFO’s box in Settings → Radios → Rig Control (see <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode’s VFO is that radio.</p>
 <ul class="simple">
 <li><p>The frequencies run along its top, and the radio’s own waterfall under them, the newest at the top. Its colors start at the band’s noise floor, so it looks the same at every span.</p></li>
-<li><p>Where the radio is tuned is marked, and the audio the decoder takes (between <strong>[</strong> and <strong>]</strong>) is shaded.</p></li>
+<li><p>Where the radio is tuned is marked with a line in the theme’s frequency color, and the audio the decoder takes (between <strong>[</strong> and <strong>]</strong>) is shaded.</p></li>
+<li><p>What’s outside the amateur bands is shaded in the theme’s warning color (orange in the GridTracker2 theme), with a line at each band edge. <strong>Out Of Band Shading</strong> in the window’s Settings, <a class="reference internal" href="#rig-scope">Rig Scope</a> tab, sets how strongly.</p></li>
+<li><p>Move the mouse over the strip to see the frequency under it, with a line. Outside the amateur bands (5.1000 MHz, for example) the line and frequency are in the warning color.</p></li>
 <li><p>Click the strip to tune the radio there: what you click is put in the middle of the audio decoded.</p></li>
 <li><p><strong>−</strong> and <strong>+</strong> in its top corners narrow and widen the radio’s span, from ±2.5 kHz to ±500 kHz, going round at either end. The span is shown beside them, for example <strong>−500 kHz</strong> and <strong>+500 kHz</strong>. In the radio’s Fixed mode, the edges are set at the radio, and <strong>−</strong> and <strong>+</strong> are grayed out.</p></li>
 </ul>
@@ -2917,9 +2922,9 @@
 <h3>Decodes in GridTracker2<a class="headerlink" href="#decodes-in-gridtracker2" title="Link to this heading">¶</a></h3>
 <p>While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named <strong>MMD</strong>, as it has one for each WSJT-X or JTDX. Its mode is the decoder’s mode (CW, PSK63, RTTY, Olivia, FT8 …), and its band is the one Rig Control reads on that mode’s VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn’t know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.</p>
 <ul class="simple">
-<li><p><strong>FT8 and FT4:</strong> the decodes go to GridTracker2’s map and alerts, as a WSJT-X instance’s do, also with the window hidden.</p></li>
+<li><p><strong>FT8 and FT4:</strong> the decodes go to GridTracker2’s map and alerts, as a WSJT-X instance’s do.</p></li>
 <li><p><strong>Send Decodes To Call Roster</strong> (FT8 and FT4 each, in <a class="reference internal" href="#decoders">Settings → Decoders</a>; off until you turn it on): the decodes go to the Call Roster as well, and <strong>MMD</strong> appears among the roster’s instances. Turn it off and the calls it put in the Call Roster are taken out.</p></li>
-<li><p><strong>WSPR:</strong> the decodes go to the map, as WSJT-X’s WSPR decodes do, also with the window hidden.</p></li>
+<li><p><strong>WSPR:</strong> the decodes go to the map, as WSJT-X’s WSPR decodes do.</p></li>
 </ul>
 <p>While <strong>Send Decodes To Call Roster</strong> is on but Rig Control isn’t reading the mode’s VFO, the decoder’s settings show “Waiting for Rig Control to read the FT8 VFO’s dial” (or FT4’s) in orange.</p>
 <div class="admonition note">
@@ -2933,7 +2938,7 @@
 </section>
 <section id="settings">
 <h3>Settings<a class="headerlink" href="#settings" title="Link to this heading">¶</a></h3>
-<p>Click <strong>Settings</strong> on the window’s top line to open its settings panel. It has three tabs: <strong>General</strong>, <strong>Decoders</strong> and <strong>Band Plans</strong>. Close it with <strong>Settings</strong> again or the red <strong>X</strong>.</p>
+<p>Click <strong>Settings</strong> on the window’s top line to open its settings panel. It has four tabs: <strong>General</strong>, <strong>Rig Scope</strong>, <strong>Decoders</strong> and <strong>Band Plans</strong>. Close it with <strong>Settings</strong> again or the red <strong>X</strong>.</p>
 <p><a class="reference internal" href="_images/GT2_MMD_Settings_General.png"><img alt="The decoder's Settings, General tab" src="_images/GT2_MMD_Settings_General.png" style="width: 330px;" /></a></p>
 <section id="general">
 <h4>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h4>
@@ -2968,6 +2973,13 @@
 </div>
 <p>If an Input Device you picked has gone missing, or your computer’s audio inputs have changed, GridTracker2 warns you, with <strong>Warning when audio devices change</strong> on in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#audio-tab"><span class="std std-ref">Settings → Audio</span></a>. A missing Input Device is replaced by your computer’s default input until it comes back.</p>
 </section>
+<section id="rig-scope">
+<h4>Rig Scope<a class="headerlink" href="#rig-scope" title="Link to this heading">¶</a></h4>
+<p>The <a class="reference internal" href="#the-band-scope">band scope</a> strip:</p>
+<ul class="simple">
+<li><p><strong>Out Of Band Shading:</strong> how strongly what’s outside the amateur bands is shaded in the theme’s warning color, from 0% (not at all) to 100% (solid). 18% unless you change it.</p></li>
+</ul>
+</section>
 <section id="decoders">
 <h4>Decoders<a class="headerlink" href="#decoders" title="Link to this heading">¶</a></h4>
 <p>The <strong>Decoders</strong> tab has a box for each mode. Each box can have:</p>
@@ -2994,7 +3006,8 @@
 <p><img alt="The Band Plans tab" src="_images/GT2_MMD_Band_Plans.png" /></p>
 <ul class="simple">
 <li><p>Pick a mode in the <strong>Frequencies</strong> menu, or <strong>All Modes</strong>.</p></li>
-<li><p>Each row has the <strong>Mode</strong>, <strong>Band</strong>, <strong>Frequency (MHz)</strong>, <strong>Rig Mode</strong> (USB, LSB, CW, FM or AM) and a <strong>Note</strong> (its region, net or DXpedition, or a station’s name and schedule).</p></li>
+<li><p>Each row has the <strong>Mode</strong>, <strong>Band</strong>, <strong>Frequency (MHz)</strong>, <strong>Rig Mode</strong> (USB, LSB, CW, FM or AM), <strong>Main</strong> and a <strong>Note</strong> (its region, net or DXpedition, or a station’s name and schedule).</p></li>
+<li><p><strong>Main</strong> marks the band’s main frequency for the mode: the one the rig is tuned to when you pick the mode in the <strong>Mode</strong> menu. A band has one main frequency per mode; ticking another unticks it.</p></li>
 <li><p>Click a value to edit it in place.</p></li>
 <li><p>To add a frequency, fill in the top row and click <strong>Add</strong>. The <strong>×</strong> at the end of a row deletes it.</p></li>
 </ul>
@@ -3008,7 +3021,7 @@
 <p>Pick a mode in the <strong>Mode</strong> menu on the window’s second line. Each mode below has its own list or picture view, and some have controls of their own on a row under the second line. The mode you pick is kept when GridTracker2 restarts.</p>
 <p>A few things work the same way in most modes:</p>
 <ul class="simple">
-<li><p><strong>Frequency menu:</strong> each mode’s usual frequencies, beside the <strong>Mode</strong> menu. It shows only when <strong>Rig Control</strong> is on (the window’s <strong>Settings</strong> → <strong>General</strong>), the mode’s VFO is connected, and the mode’s <strong>Set Frequency</strong> or <strong>Set Mode</strong> is ticked (the window’s <strong>Settings</strong> → <strong>Decoders</strong>; both are on unless you turn them off). Picking a frequency tunes the rig there (<strong>Set Frequency</strong>) and sets the rig’s mode (<strong>Set Mode</strong>). For USB and LSB, a VFO with <strong>SSB Data</strong> ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window’s <strong>Band Plans</strong> tab, where you can edit them.</p></li>
+<li><p><strong>Frequency menu:</strong> each mode’s usual frequencies, beside the <strong>Mode</strong> menu. It shows only when <strong>Rig Control</strong> is on (the window’s <strong>Settings</strong> → <strong>General</strong>), the mode’s VFO is connected, and the mode’s <strong>Set Frequency</strong> or <strong>Set Mode</strong> is ticked (the window’s <strong>Settings</strong> → <strong>Decoders</strong>; both are on unless you turn them off). Picking a frequency tunes the rig there (<strong>Set Frequency</strong>) and sets the rig’s mode (<strong>Set Mode</strong>). For USB and LSB, a VFO with <strong>SSB Data</strong> ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window’s <strong>Band Plans</strong> tab, where you can edit them. With the mode’s <strong>Set Frequency</strong> on, picking a mode in the <strong>Mode</strong> menu tunes the rig to its main frequency on the band you’re on (<strong>Main</strong> in Band Plans, such as FT8’s 14.074 on 20 meters). When the mode has none on that band, the rig goes to its main frequency on the band of its nearest. A rig already on one of the mode’s frequencies stays there.</p></li>
 <li><p><strong>Tuning lock:</strong> with <strong>Rig Control</strong> on, a lock sits before the rig’s frequency on the divider: gold and closed while tuning is locked (as it starts), grey and open while unlocked. Click it to unlock: the mouse wheel on the waterfall then tunes the rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz). In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock. A middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed and nothing is sent to the rig.</p></li>
 <li><p><strong>Right-click a line:</strong> in CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia, right-click a decoded line and pick <strong>Delete</strong> to remove it. A station that is still sending is listed again with what it sends next.</p></li>
 </ul>
@@ -3021,7 +3034,7 @@
 <li><p>A <strong>CQ</strong> and the call after it are highlighted, and the line is shaded green.</p></li>
 <li><p>Text already decoded is corrected as the decoder learns an operator’s timing, for example at the start of a transmission or after a change of speed. Corrected text glows for a moment.</p></li>
 <li><p>Click a line, or a signal on the waterfall, to pin it.</p></li>
-<li><p><strong>Frequency menu:</strong> the QRP calling frequencies from 160 to 10 meters, the 6 meter CW calling frequency and the 2 meter CW center of activity. <strong>Set Mode</strong> sets the rig to CW.</p></li>
+<li><p><strong>Frequency menu:</strong> the QRP calling frequencies from 160 to 10 meters, a 60 meter frequency, the 6 meter CW calling frequency and the 2 meter CW center of activity. <strong>Set Mode</strong> sets the rig to CW.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s CW beacon switches the decoder to CW.</p></li>
 </ul>
 </section>
@@ -3065,10 +3078,10 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>FT8 and FT4 decodes go to GridTracker2’s map and alerts through an instance named <strong>MMD</strong>, as a WSJT-X instance’s do, even with the window closed. A green dot on the <strong>Toggle Multi-Mode Decoder</strong> button shows it is listening in the background. The decoder doesn’t transmit, so MMD can’t be answered.</p>
+<p>FT8 and FT4 decodes go to GridTracker2’s map and alerts through an instance named <strong>MMD</strong>, as a WSJT-X instance’s do, whether the window is showing or not (as every mode keeps decoding: see <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder#listening-in-the-background"><span class="std std-ref">Listening in the Background</span></a>). The decoder doesn’t transmit, so MMD can’t be answered.</p>
 </div>
 <ul class="simple">
-<li><p><strong>Frequency menu:</strong> FT8’s dial frequencies from 160 meters to 70 cm, with the DXpedition (Fox/Hound) frequencies and regional ones noted. FT4 has WSJT-X’s FT4 dial frequencies from 80 to 2 meters.</p></li>
+<li><p><strong>Frequency menu:</strong> FT8’s dial frequencies from 160 meters to 70 cm, with the DXpedition (Fox/Hound) frequencies and regional ones noted. FT4 has WSJT-X’s FT4 dial frequencies from 80 to 2 meters, and 1.843 MHz on 160 meters (not in WSJT-X’s list, but where FT4 is usually heard there).</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite transmitter in FT8 or FT4 switches the decoder to that mode.</p></li>
 </ul>
 <p>Built on ft8_lib by Kārlis Goba, YL3JG. The searching again, the harder ways and the early decode follow WSJT-X, with thanks to Joe Taylor, K1JT, and the WSJT development team.</p>
@@ -3092,7 +3105,7 @@
 <li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> (as read) and <strong>Decoded Text</strong>, as in CW. A CQ and its call are highlighted.</p></li>
 <li><p>Click a line, or a signal on the waterfall, to pin it.</p></li>
 <li><p>A signal that starts with an RSID is found as soon as it starts.</p></li>
-<li><p><strong>Frequency menu:</strong> the usual RTTY frequencies from 80 to 10 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Frequency menu:</strong> the usual RTTY frequencies from 160 to 10 meters, and W1AW’s RTTY bulletin frequencies on 6 and 2 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
 </section>
 <section id="mfsk">
@@ -3101,7 +3114,7 @@
 <ul class="simple">
 <li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> and <strong>Decoded Text</strong>.</p></li>
 <li><p>An RSID clicked on the waterfall sets the submode.</p></li>
-<li><p><strong>Frequency menu:</strong> the W1AW MFSK16 bulletin frequencies and the MFSK16 frequencies used in New Zealand. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Frequency menu:</strong> MFSK16 from 160 to 2 meters: the W1AW bulletin frequencies (6 and 2 meters among them), the frequencies used in New Zealand, and others. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
 <p>Written from ZL1BPU’s published MFSK16 specification and IZ8BLY’s varicode.</p>
 </section>
@@ -3112,7 +3125,7 @@
 <li><p><strong>Submode</strong> (the row under the second line): <strong>DominoEX</strong> or <strong>THOR</strong> at speed 4, 5, 8, 11, 16 or 22, or <strong>DominoEX All Speeds</strong> / <strong>THOR All Speeds</strong> to decode every speed at once. The default is DominoEX 11.</p></li>
 <li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> (the speed) and <strong>Decoded Text</strong>.</p></li>
 <li><p>An RSID clicked on the waterfall sets the submode.</p></li>
-<li><p><strong>Frequency menu:</strong> the THOR22 NBEMS net frequency on 80 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Frequency menu:</strong> a DominoEX frequency on each band from 160 to 2 meters, and the THOR22 NBEMS net frequency on 80 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
 <p>Written from ZL1BPU’s published DominoEX descriptions, with THOR’s error correction as W1HKJ describes it.</p>
 </section>
@@ -3124,19 +3137,7 @@
 <li><p><strong>Where to listen:</strong> click the signal on the waterfall. Dashed lines on the waterfall show the band decoded, with the submode at the bottom between them.</p></li>
 <li><p>An RSID heard for one of these submodes sets both the submode and where to listen, unless the signal being decoded is still printing.</p></li>
 <li><p><strong>The list:</strong> the signal’s line, as PSK’s is, with its <strong>Baud</strong>.</p></li>
-<li><p>Olivia has no Frequency menu.</p></li>
-</ul>
-</section>
-<section id="navtex">
-<h3>NAVTEX<a class="headerlink" href="#navtex" title="Link to this heading">¶</a></h3>
-<p>NAVTEX receives the maritime safety broadcasts: weather forecasts, navigational warnings, search and rescue and more. They are sent on 518 kHz (international, in English), 490 kHz (national languages) and HF channels. Each station sends in its own 10 minute slot every 4 hours.</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> each message (ZCZC to NNNN) in a block of its own, the newest on top. Its header shows the station, subject and number (for example <strong>WA42</strong>), the subject’s name (<strong>Navigational warning</strong>, <strong>Weather forecast</strong>, <strong>Search and rescue</strong> …), the UTC time, the frequency, and how cleanly it was received: the share of errors in green (received well), yellow, or <strong>incomplete</strong> in red. The message’s text follows, as sent.</p></li>
-<li><p>A station in the middle of a message shows in a <strong>Receiving</strong> block on top.</p></li>
-<li><p>A message already received cleanly isn’t listed again when its station repeats it: its header says <strong>heard 2×</strong> (and so on) instead, as NAVTEX receivers do.</p></li>
-<li><p>Right-click a message for <strong>Copy To Clipboard</strong>, <strong>Save Message…</strong> or <strong>Delete</strong>.</p></li>
-<li><p><strong>Save Messages</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>NAVTEX</strong>; off at first) saves each complete message as a text file in the <strong>NAVTEX Messages</strong> folder, beside GridTracker2’s own folders, named by its UTC time, station, subject and number. A saved message’s header says <strong>saved</strong>.</p></li>
-<li><p><strong>Frequency menu:</strong> NAVTEX 490 and 518 kHz, HF NAVTEX 4209.5 kHz and the HF maritime safety channels from 4210 to 26100.5 kHz, each named. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Frequency menu:</strong> the Olivia calling frequencies from 160 to 6 meters (8/250 on HF, 16/500 on 6 meters), a 60 meter and a 2 meter frequency, and the 32/1000 frequencies on 30 and 20 meters. Pick a frequency and put the signal at 1500 Hz on the waterfall. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
 </section>
 <section id="feld-hell">
@@ -3146,49 +3147,8 @@
 <li><p><strong>Submode</strong> (the row under the second line): <strong>Feld-Hell</strong>, <strong>Feld-Hell X5</strong> or <strong>Feld-Hell X9</strong>.</p></li>
 <li><p>The strongest Hell signal is found by itself, shown by cyan dashed lines on the waterfall. Click another signal on the waterfall to read it instead (orange lines), and click inside its band to go back to finding the strongest. The status shows where it is read and how strong.</p></li>
 <li><p><strong>Trim:</strong> click <strong>−</strong> or <strong>+</strong> to straighten a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0.</p></li>
-<li><p><strong>Frequency menu:</strong> the Feld Hell Club’s frequencies from 160 to 6 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Frequency menu:</strong> the Feld Hell Club’s frequencies from 160 to 6 meters, and a 60 meter and a 2 meter frequency. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
-</section>
-<section id="wefax">
-<h3>WEFAX<a class="headerlink" href="#wefax" title="Link to this heading">¶</a></h3>
-<p>WEFAX receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the same picture view as SSTV, the newest 12 kept in a strip on the right; click one to see it large. WEFAX’s charts are kept apart from SSTV’s pictures.</p>
-<p><a class="reference internal" href="_images/GT2_MMD_WEFAX.jpg"><img alt="WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip" src="_images/GT2_MMD_WEFAX.jpg" style="width: 480px;" /></a></p>
-<ul class="simple">
-<li><p>A chart starts by itself with its start tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: <strong>LPM</strong> (lines a minute: <strong>Auto</strong>, 60, 90, 120 or 240) and <strong>IOC</strong> (the chart’s width: <strong>Auto</strong>, 576 or 288).</p></li>
-<li><p><strong>Start Now</strong> begins a chart that is already being sent. <strong>Stop</strong> ends the chart being received.</p></li>
-<li><p>Charts are kept straight and lined up by themselves, even when the sound card’s clock is off or audio is lost for a moment. To do it by hand:</p>
-<ul>
-<li><p><strong>Trim:</strong> click <strong>−</strong> or <strong>+</strong> until the chart’s upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.</p></li>
-<li><p>Click the chart’s real left edge, on the chart coming in, to line it up there.</p></li>
-</ul>
-</li>
-<li><p>The header above the chart shows its line rate and width (for example <strong>WEFAX 120/576</strong>), its UTC time, frequency and band, and <strong>saved</strong> once it is.</p></li>
-<li><p>Right-click a chart for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>, for charts some stations send sideways), <strong>Filter</strong> or <strong>Delete</strong>. A rotated or filtered chart is saved and copied as shown.</p></li>
-<li><p><strong>Filter</strong> (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:</p>
-<ul>
-<li><p><strong>Sharpen:</strong> crisper lines and lettering.</p></li>
-<li><p><strong>Noise Reduction:</strong> takes out specks and static, keeping lines and lettering.</p></li>
-<li><p><strong>Smooth:</strong> softens grainy noise.</p></li>
-<li><p><strong>Auto Contrast:</strong> stretches a faded chart to full black and white.</p></li>
-<li><p><strong>Equalize:</strong> spreads the gray levels evenly, to bring out a faint chart.</p></li>
-<li><p><strong>Lighten</strong> and <strong>Darken:</strong> lighten or darken the middle grays, keeping black and white.</p></li>
-<li><p><strong>Invert:</strong> swaps black and white.</p></li>
-<li><p><strong>Undo</strong> takes back the last filter (the number beside it says how many can be undone, up to 20). <strong>Undo All</strong> takes them all back. A file saved already stays as it was.</p></li>
-</ul>
-</li>
-<li><p>Each time the window opens, the newest 12 charts in the save folder are back in the strip.</p></li>
-<li><p><strong>Save Charts</strong> (under <strong>WEFAX</strong> in the window’s <strong>Settings</strong> → <strong>Decoders</strong>; off at first) saves each chart as a PNG when it ends, however much of it came. <strong>Folder</strong> shows where they go (<code class="docutils literal notranslate"><span class="pre">WEFAX</span> <span class="pre">Charts</span></code> at first, beside SSTV’s <code class="docutils literal notranslate"><span class="pre">SSTV</span> <span class="pre">Pictures</span></code>; click it to open it); <strong>Choose</strong> picks another.</p></li>
-<li><p><strong>Frequency menu:</strong> the stations heard around the world (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s, the UK’s and others), each named with its assigned frequency and its hours where it has them. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-<section id="auto-tune">
-<h4>Auto-Tune<a class="headerlink" href="#auto-tune" title="Link to this heading">¶</a></h4>
-<p>With <strong>Rig Control</strong> on, tick <strong>Auto-Tune</strong> on the WEFAX row to have the rig tuned to each next chart from the stations’ published schedules (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s and the UK’s), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or <strong>No chart scheduled</strong>.</p>
-<ul class="simple">
-<li><p>For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).</p></li>
-<li><p>A frequency whose chart never starts is passed over for a while.</p></li>
-<li><p>Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.</p></li>
-</ul>
-</section>
 </section>
 <section id="wspr">
 <h3>WSPR<a class="headerlink" href="#wspr" title="Link to this heading">¶</a></h3>
@@ -3196,7 +3156,7 @@
 <ul class="simple">
 <li><p><strong>The list:</strong> <strong>UTC</strong>, <strong>dB</strong>, <strong>DT</strong>, <strong>Frequency</strong> (MHz on the air with Rig Control, otherwise audio Hz), <strong>Drift</strong>, <strong>Call</strong>, <strong>Grid</strong>, <strong>dBm</strong> and <strong>Distance</strong> (in the distance unit of Settings). The newest period is on top.</p></li>
 <li><p>The bar under the waterfall shows how far into the period the decoder is, for example <strong>[ 47 / 120 ]</strong>.</p></li>
-<li><p>Decodes go to GridTracker2’s map as WSJT-X’s WSPR decodes do, even with the window closed.</p></li>
+<li><p>Decodes go to GridTracker2’s map as WSJT-X’s WSPR decodes do.</p></li>
 <li><p><strong>Frequency menu:</strong> the WSPR dial frequencies from 2200 meters (136 kHz) to 70 cm. <strong>Set Mode</strong> sets the rig to USB (its data mode with the VFO’s <strong>SSB Data</strong>).</p></li>
 </ul>
 <p>Written from the published WSPR protocol (K1JT’s description and G4JNT’s specification).</p>
@@ -3213,8 +3173,8 @@
 <li><p>A sender that fades out part way is read on to the end, so the rest still comes if it comes back.</p></li>
 <li><p>Right-click a picture for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong>, <strong>Filter</strong> (the same as WEFAX’s, see <a class="reference internal" href="#wefax">WEFAX</a>) or <strong>Delete</strong>.</p></li>
 <li><p>Each time the window opens, the newest 12 pictures in the save folder are back in the strip.</p></li>
-<li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go (click it to open it); <strong>Choose</strong> picks another.</p></li>
-<li><p><strong>Frequency menu:</strong> the usual SSTV frequencies from 160 to 2 meters, and the ISS’s SSTV events on 145.800 MHz. <strong>Set Mode</strong> sets the rig to the frequency’s sideband (LSB below 10 MHz, USB above), or FM for the ISS.</p></li>
+<li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go, as its last two folders (hover over it to see the whole path, click it to open it); <strong>Choose</strong> picks another.</p></li>
+<li><p><strong>Frequency menu:</strong> the usual SSTV frequencies from 160 to 2 meters, and the ISS’s SSTV events on 145.800 MHz. There are none on 60 and 30 meters, where pictures may not be sent. <strong>Set Mode</strong> sets the rig to the frequency’s sideband (LSB below 10 MHz, USB above), or FM for the ISS.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s SSTV transmitter switches the decoder to SSTV.</p></li>
 </ul>
 <section id="sending-pictures">
@@ -3274,7 +3234,7 @@
 </ul>
 </li>
 <li><p>A packet heard while BirdWatch follows a satellite with the rig is marked <strong>via</strong> that satellite, in cyan.</p></li>
-<li><p><strong>Frequency menu:</strong> HF APRS (7.0486, 10.1476, 14.103 and 28.14 MHz), 10 meter APRS (29.25 MHz FM), the VHF APRS frequencies around the world, and the ISS’s digipeater (145.825 MHz, and 437.825 MHz). <strong>Set Mode</strong> sets the rig to FM for VHF and LSB for HF packet.</p></li>
+<li><p><strong>Frequency menu:</strong> HF APRS (7.0486, 10.1476, 14.103 and 28.14 MHz), 300 baud packet on 80, 17, 15 and 12 meters, 10 meter APRS (29.25 MHz FM), 6 meter packet calling (50.62 MHz FM), the VHF APRS frequencies around the world, and the ISS’s digipeater (145.825 MHz, and 437.825 MHz). <strong>Set Mode</strong> sets the rig to FM for VHF and LSB for HF packet.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite transmitter sending AFSK, AX.25 or G3RUH switches the decoder to Packet.</p></li>
 </ul>
 </section>
@@ -3293,6 +3253,59 @@
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite transmitter in BPSK, AX.100 or GENESIS switches the decoder to Sat Data, and the transmitter followed picks which of the three listen.</p></li>
 <li><p>Sat Data has no Frequency menu: tune with BirdWatch.</p></li>
 </ul>
+</section>
+<section id="navtex">
+<h3>NAVTEX<a class="headerlink" href="#navtex" title="Link to this heading">¶</a></h3>
+<p>NAVTEX receives the maritime safety broadcasts: weather forecasts, navigational warnings, search and rescue and more. They are sent on 518 kHz (international, in English), 490 kHz (national languages) and HF channels. Each station sends in its own 10 minute slot every 4 hours.</p>
+<ul class="simple">
+<li><p><strong>The list:</strong> each message (ZCZC to NNNN) in a block of its own, the newest on top. Its header shows the station, subject and number (for example <strong>WA42</strong>), the subject’s name (<strong>Navigational warning</strong>, <strong>Weather forecast</strong>, <strong>Search and rescue</strong> …), the UTC time, the frequency, and how cleanly it was received: the share of errors in green (received well), yellow, or <strong>incomplete</strong> in red. The message’s text follows, as sent.</p></li>
+<li><p>A station in the middle of a message shows in a <strong>Receiving</strong> block on top.</p></li>
+<li><p>A message already received cleanly isn’t listed again when its station repeats it: its header says <strong>heard 2×</strong> (and so on) instead, as NAVTEX receivers do.</p></li>
+<li><p>Right-click a message for <strong>Copy To Clipboard</strong>, <strong>Save Message…</strong> or <strong>Delete</strong>.</p></li>
+<li><p><strong>Save Messages</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>NAVTEX</strong>; off at first) saves each complete message as a text file in the <strong>NAVTEX Messages</strong> folder, beside GridTracker2’s own folders, named by its UTC time, station, subject and number. A saved message’s header says <strong>saved</strong>.</p></li>
+<li><p><strong>Frequency menu:</strong> NAVTEX 490 and 518 kHz, HF NAVTEX 4209.5 kHz and the HF maritime safety channels from 4210 to 26100.5 kHz, each named. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+</ul>
+</section>
+<section id="wefax">
+<h3>WEFAX<a class="headerlink" href="#wefax" title="Link to this heading">¶</a></h3>
+<p>WEFAX receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the same picture view as SSTV, the newest 12 kept in a strip on the right; click one to see it large. WEFAX’s charts are kept apart from SSTV’s pictures.</p>
+<p><a class="reference internal" href="_images/GT2_MMD_WEFAX.jpg"><img alt="WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip" src="_images/GT2_MMD_WEFAX.jpg" style="width: 480px;" /></a></p>
+<ul class="simple">
+<li><p>A chart starts by itself with its start tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: <strong>LPM</strong> (lines a minute: <strong>Auto</strong>, 60, 90, 120 or 240) and <strong>IOC</strong> (the chart’s width: <strong>Auto</strong>, 576 or 288).</p></li>
+<li><p><strong>Start Now</strong> begins a chart that is already being sent. <strong>Stop</strong> ends the chart being received.</p></li>
+<li><p>Charts are kept straight and lined up by themselves, even when the sound card’s clock is off or audio is lost for a moment. To do it by hand:</p>
+<ul>
+<li><p><strong>Trim:</strong> click <strong>−</strong> or <strong>+</strong> until the chart’s upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.</p></li>
+<li><p>Click the chart’s real left edge, on the chart coming in, to line it up there.</p></li>
+</ul>
+</li>
+<li><p>The header above the chart shows its line rate and width (for example <strong>WEFAX 120/576</strong>), its UTC time, frequency and band, and <strong>saved</strong> once it is.</p></li>
+<li><p>Right-click a chart for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>, for charts some stations send sideways), <strong>Filter</strong> or <strong>Delete</strong>. A rotated or filtered chart is saved and copied as shown.</p></li>
+<li><p><strong>Filter</strong> (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:</p>
+<ul>
+<li><p><strong>Sharpen:</strong> crisper lines and lettering.</p></li>
+<li><p><strong>Noise Reduction:</strong> takes out specks and static, keeping lines and lettering.</p></li>
+<li><p><strong>Smooth:</strong> softens grainy noise.</p></li>
+<li><p><strong>Auto Contrast:</strong> stretches a faded chart to full black and white.</p></li>
+<li><p><strong>Equalize:</strong> spreads the gray levels evenly, to bring out a faint chart.</p></li>
+<li><p><strong>Lighten</strong> and <strong>Darken:</strong> lighten or darken the middle grays, keeping black and white.</p></li>
+<li><p><strong>Invert:</strong> swaps black and white.</p></li>
+<li><p><strong>Undo</strong> takes back the last filter (the number beside it says how many can be undone, up to 20). <strong>Undo All</strong> takes them all back. A file saved already stays as it was.</p></li>
+</ul>
+</li>
+<li><p>Each time the window opens, the newest 12 charts in the save folder are back in the strip.</p></li>
+<li><p><strong>Save Charts</strong> (under <strong>WEFAX</strong> in the window’s <strong>Settings</strong> → <strong>Decoders</strong>; off at first) saves each chart as a PNG when it ends, however much of it came. <strong>Folder</strong> shows where they go, as SSTV’s does (<code class="docutils literal notranslate"><span class="pre">WEFAX</span> <span class="pre">Charts</span></code> at first, beside SSTV’s <code class="docutils literal notranslate"><span class="pre">SSTV</span> <span class="pre">Pictures</span></code>; click it to open it); <strong>Choose</strong> picks another.</p></li>
+<li><p><strong>Frequency menu:</strong> the stations heard around the world (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s, the UK’s and others), grouped by the station’s location (in alphabetical order, each one’s frequencies lowest first), each named with its assigned frequency and its hours where it has them. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+</ul>
+<section id="auto-tune">
+<h4>Auto-Tune<a class="headerlink" href="#auto-tune" title="Link to this heading">¶</a></h4>
+<p>With <strong>Rig Control</strong> on, tick <strong>Auto-Tune</strong> on the WEFAX row to have the rig tuned to each next chart from the stations’ published schedules (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s and the UK’s), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or <strong>No chart scheduled</strong>.</p>
+<ul class="simple">
+<li><p>For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).</p></li>
+<li><p>A frequency whose chart never starts is passed over for a while.</p></li>
+<li><p>Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.</p></li>
+</ul>
+</section>
 </section>
 </section>
 <span id="document-BirdWatch"></span><section id="birdwatch">

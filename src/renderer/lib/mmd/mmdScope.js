@@ -4,7 +4,8 @@
 
 // The rig's band scope (Rig Control's Use Scope If Present: an Icom's own spectrum scope over CI-V, rig.js rigScopeSync): a strip over the
 // audio waterfall while the decoder's VFO's rig has it on. Along its top the frequencies of the rig's span, under them the rig's own
-// waterfall (a row a sweep, the newest on top). Where the rig is tuned is marked (its dial in orange,
+// waterfall (a row a sweep, the newest on top), what's outside the amateur bands shaded in the warning color with a line at each band
+// edge. Where the rig is tuned is marked (its dial in the frequency color,
 // the audio the decoder takes, between [ and ], shaded) and a click tunes the rig to put what was clicked in the middle of that audio
 // (mmdTuneDial). − and + in its top corners narrow and widen the rig's span, going round past either end (Center mode; Fixed mode's
 // edges are set at the rig). Why
@@ -25,6 +26,8 @@ const SCOPE_FLOOR_FOLLOW = 0.2;
 // The frequencies' steps (Hz): the smallest that keeps labels this far apart (CSS pixels)
 const SCOPE_STEPS = [500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000, 100000, 200000, 250000];
 const SCOPE_LABEL_GAP = 70;
+// Out Of Band Shading (Settings, Rig Scope): the warning color's opacity over what's outside the amateur bands, percent, unless changed
+const SCOPE_OOB_DEFAULT = 18;
 
 const SCOPE = {
   status: null,  // rigScopeStatus for the decoder's VFO, as last asked (null: the strip hidden)
@@ -34,6 +37,8 @@ const SCOPE = {
   fallLow: 0,    // the low edge (Hz) the waterfall's columns stand for (a retune slides them: mmdScopeFallRow)
   floor: null,   // the noise floor the colors start at, followed from sweep to sweep (null: taken afresh from the next one)
   hoverX: null,  // the mouse across the strip (CSS pixels), or null
+  guardKey: "",  // the span the guard bands were worked out for, and them (mmdScopeGuards)
+  guards: [],
   drawQueued: false
 };
 
@@ -94,6 +99,32 @@ function mmdScopeTick()
     SCOPE.sweep = null;
     mmdScopeDraw();
   }
+}
+
+// ---- Settings, Rig Scope: Out Of Band Shading (kept: MMD.scopeOob). (The rig's own sweep speed, 27 1A, isn't offered: an IC-7300 sends
+// about 4 sweeps a second over USB at Slow, Mid and Fast alike, at every span)
+
+// Out Of Band Shading, 0 to 100 (percent)
+function mmdScopeOob()
+{
+  const v = Number(GT.settings.MMD.scopeOob);
+  return Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : SCOPE_OOB_DEFAULT;
+}
+
+// The tab as things are (as it opens)
+function mmdScopeSettingsRender()
+{
+  if (mmdScopeTab.style.display == "none") return;
+  const oob = mmdScopeOob();
+  if (document.activeElement !== mmdScopeOobValue) mmdScopeOobValue.value = oob;
+  mmdScopeOobTd.textContent = oob + "%";
+}
+
+function mmdScopeSetOob()
+{
+  GT.settings.MMD.scopeOob = Number(mmdScopeOobValue.value);
+  mmdScopeOobTd.textContent = mmdScopeOob() + "%";
+  mmdScopeDraw();
 }
 
 function mmdScopeButton(el, enabled, hoverKey)
@@ -220,11 +251,26 @@ function mmdScopeDraw()
       ctx.textBaseline = "middle";
       ctx.fillText(I18N("cwViewer.scope.outOfRange"), A.left + A.width / 2, scaleH + (h - scaleH) / 2);
     }
-    // Where the rig is tuned: the audio decoded (between [ and ]) shaded, the dial a line; only over the scope's own area
+    // Only over the scope's own area: what's outside the amateur bands shaded in the warning color, a line at each band edge (guard bands);
+    // where the rig is tuned: the audio decoded (between [ and ]) shaded, the dial a line in the frequency color
     ctx.save();
     ctx.beginPath();
     ctx.rect(A.left, 0, A.width, h);
     ctx.clip();
+    ctx.fillStyle = gtThemeColor("warning");
+    const oob = mmdScopeOob() / 100;
+    for (const [lo, hi] of mmdScopeGuards(sweep))
+    {
+      // (Out Of Band Shading, Settings' Rig Scope)
+      if (oob > 0)
+      {
+        ctx.globalAlpha = oob;
+        ctx.fillRect(x(lo), scaleH, Math.max(ratio, x(hi) - x(lo)), h - scaleH);
+        ctx.globalAlpha = 1;
+      }
+      for (const edge of [lo, hi]) if (edge > sweep.low && edge < sweep.high) ctx.fillRect(Math.round(x(edge)), scaleH, Math.max(1, Math.round(ratio)), h - scaleH);
+    }
+    ctx.globalAlpha = 1;
     const opener = window.opener;
     const a = opener.mmDecoderAirHz(mmdMinHz()), b = opener.mmDecoderAirHz(mmdMaxHz());
     if (a != null && b != null)
@@ -235,18 +281,20 @@ function mmdScopeDraw()
     const dial = mmdDial();
     if (dial != null)
     {
-      ctx.fillStyle = "orange";
+      ctx.fillStyle = gtThemeColor("frequency");
       ctx.fillRect(Math.round(x(dial) - ratio), scaleH, Math.max(2, Math.round(2 * ratio)), h - scaleH);
     }
     ctx.restore();
     mmdScopeScale(ctx, sweep, w, A, scaleH, ratio, x);
-    // The frequency under the mouse (over the scope's area)
+    // The frequency under the mouse (over the scope's area); outside the amateur bands its line and frequency in the warning color
     const hx = SCOPE.hoverX != null ? SCOPE.hoverX * ratio : null;
     if (hx != null && hx >= A.left && hx < A.left + A.width)
     {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-      ctx.fillRect(Math.round(hx), scaleH, Math.max(1, Math.round(ratio)), h - scaleH);
       const hz = sweep.low + ((hx - A.left) / A.width) * (sweep.high - sweep.low);
+      const band = mmdBandOf(hz);
+      const ham = !!band && band != "OOB";
+      ctx.fillStyle = ham ? "rgba(255, 255, 255, 0.6)" : gtThemeColor("warning");
+      ctx.fillRect(Math.round(hx), scaleH, Math.max(1, Math.round(ratio)), h - scaleH);
       ctx.font = Math.round(11 * ratio) + "px sans-serif";
       ctx.textBaseline = "top";
       const text = (hz / 1e6).toFixed(4);
@@ -254,11 +302,50 @@ function mmdScopeDraw()
       const tx = Math.max(2 * ratio, Math.min(w - tw - 2 * ratio, hx + 4 * ratio));
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
       ctx.fillRect(tx - 2 * ratio, scaleH + 2 * ratio, tw + 4 * ratio, 13 * ratio);
-      ctx.fillStyle = gtThemeColor("frequency");
+      ctx.fillStyle = gtThemeColor(ham ? "frequency" : "warning");
       ctx.textAlign = "left";
       ctx.fillText(text, tx, scaleH + 3 * ratio);
     }
   });
+}
+
+// The parts of a sweep's span outside the amateur bands (mmdBandOf: none, or out of its band's edges), [[low Hz, high Hz], ...]: each
+// edge found between two points that differ, then to the Hz between them; worked out again only for another span
+function mmdScopeGuards(sweep)
+{
+  const key = sweep.low + ":" + sweep.high;
+  if (SCOPE.guardKey == key) return SCOPE.guards;
+  const ham = (hz) =>
+  {
+    const band = mmdBandOf(hz);
+    return !!band && band != "OOB";
+  };
+  const n = Math.max(2, sweep.points.length || 475);
+  const step = (sweep.high - sweep.low) / (n - 1);
+  const guards = [];
+  let from = ham(sweep.low) ? null : sweep.low;
+  let was = from === null;
+  for (let i = 1; i < n; i++)
+  {
+    const hz = sweep.low + i * step;
+    const now = ham(hz);
+    if (now == was) continue;
+    // The edge to the Hz, between the point before and this one
+    let lo = hz - step, hi = hz;
+    while (hi - lo > 1)
+    {
+      const mid = (lo + hi) / 2;
+      if (ham(mid) == was) lo = mid;
+      else hi = mid;
+    }
+    if (now) guards.push([from, hi]);
+    else from = hi;
+    was = now;
+  }
+  if (!was) guards.push([from, sweep.high]);
+  SCOPE.guardKey = key;
+  SCOPE.guards = guards;
+  return guards;
 }
 
 // Where a sweep of n points is drawn across a strip w device pixels wide: each point a whole number of pixels (as many as fit, at least

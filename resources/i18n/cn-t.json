@@ -1951,5 +1951,13 @@
   "events.source.rig": "電台",
   "rig.event.webSerial": "{port}: 未使用 serialport 模組開啟，開啟連接埠時 DTR 和 RTS 會短暫拉高，可能使電台發射。請在原始碼資料夾中執行 npm ci，或重新安裝 GridTracker2",
   "sstvTx.size.tiny": "極小",
-  "sstvTx.size.smaller": "較小"
+  "sstvTx.size.smaller": "較小",
+  "settings.bands.main.label": "主要",
+  "settings.bands.main.hover": "在模式選單中選擇此模式時，電台在此波段調諧到的頻率（每個波段一個）",
+  "cwViewer.settings.scope.label": "電台頻譜",
+  "settings.mmDecoder.scopeOob.label": "頻段外陰影",
+  "settings.mmDecoder.scopeOob.hover": "業餘頻段之外的部分以警告色加陰影的濃度：0% 不加，100% 實心",
+  "gt.button.cast.onMany.hover": "正在投射到 {0}（按一下：選擇裝置）",
+  "gt.button.cast.preparingMany.hover": "正在為 {0} 準備影片（按一下：選擇裝置）",
+  "cast.menu.openBrowser.label": "在預設瀏覽器中開啟"
 }

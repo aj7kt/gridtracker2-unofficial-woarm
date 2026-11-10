@@ -6,7 +6,7 @@ Pick a mode in the **Mode** menu on the window's second line. Each mode below ha
 
 A few things work the same way in most modes:
 
-* **Frequency menu:** each mode's usual frequencies, beside the **Mode** menu. It shows only when **Rig Control** is on (the window's **Settings** → **General**), the mode's VFO is connected, and the mode's **Set Frequency** or **Set Mode** is ticked (the window's **Settings** → **Decoders**; both are on unless you turn them off). Picking a frequency tunes the rig there (**Set Frequency**) and sets the rig's mode (**Set Mode**). For USB and LSB, a VFO with **SSB Data** ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window's **Band Plans** tab, where you can edit them.
+* **Frequency menu:** each mode's usual frequencies, beside the **Mode** menu. It shows only when **Rig Control** is on (the window's **Settings** → **General**), the mode's VFO is connected, and the mode's **Set Frequency** or **Set Mode** is ticked (the window's **Settings** → **Decoders**; both are on unless you turn them off). Picking a frequency tunes the rig there (**Set Frequency**) and sets the rig's mode (**Set Mode**). For USB and LSB, a VFO with **SSB Data** ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window's **Band Plans** tab, where you can edit them. With the mode's **Set Frequency** on, picking a mode in the **Mode** menu tunes the rig to its main frequency on the band you're on (**Main** in Band Plans, such as FT8's 14.074 on 20 meters). When the mode has none on that band, the rig goes to its main frequency on the band of its nearest. A rig already on one of the mode's frequencies stays there.
 * **Tuning lock:** with **Rig Control** on, a lock sits before the rig's frequency on the divider: gold and closed while tuning is locked (as it starts), grey and open while unlocked. Click it to unlock: the mouse wheel on the waterfall then tunes the rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz). In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock. A middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed and nothing is sent to the rig.
 * **Right-click a line:** in CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia, right-click a decoded line and pick **Delete** to remove it. A station that is still sending is listed again with what it sends next.
 
@@ -20,7 +20,7 @@ CW decodes every CW signal in the passband at once, each on its own line. It fol
 * A **CQ** and the call after it are highlighted, and the line is shaded green.
 * Text already decoded is corrected as the decoder learns an operator's timing, for example at the start of a transmission or after a change of speed. Corrected text glows for a moment.
 * Click a line, or a signal on the waterfall, to pin it.
-* **Frequency menu:** the QRP calling frequencies from 160 to 10 meters, the 6 meter CW calling frequency and the 2 meter CW center of activity. **Set Mode** sets the rig to CW.
+* **Frequency menu:** the QRP calling frequencies from 160 to 10 meters, a 60 meter frequency, the 6 meter CW calling frequency and the 2 meter CW center of activity. **Set Mode** sets the rig to CW.
 * With **Follow BirdWatch**, a satellite's CW beacon switches the decoder to CW.
 
 ## FT8 and FT4
@@ -63,10 +63,10 @@ In the window's **Settings** → **Decoders**, under **FT8** and **FT4**:
 * **Set Mode** sets the rig to USB (its data mode with the VFO's **SSB Data**).
 
 ```{note}
-FT8 and FT4 decodes go to GridTracker2's map and alerts through an instance named **MMD**, as a WSJT-X instance's do, even with the window closed. A green dot on the **Toggle Multi-Mode Decoder** button shows it is listening in the background. The decoder doesn't transmit, so MMD can't be answered.
+FT8 and FT4 decodes go to GridTracker2's map and alerts through an instance named **MMD**, as a WSJT-X instance's do, whether the window is showing or not (as every mode keeps decoding: see [Listening in the Background](Multi-Mode-Decoder.md#listening-in-the-background)). The decoder doesn't transmit, so MMD can't be answered.
 ```
 
-* **Frequency menu:** FT8's dial frequencies from 160 meters to 70 cm, with the DXpedition (Fox/Hound) frequencies and regional ones noted. FT4 has WSJT-X's FT4 dial frequencies from 80 to 2 meters.
+* **Frequency menu:** FT8's dial frequencies from 160 meters to 70 cm, with the DXpedition (Fox/Hound) frequencies and regional ones noted. FT4 has WSJT-X's FT4 dial frequencies from 80 to 2 meters, and 1.843 MHz on 160 meters (not in WSJT-X's list, but where FT4 is usually heard there).
 * With **Follow BirdWatch**, a satellite transmitter in FT8 or FT4 switches the decoder to that mode.
 
 Built on ft8_lib by Kārlis Goba, YL3JG. The searching again, the harder ways and the early decode follow WSJT-X, with thanks to Joe Taylor, K1JT, and the WSJT development team.
@@ -88,7 +88,7 @@ RTTY decodes every RTTY signal in the passband, each on its own line. Each signa
 * **The list:** **Frequency**, **dB**, **Baud** (as read) and **Decoded Text**, as in CW. A CQ and its call are highlighted.
 * Click a line, or a signal on the waterfall, to pin it.
 * A signal that starts with an RSID is found as soon as it starts.
-* **Frequency menu:** the usual RTTY frequencies from 80 to 10 meters. **Set Mode** sets the rig to USB.
+* **Frequency menu:** the usual RTTY frequencies from 160 to 10 meters, and W1AW's RTTY bulletin frequencies on 6 and 2 meters. **Set Mode** sets the rig to USB.
 
 ## MFSK
 
@@ -96,7 +96,7 @@ MFSK decodes every MFSK16 or MFSK32 signal in the passband, each found by itself
 
 * **The list:** **Frequency**, **dB**, **Baud** and **Decoded Text**.
 * An RSID clicked on the waterfall sets the submode.
-* **Frequency menu:** the W1AW MFSK16 bulletin frequencies and the MFSK16 frequencies used in New Zealand. **Set Mode** sets the rig to USB.
+* **Frequency menu:** MFSK16 from 160 to 2 meters: the W1AW bulletin frequencies (6 and 2 meters among them), the frequencies used in New Zealand, and others. **Set Mode** sets the rig to USB.
 
 Written from ZL1BPU's published MFSK16 specification and IZ8BLY's varicode.
 
@@ -107,7 +107,7 @@ The **DominoEX / THOR** mode decodes every DominoEX or THOR signal in the passba
 * **Submode** (the row under the second line): **DominoEX** or **THOR** at speed 4, 5, 8, 11, 16 or 22, or **DominoEX All Speeds** / **THOR All Speeds** to decode every speed at once. The default is DominoEX 11.
 * **The list:** **Frequency**, **dB**, **Baud** (the speed) and **Decoded Text**.
 * An RSID clicked on the waterfall sets the submode.
-* **Frequency menu:** the THOR22 NBEMS net frequency on 80 meters. **Set Mode** sets the rig to USB.
+* **Frequency menu:** a DominoEX frequency on each band from 160 to 2 meters, and the THOR22 NBEMS net frequency on 80 meters. **Set Mode** sets the rig to USB.
 
 Written from ZL1BPU's published DominoEX descriptions, with THOR's error correction as W1HKJ describes it.
 
@@ -119,18 +119,7 @@ The **Olivia** mode decodes one Olivia or Contestia signal at a time.
 * **Where to listen:** click the signal on the waterfall. Dashed lines on the waterfall show the band decoded, with the submode at the bottom between them.
 * An RSID heard for one of these submodes sets both the submode and where to listen, unless the signal being decoded is still printing.
 * **The list:** the signal's line, as PSK's is, with its **Baud**.
-* Olivia has no Frequency menu.
-
-## NAVTEX
-
-NAVTEX receives the maritime safety broadcasts: weather forecasts, navigational warnings, search and rescue and more. They are sent on 518 kHz (international, in English), 490 kHz (national languages) and HF channels. Each station sends in its own 10 minute slot every 4 hours.
-
-* **The list:** each message (ZCZC to NNNN) in a block of its own, the newest on top. Its header shows the station, subject and number (for example **WA42**), the subject's name (**Navigational warning**, **Weather forecast**, **Search and rescue** ...), the UTC time, the frequency, and how cleanly it was received: the share of errors in green (received well), yellow, or **incomplete** in red. The message's text follows, as sent.
-* A station in the middle of a message shows in a **Receiving** block on top.
-* A message already received cleanly isn't listed again when its station repeats it: its header says **heard 2×** (and so on) instead, as NAVTEX receivers do.
-* Right-click a message for **Copy To Clipboard**, **Save Message...** or **Delete**.
-* **Save Messages** (the window's **Settings** → **Decoders**, under **NAVTEX**; off at first) saves each complete message as a text file in the **NAVTEX Messages** folder, beside GridTracker2's own folders, named by its UTC time, station, subject and number. A saved message's header says **saved**.
-* **Frequency menu:** NAVTEX 490 and 518 kHz, HF NAVTEX 4209.5 kHz and the HF maritime safety channels from 4210 to 26100.5 kHz, each named. **Set Mode** sets the rig to USB.
+* **Frequency menu:** the Olivia calling frequencies from 160 to 6 meters (8/250 on HF, 16/500 on 6 meters), a 60 meter and a 2 meter frequency, and the 32/1000 frequencies on 30 and 20 meters. Pick a frequency and put the signal at 1500 Hz on the waterfall. **Set Mode** sets the rig to USB.
 
 ## Feld-Hell
 
@@ -139,41 +128,7 @@ Feld-Hell prints Hellschreiber on a tape as it is heard, line after line, the ne
 * **Submode** (the row under the second line): **Feld-Hell**, **Feld-Hell X5** or **Feld-Hell X9**.
 * The strongest Hell signal is found by itself, shown by cyan dashed lines on the waterfall. Click another signal on the waterfall to read it instead (orange lines), and click inside its band to go back to finding the strongest. The status shows where it is read and how strong.
 * **Trim:** click **−** or **+** to straighten a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0.
-* **Frequency menu:** the Feld Hell Club's frequencies from 160 to 6 meters. **Set Mode** sets the rig to USB.
-
-## WEFAX
-
-WEFAX receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the same picture view as SSTV, the newest 12 kept in a strip on the right; click one to see it large. WEFAX's charts are kept apart from SSTV's pictures.
-
-![WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip](../img/GT2_MMD_WEFAX.jpg){width=480px}
-
-* A chart starts by itself with its start tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: **LPM** (lines a minute: **Auto**, 60, 90, 120 or 240) and **IOC** (the chart's width: **Auto**, 576 or 288).
-* **Start Now** begins a chart that is already being sent. **Stop** ends the chart being received.
-* Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. To do it by hand:
-  * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
-  * Click the chart's real left edge, on the chart coming in, to line it up there.
-* The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
-* Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**. A rotated or filtered chart is saved and copied as shown.
-* **Filter** (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:
-  * **Sharpen:** crisper lines and lettering.
-  * **Noise Reduction:** takes out specks and static, keeping lines and lettering.
-  * **Smooth:** softens grainy noise.
-  * **Auto Contrast:** stretches a faded chart to full black and white.
-  * **Equalize:** spreads the gray levels evenly, to bring out a faint chart.
-  * **Lighten** and **Darken:** lighten or darken the middle grays, keeping black and white.
-  * **Invert:** swaps black and white.
-  * **Undo** takes back the last filter (the number beside it says how many can be undone, up to 20). **Undo All** takes them all back. A file saved already stays as it was.
-* Each time the window opens, the newest 12 charts in the save folder are back in the strip.
-* **Save Charts** (under **WEFAX** in the window's **Settings** → **Decoders**; off at first) saves each chart as a PNG when it ends, however much of it came. **Folder** shows where they go (`WEFAX Charts` at first, beside SSTV's `SSTV Pictures`; click it to open it); **Choose** picks another.
-* **Frequency menu:** the stations heard around the world (NOAA's, Germany's, Japan's, Korea's, Australia's, the UK's and others), each named with its assigned frequency and its hours where it has them. **Set Mode** sets the rig to USB.
-
-### Auto-Tune
-
-With **Rig Control** on, tick **Auto-Tune** on the WEFAX row to have the rig tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or **No chart scheduled**.
-
-* For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).
-* A frequency whose chart never starts is passed over for a while.
-* Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.
+* **Frequency menu:** the Feld Hell Club's frequencies from 160 to 6 meters, and a 60 meter and a 2 meter frequency. **Set Mode** sets the rig to USB.
 
 ## WSPR
 
@@ -181,7 +136,7 @@ WSPR decodes each 2 minute period once it has ended: every station between 1350 
 
 * **The list:** **UTC**, **dB**, **DT**, **Frequency** (MHz on the air with Rig Control, otherwise audio Hz), **Drift**, **Call**, **Grid**, **dBm** and **Distance** (in the distance unit of Settings). The newest period is on top.
 * The bar under the waterfall shows how far into the period the decoder is, for example **[ 47 / 120 ]**.
-* Decodes go to GridTracker2's map as WSJT-X's WSPR decodes do, even with the window closed.
+* Decodes go to GridTracker2's map as WSJT-X's WSPR decodes do.
 * **Frequency menu:** the WSPR dial frequencies from 2200 meters (136 kHz) to 70 cm. **Set Mode** sets the rig to USB (its data mode with the VFO's **SSB Data**).
 
 Written from the published WSPR protocol (K1JT's description and G4JNT's specification).
@@ -199,8 +154,8 @@ SSTV receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robo
 * A sender that fades out part way is read on to the end, so the rest still comes if it comes back.
 * Right-click a picture for **Save Picture…**, **Copy To Clipboard**, **Rotate**, **Filter** (the same as WEFAX's, see [WEFAX](#wefax)) or **Delete**.
 * Each time the window opens, the newest 12 pictures in the save folder are back in the strip.
-* **Save Pictures** (the window's **Settings** → **Decoders**, under **SSTV**; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. **Folder** shows where they go (click it to open it); **Choose** picks another.
-* **Frequency menu:** the usual SSTV frequencies from 160 to 2 meters, and the ISS's SSTV events on 145.800 MHz. **Set Mode** sets the rig to the frequency's sideband (LSB below 10 MHz, USB above), or FM for the ISS.
+* **Save Pictures** (the window's **Settings** → **Decoders**, under **SSTV**; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. **Folder** shows where they go, as its last two folders (hover over it to see the whole path, click it to open it); **Choose** picks another.
+* **Frequency menu:** the usual SSTV frequencies from 160 to 2 meters, and the ISS's SSTV events on 145.800 MHz. There are none on 60 and 30 meters, where pictures may not be sent. **Set Mode** sets the rig to the frequency's sideband (LSB below 10 MHz, USB above), or FM for the ISS.
 * With **Follow BirdWatch**, a satellite's SSTV transmitter switches the decoder to SSTV.
 
 ### Sending Pictures
@@ -259,7 +214,7 @@ Packet decodes AX.25 packets, listening for all of these at once: AFSK 1200 (APR
 * **HF packet** is found wherever its tones land between the **[** and **]**, so a station a little off frequency is still decoded. Each place one was heard lately is ticked at the top of the waterfall; hover over a 300 baud line's **Baud** to see where it was heard.
   * Click the waterfall, or a 300 baud line, to lock onto that place: only it is decoded, marked by a tick with guard lines either side. Click inside the guards to let go.
 * A packet heard while BirdWatch follows a satellite with the rig is marked **via** that satellite, in cyan.
-* **Frequency menu:** HF APRS (7.0486, 10.1476, 14.103 and 28.14 MHz), 10 meter APRS (29.25 MHz FM), the VHF APRS frequencies around the world, and the ISS's digipeater (145.825 MHz, and 437.825 MHz). **Set Mode** sets the rig to FM for VHF and LSB for HF packet.
+* **Frequency menu:** HF APRS (7.0486, 10.1476, 14.103 and 28.14 MHz), 300 baud packet on 80, 17, 15 and 12 meters, 10 meter APRS (29.25 MHz FM), 6 meter packet calling (50.62 MHz FM), the VHF APRS frequencies around the world, and the ISS's digipeater (145.825 MHz, and 437.825 MHz). **Set Mode** sets the rig to FM for VHF and LSB for HF packet.
 * With **Follow BirdWatch**, a satellite transmitter sending AFSK, AX.25 or G3RUH switches the decoder to Packet.
 
 ## Sat Data
@@ -276,3 +231,48 @@ Sat Data decodes satellite telemetry frames. It listens for:
 * **SSDV pictures:** a satellite's SSDV packets are put together into its pictures above the list, each filling in as its packets come (what hasn't come yet is gray), with its image number and the packets received and missing under it. Right-click a picture for **Save Picture…** (as a JPEG), **Copy To Clipboard** or **Delete**.
 * With **Follow BirdWatch**, a satellite transmitter in BPSK, AX.100 or GENESIS switches the decoder to Sat Data, and the transmitter followed picks which of the three listen.
 * Sat Data has no Frequency menu: tune with BirdWatch.
+
+## NAVTEX
+
+NAVTEX receives the maritime safety broadcasts: weather forecasts, navigational warnings, search and rescue and more. They are sent on 518 kHz (international, in English), 490 kHz (national languages) and HF channels. Each station sends in its own 10 minute slot every 4 hours.
+
+* **The list:** each message (ZCZC to NNNN) in a block of its own, the newest on top. Its header shows the station, subject and number (for example **WA42**), the subject's name (**Navigational warning**, **Weather forecast**, **Search and rescue** ...), the UTC time, the frequency, and how cleanly it was received: the share of errors in green (received well), yellow, or **incomplete** in red. The message's text follows, as sent.
+* A station in the middle of a message shows in a **Receiving** block on top.
+* A message already received cleanly isn't listed again when its station repeats it: its header says **heard 2×** (and so on) instead, as NAVTEX receivers do.
+* Right-click a message for **Copy To Clipboard**, **Save Message...** or **Delete**.
+* **Save Messages** (the window's **Settings** → **Decoders**, under **NAVTEX**; off at first) saves each complete message as a text file in the **NAVTEX Messages** folder, beside GridTracker2's own folders, named by its UTC time, station, subject and number. A saved message's header says **saved**.
+* **Frequency menu:** NAVTEX 490 and 518 kHz, HF NAVTEX 4209.5 kHz and the HF maritime safety channels from 4210 to 26100.5 kHz, each named. **Set Mode** sets the rig to USB.
+
+## WEFAX
+
+WEFAX receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the same picture view as SSTV, the newest 12 kept in a strip on the right; click one to see it large. WEFAX's charts are kept apart from SSTV's pictures.
+
+![WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip](../img/GT2_MMD_WEFAX.jpg){width=480px}
+
+* A chart starts by itself with its start tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: **LPM** (lines a minute: **Auto**, 60, 90, 120 or 240) and **IOC** (the chart's width: **Auto**, 576 or 288).
+* **Start Now** begins a chart that is already being sent. **Stop** ends the chart being received.
+* Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. To do it by hand:
+  * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
+  * Click the chart's real left edge, on the chart coming in, to line it up there.
+* The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
+* Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**. A rotated or filtered chart is saved and copied as shown.
+* **Filter** (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:
+  * **Sharpen:** crisper lines and lettering.
+  * **Noise Reduction:** takes out specks and static, keeping lines and lettering.
+  * **Smooth:** softens grainy noise.
+  * **Auto Contrast:** stretches a faded chart to full black and white.
+  * **Equalize:** spreads the gray levels evenly, to bring out a faint chart.
+  * **Lighten** and **Darken:** lighten or darken the middle grays, keeping black and white.
+  * **Invert:** swaps black and white.
+  * **Undo** takes back the last filter (the number beside it says how many can be undone, up to 20). **Undo All** takes them all back. A file saved already stays as it was.
+* Each time the window opens, the newest 12 charts in the save folder are back in the strip.
+* **Save Charts** (under **WEFAX** in the window's **Settings** → **Decoders**; off at first) saves each chart as a PNG when it ends, however much of it came. **Folder** shows where they go, as SSTV's does (`WEFAX Charts` at first, beside SSTV's `SSTV Pictures`; click it to open it); **Choose** picks another.
+* **Frequency menu:** the stations heard around the world (NOAA's, Germany's, Japan's, Korea's, Australia's, the UK's and others), grouped by the station's location (in alphabetical order, each one's frequencies lowest first), each named with its assigned frequency and its hours where it has them. **Set Mode** sets the rig to USB.
+
+### Auto-Tune
+
+With **Rig Control** on, tick **Auto-Tune** on the WEFAX row to have the rig tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or **No chart scheduled**.
+
+* For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).
+* A frequency whose chart never starts is passed over for a while.
+* Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.

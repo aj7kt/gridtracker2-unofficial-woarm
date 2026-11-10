@@ -158,6 +158,7 @@ function mmdOliviaMessage(m)
     signal.freq = m.center;
     signal.air = window.opener.mmDecoderAirHz(m.center);
     signal.snr = m.snr;
+    signal.snrSeen = m.snr != null;
     signal.alive = true;
     DEC.dirty = true;
   }

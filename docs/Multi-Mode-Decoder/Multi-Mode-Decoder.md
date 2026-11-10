@@ -20,9 +20,9 @@ Turning **Multi-Mode Decoder** off hides the window, stops it listening and remo
 
 ### Listening in the Background
 
-In most modes the decoder only listens while its window is showing. When you hide the window, it lets go of the sound card.
+While **Multi-Mode Decoder** is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. Its decodes keep reaching the map and the Call Roster (see [Decodes in GridTracker2](#decodes-in-gridtracker2)). Pictures, charts and NAVTEX messages keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.
 
-In **FT8**, **FT4** and **WSPR** it keeps listening with the window hidden, so their decodes keep reaching the map and the Call Roster (see [Decodes in GridTracker2](#decodes-in-gridtracker2)). A green dot on the **Toggle Multi-Mode Decoder** button shows that it is listening in the background. Hover over the button and its tooltip says so.
+A green dot on the **Toggle Multi-Mode Decoder** button shows that it is listening in the background. Hover over the button and its tooltip says so. Turn **Multi-Mode Decoder** off to stop it listening and let go of the sound card.
 
 ## The Window
 
@@ -199,9 +199,11 @@ Picking a frequency sends your rig what that mode allows in [Settings → Decode
 
 Both are on unless you turn them off. With both off, the menu isn't shown. With **Data** ticked for the VFO's **SSB** in Rig Control, the digital modes use the rig's data mode (USB-D, PKTUSB, DATA-U) instead of plain USB or LSB.
 
-Olivia and Sat Data have no Frequency menu.
+Sat Data has no Frequency menu.
 
 The frequencies come from the [Band Plans](#band-plans) tab, where you can change them.
+
+With a mode's **Set Frequency** on, picking that mode in the **Mode** menu tunes the rig to the mode's main frequency on the band you're on (its usual calling or activity frequency, ticked **Main** in [Band Plans](#band-plans): FT8 on 20 meters goes to 14.074, not its DXpedition frequency). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode's nearest frequency, and to its main frequency there. A rig already on one of the mode's frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn't tune the rig, since the signal is where the rig already is.
 
 ## The Band Scope
 
@@ -212,7 +214,9 @@ An Icom radio that sends its spectrum scope over USB (the IC-7300 and others) ca
 To turn it on, tick **Use Scope If Present** in the Icom CI-V VFO's box in Settings → Radios → Rig Control (see [Rig and Rotor Control](../Rig-and-Rotor-Control.md)). It is off until you check it. The strip then shows while the decoder window is open, its Rig Control is on, and the mode's VFO is that radio.
 
 * The frequencies run along its top, and the radio's own waterfall under them, the newest at the top. Its colors start at the band's noise floor, so it looks the same at every span.
-* Where the radio is tuned is marked, and the audio the decoder takes (between **[** and **]**) is shaded.
+* Where the radio is tuned is marked with a line in the theme's frequency color, and the audio the decoder takes (between **[** and **]**) is shaded.
+* What's outside the amateur bands is shaded in the theme's warning color (orange in the GridTracker2 theme), with a line at each band edge. **Out Of Band Shading** in the window's Settings, [Rig Scope](#rig-scope) tab, sets how strongly.
+* Move the mouse over the strip to see the frequency under it, with a line. Outside the amateur bands (5.1000 MHz, for example) the line and frequency are in the warning color.
 * Click the strip to tune the radio there: what you click is put in the middle of the audio decoded.
 * **−** and **+** in its top corners narrow and widen the radio's span, from ±2.5 kHz to ±500 kHz, going round at either end. The span is shown beside them, for example **−500 kHz** and **+500 kHz**. In the radio's Fixed mode, the edges are set at the radio, and **−** and **+** are grayed out.
 
@@ -249,9 +253,9 @@ The HW level isn't shown for an SDR input; SW still works.
 
 While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named **MMD**, as it has one for each WSJT-X or JTDX. Its mode is the decoder's mode (CW, PSK63, RTTY, Olivia, FT8 ...), and its band is the one Rig Control reads on that mode's VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn't know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.
 
-* **FT8 and FT4:** the decodes go to GridTracker2's map and alerts, as a WSJT-X instance's do, also with the window hidden.
+* **FT8 and FT4:** the decodes go to GridTracker2's map and alerts, as a WSJT-X instance's do.
 * **Send Decodes To Call Roster** (FT8 and FT4 each, in [Settings → Decoders](#decoders); off until you turn it on): the decodes go to the Call Roster as well, and **MMD** appears among the roster's instances. Turn it off and the calls it put in the Call Roster are taken out.
-* **WSPR:** the decodes go to the map, as WSJT-X's WSPR decodes do, also with the window hidden.
+* **WSPR:** the decodes go to the map, as WSJT-X's WSPR decodes do.
 
 While **Send Decodes To Call Roster** is on but Rig Control isn't reading the mode's VFO, the decoder's settings show "Waiting for Rig Control to read the FT8 VFO's dial" (or FT4's) in orange.
 
@@ -265,7 +269,7 @@ In **SSTV** mode the picture view has two tabs on its header: **Receive** (the p
 
 ## Settings
 
-Click **Settings** on the window's top line to open its settings panel. It has three tabs: **General**, **Decoders** and **Band Plans**. Close it with **Settings** again or the red **X**.
+Click **Settings** on the window's top line to open its settings panel. It has four tabs: **General**, **Rig Scope**, **Decoders** and **Band Plans**. Close it with **Settings** again or the red **X**.
 
 ![The decoder's Settings, General tab](../img/GT2_MMD_Settings_General.png){width=330px}
 
@@ -299,6 +303,11 @@ Pick the sound card your rig's audio comes in on, often called "USB Audio CODEC"
 
 If an Input Device you picked has gone missing, or your computer's audio inputs have changed, GridTracker2 warns you, with **Warning when audio devices change** on in [Settings → Audio](../GridTracker-Overview/Settings-Sub-Menus.md#audio-tab). A missing Input Device is replaced by your computer's default input until it comes back.
 
+### Rig Scope
+
+The [band scope](#the-band-scope) strip:
+
+* **Out Of Band Shading:** how strongly what's outside the amateur bands is shaded in the theme's warning color, from 0% (not at all) to 100% (solid). 18% unless you change it.
 ### Decoders
 
 The **Decoders** tab has a box for each mode. Each box can have:
@@ -327,7 +336,8 @@ The **Band Plans** tab lists each mode's usual frequencies: the ones the Frequen
 ![The Band Plans tab](../img/GT2_MMD_Band_Plans.png)
 
 * Pick a mode in the **Frequencies** menu, or **All Modes**.
-* Each row has the **Mode**, **Band**, **Frequency (MHz)**, **Rig Mode** (USB, LSB, CW, FM or AM) and a **Note** (its region, net or DXpedition, or a station's name and schedule).
+* Each row has the **Mode**, **Band**, **Frequency (MHz)**, **Rig Mode** (USB, LSB, CW, FM or AM), **Main** and a **Note** (its region, net or DXpedition, or a station's name and schedule).
+* **Main** marks the band's main frequency for the mode: the one the rig is tuned to when you pick the mode in the **Mode** menu. A band has one main frequency per mode; ticking another unticks it.
 * Click a value to edit it in place.
 * To add a frequency, fill in the top row and click **Add**. The **×** at the end of a row deletes it.
 

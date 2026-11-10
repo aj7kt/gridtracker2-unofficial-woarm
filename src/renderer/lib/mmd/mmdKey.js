@@ -200,11 +200,14 @@ function mmdKeyMessage(file, m)
       signal.freq = c.freq;
       signal.air = window.opener.mmDecoderAirHz(c.freq);
       signal.snr = c.snr;
+      signal.snrSeen = true;
       // The baud: the worker's (RTTY's as read, PSK's its own), DominoEX's and THOR's speed, else the submode's
       signal.wpm = c.baud > 0 ? Math.round(c.baud) : c.submode > 0 ? c.submode : sub ? sub[2] : KEY_MODES[DEC.mode].baud;
       signal.alive = c.active !== false;
+      // NAVTEX: a message open (its ZCZC read, its NNNN not yet), kept while the lock drops for a moment
+      signal.receiving = c.receiving === true;
     }
-    for (const id in DEC.signals) if (Number(id) >= KEY_ID_BASE && !seen[id]) DEC.signals[id].alive = false;
+    for (const id in DEC.signals) if (Number(id) >= KEY_ID_BASE && !seen[id]) DEC.signals[id].alive = DEC.signals[id].receiving = false;
     DEC.dirty = true;
   }
   else if (m.type == "text")

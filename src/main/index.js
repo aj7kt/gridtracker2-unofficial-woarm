@@ -978,7 +978,7 @@ app.whenReady().then(() => {
 
       });
 
-      // Shown and hidden: told to the page (the Multi-Mode Decoder listens only while it shows). The Page Visibility API can't say it, as
+      // Shown and hidden: told to the page (the Multi-Mode Decoder draws only while it shows). The Page Visibility API can't say it, as
       // backgroundThrottling is off
       window.on('show', () => {
         if (!window.isDestroyed()) window.webContents.send('windowVisible', true);

@@ -22,7 +22,7 @@
 // Out: { type: "listening", port }, { type: "wanted" }, { type: "idle" }, { type: "segments", count, gen } (those listed),
 //      { type: "error", text, code, serving }, { type: "captureEnded" } (the capture's frames stopped coming),
 //      { type: "stats", frames, outputs, keys, keyBytes, deltaBytes, grabs, repeats, sent, encodeMs, segments, sequence } (each segment),
-//      { type: "log", text }
+//      { type: "viewers", addresses } (who's watching now, as it changes), { type: "log", text }
 
 const http = require("http");
 const { Buffer } = require("buffer");
@@ -41,6 +41,9 @@ const CAST_HOLD_MS = 30000;
 // looked at this often
 const CAST_IDLE_MS = 30000;
 const CAST_IDLE_CHECK_MS = 1000;
+// Watching now: an address that asked for anything this recently (a player asks for the playlist every few seconds); the Cast button's
+// badge counts them (with the devices cast to)
+const CAST_WATCHING_MS = 10000;
 // The master playlist's BANDWIDTH (bits a second) at the least: the most any kept segment needed, when more
 const CAST_BANDWIDTH_MIN = 1000000;
 // Frames waiting to be encoded past this are skipped
@@ -57,6 +60,10 @@ const W = {
   // video asked for and not started yet
   held: [],
   clients: {},
+  // Who really asked for anything last when (address: Date.now(); not a device whose cast stopped, as clients counts), and the addresses
+  // watching as last said ("viewers")
+  seen: {},
+  viewers: "",
   idleTimer: null,
   wanted: false,
   // The video's number (mapCast.js's, sent with its segments)
@@ -242,7 +249,8 @@ function workerRequest(request, response)
 {
   const path = request.url.split("?")[0];
   const address = String(request.socket.remoteAddress || "").replace(/^::ffff:/, "");
-  W.clients[address] = Date.now();
+  W.clients[address] = W.seen[address] = Date.now();
+  workerViewers();
   workerLog(request.method + " " + path + " from " + address);
   if (request.method == "OPTIONS")
   {
@@ -472,9 +480,22 @@ function workerIdleCheck()
   }
   W.held = W.held.filter((held) => now - held.time <= CAST_HOLD_MS);
   for (const address of Object.keys(W.clients)) if (now - W.clients[address] > CAST_IDLE_MS) delete W.clients[address];
+  workerViewers();
   // (asked for and not started: asked again by the next request)
   if (!W.encoder && !W.held.length) W.wanted = false;
   if (W.encoder && !W.held.length && !Object.keys(W.clients).length) self.postMessage({ type: "idle" });
+}
+
+// The addresses watching now (asked for anything within CAST_WATCHING_MS), said when they change: { type: "viewers", addresses }
+function workerViewers()
+{
+  const now = Date.now();
+  for (const address of Object.keys(W.seen)) if (now - W.seen[address] > CAST_WATCHING_MS) delete W.seen[address];
+  const list = Object.keys(W.seen).sort();
+  const key = list.join(",");
+  if (key == W.viewers) return;
+  W.viewers = key;
+  self.postMessage({ type: "viewers", addresses: list });
 }
 
 function workerStop()

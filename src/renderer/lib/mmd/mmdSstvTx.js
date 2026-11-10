@@ -363,14 +363,14 @@ function mmdSstvTxZoomInit()
     });
     box.appendChild(cell);
   }
-  box.addEventListener("mouseenter", () => clearTimeout(TX.zoomTimer));
+  box.addEventListener("mouseenter", () => nodeTimers.clearTimeout(TX.zoomTimer));
   box.addEventListener("mouseleave", mmdSstvTxZoomLater);
   document.body.appendChild(box);
 }
 
 function mmdSstvTxZoomOpen(grid)
 {
-  clearTimeout(TX.zoomTimer);
+  nodeTimers.clearTimeout(TX.zoomTimer);
   TX.zoomGrid = grid;
   const box = sstvTxPlaceZoom;
   // The picture's shape, and the picture itself under the cells (as last built)
@@ -391,8 +391,8 @@ function mmdSstvTxZoomOpen(grid)
 // Closed a moment after the pointer leaves the small grid or the box (not when it goes from one to the other)
 function mmdSstvTxZoomLater()
 {
-  clearTimeout(TX.zoomTimer);
-  TX.zoomTimer = setTimeout(() =>
+  nodeTimers.clearTimeout(TX.zoomTimer);
+  TX.zoomTimer = nodeTimers.setTimeout(() =>
   {
     sstvTxPlaceZoom.style.display = "none";
     TX.zoomGrid = null;
@@ -998,7 +998,7 @@ async function mmdSstvTxStart(kind, make, ended)
     {
       window.opener.rigPtt(ready.vfo.id, true);
       TX.pttVfo = ready.vfo.id;
-      await new Promise((r) => setTimeout(r, SSTV_TX_PTT_LEAD_MS));
+      await new Promise((r) => nodeTimers.setTimeout(r, SSTV_TX_PTT_LEAD_MS));
       if (TX.source != source) return;
     }
     source.onended = () =>
@@ -1008,8 +1008,8 @@ async function mmdSstvTxStart(kind, make, ended)
     };
     source.start();
     TX.startAt = ctx.currentTime;
-    TX.timer = setInterval(mmdSstvTxTick, 250);
-    TX.watchdog = setTimeout(() => mmdSstvTxStop(I18N("sstvTx.status.stopped")), (audio.seconds + SSTV_TX_WATCHDOG_S) * 1000);
+    TX.timer = nodeTimers.setInterval(mmdSstvTxTick, 250);
+    TX.watchdog = nodeTimers.setTimeout(() => mmdSstvTxStop(I18N("sstvTx.status.stopped")), (audio.seconds + SSTV_TX_WATCHDOG_S) * 1000);
     mmdSstvTxTick();
   }
   catch (e)
@@ -1043,8 +1043,8 @@ function mmdSstvTxTick()
 function mmdSstvTxStop(text = "", error = false)
 {
   TX.stops++;
-  clearInterval(TX.timer);
-  clearTimeout(TX.watchdog);
+  nodeTimers.clearInterval(TX.timer);
+  nodeTimers.clearTimeout(TX.watchdog);
   TX.timer = null;
   TX.watchdog = null;
   // The last sending's rig, still waiting for its tail: unkeyed now
@@ -1090,7 +1090,7 @@ function mmdSstvTxStop(text = "", error = false)
   if (TX.pttVfo && !error)
   {
     TX.unkey = unkey;
-    TX.unkeyTimer = setTimeout(mmdSstvTxUnkey, SSTV_TX_PTT_TAIL_MS);
+    TX.unkeyTimer = nodeTimers.setTimeout(mmdSstvTxUnkey, SSTV_TX_PTT_TAIL_MS);
   }
   else unkey();
   mmdSwApply();
@@ -1104,7 +1104,7 @@ function mmdSstvTxStop(text = "", error = false)
 // or the sending is stopped again
 function mmdSstvTxUnkey()
 {
-  clearTimeout(TX.unkeyTimer);
+  nodeTimers.clearTimeout(TX.unkeyTimer);
   TX.unkeyTimer = null;
   const unkey = TX.unkey;
   TX.unkey = null;

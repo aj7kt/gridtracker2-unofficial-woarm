@@ -81,17 +81,18 @@ function mmdNavtexSubject(subject)
   return name && name != key ? name : subject;
 }
 
-// The list: a Receiving block for each station mid-message, then the messages; drawn again only when something in it changed
+// The list: a Receiving block for each station mid-message (locked, or its message still open while the lock drops for a moment), then
+// the messages; drawn again only when something in it changed
 function mmdNavtexRender()
 {
   if (!mmdNavtexMode()) return;
   const opener = window.opener;
-  const live = Object.values(DEC.signals).filter((s) => s.id >= KEY_ID_BASE && s.alive && s.text.trim());
+  const live = Object.values(DEC.signals).filter((s) => s.id >= KEY_ID_BASE && (s.alive || s.receiving) && s.text.trim());
   const blocks = [];
   for (const s of live)
   {
     const air = opener.mmDecoderAirHz(s.freq);
-    const head = "<span class='navtexLive'>" + mmdEscape(I18N("cwViewer.navtex.receiving")) + "</span> " + (air == null ? Math.round(s.freq) + " Hz" : mmdFreq(air)) + (s.snr > -30 ? " · " + Math.round(s.snr) + " dB" : "");
+    const head = "<span class='navtexLive'>" + mmdEscape(I18N("cwViewer.navtex.receiving")) + "</span> " + (air == null ? Math.round(s.freq) + " Hz" : mmdFreq(air)) + (s.snrSeen === true && s.snr > -30 ? " · " + Math.round(s.snr) + " dB" : "");
     blocks.push("<div class='navtexBlock navtexBlockLive'><div class='navtexHead'>" + head + "</div><pre class='navtexText'>" + mmdEscape(s.text.slice(-NAVTEX_LIVE_CHARS)) + "</pre></div>");
   }
   for (const m of NAVTEX.messages)

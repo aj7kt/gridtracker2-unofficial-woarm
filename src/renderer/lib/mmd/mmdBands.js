@@ -53,12 +53,13 @@ function mmdBands()
   return BANDS.data;
 }
 
-// A mode's usual frequencies, lowest first: [[Hz, rig mode, note], ...] (none: null)
+// A mode's usual frequencies, lowest first: [[Hz, rig mode, note, main], ...] (none: null). Main: the band's main one (primary), tuned to
+// when the mode is picked in the Mode menu (mmdTuneForMode)
 function mmdBandFreqs(mode)
 {
   const name = BANDS_MODE_NAMES[mode];
   // (The file's in MHz)
-  const list = mmdBands().frequencies.filter((f) => f.mode == name && f.freq > 0).sort((a, b) => a.freq - b.freq).map((f) => [Math.round(f.freq * 1e6), f.rigMode || "USB", f.note || ""]);
+  const list = mmdBands().frequencies.filter((f) => f.mode == name && f.freq > 0).sort((a, b) => a.freq - b.freq).map((f) => [Math.round(f.freq * 1e6), f.rigMode || "USB", f.note || "", f.primary === true]);
   return list.length ? list : null;
 }
 
@@ -113,8 +114,8 @@ function mmdBandsChanged()
 
 function mmdSettingsTab(name)
 {
-  // General (shown at first), Decoders, Band Plans: mmdGeneralTab and mmdGeneralTabButton ...
-  for (const tab of ["general", "modes", "bands"])
+  // General (shown at first), Rig Scope, Decoders, Band Plans: mmdGeneralTab and mmdGeneralTabButton ...
+  for (const tab of ["general", "scope", "modes", "bands"])
   {
     const on = tab == name;
     const id = "mmd" + tab[0].toUpperCase() + tab.slice(1) + "Tab";
@@ -122,6 +123,7 @@ function mmdSettingsTab(name)
     window[id + "Button"].classList.toggle("active", on);
   }
   if (name == "bands") mmdBandsRender();
+  if (name == "scope") mmdScopeSettingsRender();
 }
 
 // The Band Plans tab: the frequencies (by mode), each cell edited in place
@@ -166,9 +168,39 @@ function mmdBandsRender()
       mmdBandsSave(false);
     };
     row.insertCell().appendChild(rig);
+    // Main: the band's main frequency for the mode (one per band: ticking it unticks the band's other)
+    const main = document.createElement("input");
+    main.type = "checkbox";
+    main.checked = f.primary === true;
+    main.title = I18N("settings.bands.main.hover");
+    main.onchange = () =>
+    {
+      mmdBandsSetMain(f, main.checked);
+      mmdBandsSave();
+    };
+    row.insertCell().appendChild(main);
     mmdBandsCell(row, f.note || "", "text", 160, (v) => (v.trim() ? (f.note = v.trim()) : delete f.note));
     mmdBandsDelete(row, () => data.frequencies.splice(i, 1));
   }
+}
+
+// A frequency made its band's main one for its mode (on: the band's other main one no longer is), or no longer (off). Its band is the
+// one its frequency is in (mmdBandOf, as mmdTuneForMode groups them), not the Band typed in its row (which may be written otherwise);
+// out of the bands, its typed Band
+function mmdBandsSetMain(f, on)
+{
+  if (on)
+  {
+    const bandOf = (x) =>
+    {
+      const band = mmdBandOf(x.freq * 1e6);
+      return band && band != "OOB" ? band : "typed:" + String(x.band || "").trim().toLowerCase();
+    };
+    const band = bandOf(f);
+    for (const other of mmdBands().frequencies) if (other !== f && other.mode == f.mode && bandOf(other) == band) delete other.primary;
+    f.primary = true;
+  }
+  else delete f.primary;
 }
 
 // A frequency typed (MHz), kept to the Hz
@@ -255,6 +287,8 @@ function mmdBandsAddFreq()
   const f = { mode, band: mmdBandsNewBand.value.trim() || mmdBandOf(freq * 1e6) || "", freq: mmdBandsMhz(freq), rigMode: mmdBandsNewRig.value };
   if (mmdBandsNewNote.value.trim()) f.note = mmdBandsNewNote.value.trim();
   mmdBands().frequencies.push(f);
+  if (mmdBandsNewMain.checked) mmdBandsSetMain(f, true);
+  mmdBandsNewMain.checked = false;
   // Its mode shown, so it's in view
   BANDS.mode = mode;
   for (const el of [mmdBandsNewBand, mmdBandsNewFreq, mmdBandsNewNote]) el.value = "";

@@ -1949,5 +1949,13 @@
   "events.source.rig": "Rig",
   "rig.event.webSerial": "{port}: geopend zonder de serialport-module, die DTR en RTS bij het openen even hoog maakt en de rig kan laten zenden. Voer npm ci uit in de bronmap, of installeer GridTracker2 opnieuw",
   "sstvTx.size.tiny": "Piepklein",
-  "sstvTx.size.smaller": "Kleiner"
+  "sstvTx.size.smaller": "Kleiner",
+  "settings.bands.main.label": "Hoofd",
+  "settings.bands.main.hover": "De frequentie waarop de transceiver op deze band wordt afgestemd als deze mode in het Mode-menu wordt gekozen (één per band)",
+  "cwViewer.settings.scope.label": "Transceiver-Scope",
+  "settings.mmDecoder.scopeOob.label": "Arcering Buiten De Band",
+  "settings.mmDecoder.scopeOob.hover": "Hoe sterk alles buiten de amateurbanden in de waarschuwingskleur wordt gearceerd: 0% helemaal niet, 100% dekkend",
+  "gt.button.cast.onMany.hover": "Casten naar {0} (klik: apparaten kiezen)",
+  "gt.button.cast.preparingMany.hover": "Video voor {0} wordt voorbereid (klik: apparaten kiezen)",
+  "cast.menu.openBrowser.label": "Openen In Standaardbrowser"
 }

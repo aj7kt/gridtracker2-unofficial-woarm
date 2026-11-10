@@ -5525,7 +5525,7 @@ button:focus {
   cursor: help;
 }
 
-/* The Multi-Mode Decoder's button while it listens with its window closed, for its FT8 GridTracker instance (mmDecoderBackgroundRender):
+/* The Multi-Mode Decoder's button while it listens with its window closed, as its GridTracker instance (mmDecoderBackgroundRender):
    a green dot in its corner */
 .iconButton.mmdBackground::after {
   content: "";
@@ -5537,6 +5537,27 @@ button:focus {
   border-radius: 50%;
   background-color: #33ff33;
   box-shadow: 0 0 4px #33ff33;
+  pointer-events: none;
+}
+
+/* The Cast button's badge, in its top right corner: how many watch the map now (mapCastRender); in Band Activity's PSK Reporter color,
+   its number in the text the theme puts on its colored status box (readable on a colored fill) */
+.castBadge {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  background-color: var(--gt-activity-psk, var(--gt-transmit));
+  color: var(--gt-status-text, var(--gt-count));
+  text-shadow: 0 0 2px #000;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+  text-align: center;
   pointer-events: none;
 }
 

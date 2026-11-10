@@ -564,3 +564,14 @@ Logging:
   - While it's blank, it takes the callsign WSJT-X / JTDX gives; you can change it, and it's never replaced
 - Settings -> General -> Forward UDP Messages accepts hostnames (e.g. ft8battle.com) as well as IP addresses, several comma separated: "IP(s)/Hostname(s)"
   - A hostname that can't be found (a typo, or no internet) is reported under the field
+
+## [v2.261108.4]
+
+#### Map / UI
+
+- Five new base maps: Topographical by OpenTopoMap, Satellite (no labels), Topographical and Satellite Topo by USGS (best coverage in the US), and Satellite Firefly by Esri
+- New Santa Tracker: a new button in the button panel will appear on Dec 1st that follows Santa and his reindeer around the world, using amateur radio tracking technology
+  - Move the mouse over a stop to see its DXCC entity, and state or province
+- The help button in the button panel has a new icon and now opens the new GridTracker2 User Guide in its own window, with search, page thumbnails, contents, zoom, print and save
+  - Click the button to show or hide the window, right-click it to only show it; Esc closes it
+  - F1 still shows the hotkey list

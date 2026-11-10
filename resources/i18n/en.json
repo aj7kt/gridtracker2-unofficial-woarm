@@ -1949,5 +1949,13 @@
 	"events.source.rig": "Rig",
 	"rig.event.webSerial": "{port}: opened without the serialport module, which raises DTR and RTS for a moment as the port opens and can key the rig. Run npm ci in the source folder, or reinstall GridTracker2",
 	"sstvTx.size.tiny": "Tiny",
-	"sstvTx.size.smaller": "Smaller"
+	"sstvTx.size.smaller": "Smaller",
+	"settings.bands.main.label": "Main",
+	"settings.bands.main.hover": "The frequency the rig is tuned to on this band when this mode is picked in the Mode menu (one per band)",
+	"cwViewer.settings.scope.label": "Rig Scope",
+	"settings.mmDecoder.scopeOob.label": "Out Of Band Shading",
+	"settings.mmDecoder.scopeOob.hover": "How strongly what's outside the amateur bands is shaded in the warning color: 0% not at all, 100% solid",
+	"gt.button.cast.onMany.hover": "Casting to {0} (click: pick the devices)",
+	"gt.button.cast.preparingMany.hover": "Preparing the video for {0} (click: pick the devices)",
+	"cast.menu.openBrowser.label": "Open In Default Browser"
 }

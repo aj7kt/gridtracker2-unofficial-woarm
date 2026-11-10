@@ -59,7 +59,7 @@ function mmdNetStart(device, generation)
       }
       const status = window.opener.netAudioStatus(device.netAudio);
       mmdStatus(I18N("cwViewer.status.netWait").replace("{name}", mmdInputLabel(device)) + (status.text ? " (" + status.text + ")" : ""), status.error);
-      setTimeout(look, MMD_NET_WAIT_MS);
+      nodeTimers.setTimeout(look, MMD_NET_WAIT_MS);
     };
     look();
   });
@@ -75,7 +75,7 @@ function mmdNetPcm(samples, rate, generation)
   else if (rate != DEC.netRate)
   {
     DEC.netRate = rate;
-    setTimeout(mmDecoderRestart, 0);
+    nodeTimers.setTimeout(mmDecoderRestart, 0);
     return;
   }
   const own = new Float32Array(samples);
