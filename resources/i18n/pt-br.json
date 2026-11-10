@@ -1929,7 +1929,7 @@
   "cwViewer.picture.filterUndoAll.label": "Desfazer Tudo",
   "settings.map.cast.label": "Ativar transmissão",
   "settings.map.cast.hover": "Adiciona um botão Cast ao painel de botões, para mostrar o mapa em uma TV por meio de um Google TV Streamer ou Chromecast",
-  "settings.map.cast.unsupported.hover": "A transmissão precisa de um codificador de vídeo por hardware, e este computador não tem nenhum",
+  "settings.map.cast.unsupported.hover": "Não é possível transmitir neste computador: ele não tem um codificador de vídeo para isso",
   "gt.button.cast.hover": "Transmitir o mapa para uma TV (clique direito: escolher o dispositivo)",
   "gt.button.cast.on.hover": "Transmitindo para {0} (clique para parar)",
   "cast.menu.none.label": "Nenhum dispositivo Cast encontrado",
@@ -1939,5 +1939,12 @@
   "cast.event.ended": "Transmissão para {0} parada",
   "cast.event.unreachable": "Não foi possível conectar a {0}",
   "cast.event.noDevice": "Nenhum dispositivo Cast encontrado",
-  "cast.event.failed": "Transmissão para {0} parada: não foi possível criar o vídeo"
+  "cast.event.failed": "Transmissão para {0} parada: não foi possível criar o vídeo",
+  "settings.map.cast.port.label": "Porta",
+  "settings.map.cast.port.hover": "A porta em que o vídeo do mapa é servido; pode ser alterada com “Ativar transmissão” ligado e nada sendo transmitido",
+  "settings.map.cast.link.hover": "O vídeo do mapa, para assistir no VLC ou em um navegador na sua rede (começa após alguns segundos). Clique para copiar",
+  "cast.event.port": "Transmissão para {0} parada: a porta {1} está em uso",
+  "gt.button.cast.none.hover": "Nenhum dispositivo Cast encontrado ainda (clique direito: procurar de novo)",
+  "gt.button.cast.preparing.hover": "Preparando o vídeo para {0} (clique para parar)",
+  "cast.event.software": "Sem codificador de vídeo por hardware: o vídeo do mapa é criado por software, a 10 quadros por segundo e com mais uso de CPU"
 }

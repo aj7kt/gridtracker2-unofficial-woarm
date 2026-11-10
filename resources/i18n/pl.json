@@ -1929,7 +1929,7 @@
   "cwViewer.picture.filterUndoAll.label": "Cofnij Wszystko",
   "settings.map.cast.label": "Włącz przesyłanie",
   "settings.map.cast.hover": "Dodaje przycisk Cast do panelu przycisków, aby pokazać mapę na telewizorze przez Google TV Streamer lub Chromecast",
-  "settings.map.cast.unsupported.hover": "Przesyłanie wymaga sprzętowego kodera wideo, a ten komputer go nie ma",
+  "settings.map.cast.unsupported.hover": "Przesyłanie nie jest możliwe na tym komputerze: brak odpowiedniego kodera wideo",
   "gt.button.cast.hover": "Przesyłaj mapę na telewizor (prawy klik: wybierz urządzenie)",
   "gt.button.cast.on.hover": "Przesyłanie na {0} (kliknij, aby zatrzymać)",
   "cast.menu.none.label": "Nie znaleziono urządzeń Cast",
@@ -1939,5 +1939,12 @@
   "cast.event.ended": "Przesyłanie na {0} zatrzymane",
   "cast.event.unreachable": "Nie można połączyć się z {0}",
   "cast.event.noDevice": "Nie znaleziono urządzeń Cast",
-  "cast.event.failed": "Przesyłanie na {0} zatrzymane: nie udało się utworzyć wideo"
+  "cast.event.failed": "Przesyłanie na {0} zatrzymane: nie udało się utworzyć wideo",
+  "settings.map.cast.port.label": "Port",
+  "settings.map.cast.port.hover": "Port, na którym udostępniane jest wideo mapy; można go zmienić, gdy „Włącz przesyłanie” jest włączone i nic nie jest przesyłane",
+  "settings.map.cast.link.hover": "Wideo mapy do oglądania w VLC lub przeglądarce w Twojej sieci (startuje po kilku sekundach). Kliknij, aby skopiować",
+  "cast.event.port": "Przesyłanie na {0} zatrzymane: port {1} jest zajęty",
+  "gt.button.cast.none.hover": "Nie znaleziono jeszcze urządzeń Cast (prawy klik: szukaj ponownie)",
+  "gt.button.cast.preparing.hover": "Przygotowywanie wideo dla {0} (kliknij, aby zatrzymać)",
+  "cast.event.software": "Brak sprzętowego kodera wideo: wideo mapy jest tworzone programowo, z 10 klatkami na sekundę i większym użyciem CPU"
 }

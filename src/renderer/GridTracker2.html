@@ -1213,7 +1213,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <!-- The tooltip on the row, so it shows over the label too (mapCast.js mapCastRender: why it can't be turned on, without a hardware encoder) -->
             <tr id="castEnableRow" data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast">
               <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting</label></td>
-              <td><input type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /></td>
+              <td><input type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /><span id="castLink" class="castLink" data-i18n="settings.map.cast.link.hover" title="The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink();"><span id="castLinkText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
+            </tr>
+            <!-- The port the video is served on (mapCast.js), changed only while Enable Casting is on and nothing is cast -->
+            <tr id="castPortRow" data-i18n="settings.map.cast.port.hover" title="The port the map's video is served on; it can be changed while Enable Casting is on and nothing is being cast">
+              <td class="mapRowLabel"><label data-i18n="settings.map.cast.port.label" for="castPort">Port</label></td>
+              <td><input id="castPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress="return validNumberKeys(event.charCode);" oninput="mapCastPortChanged();" /></td>
             </tr>
           </table>
         </div>

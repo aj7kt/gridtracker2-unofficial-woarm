@@ -127,7 +127,8 @@ function birdWatchTransmitterTableHtml(norad)
   const sat = GT.birdWatchTrack.last.get(Number(norad));
   // None yet: the frequencies are the satellite's own, and the shift is left blank
   const factor = sat && !sat.error ? sat.doppler : null;
-  const cell = (text, color, right, title, part) => "<td style='color:" + color + (right ? ";text-align:right" : "") + "'" + (title ? " title='" + title + "'" : "") + partAttrs(part) + ">" + text + "</td>";
+  // A cell, its colors and alignment the App Theme's (its class: style.css .birdDopplerTable)
+  const cell = (text, kind, title, part) => "<td" + partAttrs(part, kind) + (title ? " title='" + title + "'" : "") + ">" + text + "</td>";
   // With Rig Control connected the name, mode, downlink and uplink cells tune the rig (a click in the window), and the mode, downlink and uplink the rig was set to are marked
   const D = GT.rigDoppler && GT.rigDoppler.norad == Number(norad) ? GT.rigDoppler : null;
   // Each transmitter's own VFOs (rigRoles): clickable when one of them is connected; its downlink's and uplink's VFO letter after the
@@ -140,10 +141,9 @@ function birdWatchTransmitterTableHtml(norad)
   {
     const v = roles && roles[side];
     if (!v) return "";
-    const color = rigRolePin(current, side) ? "yellow" : "#888";
-    // Its letter, as its name has it ("VFO-C (SDR)": C)
+    // Its letter, as its name has it ("VFO-C (SDR)": C), in a pill (the accent's: its own pick)
     const letter = rigVfoLabel(v).replace(/^VFO-/, "").charAt(0);
-    return " <span style='color:" + color + ";font-size:10px'>" + letter + "</span>";
+    return "<span class='birdTxVfo" + (rigRolePin(current, side) ? " birdTxVfoPin" : "") + "'>" + letter + "</span>";
   };
   const vfoTitle = (title, side) =>
   {
@@ -152,21 +152,22 @@ function birdWatchTransmitterTableHtml(norad)
     const text = I18N("birdWatch.pin.hover").replace("{vfo}", rigVfoLabel(v));
     return (title ? title + "\n" : "") + htmlEntities(text).replace(/'/g, "&#39;");
   };
-  const partAttrs = (part) =>
+  const partAttrs = (part, kind) =>
   {
-    if (!part) return "";
-    const followed = D && current && D.uuid == current.uuid && part != "name" && D[part];
-    return " data-part='" + part + "' class='" + (clickable ? "birdTxClick" : "") + (followed ? " birdTxFollow" : "") + "'";
+    const classes = [kind];
+    if (part && clickable) classes.push("birdTxClick");
+    if (part && D && current && D.uuid == current.uuid && part != "name" && D[part]) classes.push("birdTxFollow");
+    return (part ? " data-part='" + part + "'" : "") + " class='" + classes.join(" ") + "'";
   };
   GT.birdWatchTxList = [];
   const original = (low, high) => (low > 0 ? I18N("birdWatch.doppler.original").replace("{f}", birdWatchFrequency(low, high, 1) + " MHz") : "");
   // The one frequency the rig is tuned to (birdWatchTransmitterTuning: a range's middle, shifted), as the tracking programs show it; a
-  // range's half width after it, in grey: 145.910.125 ±15 kHz
+  // range's half width after it, dimmer: 145.910.125 ±15 kHz
   const tuned = (hz, low, high) =>
   {
     if (!(hz > 0)) return "";
     const half = high > low ? (high - low) / 2000 : 0;
-    return formatDialFreq(hz) + (half > 0 ? " <span style='color:#aaa'>±" + (Number.isInteger(half) ? half : half.toFixed(1)) + " kHz</span>" : "");
+    return formatDialFreq(hz) + (half > 0 ? " <span class='birdTxRange'>±" + (Number.isInteger(half) ? half : half.toFixed(1)) + " kHz</span>" : "");
   };
   let rows = "";
   for (const t of birdWatchTransmitters(norad))
@@ -187,21 +188,22 @@ function birdWatchTransmitterTableHtml(norad)
     // The downlink's mode ("-" where SatNOGS has none, as for a carrier), and the uplink's where it isn't the downlink's
     const downMode = t.mode || "-";
     const upMode = t.uplink_low > 0 && t.uplink_mode && t.uplink_mode != t.mode ? t.uplink_mode : null;
-    rows += "<tr data-tx='" + index + "' data-uuid='" + htmlEntities(String(t.uuid)).replace(/'/g, "&#39;") + "'" + (birdWatchAmateurTransmitter(t) ? "" : " style='opacity:0.6'") + ">" +
-      "<td style='color:yellow' title='" + htmlEntities(about) + "'" + partAttrs("name") + ">" + htmlEntities(t.description) + "</td>" +
-      // The downlink's mode, and the uplink's after it where it differs (an inverting transponder: USB / LSB), in the Uplink column's colour
-      cell(htmlEntities(downMode) + (upMode ? " / <span style='color:orange'>" + htmlEntities(upMode) + "</span>" : "") + htmlEntities(t.baud > 0 ? " " + t.baud : ""), "lightgreen", false,
+    rows += "<tr data-tx='" + index + "' data-uuid='" + htmlEntities(String(t.uuid)).replace(/'/g, "&#39;") + "'" + (birdWatchAmateurTransmitter(t) ? "" : " class='birdTxOther'") + ">" +
+      cell(htmlEntities(t.description), "birdTxName", htmlEntities(about), "name") +
+      // The downlink's mode in a chip, and the uplink's after it where it differs (an inverting transponder: USB / LSB), in the Uplink
+      // column's color
+      cell("<span class='birdTxModeChip'>" + htmlEntities(downMode) + (upMode ? " / <span class='birdTxUpMode'>" + htmlEntities(upMode) + "</span>" : "") + htmlEntities(t.baud > 0 ? " " + t.baud : "") + "</span>", "birdTxMode",
         upMode ? htmlEntities(I18N("birdWatch.doppler.modes.hover").replace("{down}", downMode).replace("{up}", upMode)).replace(/'/g, "&#39;") : null, birdWatchRigMode(t) || birdWatchRigUpMode(t) ? "mode" : null) +
-      cell(tuned(tuning.rx, t.downlink_low, t.downlink_high) + (t.downlink_low > 0 ? vfoBadge("rx") : ""), "cyan", true,
+      cell(tuned(tuning.rx, t.downlink_low, t.downlink_high) + (t.downlink_low > 0 ? vfoBadge("rx") : ""), "birdTxDown",
         t.downlink_low > 0 ? vfoTitle(original(t.downlink_low, t.downlink_high), "rx") : "", t.downlink_low > 0 ? "rx" : null) +
       // The satellite hears the uplink shifted too, so it is sent that much the other way
-      cell(tuned(tuning.tx, t.uplink_low, t.uplink_high) + (t.uplink_low > 0 ? vfoBadge("tx") : ""), "orange", true,
+      cell(tuned(tuning.tx, t.uplink_low, t.uplink_high) + (t.uplink_low > 0 ? vfoBadge("tx") : ""), "birdTxUp",
         t.uplink_low > 0 ? vfoTitle(original(t.uplink_low, t.uplink_high), "tx") : "", t.uplink_low > 0 ? "tx" : null) +
-      cell(shift, "white", true) + "</tr>";
+      cell(shift, "birdTxShift") + "</tr>";
   }
-  if (rows == "") rows = "<tr><td colspan='5' style='color:#aaa'>" + I18N("birdWatch.doppler.empty") + "</td></tr>";
+  if (rows == "") rows = "<tr><td colspan='5' class='birdTxEmpty'>" + I18N("birdWatch.doppler.empty") + "</td></tr>";
   const heads = ["transmitter", "mode", "downlink", "uplink", "shift"].map((key) => "<th>" + I18N("birdWatch.doppler." + key + ".label") + "</th>").join("");
-  return "<table id='tooltipTable' class='darkTable birdDopplerTable' style='text-align:left'><tr>" + heads + "</tr>" + rows + "</table>";
+  return "<table id='tooltipTable' class='birdDopplerTable'><thead><tr>" + heads + "</tr></thead><tbody>" + rows + "</tbody></table>";
 }
 
 // The hover tooltip: the satellite's name over its table

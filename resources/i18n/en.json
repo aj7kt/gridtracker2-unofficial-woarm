@@ -1929,7 +1929,7 @@
 	"cwViewer.picture.filterUndoAll.label": "Undo All",
 	"settings.map.cast.label": "Enable Casting",
 	"settings.map.cast.hover": "Adds a Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast",
-	"settings.map.cast.unsupported.hover": "Casting needs a hardware video encoder, and this computer has none",
+	"settings.map.cast.unsupported.hover": "Casting can't be done on this computer: it has no video encoder for it",
 	"gt.button.cast.hover": "Cast the map to a TV (right-click: pick the device)",
 	"gt.button.cast.on.hover": "Casting to {0} (click to stop)",
 	"cast.menu.none.label": "No Cast Devices Found",
@@ -1939,5 +1939,12 @@
 	"cast.event.ended": "Casting to {0} stopped",
 	"cast.event.unreachable": "Can't reach {0}",
 	"cast.event.noDevice": "No Cast devices found",
-	"cast.event.failed": "Casting to {0} stopped: the video couldn't be made"
+	"cast.event.failed": "Casting to {0} stopped: the video couldn't be made",
+	"settings.map.cast.port.label": "Port",
+	"settings.map.cast.port.hover": "The port the map's video is served on; it can be changed while Enable Casting is on and nothing is being cast",
+	"settings.map.cast.link.hover": "The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy",
+	"cast.event.port": "Casting to {0} stopped: port {1} is in use",
+	"gt.button.cast.none.hover": "No Cast devices found yet (right-click: look again)",
+	"gt.button.cast.preparing.hover": "Preparing the video for {0} (click to stop)",
+	"cast.event.software": "No hardware video encoder: the map's video is made in software, at 10 frames a second and with more CPU"
 }

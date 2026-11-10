@@ -3543,46 +3543,36 @@ a {
   grid-area: 2 / 1 / 3 / 4;
 }
 
-/* The Doppler table's cells that tune the rig on a click (Rig Control connected), and those the rig follows */
-.birdDopplerTable .birdTxClick {
-  cursor: pointer;
-}
-
-.birdDopplerTable td.birdTxFollow {
-  background: #103a10;
-  outline: 1px solid lightgreen;
-  outline-offset: -1px;
-}
-
-/* The Doppler table (birdWatchDoppler.js): the header stays at the top as the rows scroll */
-/* Borders drawn by the cells themselves (separate, not collapsed): a collapsed border is painted by the table, under the sticky
-   header's background (the header's lower edge was lost) and not always again when a cell's text changes (the frequencies, each
-   second). Each cell has its right and lower edge, the table its left; the header its own top edge (the table's would scroll away from
-   under the header that stays) */
-table.darkTable.birdDopplerTable {
+/* The Doppler table (birdWatchDoppler.js: the transmitters window, and a satellite's hover tooltip) in the App Theme's colors, each part
+   the color of what it is: the name a callsign's, the mode a mode's (in a chip), the downlink a frequency's, the uplink a transmit's.
+   A rounded frame, the rows parted by faint lines and every other one a shade lighter, the header solid and staying at the top as the
+   rows scroll; the numbers in figures of one width, so they don't shift sideways as they change each second. Only lines between rows
+   (none between columns): the cells' widths come out in fractions of a pixel that change with the frequencies, and lines between
+   columns came and went under the sticky header */
+table.birdDopplerTable {
   border-collapse: separate;
   border-spacing: 0;
-  border-left: 1px solid #888;
+  border: 1px solid color-mix(in srgb, var(--gt-label) 22%, transparent);
+  border-radius: 8px;
   font-size: 12px;
   white-space: nowrap;
-}
-
-table.darkTable.birdDopplerTable th,
-table.darkTable.birdDopplerTable td {
-  border: none;
-  border-right: 1px solid #888;
-  border-bottom: 1px solid #888;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
 }
 
 .birdDopplerTable th {
   position: sticky;
   top: 0;
+  z-index: 2;
   /* Solid, so the rows don't show through it as they scroll under it */
-  background: black;
+  background: var(--gt-button-bg);
   color: var(--gt-title);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 5px 10px 4px;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--gt-title) 45%, transparent);
   /* Downlink, Uplink and Shift over the middle of their numbers; Transmitter and Mode from the left (below) */
   text-align: center;
-  padding: 2px 8px;
 }
 
 .birdDopplerTable th:nth-child(1),
@@ -3590,33 +3580,126 @@ table.darkTable.birdDopplerTable td {
   text-align: left;
 }
 
-/* The header's top edge, inside each of its cells. And each header cell over the one to its right: the table's widths come out in
-   fractions of a pixel, changing as the frequencies do, and a cell's solid background rounded over its neighbour's right edge hid it
-   (the header's lines went and came back) */
-.birdDopplerTable th {
-  box-shadow: inset 0 1px 0 #888;
+.birdDopplerTable th:first-child {
+  border-top-left-radius: 7px;
 }
-.birdDopplerTable th:nth-child(1) {
-  z-index: 6;
-}
-.birdDopplerTable th:nth-child(2) {
-  z-index: 5;
-}
-.birdDopplerTable th:nth-child(3) {
-  z-index: 4;
-}
-.birdDopplerTable th:nth-child(4) {
-  z-index: 3;
-}
-.birdDopplerTable th:nth-child(5) {
-  z-index: 2;
+
+.birdDopplerTable th:last-child {
+  border-top-right-radius: 7px;
 }
 
 .birdDopplerTable td {
-  padding: 1px 8px;
+  padding: 3px 10px;
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-top: 1px solid color-mix(in srgb, var(--gt-label) 10%, transparent);
+}
+
+.birdDopplerTable tbody tr:first-child td {
+  border-top: none;
+}
+
+.birdDopplerTable tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 7px;
+}
+
+.birdDopplerTable tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 7px;
+}
+
+.birdDopplerTable tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--gt-label) 4%, transparent);
+}
+
+.birdDopplerTable tbody tr:hover td {
+  background: color-mix(in srgb, var(--gt-hover-accent) 20%, transparent);
+}
+
+/* A transmitter that isn't an amateur one, dimmed */
+.birdDopplerTable tr.birdTxOther {
+  opacity: 0.6;
+}
+
+.birdDopplerTable .birdTxName {
+  color: var(--gt-callsign);
+  font-weight: 600;
+}
+
+.birdDopplerTable .birdTxMode {
+  color: var(--gt-mode);
+}
+
+.birdTxModeChip {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 9px;
+  line-height: 15px;
+  font-size: 11px;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* The uplink's mode where it differs from the downlink's, in the Uplink column's color */
+.birdTxUpMode {
+  color: var(--gt-transmit);
+}
+
+.birdDopplerTable .birdTxDown {
+  color: var(--gt-frequency);
+  text-align: right;
+}
+
+.birdDopplerTable .birdTxUp {
+  color: var(--gt-transmit);
+  text-align: right;
+}
+
+.birdDopplerTable .birdTxShift {
+  color: var(--gt-count);
+  text-align: right;
+}
+
+/* A range's half width after the frequency */
+.birdTxRange {
+  color: var(--gt-note);
+  font-size: 11px;
+}
+
+/* The VFO a downlink or uplink goes to, as a small pill: the accent's when it's the transmitter's own pick */
+.birdTxVfo {
+  display: inline-block;
+  margin-left: 6px;
+  min-width: 9px;
+  padding: 0 4px;
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 13px;
+  text-align: center;
+  color: var(--gt-note);
+  background: color-mix(in srgb, var(--gt-note) 16%, transparent);
+}
+
+.birdTxVfo.birdTxVfoPin {
+  color: var(--gt-accent);
+  background: color-mix(in srgb, var(--gt-accent) 22%, transparent);
+}
+
+.birdDopplerTable .birdTxEmpty {
+  color: var(--gt-note);
+  text-align: center;
+  padding: 8px 12px;
+}
+
+/* The cells that tune the rig on a click (Rig Control connected), and those the rig follows (over the shading of every other row and
+   of the row under the mouse) */
+.birdDopplerTable .birdTxClick {
+  cursor: pointer;
+}
+
+.birdDopplerTable tbody tr > td.birdTxFollow {
+  background: color-mix(in srgb, var(--gt-status-ok) 18%, transparent);
+  box-shadow: inset 0 0 0 1px var(--gt-status-ok);
 }
 
 /* The Satellites tab keeps its two columns, the tracked ones at the left and Add Satellite at the right, whatever the lists' widths:
@@ -4779,6 +4862,29 @@ table.darkTable.birdDopplerTable td {
 
 .lookupLink:hover {
   text-decoration: underline;
+}
+
+/* Settings -> General -> Display: the cast video's address beside Enable Casting, copied by a click */
+.castLink {
+  margin-left: 8px;
+  cursor: pointer;
+  color: var(--gt-label);
+  vertical-align: middle;
+}
+
+.castLink:hover {
+  text-decoration: underline;
+}
+
+/* The copy symbol right of the address (two sheets), in the address's color */
+.castLinkCopy {
+  width: 12px;
+  height: 12px;
+  margin-left: 5px;
+  vertical-align: -1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
 }
 
 .ackBadge {

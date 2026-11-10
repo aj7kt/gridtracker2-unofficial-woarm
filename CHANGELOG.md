@@ -31,10 +31,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Choosing a theme recolors every open window at once
   - The Call Roster and Feed Roster keep the colors you set in their Settings
 - New Casting (Settings, General, Display, Enable Casting; off unless turned on): shows the map live on a TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
-  - Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found
+  - The button can be clicked once a Cast device has been found on your network (right-click it to look again)
+  - Click the button to cast; with more than one Cast device found, pick one from the list (as a right-click shows it), and click it again to stop
   - While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops
-  - While Enable Casting is on, the last few seconds of the map are kept ready, so the TV starts within a few seconds; the TV shows the map about 10 seconds behind
-  - Needs a computer with a hardware video encoder; without one, the setting can't be turned on
+  - After the click, about 12 seconds of the map's video is made before the TV is told to play it; the TV shows the map about 10 seconds behind
+  - The Port under Enable Casting sets the port the video is served on (21575 unless changed; it can be changed while Enable Casting is on and nothing is being cast)
+  - The video's address is shown beside Enable Casting; click it to copy it, to watch the map in VLC or a browser on your network while Enable Casting is on (it starts a few seconds after it's opened)
+  - Uses the computer's hardware video encoder; without one, the video is made in software at 10 frames a second, which uses more CPU (said in the Event Viewer)
 
 #### Multi-Mode Decoder
 
@@ -228,10 +231,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>New Casting (Settings, General, Display, Enable Casting; off unless turned on): shows the map live on a TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
     <ul>
-      <li>Click the button to cast to the device picked last (the first time, the first one found), and click it again to stop; right-click it to pick from the Cast devices found</li>
+      <li>The button can be clicked once a Cast device has been found on your network (right-click it to look again)</li>
+      <li>Click the button to cast; with more than one Cast device found, pick one from the list (as a right-click shows it), and click it again to stop</li>
       <li>While casting, the main window is sized to the TV's 16:9 shape, and put back when casting stops</li>
-      <li>While Enable Casting is on, the last few seconds of the map are kept ready, so the TV starts within a few seconds; the TV shows the map about 10 seconds behind</li>
-      <li>Needs a computer with a hardware video encoder; without one, the setting can't be turned on</li>
+      <li>After the click, about 12 seconds of the map's video is made before the TV is told to play it; the TV shows the map about 10 seconds behind</li>
+      <li>The Port under Enable Casting sets the port the video is served on (21575 unless changed; it can be changed while Enable Casting is on and nothing is being cast)</li>
+      <li>The video's address is shown beside Enable Casting; click it to copy it, to watch the map in VLC or a browser on your network while Enable Casting is on (it starts a few seconds after it's opened)</li>
+      <li>Uses the computer's hardware video encoder; without one, the video is made in software at 10 frames a second, which uses more CPU (said in the Event Viewer)</li>
     </ul>
   </li>
 </ul>

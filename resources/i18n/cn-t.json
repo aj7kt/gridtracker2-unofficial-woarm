@@ -1931,7 +1931,7 @@
   "cwViewer.picture.filterUndoAll.label": "全部復原",
   "settings.map.cast.label": "啟用投放",
   "settings.map.cast.hover": "在按鈕面板中加入投放按鈕，透過 Google TV Streamer 或 Chromecast 將地圖顯示在電視上",
-  "settings.map.cast.unsupported.hover": "投放需要硬體視訊編碼器，而這台電腦沒有",
+  "settings.map.cast.unsupported.hover": "這台電腦無法投放: 沒有可用的視訊編碼器",
   "gt.button.cast.hover": "將地圖投放到電視 (右鍵: 選擇裝置)",
   "gt.button.cast.on.hover": "正在投放到 {0} (點擊停止)",
   "cast.menu.none.label": "找不到投放裝置",
@@ -1941,5 +1941,12 @@
   "cast.event.ended": "到 {0} 的投放已停止",
   "cast.event.unreachable": "無法連線到 {0}",
   "cast.event.noDevice": "找不到投放裝置",
-  "cast.event.failed": "到 {0} 的投放已停止: 無法產生視訊"
+  "cast.event.failed": "到 {0} 的投放已停止: 無法產生視訊",
+  "settings.map.cast.port.label": "埠號",
+  "settings.map.cast.port.hover": "提供地圖視訊的連接埠；在「啟用投放」開啟且未在投放時可以變更",
+  "settings.map.cast.link.hover": "地圖視訊，可在網路上的 VLC 或瀏覽器中觀看 (幾秒後開始)。按一下複製",
+  "cast.event.port": "到 {0} 的投放已停止: 連接埠 {1} 已被佔用",
+  "gt.button.cast.none.hover": "尚未找到投放裝置 (右鍵: 重新尋找)",
+  "gt.button.cast.preparing.hover": "正在為 {0} 準備視訊 (點擊停止)",
+  "cast.event.software": "沒有硬體視訊編碼器: 地圖視訊由軟體產生，每秒 10 格，佔用更多 CPU"
 }

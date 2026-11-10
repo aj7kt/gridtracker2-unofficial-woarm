@@ -4,18 +4,19 @@
 
 // Map Cast (Settings -> General -> Display -> Enable Casting, and the button panel's Cast button: at the end): the map as the main window
 // shows it, sent to a Google Cast device (the Google TV Streamer) as a live video.
-//   The frames: all the time while Enable Casting is on (mapCastBufferStart), the main window captures itself, cut to #main (the map and
-//   what's over it) by Element Capture, at up to 30 frames a second, scaled on the GPU to the video's size; the window is snapped to 16:9
-//   while casting (the main process: 'mapCastSnap'). The capture goes to mapCastWorker.js, which encodes it (H.264, on a hardware encoder
-//   only) and keeps the last 12 seconds as HLS (a live playlist of 2 second fragmented MP4 segments), so a device cast to has them at
-//   once; while casting it serves them from a small HTTP server on the address the device is reached from. Nothing here per frame.
-//   The device: Google's Default Media Receiver (no receiver app of our own to register or host), told over the Cast protocol to play
-//   that playlist as a LIVE stream (once a segment is done, when cast to right after Enable Casting is turned on).
+//   The frames: while the video is wanted (a cast, or someone on the network watching it), the main window captures itself, cut to #main
+//   (the map and what's over it) by Element Capture, at up to 30 frames a second, scaled on the GPU to the video's size; the window is
+//   snapped to 16:9 while casting (the main process: 'mapCastSnap'). The capture goes to mapCastWorker.js, which encodes it (H.264: on a
+//   hardware encoder, else in software at CAST_SOFTWARE_FPS, said in the Event Viewer) and keeps the last 12 seconds as HLS (a live
+//   playlist of 2 second fragmented MP4 segments). While Enable Casting is on it serves them on the Port, to the device cast to and to
+//   anyone on the network (VLC, a browser), and asks for the video when someone does. Nothing here per frame.
+//   The device: Google's Default Media Receiver (no receiver app of our own to register or host), contacted once the playlist is full
+//   (CAST_SEGMENTS_FULL), and told over the Cast protocol to play it as a LIVE stream.
 //   The Cast protocol (CASTV2): TLS to port 8009 (the device's certificate is its own: not checked), each message a 4-byte big-endian
 //   length and a CastMessage protobuf (protocol version, source, destination, namespace, payload type, JSON payload). CONNECT to the
 //   receiver, PING/PONG every few seconds, LAUNCH the app, CONNECT to its transport, then LOAD on the media namespace.
 // mapCastFind() lists the Cast devices on the network (mDNS); mapCastSupported(), mapCastStart(host), mapCastStop(), mapCastStatus() (the
-// console's too); mapCastBufferStart(), mapCastBufferStop()
+// console's too); mapCastServe(), mapCastUnserve()
 
 const CAST_PORT = 8009;
 const CAST_APP_DEFAULT_MEDIA = "CC1AD845";
@@ -24,17 +25,34 @@ const CAST_NS_HEARTBEAT = "urn:x-cast:com.google.cast.tp.heartbeat";
 const CAST_NS_RECEIVER = "urn:x-cast:com.google.cast.receiver";
 const CAST_NS_MEDIA = "urn:x-cast:com.google.cast.media";
 const CAST_PING_MS = 5000;
-// The window not laid out yet (its size 0): the video started this much later
-const CAST_BUFFER_RETRY_MS = 2000;
+// The capture failed or ended: started again this much later
+const CAST_CAPTURE_RETRY_MS = 5000;
+// The segments a device cast to is contacted after (the worker's CAST_SEGMENTS_LISTED: the playlist full), and how long they may take
+// before the cast is given up (said in the Event Viewer)
+const CAST_SEGMENTS_FULL = 6;
+const CAST_PREPARE_WAIT_MS = 45000;
+// A device whose app is ready but has had no video to play this long: the cast stopped, said in the Event Viewer
+const CAST_LOAD_WAIT_MS = 20000;
 // The video's largest size (a smaller map is sent at its own size: the device scales it)
 const CAST_MAX_WIDTH = 1920;
 const CAST_MAX_HEIGHT = 1080;
-// H.264 High, level 4.0 (1920x1080 at up to 30 fps), only on a hardware encoder: without one, no casting (mapCastSupported)
+// H.264 High, level 4.0 (1920x1080 at up to 30 fps), on a hardware encoder
 const CAST_CODEC = "avc1.640028";
 const CAST_FPS = 30;
 // A fixed quantizer, not a bitrate: a bitrate's encoder spends what's left of it re-sending the unchanged map, this one sends only
 // what changed (next to nothing for a still map; a key frame ~250 KB, one each 2 second segment)
 const CAST_QP = 20;
+// Without a hardware encoder: the software one (it has no fixed quantizer, only a bitrate), H.264 Constrained Baseline level 3.1, at
+// most 1280x720 at 10 frames a second (~8 ms a frame at 720p on a desktop CPU)
+const CAST_SOFTWARE_CODEC = "avc1.42e01f";
+const CAST_SOFTWARE_FPS = 10;
+const CAST_SOFTWARE_BITRATE = 2000000;
+const CAST_SOFTWARE_MAX_WIDTH = 1280;
+const CAST_SOFTWARE_MAX_HEIGHT = 720;
+// No Cast device found: looked for again this often (the Cast button is enabled once one is)
+const CAST_DISCOVER_RETRY_MS = 30000;
+// The Port changed: served on once the typing has stopped this long
+const CAST_PORT_WAIT_MS = 1000;
 // A message bigger than this is taken as the stream gone wrong (the protocol's own limit is 64 KiB)
 const CAST_MESSAGE_MAX = 65536;
 const CAST_LOG_LINES = 40;
@@ -43,24 +61,46 @@ const CAST_FIND_MS = 2500;
 const CAST_MENU_FIND_MS = 1500;
 
 const CAST = {
-  // Whether this computer can cast (mapCastSupported), null until known
+  // Whether this computer can cast (mapCastSupported), null until known, and whether it has a hardware encoder for it
   supported: null,
-  // A search for devices under way (its number), 0 when none
+  hardware: false,
+  // A search for devices under way (its number), 0 when none; whether the last search found any (the Cast button enabled)
   finding: 0,
+  devicesFound: false,
+  discoverTimer: null,
   host: "",
   name: "",
   socket: null,
   input: Buffer.alloc(0),
+  // The address the device reached this computer at (kept after the cast), and the one it would be expected at before a cast (the link
+  // in Settings, mapCastLinkAddress)
   localAddress: "",
+  linkAddress: "",
+  // The worker (while Enable Casting is on) and the port it serves on (once listening)
   worker: null,
   port: 0,
+  // The video being made: its codec, size and frame rate, and whether in software
+  encoding: false,
   codec: "",
   width: 0,
   height: 0,
-  // The segments the playlist lists, and whether the device has been told to play it
+  fps: CAST_FPS,
+  software: false,
+  // A warning that the video is made in software given (once, for those watching without a cast)
+  softwareWarned: false,
+  // The video's number (each start's), so the worker's word of one stopped since isn't taken for the next
+  gen: 0,
+  // The segments the playlist lists; the video being made for a cast before the device is contacted; whether the device has been told
+  // to play it
   segments: 0,
+  preparing: false,
+  prepareTimer: null,
   loaded: false,
-  bufferTimer: null,
+  // Counted by each mapCastStart and mapCastStop, so a start stopped meanwhile goes no further
+  starts: 0,
+  grabTimer: null,
+  loadTimer: null,
+  portTimer: null,
   stats: null,
   requestId: 0,
   transportId: "",
@@ -146,11 +186,21 @@ function mapCastSend(destination, namespace, data)
   if (CAST.socket && !CAST.socket.destroyed) CAST.socket.write(mapCastEncode("sender-0", destination, namespace, data));
 }
 
-// What is cast (#main, the map and what's over it: the whole window while casting, mapCastCapture), in the screen's pixels
-function mapCastMainSize()
+// The video's size: #main (the map and what's over it: the whole window while casting, mapCastCapture) as casting makes it (the main
+// process's 'mapCastSize': the window snapped to 16:9 where it can be, in the screen's pixels), no bigger than the encoder's largest;
+// null while the window isn't laid out
+async function mapCastVideoSize(software)
 {
-  const scale = window.devicePixelRatio || 1;
-  return { width: Math.round(window.innerWidth * scale), height: Math.round(window.innerHeight * scale) };
+  const main = await electron.ipcRenderer.invoke("mapCastSize").catch(() => null);
+  if (!main || main.width <= 0 || main.height <= 0) return null;
+  if (software) return mapCastFit(main.width, main.height, CAST_SOFTWARE_MAX_WIDTH, CAST_SOFTWARE_MAX_HEIGHT, false);
+  return mapCastFit(main.width, main.height, CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false);
+}
+
+// Whether the video is made in software: no hardware encoder
+function mapCastUseSoftware()
+{
+  return !CAST.hardware;
 }
 
 // width x height scaled to fit in the box (only down, unless grow), even sizes (the encoder's)
@@ -161,31 +211,81 @@ function mapCastFit(width, height, boxWidth, boxHeight, grow)
 }
 
 // The video worker's VideoEncoder config (mapCastWorker.js): length-prefixed NAL units ("avc"), as an MP4 carries them
-function mapCastEncoderConfig(width, height)
+function mapCastEncoderConfig(width, height, software)
 {
+  if (software) return { codec: CAST_SOFTWARE_CODEC, width: width, height: height, bitrate: CAST_SOFTWARE_BITRATE, framerate: CAST_SOFTWARE_FPS, latencyMode: "realtime", hardwareAcceleration: "prefer-software", avc: { format: "avc" } };
   return { codec: CAST_CODEC, width: width, height: height, bitrateMode: "quantizer", framerate: CAST_FPS, latencyMode: "realtime", hardwareAcceleration: "prefer-hardware", avc: { format: "avc" } };
 }
 
-// Whether this computer can cast: Element Capture, and a hardware encoder for the video
-async function mapCastSupported(width = CAST_MAX_WIDTH, height = CAST_MAX_HEIGHT)
+// Whether this computer can cast: Element Capture, and an encoder for the video (CAST.hardware: a hardware one)
+async function mapCastSupported()
 {
   if (typeof VideoEncoder == "undefined" || typeof RestrictionTarget == "undefined" || !navigator.mediaDevices?.getDisplayMedia) return false;
-  const support = await VideoEncoder.isConfigSupported(mapCastEncoderConfig(width, height)).catch(() => null);
-  return !!support?.supported;
+  const supports = async (config) => !!(await VideoEncoder.isConfigSupported(config).catch(() => null))?.supported;
+  CAST.hardware = await supports(mapCastEncoderConfig(CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false));
+  return CAST.hardware || (await supports(mapCastEncoderConfig(CAST_SOFTWARE_MAX_WIDTH, CAST_SOFTWARE_MAX_HEIGHT, true)));
 }
 
-// Casting to host (name: what the user calls it, in the Event Viewer and the button's tooltip)
+// Casting to host (name: what the user calls it, in the Event Viewer and the button's tooltip): the window snapped, the video made
+// (or the one being made for those watching, when it's that size), and the device contacted once the playlist is full
 async function mapCastStart(host, name = "")
 {
   mapCastStop();
   CAST.host = String(host || "").trim();
   CAST.name = name || CAST.host;
   if (!CAST.host) return "no host";
-  if (!(await mapCastSupported())) return "can't cast here: no hardware video encoder (or no Element Capture)";
-  // The video, encoded already while Enable Casting is on (started here when it isn't: from the console)
-  mapCastBufferStart();
-  if (!CAST.worker) return "no map";
-  CAST.snapped = await electron.ipcRenderer.invoke("mapCastSnap", true);
+  if (!(await mapCastSupported())) return "can't cast here: no video encoder (or no Element Capture)";
+  CAST.supported = true;
+  const start = ++CAST.starts;
+  const snapped = await electron.ipcRenderer.invoke("mapCastSnap", true);
+  // (stopped meanwhile: the window put back)
+  if (start != CAST.starts)
+  {
+    if (snapped && !CAST.snapped && !CAST.socket) electron.ipcRenderer.invoke("mapCastSnap", false);
+    return "stopped";
+  }
+  CAST.snapped = snapped;
+  const software = mapCastUseSoftware();
+  const size = await mapCastVideoSize(software);
+  if (start != CAST.starts) return "stopped";
+  // (served here when Enable Casting isn't on: from the console)
+  mapCastServe();
+  if (!size || !CAST.worker)
+  {
+    mapCastEvent("cast.event.failed", true);
+    mapCastStop();
+    return "no map";
+  }
+  if (CAST.encoding && (size.width != CAST.width || size.height != CAST.height || software != CAST.software)) mapCastEncodeStop();
+  if (!CAST.encoding) mapCastEncodeStart(size, software);
+  if (CAST.software) mapCastEvent("cast.event.software", false, "", true);
+  CAST.preparing = true;
+  CAST.prepareTimer = setTimeout(() =>
+  {
+    CAST.prepareTimer = null;
+    if (!CAST.preparing) return;
+    mapCastLog("no video after " + CAST_PREPARE_WAIT_MS / 1000 + " s");
+    mapCastEvent("cast.event.failed", true);
+    mapCastStop();
+  }, CAST_PREPARE_WAIT_MS);
+  mapCastLog("preparing " + CAST.width + "x" + CAST.height + " for " + CAST.host);
+  mapCastRender();
+  mapCastConnectWhenReady();
+  return "preparing the video for " + CAST.host;
+}
+
+// The device contacted once the playlist is full and served
+function mapCastConnectWhenReady()
+{
+  if (!CAST.preparing || CAST.segments < CAST_SEGMENTS_FULL || !CAST.port) return;
+  CAST.preparing = false;
+  clearTimeout(CAST.prepareTimer);
+  CAST.prepareTimer = null;
+  mapCastConnect();
+}
+
+function mapCastConnect()
+{
   CAST.loaded = false;
   CAST.playerState = "";
   const socket = window.require("tls").connect({ host: CAST.host, port: CAST_PORT, rejectUnauthorized: false });
@@ -198,7 +298,7 @@ async function mapCastStart(host, name = "")
     CAST.localAddress = String(socket.localAddress || "").replace(/^::ffff:/, "");
     mapCastLog("connected from " + CAST.localAddress);
     mapCastEvent("cast.event.started", false);
-    if (CAST.worker) CAST.worker.postMessage({ type: "serve", address: CAST.localAddress });
+    mapCastRender();
     mapCastSend("receiver-0", CAST_NS_CONNECTION, { type: "CONNECT" });
     mapCastSend("receiver-0", CAST_NS_RECEIVER, { type: "LAUNCH", appId: CAST_APP_DEFAULT_MEDIA, requestId: ++CAST.requestId });
     CAST.pingTimer = setInterval(() => mapCastSend("receiver-0", CAST_NS_HEARTBEAT, { type: "PING" }), CAST_PING_MS);
@@ -213,16 +313,22 @@ async function mapCastStart(host, name = "")
     mapCastStop();
   });
   mapCastRender();
-  return "connecting to " + CAST.host;
 }
 
-// The cast stopped; the video goes on being encoded while Enable Casting is on (mapCastBufferStop)
+// The cast stopped; the video goes on being made while others watch it (the worker says when nobody does), and is served while Enable
+// Casting is on (else not: a cast from the console)
 function mapCastStop()
 {
+  CAST.starts++;
   if (CAST.snapped) electron.ipcRenderer.invoke("mapCastSnap", false);
   CAST.snapped = false;
+  CAST.preparing = false;
+  clearTimeout(CAST.prepareTimer);
+  CAST.prepareTimer = null;
   clearInterval(CAST.pingTimer);
   CAST.pingTimer = null;
+  clearTimeout(CAST.loadTimer);
+  CAST.loadTimer = null;
   const socket = CAST.socket;
   CAST.socket = null;
   if (socket && !socket.destroyed)
@@ -230,11 +336,11 @@ function mapCastStop()
     if (CAST.sessionId) socket.write(mapCastEncode("sender-0", "receiver-0", CAST_NS_RECEIVER, { type: "STOP", sessionId: CAST.sessionId, requestId: ++CAST.requestId }));
     socket.end();
   }
-  if (CAST.worker) CAST.worker.postMessage({ type: "unserve" });
-  CAST.port = 0;
+  if (CAST.worker && CAST.host) CAST.worker.postMessage({ type: "castEnded", address: CAST.host });
   CAST.loaded = false;
   CAST.transportId = "";
   CAST.sessionId = "";
+  if (!GT.settings.map.castEnable) mapCastUnserve();
   mapCastRender();
   return "stopped";
 }
@@ -244,48 +350,36 @@ function mapCastStatus()
   return {
     host: CAST.host,
     connected: !!CAST.socket,
-    url: CAST.port ? "http://" + CAST.localAddress + ":" + CAST.port + "/map.m3u8" : "",
+    preparing: CAST.preparing,
+    url: CAST.port ? "http://" + (CAST.localAddress || CAST.linkAddress) + ":" + CAST.port + "/map.m3u8" : "",
     codec: CAST.codec,
     transportId: CAST.transportId,
     playerState: CAST.playerState,
-    buffering: !!CAST.worker,
+    encoding: CAST.encoding,
+    software: CAST.software,
     size: CAST.width + "x" + CAST.height,
     segments: CAST.segments,
     grabbing: CAST.grabbing,
+    devicesFound: CAST.devicesFound,
     worker: CAST.stats,
     log: CAST.log
   };
 }
 
-// The video encoded from now on, so a device cast to has its last few seconds at once (while Enable Casting is on, and while casting).
-// Its size is fixed from then on: the window's as casting snaps it to 16:9 (the nearest, as the main process's 'mapCastSnap' picks it),
-// no bigger than CAST_MAX_*; the capture is scaled to it (and fitted into it by the worker while the window isn't 16:9)
-function mapCastBufferStart()
+// The video served on the Port (Settings -> General -> Display), made when asked for: while Enable Casting is on, and while casting
+function mapCastServe()
 {
   if (CAST.worker || !CAST.supported) return;
-  clearTimeout(CAST.bufferTimer);
-  const main = mapCastMainSize();
-  if (main.width <= 0 || main.height <= 0)
-  {
-    CAST.bufferTimer = setTimeout(mapCastBufferStart, CAST_BUFFER_RETRY_MS);
-    return;
-  }
-  const byWidth = { width: main.width, height: Math.round((main.width * 9) / 16) };
-  const byHeight = { width: Math.round((main.height * 16) / 9), height: main.height };
-  const wide = Math.abs(byWidth.height - main.height) <= Math.abs(byHeight.width - main.width) ? byWidth : byHeight;
-  const size = mapCastFit(wide.width, wide.height, CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false);
-  CAST.width = size.width;
-  CAST.height = size.height;
+  CAST.port = 0;
   CAST.segments = 0;
   CAST.stats = null;
   mapCastWorkerStart();
-  mapCastLog("encoding " + size.width + "x" + size.height);
+  CAST.worker.postMessage({ type: "listen", port: GT.settings.map.castPort });
 }
 
-function mapCastBufferStop()
+function mapCastUnserve()
 {
-  clearTimeout(CAST.bufferTimer);
-  mapCastGrab(false);
+  mapCastEncodeStop();
   // It closes itself once its server and encoder are closed (ended here if it hasn't by then)
   const worker = CAST.worker;
   CAST.worker = null;
@@ -294,7 +388,64 @@ function mapCastBufferStop()
     worker.postMessage({ type: "stop" });
     setTimeout(() => worker.terminate(), 2000);
   }
+  CAST.port = 0;
+  mapCastRender();
+}
+
+// The video made from now on, at size (mapCastVideoSize), on the hardware encoder or in software; the capture scaled to it (and fitted
+// into it by the worker while the window isn't that shape)
+function mapCastEncodeStart(size, software)
+{
+  if (!CAST.worker) return;
+  CAST.software = software;
+  CAST.width = size.width;
+  CAST.height = size.height;
+  CAST.fps = software ? CAST_SOFTWARE_FPS : CAST_FPS;
+  const config = mapCastEncoderConfig(size.width, size.height, software);
+  CAST.codec = config.codec + " " + size.width + "x" + size.height + " " + CAST.fps + " fps" + (software ? " software" : "");
   CAST.segments = 0;
+  CAST.stats = null;
+  CAST.encoding = true;
+  CAST.worker.postMessage({ type: "start", config: config, quantizer: software ? null : CAST_QP, gen: ++CAST.gen });
+  mapCastGrab(true);
+  mapCastLog("encoding " + CAST.codec);
+}
+
+function mapCastEncodeStop()
+{
+  clearTimeout(CAST.grabTimer);
+  CAST.grabTimer = null;
+  mapCastGrab(false);
+  if (CAST.worker && CAST.encoding) CAST.worker.postMessage({ type: "encodeStop" });
+  if (CAST.encoding) mapCastLog("encoding stopped");
+  CAST.encoding = false;
+  CAST.segments = 0;
+}
+
+// Someone on the network asked for the video (not a cast: its video is started by mapCastStart), made at the size casting would give
+async function mapCastEncodeWanted()
+{
+  if (CAST.encoding || !CAST.worker) return;
+  const software = mapCastUseSoftware();
+  const size = await mapCastVideoSize(software);
+  if (!size || CAST.encoding || !CAST.worker) return;
+  mapCastEncodeStart(size, software);
+  if (software && !CAST.softwareWarned)
+  {
+    CAST.softwareWarned = true;
+    mapCastEvent("cast.event.software", false, "", true);
+  }
+}
+
+// The capture tried again later (it failed, or ended), while the video is made
+function mapCastGrabLater()
+{
+  clearTimeout(CAST.grabTimer);
+  CAST.grabTimer = setTimeout(() =>
+  {
+    CAST.grabTimer = null;
+    mapCastGrab(true);
+  }, CAST_CAPTURE_RETRY_MS);
 }
 
 function mapCastWorkerStart()
@@ -307,32 +458,47 @@ function mapCastWorkerStart()
     const msg = event.data;
     if (msg.type == "listening")
     {
-      // (a cast stopped meanwhile)
-      if (!CAST.socket) return;
       CAST.port = msg.port;
-      CAST.codec = msg.codec;
-      mapCastLog("serving " + msg.codec + " on port " + msg.port);
+      mapCastLog("serving on port " + msg.port);
+      mapCastConnectWhenReady();
       mapCastLoadWhenReady();
+    }
+    else if (msg.type == "wanted") mapCastEncodeWanted();
+    else if (msg.type == "idle")
+    {
+      // (a cast's video is wanted while it's prepared and played)
+      if (CAST.encoding && !CAST.preparing && !CAST.socket) mapCastEncodeStop();
     }
     else if (msg.type == "segments")
     {
+      // (not a video stopped since)
+      if (msg.gen != CAST.gen || !CAST.encoding) return;
       CAST.segments = msg.count;
+      mapCastConnectWhenReady();
       mapCastLoadWhenReady();
     }
     else if (msg.type == "stats") CAST.stats = msg;
     else if (msg.type == "log") mapCastLog("worker: " + msg.text);
+    else if (msg.type == "captureEnded")
+    {
+      mapCastLog("capture ended");
+      mapCastCaptureStop();
+      if (CAST.encoding) mapCastGrabLater();
+    }
     else if (msg.type == "error")
     {
-      // Its server (this cast stopped), or its encoder (no video until Enable Casting is turned on again, or the next start)
+      // Its server (its port in use: nothing served until Enable Casting is turned on again), or its encoder (the video stopped: asked
+      // for again by the next request or cast)
       mapCastLog("worker error " + msg.text);
-      if (CAST.socket) mapCastEvent("cast.event.failed", true);
-      mapCastStop();
-      if (!msg.serving) mapCastBufferStop();
+      const casting = CAST.socket || CAST.preparing;
+      if (casting) mapCastEvent(msg.code == "EADDRINUSE" ? "cast.event.port" : "cast.event.failed", true, GT.settings.map.castPort);
+      else if (msg.serving) mapCastEvent("cast.event.port", true, GT.settings.map.castPort);
+      if (casting) mapCastStop();
+      if (msg.serving) mapCastUnserve();
+      else mapCastEncodeStop();
     }
   };
   worker.onerror = (e) => mapCastLog("worker error " + e.message);
-  worker.postMessage({ type: "start", config: mapCastEncoderConfig(CAST.width, CAST.height), quantizer: CAST_QP });
-  mapCastGrab(true);
 }
 
 function mapCastReceive(data)
@@ -389,6 +555,15 @@ function mapCastMessage(message)
     CAST.loaded = false;
     mapCastSend(CAST.transportId, CAST_NS_CONNECTION, { type: "CONNECT" });
     mapCastLog("receiver ready");
+    clearTimeout(CAST.loadTimer);
+    CAST.loadTimer = setTimeout(() =>
+    {
+      CAST.loadTimer = null;
+      if (CAST.loaded) return;
+      mapCastLog("no video to play");
+      mapCastEvent("cast.event.failed", true);
+      mapCastStop();
+    }, CAST_LOAD_WAIT_MS);
     mapCastLoadWhenReady();
   }
   else if (message.namespace == CAST_NS_MEDIA)
@@ -412,7 +587,7 @@ function mapCastMessage(message)
 // The capture of #main started (handed to the worker) or stopped: while the video is encoded
 async function mapCastGrab(on)
 {
-  if (on && CAST.worker && !CAST.grabbing)
+  if (on && CAST.worker && CAST.encoding && !CAST.grabbing)
   {
     CAST.grabbing = true;
     try
@@ -423,6 +598,7 @@ async function mapCastGrab(on)
     {
       mapCastLog("capture " + e.message);
       mapCastCaptureStop();
+      if (CAST.worker && CAST.encoding) mapCastGrabLater();
     }
   }
   else if (!on && CAST.grabbing) mapCastCaptureStop();
@@ -439,12 +615,12 @@ async function mapCastCapture()
   element.style.isolation = "isolate";
   element.style.height = "100vh";
   electron.ipcRenderer.send("mapCastCaptureAllowed");
-  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: CAST_FPS }, audio: false, preferCurrentTab: true });
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: CAST.fps }, audio: false, preferCurrentTab: true });
   const track = stream.getVideoTracks()[0];
   CAST.track = track;
   await track.restrictTo(await RestrictionTarget.fromElement(element));
-  await track.applyConstraints({ width: CAST.width, height: CAST.height, frameRate: CAST_FPS, resizeMode: "crop-and-scale" });
-  if (!CAST.worker || CAST.track != track)
+  await track.applyConstraints({ width: CAST.width, height: CAST.height, frameRate: CAST.fps, resizeMode: "crop-and-scale" });
+  if (!CAST.worker || !CAST.encoding || CAST.track != track)
   {
     track.stop();
     return;
@@ -484,6 +660,8 @@ function mapCastLoadWhenReady()
 {
   if (CAST.loaded || !CAST.transportId || !CAST.port || !CAST.segments) return;
   CAST.loaded = true;
+  clearTimeout(CAST.loadTimer);
+  CAST.loadTimer = null;
   mapCastLoad();
 }
 
@@ -597,39 +775,147 @@ async function mapCastInit()
 {
   mapCastRender();
   CAST.supported = await mapCastSupported();
+  castPort.value = GT.settings.map.castPort;
+  mapCastLinkAddress();
+  if (GT.settings.map.castEnable)
+  {
+    mapCastServe();
+    mapCastDiscover();
+  }
   mapCastRender();
-  if (GT.settings.map.castEnable) mapCastBufferStart();
+}
+
+// The address the device cast to last would reach this computer at (the one a connection to it goes out from), else this computer's
+// first network address: the link's until a cast says
+function mapCastLinkAddress()
+{
+  const found = (address) =>
+  {
+    CAST.linkAddress = address;
+    mapCastRender();
+  };
+  const first = () =>
+  {
+    const all = Object.values(window.require("os").networkInterfaces()).flat();
+    return all.find((a) => a.family == "IPv4" && !a.internal)?.address || "";
+  };
+  const host = GT.settings.map.castDevice.host;
+  if (!host)
+  {
+    found(first());
+    return;
+  }
+  const socket = window.require("dgram").createSocket("udp4");
+  socket.on("error", () =>
+  {
+    try
+    {
+      socket.close();
+    }
+    catch (e)
+    {
+      // Already closed
+    }
+    found(first());
+  });
+  // (a UDP "connection" sends nothing: it only picks the route)
+  socket.connect(CAST_PORT, host, () =>
+  {
+    const address = socket.address().address;
+    socket.close();
+    found(address);
+  });
+}
+
+// The cast video's address, for VLC or a browser (served while casting)
+function mapCastLink()
+{
+  const address = CAST.localAddress || CAST.linkAddress;
+  return address ? "http://" + address + ":" + GT.settings.map.castPort + "/map.m3u8" : "";
+}
+
+function mapCastCopyLink()
+{
+  const link = mapCastLink();
+  if (link) navigator.clipboard.writeText(link);
+}
+
+// Settings -> General -> Display -> Port (only while Enable Casting is on and nothing is cast: mapCastRender): served on from then on,
+// once the typing has stopped (those watching then open the link again)
+function mapCastPortChanged()
+{
+  if (ValidatePort(castPort, null, null)) GT.settings.map.castPort = Number(castPort.value);
+  clearTimeout(CAST.portTimer);
+  CAST.portTimer = setTimeout(() =>
+  {
+    CAST.portTimer = null;
+    // (not served on since its port was in use: tried on this one)
+    if (!GT.settings.map.castEnable || CAST.socket || CAST.preparing || (CAST.worker && CAST.port == GT.settings.map.castPort)) return;
+    mapCastLog("port changed to " + GT.settings.map.castPort);
+    mapCastUnserve();
+    mapCastServe();
+  }, CAST_PORT_WAIT_MS);
+  mapCastRender();
+}
+
+// The Port box showing the port kept (one being typed and not valid put back)
+function mapCastPortReset()
+{
+  castPort.value = GT.settings.map.castPort;
+  ValidatePort(castPort, null, null);
 }
 
 function mapCastRender()
 {
-  // Only where it can cast (a hardware video encoder): the setting is kept as it is, but can't be changed, and the button stays hidden
+  // Only where it can cast (a video encoder): the setting is kept as it is, but can't be changed, and the button stays hidden
   castEnable.checked = GT.settings.map.castEnable;
   castEnable.disabled = CAST.supported === false;
   castEnableRow.title = I18N(CAST.supported === false ? "settings.map.cast.unsupported.hover" : "settings.map.cast.hover");
+  // The port changed while Enable Casting is on and nothing is cast (a cast uses it); grayed out with Enable Casting off
+  castPort.disabled = !GT.settings.map.castEnable || CAST.supported === false || !!CAST.socket || CAST.preparing;
+  castPortRow.style.opacity = GT.settings.map.castEnable && CAST.supported ? "" : "0.5";
+  const link = GT.settings.map.castEnable && CAST.supported ? mapCastLink() : "";
+  castLinkText.textContent = link;
+  castLink.style.display = link ? "" : "none";
+  // The button enabled once a Cast device has been found (a right click looks again)
+  const usable = CAST.devicesFound || !!CAST.socket || CAST.preparing;
   castButton.style.display = GT.settings.map.castEnable && CAST.supported ? "" : "none";
-  castButton.style.cursor = CAST.finding ? "progress" : "";
-  castImg.style.filter = CAST.socket ? "" : "grayscale(1)";
-  castButton.title = CAST.socket ? I18N("gt.button.cast.on.hover").replace("{0}", CAST.name) : I18N("gt.button.cast.hover");
+  castButton.style.opacity = usable ? "" : "0.4";
+  castButton.style.cursor = CAST.finding || CAST.preparing ? "progress" : usable ? "" : "default";
+  castImg.style.filter = CAST.socket || CAST.preparing ? "" : "grayscale(1)";
+  if (CAST.socket) castButton.title = I18N("gt.button.cast.on.hover").replace("{0}", CAST.name);
+  else if (CAST.preparing) castButton.title = I18N("gt.button.cast.preparing.hover").replace("{0}", CAST.name);
+  else castButton.title = I18N(CAST.devicesFound ? "gt.button.cast.hover" : "gt.button.cast.none.hover");
 }
 
 function mapCastEnableChanged()
 {
   GT.settings.map.castEnable = castEnable.checked;
-  if (GT.settings.map.castEnable) mapCastBufferStart();
+  mapCastPortReset();
+  clearTimeout(CAST.portTimer);
+  CAST.portTimer = null;
+  if (GT.settings.map.castEnable)
+  {
+    mapCastServe();
+    mapCastDiscover();
+  }
   else
   {
     CAST.finding = 0;
+    clearTimeout(CAST.discoverTimer);
+    CAST.discoverTimer = null;
+    CAST.devicesFound = false;
     mapCastStop();
-    mapCastBufferStop();
+    mapCastUnserve();
   }
   mapCastRender();
 }
 
-// An event about the cast (key: its text, {0} the device's name)
-function mapCastEvent(key, error)
+// An event about the cast (key: its text, {0} the device's name, {1} more), an error's or a warning's color when it's one
+function mapCastEvent(key, error, more = "", warning = false)
 {
-  addEvent("cast", "<font style='color:var(" + (error ? "--gt-error" : "--gt-label") + ")'>" + htmlEntities(I18N(key).replace("{0}", CAST.name)) + "</font>", error);
+  const color = error ? "--gt-error" : warning ? "--gt-warning" : "--gt-label";
+  addEvent("cast", "<font style='color:var(" + color + ")'>" + htmlEntities(I18N(key).replace("{0}", CAST.name).replace("{1}", more)) + "</font>", error);
 }
 
 function mapCastDeviceLabel(device)
@@ -649,6 +935,26 @@ function mapCastTo(device)
 {
   GT.settings.map.castDevice = { id: device.id || "", name: device.name || "", host: device.host };
   mapCastStart(device.host, device.name || device.host);
+  mapCastLinkAddress();
+}
+
+// Whether any Cast device answered a search (the Cast button enabled); none: looked for again in a while
+function mapCastFound(devices)
+{
+  CAST.devicesFound = devices.length > 0;
+  clearTimeout(CAST.discoverTimer);
+  CAST.discoverTimer = !CAST.devicesFound && GT.settings.map.castEnable ? setTimeout(mapCastDiscover, CAST_DISCOVER_RETRY_MS) : null;
+  mapCastRender();
+}
+
+// The Cast devices looked for (while Enable Casting is on), until one is found
+async function mapCastDiscover()
+{
+  clearTimeout(CAST.discoverTimer);
+  CAST.discoverTimer = null;
+  if (!GT.settings.map.castEnable || !CAST.supported || CAST.finding) return;
+  const devices = await mapCastFind(CAST_FIND_MS);
+  if (GT.settings.map.castEnable && !CAST.finding) mapCastFound(devices);
 }
 
 // The devices found (done once until(device) is true for one, when given), or null when the search was called off meanwhile
@@ -660,24 +966,31 @@ async function mapCastSearch(waitMs, until)
   const devices = await mapCastFind(waitMs, until);
   if (CAST.finding != search) return null;
   CAST.finding = 0;
-  mapCastRender();
+  mapCastFound(devices);
   return devices;
 }
 
+// A click casts to the one device found, or lists them when there are more (as a right click does); while casting (or preparing), it
+// stops
 async function mapCastButtonClick()
 {
-  if (CAST.socket || CAST.finding)
+  if (CAST.socket || CAST.finding || CAST.preparing)
   {
     CAST.finding = 0;
     mapCastStop();
     return;
   }
-  const saved = GT.settings.map.castDevice;
-  const wanted = saved.id || saved.host ? mapCastIsSaved : () => true;
-  const devices = await mapCastSearch(CAST_FIND_MS, wanted);
+  if (!CAST.devicesFound) return;
+  const devices = await mapCastSearch(CAST_MENU_FIND_MS, null);
   if (!devices) return;
-  // Not found: tried where it was (it may not answer the search from there)
-  const device = devices.find(wanted) || (saved.host ? saved : null);
+  if (devices.length > 1)
+  {
+    mapCastDeviceMenu(devices);
+    return;
+  }
+  // None found: tried where the one picked last was (it may not answer the search from there)
+  const saved = GT.settings.map.castDevice;
+  const device = devices[0] || (saved.host ? saved : null);
   if (device) mapCastTo(device);
   else
   {
@@ -691,7 +1004,12 @@ async function mapCastButtonMenu(event)
   event.preventDefault();
   if (CAST.finding) return;
   const devices = await mapCastSearch(CAST_MENU_FIND_MS, null);
-  if (!devices) return;
+  if (devices) mapCastDeviceMenu(devices);
+}
+
+// The devices found to pick one from (the one picked last checked), and Stop Casting while casting
+function mapCastDeviceMenu(devices)
+{
   const menu = new Menu();
   for (const device of devices)
   {
@@ -701,12 +1019,12 @@ async function mapCastButtonMenu(event)
       checked: mapCastIsSaved(device),
       click: () =>
       {
-        if (!(CAST.socket && CAST.host == device.host)) mapCastTo(device);
+        if (!((CAST.socket || CAST.preparing) && CAST.host == device.host)) mapCastTo(device);
       }
     }));
   }
   if (!devices.length) menu.append(new MenuItem({ label: I18N("cast.menu.none.label"), enabled: false }));
-  if (CAST.socket)
+  if (CAST.socket || CAST.preparing)
   {
     menu.append(new MenuItem({ type: "separator" }));
     menu.append(new MenuItem({ label: I18N("cast.menu.stop.label"), click: () => mapCastStop() }));

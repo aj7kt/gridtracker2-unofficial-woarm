@@ -1929,7 +1929,7 @@
 	"cwViewer.picture.filterUndoAll.label": "Tout Annuler",
 	"settings.map.cast.label": "Activer la diffusion",
 	"settings.map.cast.hover": "Ajoute un bouton Cast au panneau de boutons, pour afficher la carte sur un téléviseur via un Google TV Streamer ou un Chromecast",
-	"settings.map.cast.unsupported.hover": "La diffusion nécessite un encodeur vidéo matériel, et cet ordinateur n'en a pas",
+	"settings.map.cast.unsupported.hover": "La diffusion est impossible sur cet ordinateur : il n'a pas d'encodeur vidéo pour cela",
 	"gt.button.cast.hover": "Diffuser la carte sur un téléviseur (clic droit : choisir l'appareil)",
 	"gt.button.cast.on.hover": "Diffusion vers {0} (cliquer pour arrêter)",
 	"cast.menu.none.label": "Aucun appareil Cast trouvé",
@@ -1939,5 +1939,12 @@
 	"cast.event.ended": "Diffusion vers {0} arrêtée",
 	"cast.event.unreachable": "Impossible de joindre {0}",
 	"cast.event.noDevice": "Aucun appareil Cast trouvé",
-	"cast.event.failed": "Diffusion vers {0} arrêtée : la vidéo n'a pas pu être créée"
+	"cast.event.failed": "Diffusion vers {0} arrêtée : la vidéo n'a pas pu être créée",
+	"settings.map.cast.port.label": "Port",
+	"settings.map.cast.port.hover": "Le port sur lequel la vidéo de la carte est servie; modifiable lorsque « Activer la diffusion » est activé et que rien n'est diffusé",
+	"settings.map.cast.link.hover": "La vidéo de la carte, à regarder dans VLC ou un navigateur sur votre réseau (elle démarre après quelques secondes). Cliquez pour copier",
+	"cast.event.port": "Diffusion vers {0} arrêtée : le port {1} est déjà utilisé",
+	"gt.button.cast.none.hover": "Aucun appareil Cast trouvé pour l'instant (clic droit : chercher à nouveau)",
+	"gt.button.cast.preparing.hover": "Préparation de la vidéo pour {0} (cliquer pour arrêter)",
+	"cast.event.software": "Pas d'encodeur vidéo matériel : la vidéo de la carte est créée par logiciel, à 10 images par seconde et avec plus de processeur"
 }

@@ -145,7 +145,7 @@ The columns are:
 * **Uplink:** the frequency to transmit on right now, corrected the other way.
 * **Shift:** the Doppler shift right now.
 
-Amateur transmitters come first, and two-way ones (repeaters and transponders) before beacons. Transmitters outside the amateur service are drawn dim. With Rig Control on, a small letter after each frequency shows which VFO it would go to.
+Amateur transmitters come first, and two-way ones (repeaters and transponders) before beacons. Transmitters outside the amateur service are drawn dim. With Rig Control on, a small letter after each frequency shows which VFO it would go to. The table takes its colors from the [App Theme](GridTracker-Overview/Settings-Sub-Menus.md#display).
 
 With Rig Control connected you can click the table to tune your radio, see [Following a Satellite With Your Rig](#following-a-satellite-with-your-rig).
 
@@ -359,7 +359,7 @@ In Settings → Radios → Rig Control, each VFO has a **Satellites** row that t
 
 When BirdWatch needs a VFO for a downlink or an uplink, it uses the first VFO in the list whose ranges fit. Use the **▲** and **▼** beside a VFO's name to change the order. See [Rig and Rotor Control](Rig-and-Rotor-Control.md) for setting up the VFOs themselves.
 
-To send one transmitter's downlink or uplink to a particular VFO, right-click it in the transmitters window and pick the **Downlink VFO** or **Uplink VFO**. **Automatic** goes back to the first VFO that fits. A picked VFO's letter is shown in yellow after the frequency.
+To send one transmitter's downlink or uplink to a particular VFO, right-click it in the transmitters window and pick the **Downlink VFO** or **Uplink VFO**. **Automatic** goes back to the first VFO that fits. A picked VFO's letter is shown after the frequency in the App Theme's accent color.
 
 ### Starting and Stopping
 

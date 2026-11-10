@@ -1929,7 +1929,7 @@
   "cwViewer.picture.filterUndoAll.label": "Alles Ongedaan Maken",
   "settings.map.cast.label": "Casten inschakelen",
   "settings.map.cast.hover": "Voegt een Cast-knop toe aan het knoppenpaneel, om de kaart via een Google TV Streamer of Chromecast op een tv te tonen",
-  "settings.map.cast.unsupported.hover": "Casten heeft een hardware-video-encoder nodig, en deze computer heeft er geen",
+  "settings.map.cast.unsupported.hover": "Casten kan niet op deze computer: er is geen video-encoder voor",
   "gt.button.cast.hover": "De kaart naar een tv casten (rechtsklik: apparaat kiezen)",
   "gt.button.cast.on.hover": "Casten naar {0} (klik om te stoppen)",
   "cast.menu.none.label": "Geen Cast-apparaten gevonden",
@@ -1939,5 +1939,12 @@
   "cast.event.ended": "Casten naar {0} gestopt",
   "cast.event.unreachable": "{0} is niet bereikbaar",
   "cast.event.noDevice": "Geen Cast-apparaten gevonden",
-  "cast.event.failed": "Casten naar {0} gestopt: de video kon niet worden gemaakt"
+  "cast.event.failed": "Casten naar {0} gestopt: de video kon niet worden gemaakt",
+  "settings.map.cast.port.label": "Poort",
+  "settings.map.cast.port.hover": "De poort waarop de video van de kaart wordt aangeboden; te wijzigen zolang „Casten inschakelen” aan staat en er niets wordt gecast",
+  "settings.map.cast.link.hover": "De video van de kaart, om in VLC of een browser op je netwerk te bekijken (start na een paar seconden). Klik om te kopiëren",
+  "cast.event.port": "Casten naar {0} gestopt: poort {1} is in gebruik",
+  "gt.button.cast.none.hover": "Nog geen Cast-apparaten gevonden (rechtsklik: opnieuw zoeken)",
+  "gt.button.cast.preparing.hover": "Video voor {0} wordt voorbereid (klik om te stoppen)",
+  "cast.event.software": "Geen hardware-video-encoder: de video van de kaart wordt in software gemaakt, met 10 beelden per seconde en meer CPU"
 }

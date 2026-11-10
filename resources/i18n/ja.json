@@ -1929,7 +1929,7 @@
 	"cwViewer.picture.filterUndoAll.label": "すべて元に戻す",
 	"settings.map.cast.label": "キャストを有効にする",
 	"settings.map.cast.hover": "ボタンパネルにキャストボタンを追加し、Google TV Streamer または Chromecast で地図をテレビに表示します",
-	"settings.map.cast.unsupported.hover": "キャストにはハードウェアビデオエンコーダーが必要ですが、このコンピューターにはありません",
+	"settings.map.cast.unsupported.hover": "このコンピューターではキャストできません: 使えるビデオエンコーダーがありません",
 	"gt.button.cast.hover": "地図をテレビにキャスト (右クリック: デバイスを選択)",
 	"gt.button.cast.on.hover": "{0} にキャスト中 (クリックで停止)",
 	"cast.menu.none.label": "キャストデバイスが見つかりません",
@@ -1939,5 +1939,12 @@
 	"cast.event.ended": "{0} へのキャストが停止しました",
 	"cast.event.unreachable": "{0} に接続できません",
 	"cast.event.noDevice": "キャストデバイスが見つかりません",
-	"cast.event.failed": "{0} へのキャストが停止しました: 映像を作成できませんでした"
+	"cast.event.failed": "{0} へのキャストが停止しました: 映像を作成できませんでした",
+	"settings.map.cast.port.label": "ポート",
+	"settings.map.cast.port.hover": "地図の映像を配信するポートです。「キャストを有効にする」がオンで、キャストしていないときに変更できます",
+	"settings.map.cast.link.hover": "地図の映像です。ネットワーク上の VLC やブラウザーで見られます (数秒後に始まります)。クリックでコピー",
+	"cast.event.port": "{0} へのキャストが停止しました: ポート {1} は使用中です",
+	"gt.button.cast.none.hover": "Cast デバイスはまだ見つかっていません (右クリック: もう一度探す)",
+	"gt.button.cast.preparing.hover": "{0} 用の映像を準備中 (クリックで停止)",
+	"cast.event.software": "ハードウェアビデオエンコーダーがありません: 地図の映像はソフトウェアで作成され、毎秒 10 フレームで CPU を多く使います"
 }

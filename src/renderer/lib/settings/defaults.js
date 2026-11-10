@@ -314,9 +314,11 @@ const def_settings = {
     gridAlpha: 136,
     // POTA, SOTA and DX Feeds markers that would overlap are drawn as one (groupOverlappingFeatures)
     groupSpots: true,
-    // Settings -> General -> Display -> Enable Casting (the button panel's Cast button), and the device cast to last (mapCast.js)
+    // Settings -> General -> Display -> Enable Casting (the button panel's Cast button), the device cast to last, and the port its video
+    // is served on (mapCast.js)
     castEnable: false,
     castDevice: { id: "", name: "", host: "" },
+    castPort: 21575,
     haltAllOnTx: true,
     longitude: 0.0,
     latitude: 0.0,

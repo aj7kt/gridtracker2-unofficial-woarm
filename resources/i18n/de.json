@@ -1930,7 +1930,7 @@
 	"cwViewer.picture.filterUndoAll.label": "Alles Rückgängig",
 	"settings.map.cast.label": "Casting aktivieren",
 	"settings.map.cast.hover": "Fügt dem Tastenfeld eine Cast-Taste hinzu, um die Karte über einen Google TV Streamer oder Chromecast auf einem Fernseher zu zeigen",
-	"settings.map.cast.unsupported.hover": "Casting braucht einen Hardware-Video-Encoder, und dieser Computer hat keinen",
+	"settings.map.cast.unsupported.hover": "Casting ist auf diesem Computer nicht möglich: er hat keinen Video-Encoder dafür",
 	"gt.button.cast.hover": "Die Karte auf einen Fernseher übertragen (Rechtsklick: Gerät wählen)",
 	"gt.button.cast.on.hover": "Überträgt auf {0} (Klick zum Beenden)",
 	"cast.menu.none.label": "Keine Cast-Geräte gefunden",
@@ -1940,5 +1940,12 @@
 	"cast.event.ended": "Übertragung auf {0} beendet",
 	"cast.event.unreachable": "{0} ist nicht erreichbar",
 	"cast.event.noDevice": "Keine Cast-Geräte gefunden",
-	"cast.event.failed": "Übertragung auf {0} beendet: das Video konnte nicht erstellt werden"
+	"cast.event.failed": "Übertragung auf {0} beendet: das Video konnte nicht erstellt werden",
+	"settings.map.cast.port.label": "Port",
+	"settings.map.cast.port.hover": "Der Port, über den das Video der Karte bereitgestellt wird; änderbar, solange „Casting aktivieren“ an ist und nichts übertragen wird",
+	"settings.map.cast.link.hover": "Das Video der Karte, zum Ansehen in VLC oder einem Browser im Netzwerk (startet nach einigen Sekunden). Klicken zum Kopieren",
+	"cast.event.port": "Übertragung auf {0} beendet: Port {1} ist belegt",
+	"gt.button.cast.none.hover": "Noch keine Cast-Geräte gefunden (Rechtsklick: erneut suchen)",
+	"gt.button.cast.preparing.hover": "Video für {0} wird vorbereitet (Klick zum Beenden)",
+	"cast.event.software": "Kein Hardware-Video-Encoder: das Video der Karte wird per Software erstellt, mit 10 Bildern pro Sekunde und mehr CPU-Last"
 }

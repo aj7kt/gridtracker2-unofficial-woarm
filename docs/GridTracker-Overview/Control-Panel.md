@@ -139,7 +139,7 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/eventsButton.png){width=32px} | Event Viewer | Shows the [Event Viewer](#event-viewer). Right-click to choose whether it shows over the map or in a window of its own. | |
 | ![](../img/buttons/birdWatchButton.png){width=32px} | Toggle Satellite Tracking | Turns BirdWatch's satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while **BirdWatch** is on. See [BirdWatch](../BirdWatch.md). | Ctrl+F12 |
 | ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while **Multi-Mode Decoder** is on. | |
-| ![](../img/buttons/castButton.png){width=32px} | Cast | Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while **Enable Casting** is on. See [Casting the Map](#casting-the-map). | |
+| ![](../img/buttons/castButton.png){width=32px} | Cast | Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while **Enable Casting** is on, and can be clicked once a Cast device has been found. See [Casting the Map](#casting-the-map). | |
 
 The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you tick their **Menu Button** in [Settings → Logging](Settings-Sub-Menus.md#logging-tab). Online buttons are hidden in Offline Mode.
 
@@ -151,13 +151,16 @@ From December 1st the Santa Tracker button appears. Turn the tracker on to see a
 
 Turn on **Enable Casting** in [Settings → General → Display](Settings-Sub-Menus.md#display) to add the **Cast** button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network.
 
-* **Click** the button to start casting. The first time, GridTracker2 casts to the first Cast device it finds and remembers it; after that it casts to the device you picked last. Click it again to stop.
-* **Right-click** the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it for next time. While casting, the menu also has **Stop Casting**.
+* The button is dimmed until GridTracker2 has found a Cast device on your network; it keeps looking every half minute until one answers. Right-click the button to look again.
+* **Click** the button to start casting. With one Cast device found, GridTracker2 casts to it; with more, it lists them, as a right-click does. Click the button again to stop.
+* **Right-click** the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it and checks it in the list. While casting, the menu also has **Stop Casting**.
+* After the click, GridTracker2 makes about 12 seconds of the map's video before it tells the TV to play it, so the TV has enough to start smoothly. Meanwhile the button is in color and its tooltip says the video is being prepared; a click stops. The TV shows the map about 10 seconds behind.
 * While casting, the button is in color and its tooltip names the device. The main window is sized to the TV's 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.
 * Starting and stopping, and a device that can't be reached, are shown in the [Event Viewer](#event-viewer).
-* While **Enable Casting** is on, GridTracker2 keeps the last few seconds of the map ready, so the TV starts within a few seconds of the click. The TV shows the map about 10 seconds behind.
+* The video is served from this computer on the **Port** under **Enable Casting** (21575 unless you change it). If your firewall asks, allow GridTracker2 on your home network. The port can be changed while **Enable Casting** is on and nothing is being cast; those watching the video then open its address again.
+* The video's address, such as `http://192.168.1.20:21575/map.m3u8`, is shown beside **Enable Casting**. Click it to copy it. While **Enable Casting** is on, anyone on your network can open it in VLC (Media → Open Network Stream) or in a browser that plays HLS video, to watch the map on another screen, with or without a cast. The video starts a few seconds after it's opened, and stops being made when nobody has watched it for 30 seconds (a cast counts as watching; cast again within those 30 seconds and the TV starts at once).
 
-Casting needs a computer with a hardware video encoder. On a computer without one, **Enable Casting** can't be turned on.
+GridTracker2 uses the computer's hardware video encoder. On a computer without one (Linux with an NVIDIA graphics card, for example), the video is made in software at 10 frames a second, which uses more CPU; the [Event Viewer](#event-viewer) says so when it starts.
 
 ## Rearranging the Panel
 

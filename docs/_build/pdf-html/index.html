@@ -886,7 +886,7 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Cast</p></td>
-<td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
+<td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on, and can be clicked once a Cast device has been found. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -900,13 +900,16 @@
 <h4>Casting the Map<a class="headerlink" href="#casting-the-map" title="Link to this heading">¶</a></h4>
 <p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">Settings → General → Display</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network.</p>
 <ul class="simple">
-<li><p><strong>Click</strong> the button to start casting. The first time, GridTracker2 casts to the first Cast device it finds and remembers it; after that it casts to the device you picked last. Click it again to stop.</p></li>
-<li><p><strong>Right-click</strong> the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it for next time. While casting, the menu also has <strong>Stop Casting</strong>.</p></li>
+<li><p>The button is dimmed until GridTracker2 has found a Cast device on your network; it keeps looking every half minute until one answers. Right-click the button to look again.</p></li>
+<li><p><strong>Click</strong> the button to start casting. With one Cast device found, GridTracker2 casts to it; with more, it lists them, as a right-click does. Click the button again to stop.</p></li>
+<li><p><strong>Right-click</strong> the button to see the Cast devices found on your network. Pick one to cast to it; GridTracker2 remembers it and checks it in the list. While casting, the menu also has <strong>Stop Casting</strong>.</p></li>
+<li><p>After the click, GridTracker2 makes about 12 seconds of the map’s video before it tells the TV to play it, so the TV has enough to start smoothly. Meanwhile the button is in color and its tooltip says the video is being prepared; a click stops. The TV shows the map about 10 seconds behind.</p></li>
 <li><p>While casting, the button is in color and its tooltip names the device. The main window is sized to the TV’s 16:9 shape, and goes back to its size when casting stops. A maximized or full screen window is left as it is.</p></li>
 <li><p>Starting and stopping, and a device that can’t be reached, are shown in the <a class="reference internal" href="#event-viewer">Event Viewer</a>.</p></li>
-<li><p>While <strong>Enable Casting</strong> is on, GridTracker2 keeps the last few seconds of the map ready, so the TV starts within a few seconds of the click. The TV shows the map about 10 seconds behind.</p></li>
+<li><p>The video is served from this computer on the <strong>Port</strong> under <strong>Enable Casting</strong> (21575 unless you change it). If your firewall asks, allow GridTracker2 on your home network. The port can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; those watching the video then open its address again.</p></li>
+<li><p>The video’s address, such as <code class="docutils literal notranslate"><span class="pre">http://192.168.1.20:21575/map.m3u8</span></code>, is shown beside <strong>Enable Casting</strong>. Click it to copy it. While <strong>Enable Casting</strong> is on, anyone on your network can open it in VLC (Media → Open Network Stream) or in a browser that plays HLS video, to watch the map on another screen, with or without a cast. The video starts a few seconds after it’s opened, and stops being made when nobody has watched it for 20 seconds.</p></li>
 </ul>
-<p>Casting needs a computer with a hardware video encoder. On a computer without one, <strong>Enable Casting</strong> can’t be turned on.</p>
+<p>GridTracker2 uses the computer’s hardware video encoder. On a computer without one (Linux with an NVIDIA graphics card, for example), the video is made in software at 10 frames a second, which uses more CPU; the <a class="reference internal" href="#event-viewer">Event Viewer</a> says so when it starts.</p>
 </section>
 </section>
 <section id="rearranging-the-panel">
@@ -995,7 +998,8 @@
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
 <li><p><strong>Control Panel On Left Side:</strong> puts the side panel on the left of the window and the map on the right.</p></li>
 <li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
-<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. It can’t be turned on without a hardware video encoder.</p></li>
+<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. While it’s on, the video’s address is shown beside it; click it to copy it, to watch the map in VLC or a browser on your network.</p></li>
+<li><p><strong>Port:</strong> the port the map’s video is served on (21575 unless changed). It can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; with <strong>Enable Casting</strong> off it’s grayed out.</p></li>
 </ul>
 </section>
 <section id="settings">
@@ -3455,7 +3459,7 @@
 <li><p><strong>Uplink:</strong> the frequency to transmit on right now, corrected the other way.</p></li>
 <li><p><strong>Shift:</strong> the Doppler shift right now.</p></li>
 </ul>
-<p>Amateur transmitters come first, and two-way ones (repeaters and transponders) before beacons. Transmitters outside the amateur service are drawn dim. With Rig Control on, a small letter after each frequency shows which VFO it would go to.</p>
+<p>Amateur transmitters come first, and two-way ones (repeaters and transponders) before beacons. Transmitters outside the amateur service are drawn dim. With Rig Control on, a small letter after each frequency shows which VFO it would go to. The table takes its colors from the <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">App Theme</span></a>.</p>
 <p>With Rig Control connected you can click the table to tune your radio, see <a class="reference internal" href="#following-a-satellite-with-your-rig">Following a Satellite With Your Rig</a>.</p>
 </section>
 <section id="pass-alerts">
@@ -3679,7 +3683,7 @@
 <h4>Which VFO Does What<a class="headerlink" href="#which-vfo-does-what" title="Link to this heading">¶</a></h4>
 <p>In Settings → Radios → Rig Control, each VFO has a <strong>Satellites</strong> row that tells BirdWatch what it may use that VFO for: a band (10m to 1.2cm), <strong>All Frequencies</strong>, or a <strong>Custom</strong> range in MHz, each for <strong>RX</strong>, <strong>TX</strong> or <strong>RX/TX</strong>. Add as many ranges as you need. A new VFO is set to All Frequencies RX; a VFO with no ranges is not used for satellites. For example, for a 2m/70cm FM satellite on a dual-band radio, you might give VFO-A “70cm RX” and its second VFO “2m TX”.</p>
 <p>When BirdWatch needs a VFO for a downlink or an uplink, it uses the first VFO in the list whose ranges fit. Use the <strong>▲</strong> and <strong>▼</strong> beside a VFO’s name to change the order. See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a> for setting up the VFOs themselves.</p>
-<p>To send one transmitter’s downlink or uplink to a particular VFO, right-click it in the transmitters window and pick the <strong>Downlink VFO</strong> or <strong>Uplink VFO</strong>. <strong>Automatic</strong> goes back to the first VFO that fits. A picked VFO’s letter is shown in yellow after the frequency.</p>
+<p>To send one transmitter’s downlink or uplink to a particular VFO, right-click it in the transmitters window and pick the <strong>Downlink VFO</strong> or <strong>Uplink VFO</strong>. <strong>Automatic</strong> goes back to the first VFO that fits. A picked VFO’s letter is shown after the frequency in the App Theme’s accent color.</p>
 </section>
 <section id="starting-and-stopping">
 <h4>Starting and Stopping<a class="headerlink" href="#starting-and-stopping" title="Link to this heading">¶</a></h4>
@@ -4622,7 +4626,7 @@ Linux users, please include the output of: uname -r)
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2026, GridTracker.org.
-      Last updated on Nov 09, 2026.
+      Last updated on Nov 10, 2026.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
