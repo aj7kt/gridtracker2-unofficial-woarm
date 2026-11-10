@@ -1948,5 +1948,9 @@
   "cast.event.port": "到 {0} 的投放已停止: 連接埠 {1} 已被佔用",
   "gt.button.cast.none.hover": "尚未找到投放裝置 (右鍵: 重新尋找)",
   "gt.button.cast.preparing.hover": "正在為 {0} 準備視訊 (點擊停止)",
-  "cast.event.software": "沒有硬體視訊編碼器: 地圖視訊由軟體產生，每秒 10 格，佔用更多 CPU"
+  "cast.event.software": "沒有硬體視訊編碼器: 地圖視訊由軟體產生 ({1})，佔用更多 CPU",
+  "settings.map.cast.softwareFps.label": "軟體畫面更新率",
+  "settings.map.cast.softwareFps.hover": "沒有硬體視訊編碼器時地圖視訊的每秒畫面數。越多越流暢，佔用 CPU 越多；在下次視訊開始時生效",
+  "settings.map.cast.softwareSize.label": "軟體解析度",
+  "settings.map.cast.softwareSize.hover": "沒有硬體視訊編碼器時地圖視訊的大小。越大越清晰，佔用 CPU 越多；在下次視訊開始時生效"
 }

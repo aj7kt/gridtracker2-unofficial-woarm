@@ -1939,5 +1939,9 @@
   "cast.event.port": "Transmisión a {0} detenida: el puerto {1} está en uso",
   "gt.button.cast.none.hover": "Aún no se encontraron dispositivos Cast (clic derecho: buscar de nuevo)",
   "gt.button.cast.preparing.hover": "Preparando el vídeo para {0} (clic para detener)",
-  "cast.event.software": "Sin codificador de vídeo por hardware: el vídeo del mapa se crea por software, a 10 fotogramas por segundo y con más uso de CPU"
+  "cast.event.software": "Sin codificador de vídeo por hardware: el vídeo del mapa se crea por software ({1}), lo que usa más CPU",
+  "settings.map.cast.softwareFps.label": "Fotogramas por software",
+  "settings.map.cast.softwareFps.hover": "Sin codificador de vídeo por hardware: los fotogramas por segundo del vídeo del mapa. Más es más fluido y usa más CPU; se aplica la próxima vez que empiece el vídeo",
+  "settings.map.cast.softwareSize.label": "Resolución por software",
+  "settings.map.cast.softwareSize.hover": "Sin codificador de vídeo por hardware: el tamaño del vídeo del mapa. Más grande es más nítido y usa más CPU; se aplica la próxima vez que empiece el vídeo"
 }

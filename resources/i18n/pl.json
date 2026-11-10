@@ -1946,5 +1946,9 @@
   "cast.event.port": "Przesyłanie na {0} zatrzymane: port {1} jest zajęty",
   "gt.button.cast.none.hover": "Nie znaleziono jeszcze urządzeń Cast (prawy klik: szukaj ponownie)",
   "gt.button.cast.preparing.hover": "Przygotowywanie wideo dla {0} (kliknij, aby zatrzymać)",
-  "cast.event.software": "Brak sprzętowego kodera wideo: wideo mapy jest tworzone programowo, z 10 klatkami na sekundę i większym użyciem CPU"
+  "cast.event.software": "Brak sprzętowego kodera wideo: wideo mapy jest tworzone programowo ({1}), co zużywa więcej CPU",
+  "settings.map.cast.softwareFps.label": "Liczba klatek (programowo)",
+  "settings.map.cast.softwareFps.hover": "Bez sprzętowego kodera wideo: liczba klatek na sekundę wideo mapy. Więcej to płynniej i większe użycie CPU; działa od następnego uruchomienia wideo",
+  "settings.map.cast.softwareSize.label": "Rozdzielczość (programowo)",
+  "settings.map.cast.softwareSize.hover": "Bez sprzętowego kodera wideo: rozmiar wideo mapy. Większy to ostrzej i większe użycie CPU; działa od następnego uruchomienia wideo"
 }

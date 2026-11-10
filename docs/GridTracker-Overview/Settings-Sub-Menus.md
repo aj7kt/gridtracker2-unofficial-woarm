@@ -61,6 +61,7 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
 * **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
 * **Enable Casting:** adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See [Casting the Map](Control-Panel.md#casting-the-map). While it's on, the video's address is shown beside it; click it to copy it, to watch the map in VLC or a browser on your network.
 * **Port:** the port the map's video is served on (21575 unless changed). It can be changed while **Enable Casting** is on and nothing is being cast; with **Enable Casting** off it's grayed out.
+* **Software Frame Rate** and **Software Resolution:** shown only on a computer without a hardware video encoder, where the map's video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See [Casting the Map](Control-Panel.md#casting-the-map).
 
 ### Settings
 

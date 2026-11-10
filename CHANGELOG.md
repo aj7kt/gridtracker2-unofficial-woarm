@@ -37,7 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - After the click, about 12 seconds of the map's video is made before the TV is told to play it; the TV shows the map about 10 seconds behind
   - The Port under Enable Casting sets the port the video is served on (21575 unless changed; it can be changed while Enable Casting is on and nothing is being cast)
   - The video's address is shown beside Enable Casting; click it to copy it, to watch the map in VLC or a browser on your network while Enable Casting is on (it starts a few seconds after it's opened)
-  - Uses the computer's hardware video encoder; without one, the video is made in software at 10 frames a second, which uses more CPU (said in the Event Viewer)
+  - Uses the computer's hardware video encoder; without one, the video is made in software, which uses more CPU (said in the Event Viewer), at the Software Frame Rate (1 to 30 frames a second, 10 unless changed) and Software Resolution (480p, 720p, 1080p, 1440p or 4K; 720p unless changed) shown under Enable Casting
 
 #### Multi-Mode Decoder
 
@@ -237,7 +237,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>After the click, about 12 seconds of the map's video is made before the TV is told to play it; the TV shows the map about 10 seconds behind</li>
       <li>The Port under Enable Casting sets the port the video is served on (21575 unless changed; it can be changed while Enable Casting is on and nothing is being cast)</li>
       <li>The video's address is shown beside Enable Casting; click it to copy it, to watch the map in VLC or a browser on your network while Enable Casting is on (it starts a few seconds after it's opened)</li>
-      <li>Uses the computer's hardware video encoder; without one, the video is made in software at 10 frames a second, which uses more CPU (said in the Event Viewer)</li>
+      <li>Uses the computer's hardware video encoder; without one, the video is made in software, which uses more CPU (said in the Event Viewer), at the Software Frame Rate (1 to 30 frames a second, 10 unless changed) and Software Resolution (480p, 720p, 1080p, 1440p or 4K; 720p unless changed) shown under Enable Casting</li>
     </ul>
   </li>
 </ul>

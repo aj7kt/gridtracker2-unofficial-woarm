@@ -1946,5 +1946,9 @@
 	"cast.event.port": "Casting to {0} stopped: port {1} is in use",
 	"gt.button.cast.none.hover": "No Cast devices found yet (right-click: look again)",
 	"gt.button.cast.preparing.hover": "Preparing the video for {0} (click to stop)",
-	"cast.event.software": "No hardware video encoder: the map's video is made in software, at 10 frames a second and with more CPU"
+	"cast.event.software": "No hardware video encoder: the map's video is made in software ({1}), which uses more CPU",
+	"settings.map.cast.softwareFps.label": "Software Frame Rate",
+	"settings.map.cast.softwareFps.hover": "Without a hardware video encoder: the frames a second of the map's video. More is smoother and uses more CPU; it takes effect the next time the video starts",
+	"settings.map.cast.softwareSize.label": "Software Resolution",
+	"settings.map.cast.softwareSize.hover": "Without a hardware video encoder: the size of the map's video. Bigger is sharper and uses more CPU; it takes effect the next time the video starts"
 }

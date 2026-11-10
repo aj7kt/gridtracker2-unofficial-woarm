@@ -1947,5 +1947,9 @@
   "cast.event.port": "到 {0} 的投屏已停止: 端口 {1} 已被占用",
   "gt.button.cast.none.hover": "尚未找到投屏设备 (右键: 重新查找)",
   "gt.button.cast.preparing.hover": "正在为 {0} 准备视频 (点击停止)",
-  "cast.event.software": "没有硬件视频编码器: 地图视频由软件生成，每秒 10 帧，占用更多 CPU"
+  "cast.event.software": "没有硬件视频编码器: 地图视频由软件生成 ({1})，占用更多 CPU",
+  "settings.map.cast.softwareFps.label": "软件帧率",
+  "settings.map.cast.softwareFps.hover": "没有硬件视频编码器时地图视频的每秒帧数。越多越流畅，占用 CPU 越多；在下次视频开始时生效",
+  "settings.map.cast.softwareSize.label": "软件分辨率",
+  "settings.map.cast.softwareSize.hover": "没有硬件视频编码器时地图视频的大小。越大越清晰，占用 CPU 越多；在下次视频开始时生效"
 }

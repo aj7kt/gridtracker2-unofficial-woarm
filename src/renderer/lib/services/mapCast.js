@@ -42,13 +42,23 @@ const CAST_FPS = 30;
 // A fixed quantizer, not a bitrate: a bitrate's encoder spends what's left of it re-sending the unchanged map, this one sends only
 // what changed (next to nothing for a still map; a key frame ~250 KB, one each 2 second segment)
 const CAST_QP = 20;
-// Without a hardware encoder: the software one (it has no fixed quantizer, only a bitrate), H.264 Constrained Baseline level 3.1, at
-// most 1280x720 at 10 frames a second (~8 ms a frame at 720p on a desktop CPU)
-const CAST_SOFTWARE_CODEC = "avc1.42e01f";
+// Without a hardware encoder: the software one (OpenH264: no fixed quantizer, only a bitrate; nothing past H.264 level 5.2, so no 8K),
+// H.264 Constrained Baseline, at the Software Resolution and Software Frame Rate (Settings -> General -> Display: map.castSoftwareHeight,
+// map.castSoftwareFps). Each resolution's width (16:9) and the level that fits it at up to 30 fps; ms a frame on a desktop CPU: 480p 7,
+// 720p 9, 1080p 16, 1440p 21, 2160p 50
+const CAST_SOFTWARE_SIZES = {
+  480: { width: 854, level: "1f" },
+  720: { width: 1280, level: "1f" },
+  1080: { width: 1920, level: "28" },
+  1440: { width: 2560, level: "32" },
+  2160: { width: 3840, level: "33" }
+};
+const CAST_SOFTWARE_HEIGHT = 720;
 const CAST_SOFTWARE_FPS = 10;
-const CAST_SOFTWARE_BITRATE = 2000000;
-const CAST_SOFTWARE_MAX_WIDTH = 1280;
-const CAST_SOFTWARE_MAX_HEIGHT = 720;
+// Its bitrate: this much a pixel each frame (720p at 10 fps: ~1.8 Mbit/s), within these
+const CAST_SOFTWARE_BITS_PER_PIXEL = 0.2;
+const CAST_SOFTWARE_BITRATE_MIN = 500000;
+const CAST_SOFTWARE_BITRATE_MAX = 20000000;
 // No Cast device found: looked for again this often (the Cast button is enabled once one is)
 const CAST_DISCOVER_RETRY_MS = 30000;
 // The Port changed: served on once the typing has stopped this long
@@ -187,14 +197,34 @@ function mapCastSend(destination, namespace, data)
 }
 
 // The video's size: #main (the map and what's over it: the whole window while casting, mapCastCapture) as casting makes it (the main
-// process's 'mapCastSize': the window snapped to 16:9 where it can be, in the screen's pixels), no bigger than the encoder's largest;
-// null while the window isn't laid out
+// process's 'mapCastSize': the window snapped to 16:9 where it can be, in the screen's pixels): on a hardware encoder no bigger than
+// CAST_MAX_*, in software the Software Resolution's (scaled up to it too: the size picked is the one sent); null while the window isn't
+// laid out
 async function mapCastVideoSize(software)
 {
   const main = await electron.ipcRenderer.invoke("mapCastSize").catch(() => null);
   if (!main || main.width <= 0 || main.height <= 0) return null;
-  if (software) return mapCastFit(main.width, main.height, CAST_SOFTWARE_MAX_WIDTH, CAST_SOFTWARE_MAX_HEIGHT, false);
+  if (software)
+  {
+    const box = mapCastSoftwareSize();
+    const fit = mapCastFit(main.width, main.height, box.width, box.height, true);
+    // A window 16:9 but for its rounding (snapped to it): the resolution picked exactly (1280x720, not 1280x718)
+    return fit.width == box.width && Math.abs(fit.height - box.height) <= 4 ? { width: box.width, height: box.height } : fit;
+  }
   return mapCastFit(main.width, main.height, CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false);
+}
+
+// The Software Resolution's size and H.264 level (720p if the one kept isn't one of them)
+function mapCastSoftwareSize()
+{
+  const height = Object.hasOwn(CAST_SOFTWARE_SIZES, GT.settings.map.castSoftwareHeight) ? Number(GT.settings.map.castSoftwareHeight) : CAST_SOFTWARE_HEIGHT;
+  return { width: CAST_SOFTWARE_SIZES[height].width, height: height, level: CAST_SOFTWARE_SIZES[height].level };
+}
+
+// The Software Frame Rate, 1 to 30
+function mapCastSoftwareFps()
+{
+  return Math.max(1, Math.min(30, Math.round(Number(GT.settings.map.castSoftwareFps) || CAST_SOFTWARE_FPS)));
 }
 
 // Whether the video is made in software: no hardware encoder
@@ -213,7 +243,12 @@ function mapCastFit(width, height, boxWidth, boxHeight, grow)
 // The video worker's VideoEncoder config (mapCastWorker.js): length-prefixed NAL units ("avc"), as an MP4 carries them
 function mapCastEncoderConfig(width, height, software)
 {
-  if (software) return { codec: CAST_SOFTWARE_CODEC, width: width, height: height, bitrate: CAST_SOFTWARE_BITRATE, framerate: CAST_SOFTWARE_FPS, latencyMode: "realtime", hardwareAcceleration: "prefer-software", avc: { format: "avc" } };
+  if (software)
+  {
+    const fps = mapCastSoftwareFps();
+    const bitrate = Math.round(Math.max(CAST_SOFTWARE_BITRATE_MIN, Math.min(CAST_SOFTWARE_BITRATE_MAX, width * height * fps * CAST_SOFTWARE_BITS_PER_PIXEL)));
+    return { codec: "avc1.42e0" + mapCastSoftwareSize().level, width: width, height: height, bitrate: bitrate, framerate: fps, latencyMode: "realtime", hardwareAcceleration: "prefer-software", avc: { format: "avc" } };
+  }
   return { codec: CAST_CODEC, width: width, height: height, bitrateMode: "quantizer", framerate: CAST_FPS, latencyMode: "realtime", hardwareAcceleration: "prefer-hardware", avc: { format: "avc" } };
 }
 
@@ -223,7 +258,7 @@ async function mapCastSupported()
   if (typeof VideoEncoder == "undefined" || typeof RestrictionTarget == "undefined" || !navigator.mediaDevices?.getDisplayMedia) return false;
   const supports = async (config) => !!(await VideoEncoder.isConfigSupported(config).catch(() => null))?.supported;
   CAST.hardware = await supports(mapCastEncoderConfig(CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false));
-  return CAST.hardware || (await supports(mapCastEncoderConfig(CAST_SOFTWARE_MAX_WIDTH, CAST_SOFTWARE_MAX_HEIGHT, true)));
+  return CAST.hardware || (await supports(mapCastEncoderConfig(CAST_SOFTWARE_SIZES[CAST_SOFTWARE_HEIGHT].width, CAST_SOFTWARE_HEIGHT, true)));
 }
 
 // Casting to host (name: what the user calls it, in the Event Viewer and the button's tooltip): the window snapped, the video made
@@ -256,9 +291,9 @@ async function mapCastStart(host, name = "")
     mapCastStop();
     return "no map";
   }
-  if (CAST.encoding && (size.width != CAST.width || size.height != CAST.height || software != CAST.software)) mapCastEncodeStop();
+  if (CAST.encoding && (size.width != CAST.width || size.height != CAST.height || software != CAST.software || (software && mapCastSoftwareFps() != CAST.fps))) mapCastEncodeStop();
   if (!CAST.encoding) mapCastEncodeStart(size, software);
-  if (CAST.software) mapCastEvent("cast.event.software", false, "", true);
+  if (CAST.software) mapCastEvent("cast.event.software", false, mapCastSoftwareText(), true);
   CAST.preparing = true;
   CAST.prepareTimer = setTimeout(() =>
   {
@@ -400,7 +435,7 @@ function mapCastEncodeStart(size, software)
   CAST.software = software;
   CAST.width = size.width;
   CAST.height = size.height;
-  CAST.fps = software ? CAST_SOFTWARE_FPS : CAST_FPS;
+  CAST.fps = software ? mapCastSoftwareFps() : CAST_FPS;
   const config = mapCastEncoderConfig(size.width, size.height, software);
   CAST.codec = config.codec + " " + size.width + "x" + size.height + " " + CAST.fps + " fps" + (software ? " software" : "");
   CAST.segments = 0;
@@ -433,8 +468,14 @@ async function mapCastEncodeWanted()
   if (software && !CAST.softwareWarned)
   {
     CAST.softwareWarned = true;
-    mapCastEvent("cast.event.software", false, "", true);
+    mapCastEvent("cast.event.software", false, mapCastSoftwareText(), true);
   }
+}
+
+// The software video's resolution and frame rate, as its Event Viewer warning says them: "720p, 10 fps"
+function mapCastSoftwareText()
+{
+  return mapCastSoftwareSize().height + "p, " + mapCastSoftwareFps() + " fps";
 }
 
 // The capture tried again later (it failed, or ended), while the video is made
@@ -776,6 +817,7 @@ async function mapCastInit()
   mapCastRender();
   CAST.supported = await mapCastSupported();
   castPort.value = GT.settings.map.castPort;
+  mapCastSoftwareShow();
   mapCastLinkAddress();
   if (GT.settings.map.castEnable)
   {
@@ -858,6 +900,22 @@ function mapCastPortChanged()
   mapCastRender();
 }
 
+// Settings -> General -> Display -> Software Frame Rate and Software Resolution (without a hardware encoder): from the next video made on
+function mapCastSoftwareChanged()
+{
+  GT.settings.map.castSoftwareFps = Number(castSoftwareFps.value);
+  GT.settings.map.castSoftwareHeight = Number(castSoftwareSize.value);
+  mapCastSoftwareShow();
+}
+
+// The two as kept
+function mapCastSoftwareShow()
+{
+  castSoftwareFps.value = mapCastSoftwareFps();
+  castSoftwareFpsTd.textContent = mapCastSoftwareFps() + " fps";
+  castSoftwareSize.value = String(mapCastSoftwareSize().height);
+}
+
 // The Port box showing the port kept (one being typed and not valid put back)
 function mapCastPortReset()
 {
@@ -874,6 +932,14 @@ function mapCastRender()
   // The port changed while Enable Casting is on and nothing is cast (a cast uses it); grayed out with Enable Casting off
   castPort.disabled = !GT.settings.map.castEnable || CAST.supported === false || !!CAST.socket || CAST.preparing;
   castPortRow.style.opacity = GT.settings.map.castEnable && CAST.supported ? "" : "0.5";
+  // The software encoder's frame rate and resolution: only without a hardware encoder; grayed out with Enable Casting off, as the Port
+  const software = CAST.supported && !CAST.hardware;
+  for (const row of [castSoftwareFpsRow, castSoftwareSizeRow])
+  {
+    row.style.display = software ? "" : "none";
+    row.style.opacity = GT.settings.map.castEnable ? "" : "0.5";
+  }
+  castSoftwareFps.disabled = castSoftwareSize.disabled = !GT.settings.map.castEnable;
   const link = GT.settings.map.castEnable && CAST.supported ? mapCastLink() : "";
   castLinkText.textContent = link;
   castLink.style.display = link ? "" : "none";

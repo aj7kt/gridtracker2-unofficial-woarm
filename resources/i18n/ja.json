@@ -1946,5 +1946,9 @@
 	"cast.event.port": "{0} へのキャストが停止しました: ポート {1} は使用中です",
 	"gt.button.cast.none.hover": "Cast デバイスはまだ見つかっていません (右クリック: もう一度探す)",
 	"gt.button.cast.preparing.hover": "{0} 用の映像を準備中 (クリックで停止)",
-	"cast.event.software": "ハードウェアビデオエンコーダーがありません: 地図の映像はソフトウェアで作成され、毎秒 10 フレームで CPU を多く使います"
+	"cast.event.software": "ハードウェアビデオエンコーダーがありません: 地図の映像はソフトウェアで作成され ({1})、CPU を多く使います",
+	"settings.map.cast.softwareFps.label": "ソフトウェアのフレームレート",
+	"settings.map.cast.softwareFps.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像の毎秒フレーム数です。多いほど滑らかになり CPU を多く使います。次に映像が始まるときから適用されます",
+	"settings.map.cast.softwareSize.label": "ソフトウェアの解像度",
+	"settings.map.cast.softwareSize.hover": "ハードウェアビデオエンコーダーがない場合の、地図の映像のサイズです。大きいほど鮮明になり CPU を多く使います。次に映像が始まるときから適用されます"
 }

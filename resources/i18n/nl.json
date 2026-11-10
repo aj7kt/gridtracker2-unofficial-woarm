@@ -1946,5 +1946,9 @@
   "cast.event.port": "Casten naar {0} gestopt: poort {1} is in gebruik",
   "gt.button.cast.none.hover": "Nog geen Cast-apparaten gevonden (rechtsklik: opnieuw zoeken)",
   "gt.button.cast.preparing.hover": "Video voor {0} wordt voorbereid (klik om te stoppen)",
-  "cast.event.software": "Geen hardware-video-encoder: de video van de kaart wordt in software gemaakt, met 10 beelden per seconde en meer CPU"
+  "cast.event.software": "Geen hardware-video-encoder: de video van de kaart wordt in software gemaakt ({1}), wat meer CPU gebruikt",
+  "settings.map.cast.softwareFps.label": "Software-framerate",
+  "settings.map.cast.softwareFps.hover": "Zonder hardware-video-encoder: de beelden per seconde van de kaartvideo. Meer is vloeiender en gebruikt meer CPU; geldt vanaf de volgende start van de video",
+  "settings.map.cast.softwareSize.label": "Software-resolutie",
+  "settings.map.cast.softwareSize.hover": "Zonder hardware-video-encoder: de grootte van de kaartvideo. Groter is scherper en gebruikt meer CPU; geldt vanaf de volgende start van de video"
 }

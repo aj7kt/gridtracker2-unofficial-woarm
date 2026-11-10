@@ -1946,5 +1946,9 @@
 	"cast.event.port": "Trasmissione su {0} fermata: la porta {1} è in uso",
 	"gt.button.cast.none.hover": "Nessun dispositivo Cast ancora trovato (clic destro: cerca di nuovo)",
 	"gt.button.cast.preparing.hover": "Preparazione del video per {0} (clic per fermare)",
-	"cast.event.software": "Nessun codificatore video hardware: il video della mappa è creato via software, a 10 fotogrammi al secondo e con più CPU"
+	"cast.event.software": "Nessun codificatore video hardware: il video della mappa è creato via software ({1}), che usa più CPU",
+	"settings.map.cast.softwareFps.label": "Fotogrammi software",
+	"settings.map.cast.softwareFps.hover": "Senza codificatore video hardware: i fotogrammi al secondo del video della mappa. Di più è più fluido e usa più CPU; vale dal prossimo avvio del video",
+	"settings.map.cast.softwareSize.label": "Risoluzione software",
+	"settings.map.cast.softwareSize.hover": "Senza codificatore video hardware: la dimensione del video della mappa. Più grande è più nitido e usa più CPU; vale dal prossimo avvio del video"
 }

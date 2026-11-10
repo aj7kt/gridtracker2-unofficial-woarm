@@ -1947,5 +1947,9 @@
 	"cast.event.port": "Übertragung auf {0} beendet: Port {1} ist belegt",
 	"gt.button.cast.none.hover": "Noch keine Cast-Geräte gefunden (Rechtsklick: erneut suchen)",
 	"gt.button.cast.preparing.hover": "Video für {0} wird vorbereitet (Klick zum Beenden)",
-	"cast.event.software": "Kein Hardware-Video-Encoder: das Video der Karte wird per Software erstellt, mit 10 Bildern pro Sekunde und mehr CPU-Last"
+	"cast.event.software": "Kein Hardware-Video-Encoder: das Video der Karte wird per Software erstellt ({1}), was mehr CPU braucht",
+	"settings.map.cast.softwareFps.label": "Software-Bildrate",
+	"settings.map.cast.softwareFps.hover": "Ohne Hardware-Video-Encoder: die Bilder pro Sekunde des Kartenvideos. Mehr ist flüssiger und braucht mehr CPU; gilt ab dem nächsten Start des Videos",
+	"settings.map.cast.softwareSize.label": "Software-Auflösung",
+	"settings.map.cast.softwareSize.hover": "Ohne Hardware-Video-Encoder: die Größe des Kartenvideos. Größer ist schärfer und braucht mehr CPU; gilt ab dem nächsten Start des Videos"
 }

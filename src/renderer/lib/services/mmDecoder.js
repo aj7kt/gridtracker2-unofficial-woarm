@@ -438,14 +438,19 @@ function mmDecoderAirHz(audioHz)
 // (mmDecoderInstanceModeName), on that mode's VFO's dial as Rig Control reads it (none read: 0, band "OOB"). FT8's and FT4's
 // decodes go to GridTracker as a WSJT-X instance's would (the Call Roster, the map, alerts) with that mode's Send Decodes To Call Roster
 // on (the window's Settings, Decoders), already read (wsjtInstanceOpen, wsjtInstanceStatus and wsjtInstanceDispatch in wsjtxUdp.js). It
-// has no address, so nothing is sent back to it (it can't be answered). A Status as it starts, when the dial, mode, call or grid changes,
+// has no address, so nothing is sent back to it (it can't be answered). A Status as it starts (once its dial has settled:
+// mmDecoderInstanceSettled), when the dial, mode, call or grid changes,
 // around each period's decode and every 15 s; a Close when it stops
 
 const MMD_INSTANCE_ID = "MMD";
 const MMD_INSTANCE_HEARTBEAT_MS = 15000;
+// The instance opened once its VFO's band has been the same this long (mmDecoderInstanceSettled), or its VFO not read after this long
+const MMD_INSTANCE_SETTLE_MS = 2000;
+const MMD_INSTANCE_SETTLE_MAX_MS = 15000;
 // live: the instance is open, in mode (its data/modes.json name); hidden: the window listens while it isn't shown (the button's green
-// dot); decoding: a period is being decoded (Status' Decoding)
-GT.mmdInstance = { live: false, mode: "", hidden: false, sentAt: 0, key: "", decoding: false };
+// dot); decoding: a period is being decoded (Status' Decoding); waitSince, settleBand, settleSince: waiting to open, since when, and the
+// band its VFO has read since when
+GT.mmdInstance = { live: false, mode: "", hidden: false, sentAt: 0, key: "", decoding: false, waitSince: 0, settleBand: "", settleSince: 0 };
 
 // Each Multi-Mode Decoder mode's names, from its submode's own to its parent mode's: the first in data/modes.json is the instance's mode.
 // S: the decoder's settings (the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...; DominoEX / THOR's and Olivia's not
@@ -496,12 +501,37 @@ function mmDecoderInstanceTick()
     return;
   }
   const read = mmDecoderInstanceRead();
+  if (!I.live && !mmDecoderInstanceSettled(read))
+  {
+    mmDecoderBackgroundRender();
+    return;
+  }
   const key = mode + "|" + Math.round(read.freq) + "|" + read.mode + "|" + mmDecoderInstanceCall() + "|" + mmDecoderInstanceGrid();
   if (!I.live || key != I.key || Date.now() - I.sentAt >= MMD_INSTANCE_HEARTBEAT_MS) mmDecoderInstanceStatus(read, mode, key);
   // Into the Call Roster only in FT8 or FT4 with its Send Decodes To Call Roster on; seen by it at all only with one of them on
   mmDecoderInstanceRoster(S[S.viewMode + "SendDecodes"] === true);
   mmDecoderInstanceRosterSeen();
   mmDecoderBackgroundRender();
+}
+
+// Whether the instance can open: only once its dial has settled, so its first Status (its started event, and the band / mode event
+// while it's the active instance) has its real band, not "OOB" while its VFO isn't read yet, then the band it gets to. No VFO (Rig
+// Control off in the window's Settings, or none picked): at once, its band is "OOB" for good. Else once the VFO's band has been the same
+// for MMD_INSTANCE_SETTLE_MS (past a rig tuned from its old dial to the mode's), or the VFO not read after MMD_INSTANCE_SETTLE_MAX_MS
+function mmDecoderInstanceSettled(read)
+{
+  const I = GT.mmdInstance;
+  if (!mmDecoderVfo()) return true;
+  const now = Date.now();
+  if (!I.waitSince) I.waitSince = now;
+  const band = read.freq > 0 ? formatBand(read.freq / 1000000) : "";
+  if (band != I.settleBand || !I.settleSince)
+  {
+    I.settleBand = band;
+    I.settleSince = now;
+  }
+  if (band && now - I.settleSince >= MMD_INSTANCE_SETTLE_MS) return true;
+  return now - I.waitSince >= MMD_INSTANCE_SETTLE_MAX_MS;
 }
 
 // The instance's dial: the window's Mode's VFO as Rig Control reads it; no VFO, or its frequency not known, 0 (its band "OOB")
@@ -539,6 +569,8 @@ function mmDecoderInstanceStatus(read, mode, key)
   wsjtInstanceDispatch(instance, message, null);
   if (!I.live) addEvent("app", "<font style='color:var(--gt-status-ok)'>" + htmlEntities(I18N("mmd.instance.event.started").replace("{mode}", mode).replace("{freq}", formatDialFreq(freq))) + "</font>");
   I.live = true;
+  I.waitSince = 0;
+  I.settleSince = 0;
   I.mode = mode;
   I.sentAt = Date.now();
   I.key = key || "";
@@ -651,6 +683,9 @@ function mmDecoderInstanceRoster(on)
 function mmDecoderInstanceClose()
 {
   const I = GT.mmdInstance;
+  // (waiting to open: waited again from the start when it's next wanted)
+  I.waitSince = 0;
+  I.settleSince = 0;
   if (!I.live) return;
   I.live = false;
   I.key = "";
