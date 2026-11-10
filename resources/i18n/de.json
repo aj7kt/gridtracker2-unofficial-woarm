@@ -1968,5 +1968,21 @@
 	"events.source.log4om": "Log4OM",
 	"events.source.n3fjp": "N3FJP Contest",
 	"settings.ModeColors.label": "Betriebsartfarben",
-	"settings.ModeColors.reset.hover": "Betriebsartfarben auf Standard zurücksetzen"
+	"settings.ModeColors.reset.hover": "Betriebsartfarben auf Standard zurücksetzen",
+	"birdWatch.satellites.mode.label": "Betriebsart",
+	"birdWatch.satellites.mode.hover": "Nur Satelliten, die Sie in dieser Betriebsart arbeiten können",
+	"birdWatch.satellites.mode.all": "Alle",
+	"birdWatch.satellites.modes.label": "Betriebsarten",
+	"birdWatch.satellites.kind.fm.option": "FM-Sprechfunk",
+	"birdWatch.satellites.kind.linear.option": "Linear (SSB/CW)",
+	"birdWatch.satellites.kind.digital.option": "Digital",
+	"birdWatch.satellites.kind.sstv.option": "SSTV",
+	"birdWatch.satellites.kind.fm.label": "FM",
+	"birdWatch.satellites.kind.linear.label": "LIN",
+	"birdWatch.satellites.kind.digital.label": "DIG",
+	"birdWatch.satellites.kind.sstv.label": "SSTV",
+	"birdWatch.satellites.kind.fm.hover": "Ein FM-Repeater: mit einem FM-Handfunkgerät arbeiten",
+	"birdWatch.satellites.kind.linear.hover": "Ein Linear-Transponder: SSB und CW, mit einem vollduplexfähigen Funkgerät",
+	"birdWatch.satellites.kind.digital.hover": "Digital: Packet, APRS oder eine andere Datenbetriebsart",
+	"birdWatch.satellites.kind.sstv.hover": "Sendet SSTV-Bilder: im Multi-Mode-Decoder empfangen"
 }

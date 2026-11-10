@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=92530fb8"></script>
+    <script src="_static/documentation_options.js?v=82163776"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261110.0</p>
+<p class="gt-cover-version">Version 2.261110.1</p>
 <p class="gt-cover-date">November 10, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -156,7 +156,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261110.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261110.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -1000,9 +1000,9 @@
 <li><p><strong>Retro computers:</strong> EGA (the 16-color EGA palette, gray buttons and blue tabs), CGA (the classic cyan, magenta and white, yellow for warnings), VGA (the DOS 16-color look, with blue and cyan text boxes and tabs), Amber CRT (an amber monochrome terminal), and Apple ][e, VIC-20 and C-64 (each computer’s own colors and text-box look).</p></li>
 <li><p><strong>Nature and seasons:</strong> Inferno (golds, ambers, flame orange and white-hot), Frost (ice blues, teal, lilac and white), Sunflower (petal yellows, leaf greens, sky blue and seed brown), Country Kitchen (butter yellow, sage, copper and cream with gingham-blue tabs), Autumn (pumpkin, mustard, olive and cream), Deep Sea (glowing aqua, coral, kelp green and sand on navy), Aurora (northern-lights greens, teals and violets), Sunset (gold, coral, rose and lavender on plum), Food Forest (layered leaf greens, apricot, plum, persimmon and fig on bark) and Prairie Home (wheat gold, prairie sage, big-sky blue, coneflower and barn rust on weathered barnwood).</p></li>
 <li><p><strong>Just for fun:</strong> Bubble Gum (pink, lavender, mint, baby blue and lemon), Synthwave (neon cyan, magenta, mint and sunset orange on purple), Cyberpunk (acid yellow, cyan, magenta and neon green) and Matrix (terminal greens with white for callsigns and titles, amber for warnings).</p></li>
-<li><p><strong>Modern and easy on the eyes:</strong> Graphite (a modern dark mode, muted colors and one blue accent), High Contrast (pure colors, white text and borders, for low vision and bright rooms), Colorblind Safe (the Okabe-Ito colors, which stay apart with red-green color blindness), OLED Minimal (true black, white and gray, color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted; errors are white, since everything is red) and Smallville (shades of gray only, values brighter than labels, with red kept for errors).</p></li>
+<li><p><strong>Modern and easy on the eyes:</strong> Graphite (a modern dark mode, muted colors and one blue accent), High Contrast (pure colors, white text and borders, for low vision and bright rooms), Colorblind Safe (the Okabe-Ito colors, which stay apart with red-green color blindness), OLED Minimal (true black, white and gray, color only for warnings and errors), Night Vision (dim reds that keep your eyes dark-adapted; errors are white, since everything is red) and Smallville (shades of gray, values brighter than labels, with pops of color: red for errors, and the band and mode colors).</p></li>
 </ul>
-<p>The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window, the rosters included. A theme you choose recolors every open window at once. The Call Roster and Feed Roster keep the callsign, grid and other colors set in their own Settings.</p>
+<p>The theme also colors the buttons, text boxes, dropdowns, checkboxes, tabs and sliders, the box frames of the control panel and the BirdWatch panel, and the RECEIVE / DECODE / TRANSMIT box, in every window, the rosters included. A theme you choose recolors every open window at once. The Call Roster and Feed Roster keep the callsign, grid and other colors set in their own Settings. Bands and modes keep the colors set in the Colors tab, except in the Statistics and Lookup windows with Matrix, Amber CRT, Night Vision or OLED Minimal, which show them in shades of their own color.</p>
 </li>
 <li><p><strong>Window Theme:</strong> Dark, Light or System.</p></li>
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
@@ -1235,6 +1235,11 @@
 <section id="band-colors">
 <h4>Band Colors<a class="headerlink" href="#band-colors" title="Link to this heading">¶</a></h4>
 <p>The color of each band. Band colors are used for map spots, pins and paths, in both rosters, in the Statistics window and in the Lookup window.</p>
+</section>
+<section id="mode-colors">
+<h4>Mode Colors<a class="headerlink" href="#mode-colors" title="Link to this heading">¶</a></h4>
+<p>The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab’s mode list and in the Statistics window.</p>
+<p>The Matrix, Amber CRT, Night Vision and OLED Minimal App Themes show bands and modes in the Statistics and Lookup windows in shades of their own color instead.</p>
 <p>Each box has a <strong>Reset Colors</strong> button in its title to return to the defaults.</p>
 </section>
 </section>
@@ -3342,6 +3347,10 @@
 <p class="admonition-title">Tip</p>
 <p>Enter your station’s height above sea level in <strong>Elevation</strong> in Settings → General → Station (feet when your distance unit is miles or nautical miles, meters otherwise). BirdWatch uses it for the satellites’ positions, their Doppler shift, and when they rise and set.</p>
 </div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Pass times are shown in UTC until you switch them: click the date and time in the side panel’s GridTracker2 box (just below the frequency) to change between UTC and your local time. The BirdWatch panel, the Pass Timeline and the times on the map all follow it. The Skeds tab’s mutual passes stay in UTC, since you share them with another station.</p>
+</div>
 </section>
 <section id="the-buttons">
 <h3>The Buttons<a class="headerlink" href="#the-buttons" title="Link to this heading">¶</a></h3>
@@ -3419,7 +3428,7 @@
 <li><p><strong>Right-click a value</strong> to pick its color.</p></li>
 <li><p><strong>Drag a row</strong> to move it up or down the list.</p></li>
 </ul>
-<p>Times are shown in UTC or your local time, as you chose for the clock in the side panel. Distances use the unit in Settings → General.</p>
+<p>Times are shown in UTC or your local time: click the date and time in the side panel’s GridTracker2 box, just below the frequency, to switch. Distances use the unit in Settings → General.</p>
 </section>
 <section id="rig-box">
 <h4>Rig Box<a class="headerlink" href="#rig-box" title="Link to this heading">¶</a></h4>
@@ -3465,7 +3474,7 @@
 <p>The <strong>Pass Timeline</strong> button opens a chart at the top of the map with the next 24 hours of passes of every tracked satellite, one row each. Now is at the left edge (the red line), and the hours are marked along the top.</p>
 <ul class="simple">
 <li><p>Each pass is a yellow bar from its AOS to its LOS. The higher the pass climbs, the taller and brighter the bar. Where there is room, its highest elevation and its length in minutes are written on it, and an 👁 marks a visible pass.</p></li>
-<li><p>Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation.</p></li>
+<li><p>Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation. The hours along the top and these times are in UTC or your local time, as you chose for the clock in the side panel.</p></li>
 <li><p>Click a bar to select its satellite.</p></li>
 <li><p>Under the satellites, each active station of your <a class="reference internal" href="#skeds-passes-with-another-station">Skeds</a> has a row of its own (its callsign in light green), with a bar for each mutual pass: green for a two-way satellite, cyan for a listen-only one.</p></li>
 <li><p><strong>Export Passes (.ics)</strong> saves the next three days of passes as a calendar file you can open in your phone’s or computer’s calendar. Each pass has a reminder before it rises. Only passes that climb at least the <strong>Lowest Max Elevation</strong> of Pass Alerts are saved, and the reminder comes <strong>Minutes Before AOS</strong> (both in the Alerts tab of Settings).</p></li>
@@ -3652,7 +3661,15 @@
 <p><img alt="The Satellites tab" src="_images/GT2_BirdWatch_Satellites.png" /></p>
 <section id="tracked-satellites">
 <h4>Tracked Satellites<a class="headerlink" href="#tracked-satellites" title="Link to this heading">¶</a></h4>
-<p>The satellites BirdWatch tracks. At first these are the ISS, SO-50, AO-91, RS-44 and AO-07. Each row shows the satellite’s name (hover for its details), its catalog number, its longer name and, when it is not simply in orbit, its status.</p>
+<p>The satellites BirdWatch tracks. At first these are the ISS, SO-50, AO-91, RS-44 and AO-07. Each row shows the satellite’s name (hover for its details), its catalog number, its longer name, its modes and, when it is not simply in orbit, its status.</p>
+<p>The <strong>Modes</strong> column shows what a satellite can be worked with (hover over a tag for what it means):</p>
+<ul class="simple">
+<li><p><strong>FM:</strong> an FM voice repeater, that you can work with an FM handheld (SO-50, AO-91, the ISS).</p></li>
+<li><p><strong>LIN:</strong> a linear transponder, for SSB and CW with a full-duplex radio (AO-07, RS-44, FO-29).</p></li>
+<li><p><strong>DIG:</strong> packet, APRS or another data mode.</p></li>
+<li><p><strong>SSTV:</strong> it sends SSTV pictures (the ISS on its SSTV events). You only listen, so this one shows for a satellite with no uplink too. The Multi-Mode Decoder can receive them.</p></li>
+</ul>
+<p>A satellite with none of these only has beacons or telemetry. They come from the satellite database, so a satellite whose listing is wrong or out of date can show the wrong ones.</p>
 <ul class="simple">
 <li><p><strong>✕</strong> stops tracking a satellite; the <strong>⊖</strong> in the header stops tracking all of them.</p></li>
 <li><p><strong>✎</strong> opens the satellite’s TLE in the Manual form of the Telemetry tab. What you save there overrides the TLE it had, for example when a new satellite’s TLE has changed after launch and your sources haven’t caught up.</p></li>
@@ -3663,6 +3680,7 @@
 <ul class="simple">
 <li><p>Type part of a name or a catalog number in the search box. The list shows the satellites in your TLE sources that match, with how many were found.</p></li>
 <li><p><strong>Only With Uplinks:</strong> only satellites with a transmitter you can transmit to.</p></li>
+<li><p><strong>Mode:</strong> only satellites you can work in that mode: <strong>FM Voice</strong>, <strong>Linear (SSB/CW)</strong>, <strong>Digital</strong> or <strong>SSTV</strong> (see the Modes column above). <strong>All</strong> lists every one. Going out with an FM handheld? Pick <strong>FM Voice</strong> and press <strong>Scan Near AOS</strong> to see which FM satellites are coming up.</p></li>
 <li><p><strong>Scan By Rig:</strong> only satellites your connected radio <strong>Can Hear</strong> (a downlink in its receive range) or <strong>Can Work</strong> (a downlink it can hear and an uplink it can transmit on, with a second VFO). It needs Rig Control connected to a radio whose frequency ranges are known: rigctld, or an Icom over CI-V (flrig doesn’t report them). It is a guide only: BirdWatch doesn’t know about a second radio or a transverter.</p></li>
 <li><p><strong>Scan Near AOS:</strong> checks every satellite the filters let through, and lists the ones that are up now and will stay up for five more minutes, and the ones that will rise within the hour. Their <strong>AOS In</strong> column counts down to their rise.</p></li>
 <li><p><strong>+</strong> tracks a satellite (<strong>✓</strong> means it already is); the <strong>⊕</strong> in the header tracks every satellite in the results. <strong>✎</strong> opens a satellite’s TLE in the Manual form.</p></li>

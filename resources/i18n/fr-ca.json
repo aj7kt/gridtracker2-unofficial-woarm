@@ -1967,5 +1967,21 @@
 	"events.source.log4om": "Log4OM",
 	"events.source.n3fjp": "N3FJP Concours",
 	"settings.ModeColors.label": "Couleurs des modes",
-	"settings.ModeColors.reset.hover": "Rétablir les couleurs des modes par défaut"
+	"settings.ModeColors.reset.hover": "Rétablir les couleurs des modes par défaut",
+	"birdWatch.satellites.mode.label": "Mode",
+	"birdWatch.satellites.mode.hover": "Seulement les satellites que vous pouvez contacter dans ce mode",
+	"birdWatch.satellites.mode.all": "Tous",
+	"birdWatch.satellites.modes.label": "Modes",
+	"birdWatch.satellites.kind.fm.option": "Phonie FM",
+	"birdWatch.satellites.kind.linear.option": "Linéaire (BLU/CW)",
+	"birdWatch.satellites.kind.digital.option": "Numérique",
+	"birdWatch.satellites.kind.sstv.option": "SSTV",
+	"birdWatch.satellites.kind.fm.label": "FM",
+	"birdWatch.satellites.kind.linear.label": "LIN",
+	"birdWatch.satellites.kind.digital.label": "NUM",
+	"birdWatch.satellites.kind.sstv.label": "SSTV",
+	"birdWatch.satellites.kind.fm.hover": "Un relais FM : contactez-le avec un portatif FM",
+	"birdWatch.satellites.kind.linear.hover": "Un transpondeur linéaire : BLU et CW, avec un émetteur-récepteur full duplex",
+	"birdWatch.satellites.kind.digital.hover": "Numérique : packet, APRS ou un autre mode de données",
+	"birdWatch.satellites.kind.sstv.hover": "Envoie des images SSTV : recevez-les dans le décodeur multimode"
 }

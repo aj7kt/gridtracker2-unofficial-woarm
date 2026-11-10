@@ -1969,5 +1969,21 @@
   "events.source.log4om": "Log4OM",
   "events.source.n3fjp": "N3FJP 競賽",
   "settings.ModeColors.label": "模式顏色",
-  "settings.ModeColors.reset.hover": "將模式顏色重設為預設值"
+  "settings.ModeColors.reset.hover": "將模式顏色重設為預設值",
+  "birdWatch.satellites.mode.label": "模式",
+  "birdWatch.satellites.mode.hover": "僅顯示可用此模式通聯的衛星",
+  "birdWatch.satellites.mode.all": "全部",
+  "birdWatch.satellites.modes.label": "模式",
+  "birdWatch.satellites.kind.fm.option": "FM語音",
+  "birdWatch.satellites.kind.linear.option": "線性 (SSB/CW)",
+  "birdWatch.satellites.kind.digital.option": "數位",
+  "birdWatch.satellites.kind.sstv.option": "SSTV",
+  "birdWatch.satellites.kind.fm.label": "FM",
+  "birdWatch.satellites.kind.linear.label": "線性",
+  "birdWatch.satellites.kind.digital.label": "數位",
+  "birdWatch.satellites.kind.sstv.label": "SSTV",
+  "birdWatch.satellites.kind.fm.hover": "FM中繼：可用FM手持機通聯",
+  "birdWatch.satellites.kind.linear.hover": "線性轉發器：SSB和CW，需全雙工電台",
+  "birdWatch.satellites.kind.digital.hover": "數位：封包、APRS或其他數據模式",
+  "birdWatch.satellites.kind.sstv.hover": "發送SSTV圖像：可在多模式解碼器中接收"
 }

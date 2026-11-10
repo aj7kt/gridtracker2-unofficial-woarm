@@ -1967,5 +1967,21 @@
   "events.source.log4om": "Log4OM",
   "events.source.n3fjp": "N3FJP Zawody",
   "settings.ModeColors.label": "Kolory emisji",
-  "settings.ModeColors.reset.hover": "Przywróć domyślne kolory emisji"
+  "settings.ModeColors.reset.hover": "Przywróć domyślne kolory emisji",
+  "birdWatch.satellites.mode.label": "Emisja",
+  "birdWatch.satellites.mode.hover": "Tylko satelity, z którymi możesz pracować tą emisją",
+  "birdWatch.satellites.mode.all": "Wszystkie",
+  "birdWatch.satellites.modes.label": "Emisje",
+  "birdWatch.satellites.kind.fm.option": "Fonia FM",
+  "birdWatch.satellites.kind.linear.option": "Liniowy (SSB/CW)",
+  "birdWatch.satellites.kind.digital.option": "Cyfrowe",
+  "birdWatch.satellites.kind.sstv.option": "SSTV",
+  "birdWatch.satellites.kind.fm.label": "FM",
+  "birdWatch.satellites.kind.linear.label": "LIN",
+  "birdWatch.satellites.kind.digital.label": "CYF",
+  "birdWatch.satellites.kind.sstv.label": "SSTV",
+  "birdWatch.satellites.kind.fm.hover": "Przemiennik FM: pracuj z nim ręczniakiem FM",
+  "birdWatch.satellites.kind.linear.hover": "Transponder liniowy: SSB i CW, z transceiverem full duplex",
+  "birdWatch.satellites.kind.digital.hover": "Cyfrowe: packet, APRS lub inna emisja cyfrowa",
+  "birdWatch.satellites.kind.sstv.hover": "Nadaje obrazy SSTV: odbieraj je w dekoderze wielomodowym"
 }

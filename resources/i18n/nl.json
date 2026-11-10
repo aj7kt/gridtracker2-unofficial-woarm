@@ -1967,5 +1967,21 @@
   "events.source.log4om": "Log4OM",
   "events.source.n3fjp": "N3FJP Contest",
   "settings.ModeColors.label": "Modekleuren",
-  "settings.ModeColors.reset.hover": "Modekleuren herstellen naar standaard"
+  "settings.ModeColors.reset.hover": "Modekleuren herstellen naar standaard",
+  "birdWatch.satellites.mode.label": "Mode",
+  "birdWatch.satellites.mode.hover": "Alleen satellieten die u in deze mode kunt werken",
+  "birdWatch.satellites.mode.all": "Alle",
+  "birdWatch.satellites.modes.label": "Modes",
+  "birdWatch.satellites.kind.fm.option": "FM-spraak",
+  "birdWatch.satellites.kind.linear.option": "Lineair (SSB/CW)",
+  "birdWatch.satellites.kind.digital.option": "Digitaal",
+  "birdWatch.satellites.kind.sstv.option": "SSTV",
+  "birdWatch.satellites.kind.fm.label": "FM",
+  "birdWatch.satellites.kind.linear.label": "LIN",
+  "birdWatch.satellites.kind.digital.label": "DIG",
+  "birdWatch.satellites.kind.sstv.label": "SSTV",
+  "birdWatch.satellites.kind.fm.hover": "Een FM-repeater: werk hem met een FM-portofoon",
+  "birdWatch.satellites.kind.linear.hover": "Een lineaire transponder: SSB en CW, met een full-duplex set",
+  "birdWatch.satellites.kind.digital.hover": "Digitaal: packet, APRS of een andere datamode",
+  "birdWatch.satellites.kind.sstv.hover": "Zendt SSTV-beelden: ontvang ze in de multimode-decoder"
 }

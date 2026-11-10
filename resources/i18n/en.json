@@ -1967,5 +1967,21 @@
 	"events.source.log4om": "Log4OM",
 	"events.source.n3fjp": "N3FJP Contest",
 	"settings.ModeColors.label": "Mode Colors",
-	"settings.ModeColors.reset.hover": "Reset Mode Colors To Default"
+	"settings.ModeColors.reset.hover": "Reset Mode Colors To Default",
+	"birdWatch.satellites.mode.label": "Mode",
+	"birdWatch.satellites.mode.hover": "Only satellites you can work in this mode",
+	"birdWatch.satellites.mode.all": "All",
+	"birdWatch.satellites.modes.label": "Modes",
+	"birdWatch.satellites.kind.fm.option": "FM Voice",
+	"birdWatch.satellites.kind.linear.option": "Linear (SSB/CW)",
+	"birdWatch.satellites.kind.digital.option": "Digital",
+	"birdWatch.satellites.kind.sstv.option": "SSTV",
+	"birdWatch.satellites.kind.fm.label": "FM",
+	"birdWatch.satellites.kind.linear.label": "LIN",
+	"birdWatch.satellites.kind.digital.label": "DIG",
+	"birdWatch.satellites.kind.sstv.label": "SSTV",
+	"birdWatch.satellites.kind.fm.hover": "An FM repeater: work it with an FM handheld",
+	"birdWatch.satellites.kind.linear.hover": "A linear transponder: SSB and CW, with a full-duplex rig",
+	"birdWatch.satellites.kind.digital.hover": "Digital: packet, APRS or another data mode",
+	"birdWatch.satellites.kind.sstv.hover": "Sends SSTV pictures: receive them in the Multi-Mode Decoder"
 }

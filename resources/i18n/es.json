@@ -1960,5 +1960,21 @@
   "events.source.log4om": "Log4OM",
   "events.source.n3fjp": "N3FJP Concurso",
   "settings.ModeColors.label": "Colores de Modo",
-  "settings.ModeColors.reset.hover": "Restablecer los colores de modo predeterminados"
+  "settings.ModeColors.reset.hover": "Restablecer los colores de modo predeterminados",
+  "birdWatch.satellites.mode.label": "Modo",
+  "birdWatch.satellites.mode.hover": "Solo los satélites que puede trabajar en este modo",
+  "birdWatch.satellites.mode.all": "Todos",
+  "birdWatch.satellites.modes.label": "Modos",
+  "birdWatch.satellites.kind.fm.option": "Voz FM",
+  "birdWatch.satellites.kind.linear.option": "Lineal (SSB/CW)",
+  "birdWatch.satellites.kind.digital.option": "Digital",
+  "birdWatch.satellites.kind.sstv.option": "SSTV",
+  "birdWatch.satellites.kind.fm.label": "FM",
+  "birdWatch.satellites.kind.linear.label": "LIN",
+  "birdWatch.satellites.kind.digital.label": "DIG",
+  "birdWatch.satellites.kind.sstv.label": "SSTV",
+  "birdWatch.satellites.kind.fm.hover": "Un repetidor FM: trabájelo con un portátil FM",
+  "birdWatch.satellites.kind.linear.hover": "Un transpondedor lineal: SSB y CW, con un equipo full dúplex",
+  "birdWatch.satellites.kind.digital.hover": "Digital: packet, APRS u otro modo de datos",
+  "birdWatch.satellites.kind.sstv.hover": "Envía imágenes SSTV: recíbalas en el decodificador multimodo"
 }

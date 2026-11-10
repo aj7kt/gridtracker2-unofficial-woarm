@@ -4033,7 +4033,8 @@ table.birdDopplerTable {
   max-height: 210px;
   overflow-y: auto;
   margin-top: 4px;
-  width: calc(var(--satName, 110px) + 52px + var(--satLong, 160px) + var(--satAos, 0px) + var(--satAosGap, 0px) + var(--satStatus, 0px) + var(--satEdit, 0px) + 34px + 40px + 8px + 18px);
+  /* Each column's width (the Modes column's and its gap of 10px too), the gaps between them, the scrollbar */
+  width: calc(var(--satName, 110px) + 52px + var(--satLong, 160px) + var(--satModes, 0px) + 10px + var(--satAos, 0px) + var(--satAosGap, 0px) + var(--satStatus, 0px) + var(--satEdit, 0px) + 34px + 40px + 8px + 18px);
   max-width: calc(100vw - 80px);
 }
 
@@ -4091,6 +4092,41 @@ table.birdDopplerTable {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* What a satellite can be worked with (birdWatchSats.js): a small tag each, FM, LIN, DIG, SSTV, in the App Theme's colors */
+.birdSatModes {
+  flex: none;
+  width: var(--satModes, 0px);
+  display: flex;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.birdSatKind {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+  cursor: help;
+}
+
+.birdSatKind-fm {
+  color: var(--gt-frequency);
+}
+
+.birdSatKind-linear {
+  color: var(--gt-mode);
+}
+
+.birdSatKind-digital {
+  color: var(--gt-title);
+}
+
+.birdSatKind-sstv {
+  color: var(--gt-pota);
 }
 
 /* A scan's time to AOS: in the colors of the Decode bar (GridTracker2: white on blue with a cyan edge); the header's cell is plain */

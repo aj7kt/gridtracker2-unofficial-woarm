@@ -33,15 +33,31 @@ function birdWatchSatsRender()
   birdWatchHideNoUplinkValue.checked = GT.settings.BirdWatch.hideNoUplink;
   birdWatchStickyValue.checked = GT.settings.BirdWatch.sticky;
   birdWatchSatUplink.checked = GT.settings.BirdWatch.uplinkOnly;
+  birdWatchSatMode.value = birdWatchSatModeFilter() || "all";
   birdWatchSatRigRender();
   birdWatchSatVirtual(birdWatchSatTrackedList, GT.settings.BirdWatch.tracked, "remove", false);
   birdWatchSatShowResults(false);
 }
 
-// What is typed or the Only With Uplinks box changed: the search again (a scan's results are left)
+// The Mode filter: a kind of birdWatchSatKinds (FM Voice, Linear, Digital, SSTV), or null for all
+function birdWatchSatModeFilter()
+{
+  const mode = GT.settings.BirdWatch.modeFilter;
+  return BIRD_WATCH_SAT_KINDS.includes(mode) ? mode : null;
+}
+
+// Whether a satellite passes the Mode filter
+function birdWatchSatModeOk(norad)
+{
+  const mode = birdWatchSatModeFilter();
+  return !mode || birdWatchSatKinds(norad).includes(mode);
+}
+
+// What is typed, the Only With Uplinks box or the Mode changed: the search again (a scan's results are left)
 function birdWatchSatFilterChange()
 {
   GT.settings.BirdWatch.uplinkOnly = birdWatchSatUplink.checked;
+  GT.settings.BirdWatch.modeFilter = birdWatchSatMode.value;
   GT.birdWatchScan.active = false;
   GT.birdWatchScan.pending = null;
   birdWatchSatShowResults(true);
@@ -149,6 +165,9 @@ function birdWatchSatMeasure(list, items, scan)
   let name = width(I18N("birdWatch.satellites.name.label"));
   let long = width(I18N("birdWatch.satellites.description.label"));
   let status = 0;
+  // The Modes column: its tags (smaller text, a padded border each and a gap between them: style.css .birdSatKind), or its header
+  let modes = width(I18N("birdWatch.satellites.modes.label"));
+  const tagWidth = (kind) => width(I18N("birdWatch.satellites.kind." + kind + ".label")) * 0.85 + 14;
   for (const norad of items)
   {
     const tle = birdWatchTleGet(norad);
@@ -156,10 +175,12 @@ function birdWatchSatMeasure(list, items, scan)
     name = Math.max(name, width(tle ? tle.name : String(norad)));
     long = Math.max(long, width(tle ? birdWatchLongName(info, tle.name) : ""));
     status = Math.max(status, width(birdWatchSatStatus(info)));
+    modes = Math.max(modes, birdWatchSatKinds(norad).reduce((sum, kind) => sum + tagWidth(kind), 0));
   }
   // A little over what the text needs, for the scaling of text on some screens
   list.style.setProperty("--satName", Math.ceil(name) + 8 + "px");
   list.style.setProperty("--satLong", Math.ceil(long) + 8 + "px");
+  list.style.setProperty("--satModes", Math.ceil(modes) + 8 + "px");
   list.style.setProperty("--satStatus", (status ? Math.ceil(status) + 8 : 0) + "px");
   // The scan's AOS In column (MM:SS) and the gap before it
   list.style.setProperty("--satAos", scan ? Math.max(58, Math.ceil(width(I18N("birdWatch.satellites.aosIn.label"))) + 8) + "px" : "0px");
@@ -196,7 +217,7 @@ function birdWatchSatHeader(scan, list = null)
   const row = document.createElement("div");
   // The rows' own classes, so the header has the rows' padding and gaps and its columns line up with theirs
   row.className = "birdTleRow birdSatRow birdSatHead";
-  const columns = [["birdTleName", "birdWatch.satellites.name.label"], ["birdSatId", "birdWatch.satellites.id.label"], ["birdSatLong", "birdWatch.satellites.description.label"]];
+  const columns = [["birdTleName", "birdWatch.satellites.name.label"], ["birdSatId", "birdWatch.satellites.id.label"], ["birdSatLong", "birdWatch.satellites.description.label"], ["birdSatModes", "birdWatch.satellites.modes.label"]];
   if (scan) columns.push(["birdSatAos", "birdWatch.satellites.aosIn.label"]);
   columns.push(["birdSatStatus", null]);
   // Both lists have the edit button of each satellite before the add or remove button: the header holds the column's width
@@ -294,6 +315,19 @@ function birdWatchSatRow(norad, action, scan = null)
   long.textContent = tle ? birdWatchLongName(info, tle.name) : "";
   row.appendChild(long);
 
+  // What it can be worked with: FM, LIN, DIG, SSTV tags (birdWatchSatKinds)
+  const modes = document.createElement("span");
+  modes.className = "birdSatModes";
+  for (const kind of birdWatchSatKinds(norad))
+  {
+    const tag = document.createElement("span");
+    tag.className = "birdSatKind birdSatKind-" + kind;
+    tag.textContent = I18N("birdWatch.satellites.kind." + kind + ".label");
+    tag.title = I18N("birdWatch.satellites.kind." + kind + ".hover");
+    modes.appendChild(tag);
+  }
+  row.appendChild(modes);
+
   // A scan's time to AOS, in the blue of the Decode bar: counted down by birdWatchSatScanTick
   if (scan)
   {
@@ -356,6 +390,7 @@ function birdWatchSatSearchChange(toTop = true)
     const info = birdWatchSatInfo(set.norad);
     const hay = [set.name, String(set.norad), info ? info.name : "", info ? info.names : ""].join("|").toLowerCase();
     if (GT.settings.BirdWatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
+    if (!birdWatchSatModeOk(set.norad)) continue;
     if (query == "" || hay.includes(query)) found.push({ norad: set.norad, exact: String(set.norad) == query || set.name.toLowerCase() == query, name: set.name });
   }
   found.sort((a, b) => (b.exact - a.exact) || a.name.localeCompare(b.name));
@@ -363,7 +398,7 @@ function birdWatchSatSearchChange(toTop = true)
   birdWatchSatCount.textContent = I18N("birdWatch.satellites.found").replace("{n}", found.length);
 }
 
-// Scan Near AOS: every satellite the filter lets through (what is typed, Only With Uplinks and Scan By Rig) is asked of the tracker, which looks for the ones
+// Scan Near AOS: every satellite the filter lets through (what is typed, Only With Uplinks, Mode and Scan By Rig) is asked of the tracker, which looks for the ones
 // in AOS now that will be for the next five minutes and the ones that will be within the next hour
 function birdWatchSatScan()
 {
@@ -376,6 +411,7 @@ function birdWatchSatScan()
   {
     if (GT.settings.BirdWatch.tracked.includes(set.norad)) continue;
     if (GT.settings.BirdWatch.uplinkOnly && !birdWatchHasUplink(set.norad)) continue;
+    if (!birdWatchSatModeOk(set.norad)) continue;
     if (rig && !birdWatchRigCan(set.norad, rig.need, rig.ranges)) continue;
     const info = birdWatchSatInfo(set.norad);
     const query = birdWatchSatSearch.value.trim().toLowerCase();

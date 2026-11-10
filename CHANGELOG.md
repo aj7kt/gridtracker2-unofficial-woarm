@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261110.0]
+## [v2.261110.1]
 
 ### MD Markup Format
 #### Map / UI
@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - The Transmitters window lists each satellite's downlinks and uplinks, corrected for Doppler as it moves
   - With Rig Control your radio follows the satellite's downlink and uplink through the whole pass, and with Rotor Control your antenna points at it
   - Auto-Track selects the next satellite to rise, and Pass Alerts tell you a few minutes before a pass begins
+  - Each satellite shows what it can be worked with (FM voice, a linear transponder for SSB and CW, digital modes, or SSTV pictures), and Add Satellite can list only the FM ones for your handheld, or any of the others
   - Skeds: the stations you share passes with, and your mutual passes for the next 72 hours; save them to your calendar, send them as text, or swap Sked Lines with other GridTracker2 users
   - QSOs you log while a satellite is up are logged as satellite contacts, with its name
   - The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows
@@ -119,6 +120,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>The Transmitters window lists each satellite's downlinks and uplinks, corrected for Doppler as it moves</li>
       <li>With Rig Control your radio follows the satellite's downlink and uplink through the whole pass, and with Rotor Control your antenna points at it</li>
       <li>Auto-Track selects the next satellite to rise, and Pass Alerts tell you a few minutes before a pass begins</li>
+      <li>Each satellite shows what it can be worked with (FM voice, a linear transponder for SSB and CW, digital modes, or SSTV pictures), and Add Satellite can list only the FM ones for your handheld, or any of the others</li>
       <li>Skeds: the stations you share passes with, and your mutual passes for the next 72 hours; save them to your calendar, send them as text, or swap Sked Lines with other GridTracker2 users</li>
       <li>QSOs you log while a satellite is up are logged as satellite contacts, with its name</li>
       <li>The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows</li>

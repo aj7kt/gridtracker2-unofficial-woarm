@@ -23,6 +23,10 @@ BirdWatch works offline: the satellite data it needs comes with GridTracker2. Wh
 Enter your station's height above sea level in **Elevation** in Settings → General → Station (feet when your distance unit is miles or nautical miles, meters otherwise). BirdWatch uses it for the satellites' positions, their Doppler shift, and when they rise and set.
 ```
 
+```{tip}
+Pass times are shown in UTC until you switch them: click the date and time in the side panel's GridTracker2 box (just below the frequency) to change between UTC and your local time. The BirdWatch panel, the Pass Timeline and the times on the map all follow it. The Skeds tab's mutual passes stay in UTC, since you share them with another station.
+```
+
 ## The Buttons
 
 | Button | Name | What it does | Hotkey |
@@ -80,7 +84,7 @@ Hold the mouse over a row to see what it means. To arrange the list:
 * **Right-click a value** to pick its color.
 * **Drag a row** to move it up or down the list.
 
-Times are shown in UTC or your local time, as you chose for the clock in the side panel. Distances use the unit in Settings → General.
+Times are shown in UTC or your local time: click the date and time in the side panel's GridTracker2 box, just below the frequency, to switch. Distances use the unit in Settings → General.
 
 ### Rig Box
 
@@ -125,7 +129,7 @@ Their colors and styles are in **Map** in the Display tab of Settings. The stati
 The **Pass Timeline** button opens a chart at the top of the map with the next 24 hours of passes of every tracked satellite, one row each. Now is at the left edge (the red line), and the hours are marked along the top.
 
 * Each pass is a yellow bar from its AOS to its LOS. The higher the pass climbs, the taller and brighter the bar. Where there is room, its highest elevation and its length in minutes are written on it, and an 👁 marks a visible pass.
-* Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation.
+* Hold the mouse over a bar to see its AOS and LOS times and azimuths, the time to AOS and LOS, its duration and its highest elevation. The hours along the top and these times are in UTC or your local time, as you chose for the clock in the side panel.
 * Click a bar to select its satellite.
 * Under the satellites, each active station of your [Skeds](#skeds-passes-with-another-station) has a row of its own (its callsign in light green), with a bar for each mutual pass: green for a two-way satellite, cyan for a listen-only one.
 * **Export Passes (.ics)** saves the next three days of passes as a calendar file you can open in your phone's or computer's calendar. Each pass has a reminder before it rises. Only passes that climb at least the **Lowest Max Elevation** of Pass Alerts are saved, and the reminder comes **Minutes Before AOS** (both in the Alerts tab of Settings).
@@ -301,7 +305,16 @@ Each kind you have added gets its own box. Every row starts with **Enable**, so 
 
 ### Tracked Satellites
 
-The satellites BirdWatch tracks. At first these are the ISS, SO-50, AO-91, RS-44 and AO-07. Each row shows the satellite's name (hover for its details), its catalog number, its longer name and, when it is not simply in orbit, its status.
+The satellites BirdWatch tracks. At first these are the ISS, SO-50, AO-91, RS-44 and AO-07. Each row shows the satellite's name (hover for its details), its catalog number, its longer name, its modes and, when it is not simply in orbit, its status.
+
+The **Modes** column shows what a satellite can be worked with (hover over a tag for what it means):
+
+* **FM:** an FM voice repeater, that you can work with an FM handheld (SO-50, AO-91, the ISS).
+* **LIN:** a linear transponder, for SSB and CW with a full-duplex radio (AO-07, RS-44, FO-29).
+* **DIG:** packet, APRS or another data mode.
+* **SSTV:** it sends SSTV pictures (the ISS on its SSTV events). You only listen, so this one shows for a satellite with no uplink too. The Multi-Mode Decoder can receive them.
+
+A satellite with none of these only has beacons or telemetry. They come from the satellite database, so a satellite whose listing is wrong or out of date can show the wrong ones.
 
 * **✕** stops tracking a satellite; the **⊖** in the header stops tracking all of them.
 * **✎** opens the satellite's TLE in the Manual form of the Telemetry tab. What you save there overrides the TLE it had, for example when a new satellite's TLE has changed after launch and your sources haven't caught up.
@@ -310,6 +323,7 @@ The satellites BirdWatch tracks. At first these are the ISS, SO-50, AO-91, RS-44
 
 * Type part of a name or a catalog number in the search box. The list shows the satellites in your TLE sources that match, with how many were found.
 * **Only With Uplinks:** only satellites with a transmitter you can transmit to.
+* **Mode:** only satellites you can work in that mode: **FM Voice**, **Linear (SSB/CW)**, **Digital** or **SSTV** (see the Modes column above). **All** lists every one. Going out with an FM handheld? Pick **FM Voice** and press **Scan Near AOS** to see which FM satellites are coming up.
 * **Scan By Rig:** only satellites your connected radio **Can Hear** (a downlink in its receive range) or **Can Work** (a downlink it can hear and an uplink it can transmit on, with a second VFO). It needs Rig Control connected to a radio whose frequency ranges are known: rigctld, or an Icom over CI-V (flrig doesn't report them). It is a guide only: BirdWatch doesn't know about a second radio or a transverter.
 * **Scan Near AOS:** checks every satellite the filters let through, and lists the ones that are up now and will stay up for five more minutes, and the ones that will rise within the hour. Their **AOS In** column counts down to their rise.
 * **+** tracks a satellite (**✓** means it already is); the **⊕** in the header tracks every satellite in the results. **✎** opens a satellite's TLE in the Manual form.

@@ -1,6 +1,6 @@
 # What's New in GridTracker2
 
-This guide was last revised for version 2.261110.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.
+This guide was last revised for version 2.261110.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.
 
 ## New Features
 

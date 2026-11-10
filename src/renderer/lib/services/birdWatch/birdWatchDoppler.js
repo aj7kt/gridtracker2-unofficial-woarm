@@ -76,6 +76,51 @@ function birdWatchHasUplink(norad)
   return birdWatchTransmitters(norad).some((t) => t.uplink_low > 0);
 }
 
+// What a satellite can be worked with (the Satellites tab's Mode filter and its rows' tags), from its active amateur transmitters, in
+// this order: "fm" (an FM voice repeater, for a handheld), "linear" (a linear transponder: SSB and CW), "digital" (packet, APRS and the
+// other data modes) need an uplink; "sstv" is any SSTV it sends, two-way or not (it is only listened to). The database's mode is not
+// always the one used (Es'hail 2's SSB transponders say FM), so the description has the last word. Commands only (DTMF) count as none
+const BIRD_WATCH_SAT_KINDS = ["fm", "linear", "digital", "sstv"];
+const BIRD_WATCH_DATA_TEXT = /aprs|packet|digi|bbs|ax\.?25|1200|9600|baud|bps|sstv|data/i;
+let birdWatchSatKindStamp = "";
+const birdWatchSatKindMap = new Map();
+
+function birdWatchTransmitterKind(t)
+{
+  const mode = String(t.mode || "").toUpperCase();
+  const text = String(t.description || "");
+  if (mode == "SSTV" || /\bsstv\b/i.test(text)) return "sstv";
+  if (!(t.uplink_low > 0) || /command|dtmf/i.test(text)) return null;
+  if (/^(USB|LSB|CW|SSB|DSB)$/.test(mode) || /linear|\blin\b|ssb|\bcw\b/i.test(text)) return "linear";
+  if (/^FMN?$/.test(mode) && t.type == "Transponder") return /\bN?FM\b/i.test(text) ? "fm" : "linear";
+  if (t.type == "Transponder" && !/^(AFSK|FSK|GFSK|GMSK|BPSK)/.test(mode)) return "linear";
+  if (/^FMN?$/.test(mode) && !BIRD_WATCH_DATA_TEXT.test(text)) return "fm";
+  return "digital";
+}
+
+function birdWatchSatKinds(norad)
+{
+  // Worked out again when the transmitters were read again (birdWatchTransmitters keeps its stamp)
+  const list = birdWatchTransmitters(norad);
+  if (birdWatchSatKindStamp != birdWatchTransmitterStamp)
+  {
+    birdWatchSatKindMap.clear();
+    birdWatchSatKindStamp = birdWatchTransmitterStamp;
+  }
+  const key = Number(norad);
+  if (birdWatchSatKindMap.has(key)) return birdWatchSatKindMap.get(key);
+  const kinds = new Set();
+  for (const t of list)
+  {
+    if (!birdWatchAmateurTransmitter(t)) continue;
+    const kind = birdWatchTransmitterKind(t);
+    if (kind) kinds.add(kind);
+  }
+  const result = BIRD_WATCH_SAT_KINDS.filter((kind) => kinds.has(kind));
+  birdWatchSatKindMap.set(key, result);
+  return result;
+}
+
 // A frequency in MHz as a rig's dial shows it (formatDialFreq); a range as low - high
 function birdWatchFrequency(low, high, factor)
 {

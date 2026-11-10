@@ -1967,5 +1967,21 @@
 	"events.source.log4om": "Log4OM",
 	"events.source.n3fjp": "N3FJP コンテスト",
 	"settings.ModeColors.label": "モードの色",
-	"settings.ModeColors.reset.hover": "モードの色をデフォルトに戻す"
+	"settings.ModeColors.reset.hover": "モードの色をデフォルトに戻す",
+	"birdWatch.satellites.mode.label": "モード",
+	"birdWatch.satellites.mode.hover": "このモードで交信できる衛星のみ",
+	"birdWatch.satellites.mode.all": "すべて",
+	"birdWatch.satellites.modes.label": "モード",
+	"birdWatch.satellites.kind.fm.option": "FM音声",
+	"birdWatch.satellites.kind.linear.option": "リニア (SSB/CW)",
+	"birdWatch.satellites.kind.digital.option": "デジタル",
+	"birdWatch.satellites.kind.sstv.option": "SSTV",
+	"birdWatch.satellites.kind.fm.label": "FM",
+	"birdWatch.satellites.kind.linear.label": "リニア",
+	"birdWatch.satellites.kind.digital.label": "デジ",
+	"birdWatch.satellites.kind.sstv.label": "SSTV",
+	"birdWatch.satellites.kind.fm.hover": "FMレピーター：FMハンディ機で交信できます",
+	"birdWatch.satellites.kind.linear.hover": "リニアトランスポンダー：SSBとCW、全二重の無線機で",
+	"birdWatch.satellites.kind.digital.hover": "デジタル：パケット、APRSなどのデータモード",
+	"birdWatch.satellites.kind.sstv.hover": "SSTV画像を送信：マルチモードデコーダーで受信できます"
 }

@@ -127,6 +127,8 @@ const def_settings = {
     uplinkOnly: false,
     // Scan By Rig (Add Satellite): "off", "hear" (a downlink the rig can receive), "work" (and an uplink it can transmit on)
     rigFilter: "off",
+    // Mode (Add Satellite): "all", or what the satellites must be workable with: "fm", "linear", "digital", "sstv" (birdWatchSatKinds)
+    modeFilter: "all",
     // A QSO logged while the selected satellite is up is tagged PROP_MODE SAT and its SAT_NAME (BirdWatch settings, Satellites)
     logTag: false,
     // The sky plot of the selected satellite in the BirdWatch panel (BirdWatch settings, General)
