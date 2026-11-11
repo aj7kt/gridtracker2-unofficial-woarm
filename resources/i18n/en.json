@@ -1665,7 +1665,6 @@
 	"sstvTx.abort.label": "Abort",
 	"sstvTx.tuneButton.hover": "Sends a steady 1900 Hz tone at the Power, for 30 s at most or until clicked again: set the rig's drive and ALC by it",
 	"cwViewer.wefax.trim.hover": "Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0",
-	"cwViewer.wefax.picture.hover": "Click the chart's real left edge to line the chart coming in up there. Click a chart on the right to see it here. Right-click a chart to save it",
 	"cwViewer.wefax.auto.label": "Auto-Tune",
 	"cwViewer.wefax.auto.hover": "Tunes the rig to each station's next chart by the published schedules, one chart after another. Tuning the rig by hand turns it off",
 	"cwViewer.wefax.auto.noRig": "Auto-Tune needs Rig Control (Settings, General)",

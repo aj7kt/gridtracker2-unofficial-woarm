@@ -88,8 +88,16 @@ const WEFAX_SEARCH_NOW = 6;
 const WEFAX_IDLE_SPAN = 6;
 const WEFAX_IDLE_SHARE = 0.7;
 const WEFAX_IDLE_LINES = 6;
-// The line rate is measured within this share of what it should be
+// The line rate is measured within this share of what it should be, from phasing pulses at least this many lines apart
 const WEFAX_RATE_TOL = 0.001;
+const WEFAX_FIT_SPAN = 10;
+// A chart's line rate from its phasing is trusted with at least this many pulses, this many lines apart, lying this close (samples, their
+// RMS) to the line through them; a trusted one is kept (WF.knownRate: the sound card's clock doesn't change from one chart to the next) and
+// a chart whose phasing was too noisy to trust takes it (static: 12 pulses scattered 4 samples gave 188 ppm against 10 to 13 on the
+// charts around it, and the chart leaned)
+const WEFAX_RATE_PULSES = 20;
+const WEFAX_RATE_SPAN = 20;
+const WEFAX_RATE_RMS = 2;
 // The most lines a chart has (25 minutes at 120 lines a minute); the frequencies kept (a ring, 23 minutes at 6000 a second)
 const WEFAX_MAX_LINES = 3000;
 const WEFAX_RING = 1 << 23;
@@ -120,6 +128,24 @@ const WEFAX_TRACK_ROWS_MOST = 6;
 const WEFAX_TRACK_FIT = 60;
 const WEFAX_TRACK_PPM = 300;
 const WEFAX_TRACK_HOLD = 0.4;
+// A chart's own left edge on its lines (stations place a chart partway across the line, its right side then showing at the left): found
+// the way the eye finds it, every WEFAX_ALIGN_EVERY of the chart's rows and as it ends. Each column's ink (the share of its rows whose
+// pixel is darker than WEFAX_ALIGN_DARK along with the one above or below it, smoothed over WEFAX_ALIGN_SMOOTH pixels either side); the
+// widest band of quiet columns (circularly) is the paper between the chart's right and left edges, taken when it's at least
+// WEFAX_ALIGN_MIN of a line wide, WEFAX_ALIGN_LEAD times the next widest, blank in each third of the chart's height, and the chart's ink
+// stands out from its paper (its median column at least WEFAX_ALIGN_CONTRAST above its quietest fifth, as a share). Otherwise (static all
+// across a chart, a chart of numbers filling it, a chart lying on a diagonal) it's left as it is. The lines then start WEFAX_ALIGN_MARGIN
+// of a line (at most half the band) before the band's end; moved only by WEFAX_ALIGN_MOVE of a line or more. Tried on NMC's charts of
+// 2026-11-11: lined up the four with a clear band, left the five without one alone
+const WEFAX_ALIGN_EVERY = 150;
+const WEFAX_ALIGN_ROWS = 60;
+const WEFAX_ALIGN_DARK = 128;
+const WEFAX_ALIGN_SMOOTH = 9;
+const WEFAX_ALIGN_MIN = 0.03;
+const WEFAX_ALIGN_LEAD = 1.8;
+const WEFAX_ALIGN_CONTRAST = 0.25;
+const WEFAX_ALIGN_MARGIN = 0.02;
+const WEFAX_ALIGN_MOVE = 0.01;
 // A step (not a line-start marker's) at most this share of a line: a sound card's dropped or doubled block of samples moves the chart a
 // few tens of pixels; a chart with the same thing repeated across it (NMC's sea state charts: rows of wave arrows every few tens of
 // pixels) matches as well at many shifts, and took false steps of hundreds of pixels, and slopes of hundreds of ppm, with 2500 ppm and
@@ -179,6 +205,7 @@ const WF = {
   byPhasing: false, // begun by phasing lines seen while idle (no start tone heard): back to idle if no chart follows them
   idleAt: 0,      // when phasing was last looked for while idle (a frequency's index)
   model: null,    // the line rate: { a (where line 0 starts), b (a line, in samples), nominal, points, measured, hits, misses, firstMiss }
+  knownRate: 0,   // the line rate a chart's clean phasing measured, against nominal (1.000013: 13 ppm slow); 0 none yet (wefaxRateCheck)
   pic: null,      // the chart being received
   noisyRun: 0,
   noisyFrom: 0,
@@ -229,6 +256,8 @@ function wefaxInit(rate)
     return { c, s, gc, gs };
   });
   WF.blockLength = length;
+  // (another input rate: the line rate measured at the old one no guide)
+  WF.knownRate = 0;
   wefaxReset();
 }
 
@@ -647,6 +676,8 @@ function wefaxPhasingTuning(edge, period)
 // found too, back to where they were looked for from: at most WEFAX_PHASING_MOST). Too few found: the chart runs on at the rate the
 // fold gave
 const WEFAX_PHASING_MOST = 120;
+// A line whose level (all but its pulse) is below this is still a phasing line's black, whether its pulse was clear or not
+const WEFAX_PHASING_BLACK = 0.3;
 
 function wefaxTrack()
 {
@@ -654,7 +685,7 @@ function wefaxTrack()
   while (m.a + m.b * (m.measured + 1) + 0.05 * m.b <= WF.n)
   {
     const y = m.measured;
-    const [at, clear, hit] = wefaxEdge(m, y);
+    const [at, clear, hit, rest] = wefaxEdge(m, y);
     if (hit)
     {
       m.points.push([y, at, clear]);
@@ -662,10 +693,19 @@ function wefaxTrack()
       m.hits++;
       m.misses = 0;
     }
+    // A line still black, its pulse not clear: a phasing line through static (a crash of it blurs a pulse or two), not the chart
+    // begun; it counts neither way (a run of three of them ended the phasing 19 s early on an NMC chart, its line rate then fitted from
+    // too few pulses: 185 ppm off). Past WEFAX_PHASING_MOST lines they count as the chart's
+    else if (rest < WEFAX_PHASING_BLACK && m.hits >= 3 && y < WEFAX_PHASING_MOST)
+    {
+      m.measured++;
+      continue;
+    }
     else if (m.misses++ == 0) m.firstMiss = y;
     m.measured++;
     if (m.misses >= 3 && m.hits >= 3)
     {
+      wefaxRateCheck(m);
       const before = Math.max(0, Math.floor((m.a - WF.searchFrom) / m.b));
       wefaxPicture(m.firstMiss, true, Math.min(WEFAX_PHASING_MOST, before + m.firstMiss));
       return;
@@ -679,10 +719,31 @@ function wefaxTrack()
         return;
       }
       m.phasing = false;
+      wefaxRateCheck(m);
       wefaxPicture(m.firstMiss, false);
       return;
     }
   }
+}
+
+// The phasing over: its line rate kept when its pulses are enough, far enough apart and close to the line through them (and taken as the
+// one known from now on); otherwise the one known (none yet: nominal), only where line 0 starts fitted to its pulses (their median)
+function wefaxRateCheck(m)
+{
+  const p = m.points, n = p.length, span = n ? p[n - 1][0] - p[0][0] : 0;
+  const rms = n >= 3 ? Math.sqrt(p.reduce((s, q) => s + (q[1] - m.a - m.b * q[0]) ** 2, 0) / n) : Infinity;
+  if (n >= WEFAX_RATE_PULSES && span >= WEFAX_RATE_SPAN && rms <= WEFAX_RATE_RMS)
+  {
+    WF.knownRate = m.b / m.nominal;
+    return;
+  }
+  const b = m.nominal * (WF.knownRate || 1);
+  if (n)
+  {
+    const starts = p.map((q) => q[1] - b * q[0]).sort((x, y) => x - y);
+    m.a = starts[n >> 1];
+  }
+  m.b = b;
 }
 
 // Line y's pulse: where the level steps up most from black to white within a little of where it should (the step's height its clearness,
@@ -707,7 +768,10 @@ function wefaxEdge(m, y)
   const at = from + best + delta, clear = score(best);
   let rest = 0, count = 0;
   for (let t = at + 0.1 * period; t < at + 0.9 * period; t += 4, count++) rest += wefaxLevel(t);
-  return [at, clear, clear > 0.4 && rest / count < 0.3];
+  // (the best at the very edge of where it was looked for is only the slope of a pulse further off: not a measurement, or the line
+  // fitted would follow its own error from one line to the next)
+  const inside = best > L && best < L + 2 * spread;
+  return [at, clear, inside && clear > 0.4 && rest / count < 0.3, rest / count];
 }
 
 // The line rate and where line 0 starts, from the pulses measured: a straight line through them, weighted by how clear each was, the
@@ -718,7 +782,9 @@ function wefaxFit(m)
   for (let round = 0; round < 3; round++)
   {
     let a, b;
-    if (points.length < 3)
+    // The rate only from pulses at least WEFAX_FIT_SPAN lines apart (a few lines' worth gave hundreds of ppm, and the pulses looked for
+    // where that put them); until then the nominal rate, only where line 0 starts fitted
+    if (points.length < 3 || points[points.length - 1][0] - points[0][0] < WEFAX_FIT_SPAN)
     {
       b = m.nominal;
       a = points.reduce((sum, p) => sum + p[1] - b * p[0], 0) / points.length;
@@ -776,7 +842,8 @@ function wefaxFreeRun(from)
     const offset = mode >= WEFAX_CENTER ? mode - WEFAX_WHITE : mode - WEFAX_BLACK;
     if (count > 100 && most > 0.15 * count && Math.abs(offset) <= WEFAX_SHIFT_MAX) WF.offset = offset;
   }
-  WF.model = { a: from, b: period, nominal: period, points: [], measured: 0, hits: 0, misses: 0, firstMiss: 0, phasing: false };
+  // (at the line rate known from an earlier chart's phasing, when there is one)
+  WF.model = { a: from, b: period * (WF.knownRate || 1), nominal: period, points: [], measured: 0, hits: 0, misses: 0, firstMiss: 0, phasing: false };
   wefaxPicture(0, false);
 }
 
@@ -790,7 +857,9 @@ function wefaxPicture(y0, phasing, lead = 0)
   // shift: each row's start moved by this (samples) as it was read, adjust: the rows still to come, mark: where each row's line-start
   // marker says it should start (NaN: none found) (wefaxTrackRow); trackFrom: the first row followed (the chart's own, after its
   // phasing lines, so its reference is made from the chart)
-  WF.pic = { id, width, y0: y0 - lead, trackFrom: lead, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false };
+  WF.pic = { id, width, y0: y0 - lead, trackFrom: lead, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false, alignNext: WEFAX_ALIGN_EVERY };
+  // (lined up afresh: wefaxAutoAlign)
+  WF.config.align = 0;
   WF.state = "image";
   WF.noisyRun = 0;
   const m = WF.model;
@@ -857,6 +926,107 @@ function wefaxRender()
     if (WF.config.track && r >= pic.trackFrom) from = Math.min(from, wefaxTrackRow(pic, r));
   }
   wefaxSend(pic, from);
+  // Every WEFAX_ALIGN_EVERY of its own rows: its left edge looked for (the chart so far drawn again when it's moved); not on a chart
+  // whose line-start markers line it up
+  if (pic.rendered - pic.trackFrom >= pic.alignNext && !(WF.config.track && pic.track.markWidth))
+  {
+    pic.alignNext += WEFAX_ALIGN_EVERY;
+    wefaxAutoAlign(pic, true);
+  }
+}
+
+// The chart's own left edge (see WEFAX_ALIGN_EVERY): the shift (pixels, the line to start that far along) when one is clearly found,
+// else 0
+function wefaxAlignFind(pic)
+{
+  const W = pic.width, r0 = pic.trackFrom, r1 = pic.rendered;
+  if (r1 - r0 < WEFAX_ALIGN_ROWS) return 0;
+  const rows = pic.rows;
+  // A pixel is ink when it's dark and so is the one above or below it (static on a fax line comes as dots and short dashes along the
+  // line, one row high; lettering and lines reach the next row). Each column's ink, over all the chart's rows and each third of them
+  const dark = (x, r) => r >= r0 && r < r1 && rows[r * W + x] < WEFAX_ALIGN_DARK;
+  const ink = new Float64Array(W), thirds = [new Float64Array(W), new Float64Array(W), new Float64Array(W)];
+  for (let r = r0; r < r1; r++)
+  {
+    const third = thirds[Math.min(2, Math.floor(((r - r0) * 3) / (r1 - r0)))];
+    for (let x = 0; x < W; x++)
+    {
+      if (dark(x, r) && (dark(x, r - 1) || dark(x, r + 1)))
+      {
+        ink[x]++;
+        third[x]++;
+      }
+    }
+  }
+  const k = WEFAX_ALIGN_SMOOTH, sm = new Float64Array(W);
+  let sum = 0;
+  for (let d = -k; d <= k; d++) sum += ink[(d + W) % W];
+  for (let x = 0; x < W; x++)
+  {
+    sm[x] = sum / ((2 * k + 1) * (r1 - r0));
+    sum += ink[(x + k + 1) % W] - ink[(x - k + W) % W];
+  }
+  const sorted = Float64Array.from(sm).sort();
+  const p20 = sorted[Math.floor(W * 0.2)], median = sorted[W >> 1];
+  if (!(median > 0) || (median - p20) / median < WEFAX_ALIGN_CONTRAST) return 0;
+  const limit = Math.max(p20 * 1.6, p20 + 0.004);
+  let start = 0;
+  while (start < W && sm[start] <= limit) start++;
+  if (start == W) return 0;
+  // The quiet runs, circularly, from the first busy column
+  let best = null, second = 0, run = null;
+  for (let i = 1; i <= W; i++)
+  {
+    const x = (start + i) % W;
+    if (sm[x] <= limit)
+    {
+      if (!run) run = { from: x, length: 0 };
+      run.length++;
+    }
+    if ((sm[x] > limit || i == W) && run)
+    {
+      if (!best || run.length > best.length)
+      {
+        if (best) second = Math.max(second, best.length);
+        best = run;
+      }
+      else second = Math.max(second, run.length);
+      run = null;
+    }
+  }
+  if (!best || best.length < WEFAX_ALIGN_MIN * W || best.length < WEFAX_ALIGN_LEAD * second) return 0;
+  // Blank paper is blank at every height: in each third of the rows, the band's columns hold at most half the ink of the chart's own
+  // median column (those outside the band; on a narrow chart most of the line is paper). A chart lying on a diagonal has a blank
+  // triangle, not a band
+  for (const col of thirds)
+  {
+    const own = [];
+    for (let i = best.length; i < W; i++) own.push(col[(best.from + i) % W]);
+    own.sort((a, b) => a - b);
+    let inBand = 0;
+    for (let i = 0; i < best.length; i++) inBand += col[(best.from + i) % W];
+    if (inBand / best.length > 0.5 * own[own.length >> 1]) return 0;
+  }
+  const margin = Math.min(Math.round(WEFAX_ALIGN_MARGIN * W), best.length >> 1);
+  return (best.from + best.length - margin + W) % W;
+}
+
+// The chart lined up on its own left edge when one is found far enough from where its lines start now: its rows read again (those whose
+// frequencies are still kept), following its lines begun again from there, and (send) the chart drawn again. True when it was moved
+function wefaxAutoAlign(pic, send)
+{
+  if (!WF.model) return false;
+  const shift = wefaxAlignFind(pic);
+  let share = shift / pic.width;
+  // As it ends (not send), all of it in: no band found in the whole chart, after one was found in its first rows (a chart lying on a
+  // diagonal can show one there), puts it back where its lines began
+  if (!shift && !send && WF.config.align) share = 1 - WF.config.align;
+  else if (!shift || share < WEFAX_ALIGN_MOVE || share > 1 - WEFAX_ALIGN_MOVE) return false;
+  WF.config.align = (WF.config.align + share) % 1;
+  if (WF.config.track) wefaxTrackReset(pic);
+  for (let r = 0; r < pic.rendered; r++) if (wefaxLineStart(pic, r) > WF.n - WF.freq.length + 4) wefaxRow(pic, r);
+  if (send) WF.out({ type: "redraw", id: pic.id, count: pic.rendered, pixels: pic.rows.slice(0, pic.rendered * pic.width) });
+  return true;
 }
 
 function wefaxSend(pic, from)
@@ -880,8 +1050,9 @@ function wefaxFinish(complete, end)
   const pic = WF.pic;
   WF.pic = null;
   if (!pic) return;
-  // Its rows' line-start markers stacked, when it has them
+  // Its rows' line-start markers stacked, when it has them; else lined up on its own left edge once more, now all of it is in
   if (WF.config.track && pic.track.markWidth) wefaxTrackRestack(pic);
+  else wefaxAutoAlign(pic, false);
   let count = pic.rendered;
   if (end !== undefined) while (count > 0 && wefaxLineStart(pic, count - 1) + WF.model.b * 0.5 > end) count--;
   WF.out({ type: "done", id: pic.id, count, complete, pixels: pic.rows.slice(0, count * pic.width) });

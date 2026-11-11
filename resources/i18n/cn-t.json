@@ -1667,7 +1667,6 @@
   "sstvTx.abort.label": "中止",
   "sstvTx.tuneButton.hover": "以功率發送穩定的 1900 Hz 音，最多 30 秒或直到再次點擊：據此設定電台的驅動和 ALC",
   "cwViewer.wefax.trim.hover": "校正傾斜的圖表：向任一方向調整，直到圖表的豎線變直（已收到的部分會重繪）。點擊數值可恢復為 0",
-  "cwViewer.wefax.picture.hover": "點擊圖表真正的左邊緣，即可將正在接收的圖表對齊到那裡。點擊右側的圖表可在此查看。右鍵點擊圖表可儲存",
   "cwViewer.wefax.auto.label": "自動調諧",
   "cwViewer.wefax.auto.hover": "按公布的時間表將電台調諧到各站的下一張圖表，一張接一張。手動調諧會將其關閉",
   "cwViewer.wefax.auto.noRig": "自動調諧需要電台控制（設定，一般）",

@@ -1665,7 +1665,6 @@
 	"sstvTx.abort.label": "Annuler",
 	"sstvTx.tuneButton.hover": "Envoie une tonalité fixe de 1900 Hz à la Puissance, 30 s au plus ou jusqu'à un nouveau clic : réglez avec elle l'excitation et l'ALC de la radio",
 	"cwViewer.wefax.trim.hover": "Redresse une carte qui penche : réglez-le dans un sens jusqu'à ce que les lignes verticales de la carte soient droites (le reçu est redessiné). Cliquez la valeur pour la remettre à 0",
-	"cwViewer.wefax.picture.hover": "Cliquez le vrai bord gauche de la carte pour y aligner la carte en cours. Cliquez une carte à droite pour la voir ici. Clic droit sur une carte pour l'enregistrer",
 	"cwViewer.wefax.auto.label": "Accord Automatique",
 	"cwViewer.wefax.auto.hover": "Accorde la radio sur la prochaine carte de chaque station selon les horaires publiés, une carte après l'autre. Accorder à la main le désactive",
 	"cwViewer.wefax.auto.noRig": "L'Accord Automatique a besoin du Contrôle de la Radio (Paramètres, Général)",

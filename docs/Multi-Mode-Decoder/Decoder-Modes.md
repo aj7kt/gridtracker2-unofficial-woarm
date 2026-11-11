@@ -249,11 +249,10 @@ WEFAX receives weather fax charts from the coast and weather stations that still
 
 ![WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip](../img/GT2_MMD_WEFAX.jpg){width=480px}
 
-* A chart starts by itself with its start tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: **LPM** (lines a minute: **Auto**, 60, 90, 120 or 240) and **IOC** (the chart's width: **Auto**, 576 or 288).
-* **Start Now** begins a chart that is already being sent. **Stop** ends the chart being received.
-* Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. To do it by hand:
+* A chart starts by itself with its start tone, or with its phasing lines (the black lines with a white mark that follow the start tone) when static garbles the tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: **LPM** (lines a minute: **Auto**, 60, 90, 120 or 240) and **IOC** (the chart's width: **Auto**, 576 or 288).
+* **Start Now** begins a chart that is already being sent. **Stop** ends the chart being received. A chart keeps going through a fade of up to two minutes.
+* Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. Many stations place a chart partway across the line, so its right side would show on the left: GridTracker2 finds the strip of blank paper between the chart's edges and starts each line after it, as the chart comes in.
   * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
-  * Click the chart's real left edge, on the chart coming in, to line it up there.
 * The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
 * Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**. A rotated or filtered chart is saved and copied as shown.
 * **Filter** (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:

@@ -1658,7 +1658,6 @@
   "sstvTx.abort.label": "Abortar",
   "sstvTx.tuneButton.hover": "Envía un tono fijo de 1900 Hz con la Potencia, 30 s como máximo o hasta pulsar de nuevo: ajuste con él la excitación y el ALC del equipo",
   "cwViewer.wefax.trim.hover": "Endereza una carta inclinada: muévalo en un sentido hasta que las líneas verticales de la carta queden rectas (lo recibido se vuelve a dibujar). Pulse el valor para volver a 0",
-  "cwViewer.wefax.picture.hover": "Pulse el borde izquierdo real de la carta para alinear allí la carta que llega. Pulse una carta a la derecha para verla aquí. Clic derecho en una carta para guardarla",
   "cwViewer.wefax.auto.label": "Sintonía Automática",
   "cwViewer.wefax.auto.hover": "Sintoniza el equipo en la próxima carta de cada estación según los horarios publicados, una carta tras otra. Sintonizar a mano lo desactiva",
   "cwViewer.wefax.auto.noRig": "La Sintonía Automática necesita el Control del Equipo (Ajustes, General)",

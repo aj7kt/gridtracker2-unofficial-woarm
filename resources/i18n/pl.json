@@ -1665,7 +1665,6 @@
   "sstvTx.abort.label": "Przerwij",
   "sstvTx.tuneButton.hover": "Wysyła stały ton 1900 Hz z Mocą, najwyżej 30 s lub do ponownego kliknięcia: ustaw według niego wysterowanie i ALC radia",
   "cwViewer.wefax.trim.hover": "Prostuje pochyloną mapę: zmieniaj w jedną stronę, aż pionowe linie mapy będą proste (odebrane zostanie przerysowane). Kliknij wartość, aby przywrócić 0",
-  "cwViewer.wefax.picture.hover": "Kliknij prawdziwą lewą krawędź mapy, aby tam wyrównać odbieraną mapę. Kliknij mapę po prawej, aby zobaczyć ją tutaj. Kliknij mapę prawym przyciskiem, aby ją zapisać",
   "cwViewer.wefax.auto.label": "Auto-Strojenie",
   "cwViewer.wefax.auto.hover": "Stroi radio na następną mapę każdej stacji według opublikowanych rozkładów, jedna mapa po drugiej. Strojenie ręczne je wyłącza",
   "cwViewer.wefax.auto.noRig": "Auto-Strojenie wymaga Sterowania Radiem (Ustawienia, Ogólne)",

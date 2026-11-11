@@ -41,10 +41,9 @@ const SSTV = {
   set viewing(id) { this.views[mmdSstvKind()] = id; },
   live: null,   // the one coming in
   drawn: null,  // where the picture shown was drawn on sstvPicture (device pixels: x, y, w, h), and which
-  // WEFAX by hand: Trim (ppm; kept across restarts in MMD.wefaxTrim, read in mmdSstvInit), and where the chart coming in is lined up
-  // (align, this session's: its lines moved left by this share of one; a new chart starts at 0, its phasing lines up the rest)
+  // WEFAX by hand: Trim (ppm; kept across restarts in MMD.wefaxTrim, read in mmdSstvInit). Where a chart's own left edge is on its lines
+  // the worker finds by itself (wefaxWorker.js, wefaxAutoAlign)
   wefaxTrim: 0,
-  wefaxAlign: 0,
   status: { state: "idle", snr: -20, line: 0, lines: 0 },
   drawQueued: false,
   savedLoaded: { sstv: false, wefax: false }, // each mode's saved pictures put in its strip this window (mmdSstvLoadSaved)
@@ -56,11 +55,8 @@ function mmdSstvInit()
   // WEFAX's Trim as it was last set
   const trim = Number(GT.settings.MMD.wefaxTrim);
   SSTV.wefaxTrim = Number.isFinite(trim) ? Math.max(-WEFAX_TRIM_MAX, Math.min(WEFAX_TRIM_MAX, Math.round(trim / WEFAX_TRIM_STEP) * WEFAX_TRIM_STEP)) : 0;
-  // A click: on a WEFAX chart coming in, its left edge set there; else back to the newest
-  sstvPicture.addEventListener("click", (event) =>
-  {
-    if (!mmdWefaxAlignAt(event)) mmdSstvView(null);
-  });
+  // A click: back to the newest
+  sstvPicture.addEventListener("click", () => mmdSstvView(null));
   sstvPicture.addEventListener("contextmenu", (event) => mmdSstvMenu(event, mmdSstvShown()));
   window.addEventListener("resize", mmdSstvDraw);
 }
@@ -140,12 +136,6 @@ function mmdSstvMessage(kind, m)
     const pic = { id: m.id, kind, name, width: m.width, height: wefax ? 0 : m.height, canvas, rows: 0, complete: false, at: Date.now(), dial, shift, saved: null };
     // Auto-Tune: the chart tuned for has begun (mmdWefaxAuto.js)
     if (wefax) mmdWefaxAutoStarted();
-    // A new chart lined up by its own phasing: the last one's alignment let go
-    if (wefax && SSTV.wefaxAlign)
-    {
-      SSTV.wefaxAlign = 0;
-      mmdWefaxConfig({});
-    }
     SSTV.pictures.unshift(pic);
     if (SSTV.pictures.length > SSTV_KEEP) SSTV.pictures.length = SSTV_KEEP;
     if (SSTV.viewing && !SSTV.pictures.some((p) => p.id == SSTV.viewing)) SSTV.viewing = null;
@@ -262,9 +252,6 @@ function mmdSstvDraw()
       ctx.restore();
       SSTV.drawn = { x: bx, y: by, w: bw, h: bh, pic, rotate };
     }
-    // (Its tooltip says what a click does: WEFAX's lines up the chart coming in)
-    const tip = I18N(pic.kind == "wefax" ? "cwViewer.wefax.picture.hover" : "cwViewer.sstv.picture.hover");
-    if (sstvPicture.title != tip) sstvPicture.title = tip;
   });
 }
 
@@ -836,7 +823,7 @@ function mmdWefaxConfig(extra)
   const S = GT.settings.MMD;
   const worker = SSTV.workers.wefax;
   if (!worker) return;
-  worker.postMessage(Object.assign({ type: "config", lpm: S.wefaxLpm || "auto", ioc: S.wefaxIoc || "auto", trim: SSTV.wefaxTrim, align: SSTV.wefaxAlign }, extra));
+  worker.postMessage(Object.assign({ type: "config", lpm: S.wefaxLpm || "auto", ioc: S.wefaxIoc || "auto", trim: SSTV.wefaxTrim }, extra));
 }
 
 // Trim: the chart's slant (step: -1 or 1; 0 back to none), drawn again at once, and kept for the next start (MMD.wefaxTrim)
@@ -846,22 +833,6 @@ function mmdWefaxTrimStep(step)
   GT.settings.MMD.wefaxTrim = SSTV.wefaxTrim;
   cwWefaxTrimValue.textContent = (SSTV.wefaxTrim > 0 ? "+" : "") + SSTV.wefaxTrim;
   mmdWefaxConfig({});
-}
-
-// A click on the WEFAX chart coming in (the newest, shown): the chart's real left edge is there, so its lines are moved to start there
-// (what came already drawn again). True when it was one
-function mmdWefaxAlignAt(event)
-{
-  const d = SSTV.drawn;
-  if (DEC.mode != "wefax" || !d || !d.pic || d.pic != SSTV.live || SSTV.viewing) return false;
-  const ratio = window.devicePixelRatio || 1;
-  // Where across the chart's lines the click was, the chart's turning undone (90° right: its lines run down the screen)
-  const across = (event.offsetX * ratio - d.x) / d.w, down = (event.offsetY * ratio - d.y) / d.h;
-  const share = { 0: across, 90: down, 180: 1 - across, 270: 1 - down }[d.rotate || 0];
-  if (!(share >= 0 && share <= 1)) return false;
-  SSTV.wefaxAlign = (SSTV.wefaxAlign + share) % 1;
-  mmdWefaxConfig({});
-  return true;
 }
 
 // The second line's WEFAX menus, shown in its mode

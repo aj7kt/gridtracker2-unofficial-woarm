@@ -1665,7 +1665,6 @@
   "sstvTx.abort.label": "Afbreken",
   "sstvTx.tuneButton.hover": "Zendt een vaste toon van 1900 Hz op het Vermogen, hoogstens 30 s of tot opnieuw geklikt: stel daarmee de sturing en ALC van de radio in",
   "cwViewer.wefax.trim.hover": "Zet een scheve kaart recht: verstel hem een kant op tot de verticale lijnen van de kaart recht staan (het ontvangene wordt opnieuw getekend). Klik op de waarde om terug te zetten naar 0",
-  "cwViewer.wefax.picture.hover": "Klik op de echte linkerrand van de kaart om de binnenkomende kaart daar uit te lijnen. Klik rechts op een kaart om hem hier te zien. Rechtsklik op een kaart om hem op te slaan",
   "cwViewer.wefax.auto.label": "Automatisch Afstemmen",
   "cwViewer.wefax.auto.hover": "Stemt de radio af op de volgende kaart van elk station volgens de gepubliceerde schema's, de ene kaart na de andere. Met de hand afstemmen schakelt het uit",
   "cwViewer.wefax.auto.noRig": "Automatisch Afstemmen heeft Radiobesturing nodig (Instellingen, Algemeen)",

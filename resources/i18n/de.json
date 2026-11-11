@@ -1666,7 +1666,6 @@
 	"sstvTx.abort.label": "Abbrechen",
 	"sstvTx.tuneButton.hover": "Sendet einen gleichmäßigen 1900-Hz-Ton mit der Leistung, höchstens 30 s oder bis zum erneuten Klicken: danach Ansteuerung und ALC des Funkgeräts einstellen",
 	"cwViewer.wefax.trim.hover": "Richtet eine schräge Karte gerade: in eine Richtung verstellen, bis die senkrechten Linien der Karte gerade stehen (das Empfangene wird neu gezeichnet). Auf den Wert klicken, um ihn auf 0 zurückzusetzen",
-	"cwViewer.wefax.picture.hover": "Auf den echten linken Rand der Karte klicken, um die empfangene Karte dort auszurichten. Eine Karte rechts anklicken, um sie hier zu sehen. Rechtsklick auf eine Karte, um sie zu speichern",
 	"cwViewer.wefax.auto.label": "Auto-Abstimmung",
 	"cwViewer.wefax.auto.hover": "Stimmt das Funkgerät nach den veröffentlichten Sendeplänen auf die nächste Karte jeder Station ab, eine Karte nach der anderen. Abstimmen von Hand schaltet es aus",
 	"cwViewer.wefax.auto.noRig": "Auto-Abstimmung braucht die Funkgerätesteuerung (Einstellungen, Allgemein)",
