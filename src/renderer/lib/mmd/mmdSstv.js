@@ -668,14 +668,33 @@ function mmdSstvFolderOf(pic)
   return pic.kind == "wefax" ? window.opener.mmDecoderWefaxFolder() : window.opener.mmDecoderSstvFolder();
 }
 
+// Save: the dialog opens where a picture of its kind was last saved this way (MMD.saveAsDir, kept), else in its mode's folder (made
+// first, so the dialog never starts in a folder that isn't there); the folder chosen is kept for the next
 function mmdSstvSaveAs(pic)
 {
   const remote = window.require("@electron/remote");
+  const S = GT.settings.MMD;
+  if (!S.saveAsDir || typeof S.saveAsDir != "object") S.saveAsDir = {};
+  let dir = S.saveAsDir[pic.kind];
+  if (!dir || !fs.existsSync(dir))
+  {
+    dir = mmdSstvFolderOf(pic);
+    try
+    {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    catch (e)
+    {
+      dir = remote.app.getPath("pictures");
+    }
+  }
   const file = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
-    defaultPath: path.join(mmdSstvFolderOf(pic), mmdSstvFileName(pic)),
+    defaultPath: path.join(dir, mmdSstvFileName(pic)),
     filters: [{ name: "PNG", extensions: ["png"] }]
   });
-  if (file) mmdSstvSave(pic, file);
+  if (!file) return;
+  S.saveAsDir[pic.kind] = path.dirname(file);
+  mmdSstvSave(pic, file);
 }
 
 // Its name: the UTC time it started, its mode, and the frequency on the air (20261027-225115Z_Martin1_14230kHz.png)

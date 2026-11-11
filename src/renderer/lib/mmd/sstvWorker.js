@@ -49,9 +49,11 @@ const SSTV_SHIFT_MAX = 1000;
 const SSTV_TONE_TOL = 70;
 // The VIS code's: each tone within this of what it should be (Hz; its bits' 1100 and 1300 Hz still told apart), and its leader steady
 // (within that of its median) in this share of its readings. On the air (a satellite's FM, a fading HF signal) a 30 ms tone reads
-// rougher than a test signal, and the parity and a known mode's code still have to match
+// rougher than a test signal, and the parity and a known mode's code still have to match. While a picture comes in, a VIS code that would
+// end it must read as cleanly as SSTV_TONE_TOL and a leader steady in half its readings (a picture begun isn't given up easily)
 const SSTV_VIS_TOL = 100;
 const SSTV_VIS_STEADY = 0.35;
+const SSTV_VIS_STEADY_LIVE = 0.5;
 // The line rate is measured within this share of what the mode says (sound cards are rarely 0.2% off)
 const SSTV_RATE_TOL = 0.006;
 // A picture is read on to its last line whatever the signal does (a faded signal that comes back still gives the rest of it), and
@@ -311,10 +313,10 @@ function sstvReadAll()
 const SSTV_MS = SSTV_EST_RATE / 1000;
 
 // The readings (over all a VIS code uses) from a to b (reading indexes; their middle, the edges left out; one a millisecond): their
-// median, and the share of them within SSTV_VIS_TOL of it. Noise read as some other frequency anywhere in the passband moves neither
+// median, and the share of them within tol of it. Noise read as some other frequency anywhere in the passband moves neither
 const SSTV_MEDIAN = new Float32Array(400);
 
-function sstvMedian(a, b)
+function sstvMedian(a, b, tol = SSTV_VIS_TOL)
 {
   const fmask = S.wide.length - 1;
   const from = Math.round(a + (b - a) * 0.15), to = Math.round(b - (b - a) * 0.15);
@@ -324,32 +326,34 @@ function sstvMedian(a, b)
   const values = SSTV_MEDIAN.subarray(0, n).sort();
   const median = values[n >> 1];
   let near = 0;
-  for (let i = 0; i < n; i++) if (Math.abs(values[i] - median) < SSTV_VIS_TOL) near++;
+  for (let i = 0; i < n; i++) if (Math.abs(values[i] - median) < tol) near++;
   return [median, near / n];
 }
 
-// A VIS code starting (its start bit) at reading t: { code, shift, error } or null. Its leader must be most of its readings
+// A VIS code starting (its start bit) at reading t: { code, shift, error } or null. Its leader must be most of its readings. While a
+// picture comes in, held to the stricter tolerances (one that would end it must be clean)
 function sstvVisAt(t)
 {
   const ms = SSTV_MS;
-  const [leader, steady] = sstvMedian(t - 250 * ms, t - 30 * ms);
+  const tol = S.pic ? SSTV_TONE_TOL : SSTV_VIS_TOL;
+  const [leader, steady] = sstvMedian(t - 250 * ms, t - 30 * ms, tol);
   const shift = leader - SSTV_LEADER;
-  if (Math.abs(shift) > SSTV_SHIFT_MAX || steady < SSTV_VIS_STEADY) return null;
+  if (Math.abs(shift) > SSTV_SHIFT_MAX || steady < (S.pic ? SSTV_VIS_STEADY_LIVE : SSTV_VIS_STEADY)) return null;
   let error = 0;
   const tone = (from, to, hz) =>
   {
-    const [m] = sstvMedian(t + from * ms, t + to * ms);
+    const [m] = sstvMedian(t + from * ms, t + to * ms, tol);
     const e = Math.abs(m - shift - hz);
     error += e;
-    return e < SSTV_VIS_TOL;
+    return e < tol;
   };
   if (!tone(0, 30, SSTV_SYNC) || !tone(270, 300, SSTV_SYNC)) return null;
   let code = 0, ones = 0;
   for (let bit = 0; bit < 8; bit++)
   {
-    const [m] = sstvMedian(t + (30 + 30 * bit) * ms, t + (60 + 30 * bit) * ms);
+    const [m] = sstvMedian(t + (30 + 30 * bit) * ms, t + (60 + 30 * bit) * ms, tol);
     const one = Math.abs(m - shift - 1100), zero = Math.abs(m - shift - 1300);
-    if (Math.min(one, zero) >= SSTV_VIS_TOL) return null;
+    if (Math.min(one, zero) >= tol) return null;
     error += Math.min(one, zero);
     if (one < zero)
     {

@@ -70,9 +70,10 @@ const WEFAX_TONE_SHIFT = 450;
 const WEFAX_TONE_AGREE = 100;
 // A start tone: in 6 of the newest 8 blocks; the stop tone: 4 of the newest 6. A block with more than this share of its frequencies read
 // beyond WEFAX_CLIP is noise (noise alone through the low pass puts about 0.22 there, a chart at 0 dB signal to noise 0.15 at most);
-// this many seconds of them end a chart
+// this many seconds of them in a row end a chart (a chart takes 10 minutes or more: one begun is waited on through a long fade, and
+// the noisy rows at its end are left out when it does end)
 const WEFAX_NOISE_SHARE = 0.17;
-const WEFAX_LOST = 30;
+const WEFAX_LOST = 120;
 // The phasing lines: their white pulse's share of a line, the bins a line is folded into, how clear the pulse must stand out of them
 // (0 to 1, black to white), the seconds looked at before deciding, and how long they are looked for after a start tone (s) or a start now
 const WEFAX_PULSE = 0.05;
@@ -81,6 +82,12 @@ const WEFAX_PHASE_SCORE = 0.35;
 const WEFAX_SEARCH = 4;
 const WEFAX_SEARCH_TONE = 15;
 const WEFAX_SEARCH_NOW = 6;
+// A chart begun from its phasing lines alone, while idle (its start tone too garbled on the air to be heard: a loud NMC one read 0.03 to
+// 0.1 at 300 Hz, its phasing after it clean): the newest this many seconds looked at every second, and taken for phasing when at least
+// this share of the lines in them (and this many) are a phasing line's, black with a clear white pulse where the fold put it
+const WEFAX_IDLE_SPAN = 6;
+const WEFAX_IDLE_SHARE = 0.7;
+const WEFAX_IDLE_LINES = 6;
 // The line rate is measured within this share of what it should be
 const WEFAX_RATE_TOL = 0.001;
 // The most lines a chart has (25 minutes at 120 lines a minute); the frequencies kept (a ring, 23 minutes at 6000 a second)
@@ -111,8 +118,13 @@ const WEFAX_TRACK_ROWS_MOST = 6;
 // steps it is); moved only when that is more than WEFAX_TRACK_HOLD samples from where it is, so a clean chart is read just as it would
 // be untracked
 const WEFAX_TRACK_FIT = 60;
-const WEFAX_TRACK_PPM = 2500;
+const WEFAX_TRACK_PPM = 300;
 const WEFAX_TRACK_HOLD = 0.4;
+// A step (not a line-start marker's) at most this share of a line: a sound card's dropped or doubled block of samples moves the chart a
+// few tens of pixels; a chart with the same thing repeated across it (NMC's sea state charts: rows of wave arrows every few tens of
+// pixels) matches as well at many shifts, and took false steps of hundreds of pixels, and slopes of hundreds of ppm, with 2500 ppm and
+// no limit (the phasing lines measure the line rate well; untracked the same chart stayed straight)
+const WEFAX_TRACK_STEP_MAX = 0.04;
 // No row measured in this many: a new reference begun from the rows coming in (the chart has changed too much to match the old one)
 const WEFAX_TRACK_STALE = 40;
 // The line-start marker some stations send (KVM70 Honolulu: a solid black run about 3.3% of each line, the chart beginning after it):
@@ -164,6 +176,8 @@ const WF = {
   searchFrom: 0,  // phasing looked for from here (a frequency's index)
   searchAt: 0,
   manual: false,  // begun by start now
+  byPhasing: false, // begun by phasing lines seen while idle (no start tone heard): back to idle if no chart follows them
+  idleAt: 0,      // when phasing was last looked for while idle (a frequency's index)
   model: null,    // the line rate: { a (where line 0 starts), b (a line, in samples), nominal, points, measured, hits, misses, firstMiss }
   pic: null,      // the chart being received
   noisyRun: 0,
@@ -235,6 +249,8 @@ function wefaxReset()
   WF.state = "idle";
   WF.model = null;
   WF.manual = false;
+  WF.byPhasing = false;
+  WF.idleAt = 0;
   WF.toneHeard = false;
   WF.offset = 0;
   WF.noisyRun = 0;
@@ -453,6 +469,7 @@ function wefaxTones()
       WF.tone = hz;
       WF.toneHeard = true;
       WF.manual = false;
+      WF.byPhasing = false;
       WF.toneMeans = run.map((b) => b.mean);
       WF.toneFrom = run[0].start;
       WF.toneMiss = 0;
@@ -487,19 +504,21 @@ function wefaxIdle()
   WF.state = "idle";
   WF.model = null;
   WF.manual = false;
+  WF.byPhasing = false;
   WF.blocks = [];
   WF.noisyRun = 0;
 }
 
 // ---- The phasing lines
 
-// Phasing looked for from index from (manual: begun by start now)
-function wefaxSearch(from, manual)
+// Phasing looked for from index from (manual: begun by start now; byPhasing: phasing lines seen while idle)
+function wefaxSearch(from, manual, byPhasing = false)
 {
   WF.state = "search";
   WF.searchFrom = from;
   WF.searchAt = 0;
   WF.manual = manual;
+  WF.byPhasing = byPhasing;
   WF.model = null;
   WF.noisyRun = 0;
 }
@@ -557,6 +576,7 @@ function wefaxPhaseSearch(from, to)
 function wefaxLinesIn()
 {
   const second = WF.work;
+  if (WF.state == "idle") wefaxIdlePhasing();
   if (WF.state == "search")
   {
     const span = WF.n - WF.searchFrom;
@@ -572,10 +592,35 @@ function wefaxLinesIn()
       WF.model = { a: found.edge, b: period, nominal: period, points: [], measured: 0, hits: 0, misses: 0, firstMiss: 0, phasing: true };
       WF.state = "track";
     }
-    else if (span >= (WF.manual ? WEFAX_SEARCH_NOW : WEFAX_SEARCH_TONE) * second) wefaxFreeRun(WF.searchFrom);
+    // None found in time: run on at the line rate chosen (begun by phasing seen while idle: it wasn't, back to listening)
+    else if (span >= (WF.manual ? WEFAX_SEARCH_NOW : WEFAX_SEARCH_TONE) * second)
+    {
+      if (WF.byPhasing) wefaxIdle();
+      else wefaxFreeRun(WF.searchFrom);
+    }
   }
   if (WF.state == "track") wefaxTrack();
   if (WF.state == "image") wefaxRender();
+}
+
+// Idle: once a second, the newest WEFAX_IDLE_SPAN seconds looked at for phasing lines (a chart whose start tone wasn't heard). Found
+// (the fold's pulse, and most of the lines in them a phasing line's on their own), the chart is begun from them as after a start tone
+function wefaxIdlePhasing()
+{
+  const second = WF.work, span = WEFAX_IDLE_SPAN * second;
+  if (WF.n < span + second || WF.n - WF.idleAt < second) return;
+  WF.idleAt = WF.n;
+  const from = WF.n - span;
+  const found = wefaxPhaseSearch(from, WF.n);
+  if (!found) return;
+  const period = (60 / found.lpm) * second;
+  const m = { a: found.edge, b: period, points: [] };
+  let lines = 0, hits = 0;
+  for (let y = 0; found.edge + period * (y + 1) + 0.05 * period <= WF.n; y++, lines++) if (wefaxEdge(m, y)[2]) hits++;
+  if (lines < WEFAX_IDLE_LINES || hits < WEFAX_IDLE_SHARE * lines) return;
+  WF.ioc = WF.config.ioc == "auto" ? 576 : WF.config.ioc;
+  WF.toneHeard = false;
+  wefaxSearch(from, false, true);
 }
 
 // The receiver's tuning from phasing lines (a pulse's leading edge at edge, a line period long): the pulses' middles white, the lines'
@@ -627,6 +672,12 @@ function wefaxTrack()
     }
     if (m.misses >= 8 && m.hits < 3)
     {
+      // Begun by phasing seen while idle, and its lines don't hold up: no chart, back to listening
+      if (WF.byPhasing)
+      {
+        wefaxIdle();
+        return;
+      }
       m.phasing = false;
       wefaxPicture(m.firstMiss, false);
       return;
@@ -1235,6 +1286,8 @@ function wefaxTrackMaybeStep(pic, r, off, weight, expect, line, next)
   const T = pic.track, px = line / pic.width, most = WEFAX_TRACK_PPM * 1e-6 * line;
   const wrap = (v) => v - line * Math.round(v / line);
   const pending = T.pending;
+  // Too far for a sound card's step (a line-start marker's may be any size): nothing
+  if (weight < WEFAX_TRACK_MARK_WEIGHT && Math.abs(wrap(off)) > WEFAX_TRACK_STEP_MAX * line) return next();
   // (near half a line either way, all taken the same way as the first)
   if (pending.length) off = pending[0].off + wrap(off - pending[0].off);
   pending.push({ r, off, z: weight });
