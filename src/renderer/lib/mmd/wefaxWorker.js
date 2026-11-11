@@ -55,10 +55,19 @@ const WEFAX_START_TONES = { 576: 300, 288: 675 };
 const WEFAX_STOP_TONE = 450;
 const WEFAX_KEYED = [300, 675, 450];
 // The tones are looked for in blocks of this many seconds: one is heard in a block when its keying rate holds this share of the
-// frequency's variance, with the swing black to white gives it (a square wave's 4 / pi of 400 Hz) within this share
+// frequency's variance, its swing between these shares of what black to white gives it (a square wave's 4 / pi of 400 Hz), and the
+// block's mean within WEFAX_TONE_SHIFT of the center. On the air a tone reads far less clean than that: black and white keyed every
+// 1.7 ms overlap in the low pass, the stronger of the two (as the signal fades) pulling the frequency read its way, so its swing reads
+// a third to a half of the full one and its mean wanders hundreds of Hz (a loud NMC start tone: share 0.2 to 0.35, swing 150 to 300 Hz,
+// mean 1540 to 2150 Hz). A chart's own lines and phasing never put more than 0.03 at any keying rate
 const WEFAX_BLOCK = 0.25;
-const WEFAX_TONE_SHARE = 0.4;
-const WEFAX_TONE_SWING = 0.45;
+const WEFAX_TONE_SHARE = 0.15;
+const WEFAX_TONE_AMP_MIN = 0.24;
+const WEFAX_TONE_AMP_MAX = 1.45;
+const WEFAX_TONE_SHIFT = 450;
+// The start tone's means give the receiver's tuning only when they agree within this (Hz, their interquartile range); otherwise the
+// phasing lines give it (wefaxPhasingTuning)
+const WEFAX_TONE_AGREE = 100;
 // A start tone: in 6 of the newest 8 blocks; the stop tone: 4 of the newest 6. A block with more than this share of its frequencies read
 // beyond WEFAX_CLIP is noise (noise alone through the low pass puts about 0.22 there, a chart at 0 dB signal to noise 0.15 at most);
 // this many seconds of them end a chart
@@ -391,13 +400,13 @@ function wefaxBlockAdd(hz, wild)
     const re = b.re[k] - mean * t.gc, im = b.im[k] - mean * t.gs;
     const amp = (2 * Math.sqrt(re * re + im * im)) / N;
     const share = (amp * amp) / 2 / variance;
-    if (share > best && Math.abs(amp - swing) < swing * WEFAX_TONE_SWING)
+    if (share > best && amp >= swing * WEFAX_TONE_AMP_MIN && amp <= swing * WEFAX_TONE_AMP_MAX)
     {
       best = share;
       kind = WEFAX_KEYED[k];
     }
   }
-  if (Math.abs(mean - WEFAX_CENTER) > WEFAX_SHIFT_MAX + 50) kind = 0;
+  if (Math.abs(mean - WEFAX_CENTER) > WEFAX_TONE_SHIFT) kind = 0;
   WF.blocks.push({ kind, mean, start: b.start, wild: b.wild / N, noisy: b.wild > N * WEFAX_NOISE_SHARE });
   if (WF.blocks.length > 16) WF.blocks.shift();
   WF.block = wefaxNewBlock(WF.n);
@@ -427,9 +436,10 @@ function wefaxTones()
     }
     if (WF.toneMiss++ == 0) WF.toneEnd = last.start;
     if (WF.toneMiss < 2) return;
-    // The start tone over: its mean is the center
+    // The start tone over: its mean is the center, when its blocks agree on it (else none taken, the phasing lines give it)
     const means = WF.toneMeans.slice().sort((a, b) => a - b);
-    WF.offset = Math.max(-WEFAX_SHIFT_MAX, Math.min(WEFAX_SHIFT_MAX, means[means.length >> 1] - WEFAX_CENTER));
+    const spread = means[Math.floor(means.length * 0.75)] - means[Math.floor(means.length * 0.25)];
+    WF.offset = spread <= WEFAX_TONE_AGREE ? Math.max(-WEFAX_SHIFT_MAX, Math.min(WEFAX_SHIFT_MAX, means[means.length >> 1] - WEFAX_CENTER)) : 0;
     wefaxSearch(WF.toneEnd + WEFAX_BLOCK * second, false);
     return;
   }
@@ -557,7 +567,8 @@ function wefaxLinesIn()
     {
       WF.lpm = found.lpm;
       const period = (60 / found.lpm) * second;
-      if (!WF.toneHeard) wefaxPhasingTuning(found.edge, period);
+      // The receiver's tuning from the phasing lines' black and white (after a start tone too: its own mean is seldom clean on the air)
+      wefaxPhasingTuning(found.edge, period);
       WF.model = { a: found.edge, b: period, nominal: period, points: [], measured: 0, hits: 0, misses: 0, firstMiss: 0, phasing: true };
       WF.state = "track";
     }
