@@ -1983,5 +1983,6 @@
   "birdWatch.satellites.kind.fm.hover": "Um repetidor FM: trabalhe-o com um portátil FM",
   "birdWatch.satellites.kind.linear.hover": "Um transponder linear: SSB e CW, com um rádio full duplex",
   "birdWatch.satellites.kind.digital.hover": "Digital: packet, APRS ou outro modo de dados",
-  "birdWatch.satellites.kind.sstv.hover": "Envia imagens SSTV: receba-as no decodificador multimodo"
+  "birdWatch.satellites.kind.sstv.hover": "Envia imagens SSTV: receba-as no decodificador multimodo",
+  "gt.button.radios.hover": "Abrir as configurações na aba Rádios"
 }

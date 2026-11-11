@@ -5821,6 +5821,13 @@ button:focus {
   margin: 3px 0 3px 6px;
 }
 
+/* A rig's VFO and its second VFO, next to each other in the list: side by side, the same height (rig.js, rigSettingsRender) */
+.mapGroup .rigVfoPair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
 /* The title's text, the box and its label centered on one line */
 .mapGroup .rigVfoConnect {
   display: inline-flex;

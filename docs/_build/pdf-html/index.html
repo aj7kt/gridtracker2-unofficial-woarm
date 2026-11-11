@@ -892,7 +892,12 @@
 <td><p>Opens the <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while <strong>Multi-Mode Decoder</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/radiosButton.png"><img alt="" src="_images/radiosButton.png" style="width: 32px;" /></a></p></td>
+<td><p>Radios</p></td>
+<td><p>Opens Settings on the <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#radios-tab"><span class="std std-ref">Radios</span></a> tab; click again to close it. Shown while <strong>Rig Control</strong>, <strong>Rotor Control</strong> or <strong>Network Audio</strong> is on.</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Cast</p></td>
 <td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on, and can be clicked once a Cast device has been found. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
 <td><p></p></td>
@@ -942,7 +947,7 @@
 <p>Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. <strong>Clear</strong>, in the list’s header, empties the list.</p>
 <p>The Event Viewer opens over the map, like the Settings panel; click its red <strong>X</strong> or press <strong>Esc</strong> to close it. Drag it by its title bar to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.</p>
 <p>Right-click the Event Viewer button to choose where it shows: <strong>View In Main</strong> (the panel over the map) or <strong>View As Window</strong> (a window of its own, which you can put anywhere on your screen).</p>
-<p>With <strong>Open Event Viewer On Error</strong> on in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#general-tab"><span class="std std-ref">Settings → General</span></a>, an error, such as a log upload that failed, opens the Event Viewer by itself.</p>
+<p>With <strong>Open Event Viewer On Error</strong> on in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#operational"><span class="std std-ref">Settings → Features → Operational</span></a>, an error, such as a log upload that failed, opens the Event Viewer by itself.</p>
 </section>
 </section>
 <span id="document-GridTracker-Overview/Settings-Sub-Menus"></span><section id="gridtracker2-settings">
@@ -1007,7 +1012,6 @@
 <li><p><strong>Window Theme:</strong> Dark, Light or System.</p></li>
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
 <li><p><strong>Control Panel On Left Side:</strong> puts the side panel on the left of the window and the map on the right.</p></li>
-<li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
 <li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. While it’s on, the video’s address is shown beside it; click it to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), as it’s standard HLS video.</p></li>
 <li><p><strong>Port:</strong> the port the map’s video is served on (21575 unless changed). It can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; with <strong>Enable Casting</strong> off it’s grayed out.</p></li>
 <li><p><strong>Software Frame Rate</strong> and <strong>Software Resolution:</strong> shown only on a computer without a hardware video encoder, where the map’s video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
@@ -1044,6 +1048,7 @@
 </ul>
 </li>
 <li><p><strong>Clear WSJT-X / JTDX On CQ:</strong> when you start calling CQ, the DX Call and DX Grid left over from your last QSO are cleared in WSJT-X or JTDX.</p></li>
+<li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
 </ul>
 </section>
 <section id="service">
@@ -1060,7 +1065,7 @@
 </section>
 <section id="radios-tab">
 <h3>Radios Tab<a class="headerlink" href="#radios-tab" title="Link to this heading">¶</a></h3>
-<p>This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on. It has a box for each one that is on:</p>
+<p>This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on, and so does the Radios button in the button panel, which opens Settings straight on this tab. It has a box for each one that is on:</p>
 <ul class="simple">
 <li><p><strong>Rig Control:</strong> the VFOs, see <a class="reference internal" href="#document-Rig-and-Rotor-Control#rig-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
 <li><p><strong>Rotor Control:</strong> the rotator’s connection and Follow Satellite, see <a class="reference internal" href="#document-Rig-and-Rotor-Control#rotor-control"><span class="std std-ref">Rotor Control</span></a>.</p></li>
@@ -2407,6 +2412,8 @@
 <li><p><strong>Second VFO Of VFO-A</strong> (or another VFO): the second VFO (VFO B, or Sub) of a rig set up in another box. It has no connection of its own; it uses that rig’s. Each rig can have one second VFO.</p></li>
 </ul>
 <p>A rig whose second VFO can be read and set shows <strong>(2 VFOs)</strong> in its status. If it has none, the second VFO’s status says “The rig has no second VFO that can be read and set”.</p>
+<p>When a rig is first found to have a second VFO and none is set up for it, GridTracker2 adds one for you, right after the rig’s own VFO. Its <strong>Connect</strong> is unticked, and its <strong>Satellites</strong> is set to <strong>All Frequencies TX</strong>, for satellite uplinks. Tick <strong>Connect</strong> to use it. If you remove it, it isn’t added again.</p>
+<p>A rig’s VFO and its second VFO show side by side while they are next to each other in the list. If the window is too narrow, the second one goes under the first.</p>
 <p>The Multi-Mode Decoder and BirdWatch each pick the VFOs they use, in their own settings. If you remove a VFO, what used it uses <strong>None</strong> until you pick another one.</p>
 </section>
 <section id="connection-types">
@@ -2473,10 +2480,10 @@
 <p>While <strong>Connect</strong> is ticked, the VFO’s connection settings (<strong>Rig</strong>, <strong>Protocol</strong>, port, <strong>Baud</strong>, <strong>DTR</strong>, <strong>RTS</strong>, <strong>CI-V Address</strong>, <strong>Host</strong>, <strong>TCP Port</strong>, <strong>Force VFO Mode</strong> and <strong>Offset Hz</strong>) are grayed out and can’t be changed, so nothing half set reaches your rig. Untick <strong>Connect</strong> to disconnect the rig and change them. A second VFO’s <strong>Connect</strong> only works while its rig’s <strong>Connect</strong> is ticked too.</p>
 <p><strong>Status</strong> shows how the VFO is doing:</p>
 <ul class="simple">
-<li><p><strong>Off:</strong> Rig Control or the VFO’s <strong>Connect</strong> is off.</p></li>
+<li><p><strong>Off:</strong> Rig Control or the VFO’s <strong>Connect</strong> is off. A second VFO that is off still shows its frequency while its rig is connected and reads it (not with rigctld). GridTracker2 only reads it there; it never tunes a VFO that is off.</p></li>
 <li><p><strong>No port chosen:</strong> pick one with <strong>Choose Port</strong>.</p></li>
 <li><p><strong>Connecting</strong> (yellow).</p></li>
-<li><p><strong>Connected</strong> (green), with the rig’s name and its frequency and mode, e.g. “Connected (2 VFOs) IC-7300 14.074.000 MHz USB”. The second VFO’s frequency and mode are shown in brackets while its VFO is in use.</p></li>
+<li><p><strong>Connected</strong> (green), with the rig’s name and its frequency and mode, e.g. “Connected (2 VFOs) IC-7300 14.074.000 MHz USB”. The second VFO’s frequency and mode are shown in its own box.</p></li>
 <li><p><strong>No Answer</strong> (orange): the connection is open, but the rig doesn’t answer, or it stopped answering 5 seconds ago (switched off behind its CI-V interface, for example). Its last frequency isn’t shown or used until it answers again. Check the baud rate, and that the rig’s CI-V or CAT port is turned on. A Yaesu may need RTS High (see <a class="reference internal" href="#other-vfo-settings">Other VFO Settings</a>).</p></li>
 <li><p><strong>Error</strong> (red): the connection failed. A port that can’t be opened is explained in full under <strong>Choose Port</strong>.</p></li>
 </ul>
@@ -4689,7 +4696,7 @@ Linux users, please include the output of: uname -r)
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2026, GridTracker.org.
-      Last updated on Nov 10, 2026.
+      Last updated on Nov 11, 2026.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>

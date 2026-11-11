@@ -1984,5 +1984,6 @@
 	"birdWatch.satellites.kind.fm.hover": "Ein FM-Repeater: mit einem FM-Handfunkgerät arbeiten",
 	"birdWatch.satellites.kind.linear.hover": "Ein Linear-Transponder: SSB und CW, mit einem vollduplexfähigen Funkgerät",
 	"birdWatch.satellites.kind.digital.hover": "Digital: Packet, APRS oder eine andere Datenbetriebsart",
-	"birdWatch.satellites.kind.sstv.hover": "Sendet SSTV-Bilder: im Multi-Mode-Decoder empfangen"
+	"birdWatch.satellites.kind.sstv.hover": "Sendet SSTV-Bilder: im Multi-Mode-Decoder empfangen",
+	"gt.button.radios.hover": "Einstellungen auf dem Tab Funkgeräte öffnen"
 }

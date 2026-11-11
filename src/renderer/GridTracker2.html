@@ -823,6 +823,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="mmDecoderButton" onclick="toggleMmDecoder();" oncontextmenu="toggleMmDecoder(false);" class="iconButton" style="display:none;" title="Toggle Multi-Mode Decoder" data-i18n="gt.button.cwViewer.hover">
           <img id="mmDecoderImg" src="img/mm-decoder.png" class="buttonImg" />
         </div>
+        <!-- Shown while the Radios tab is there, Rig Control, Rotor Control or Network Audio on (panel.js, settingsRadiosTabRender): Settings on that tab -->
+        <div id="radiosButton" onclick="radiosButtonClick();" class="iconButton" style="display:none;" title="Open Settings on the Radios tab" data-i18n="gt.button.radios.hover">
+          <img src="img/radios.png" class="buttonImg" />
+        </div>
         <!-- Shown while Settings -> General -> Display -> Enable Casting is on (services/mapCast.js): a right click lists the devices -->
         <div id="castButton" onclick="mapCastButtonClick();" oncontextmenu="mapCastButtonMenu(event);" class="iconButton" style="display:none;" title="Cast the map to a TV (right-click: pick the device)" data-i18n="gt.button.cast.hover">
           <img id="castImg" src="img/cast.png" class="buttonImg" style="filter: grayscale(1);" />
@@ -1209,10 +1213,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.general.MapOnRightSide.label" for="mapRightValue">Control Panel On Left Side</label></td>
               <td><input type="checkbox" id="mapRightValue" onchange="changeMapRight(this);" /></td>
             </tr>
-            <tr>
-              <td class="mapRowLabel"><label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td>
-              <td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /></td>
-            </tr>
             <!-- The tooltip on the row, so it shows over the label too (mapCast.js mapCastRender: why it can't be turned on, without a hardware encoder) -->
             <tr id="castEnableRow" data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast">
               <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting</label></td>
@@ -1282,6 +1282,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr id="includeExceptionsRow"><td class="mapIndent"><input type="checkbox" id="includeExceptions" onclick="changeIncludeExceptions()" /> <label data-i18n="settings.Features.IncludeExceptions" for="includeExceptions">... Include Exceptions</label></td></tr>
               <tr id="includeCustomAlertsRow"><td class="mapIndent"><input type="checkbox" id="includeCustomAlerts" onclick="changeIncludeCustomAlerts()" /> <label data-i18n="settings.Features.IncludeCustomAlerts" for="includeCustomAlerts">... Include Custom Alerts</label></td></tr>
               <tr><td><input type="checkbox" id="clearOnCQ" onclick="changeClearOnCQ();" /> <label data-i18n="settings.features.ClearOnCQ.label" for="clearOnCQ">Clear on CQ</label></td></tr>
+              <tr><td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /> <label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td></tr>
             </table>
           </div>
           <div class="mapGroup">

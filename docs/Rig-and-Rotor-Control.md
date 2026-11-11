@@ -38,6 +38,10 @@ In each box's title line:
 
 A rig whose second VFO can be read and set shows **(2 VFOs)** in its status. If it has none, the second VFO's status says "The rig has no second VFO that can be read and set".
 
+When a rig is first found to have a second VFO and none is set up for it, GridTracker2 adds one for you, right after the rig's own VFO. Its **Connect** is unticked, and its **Satellites** is set to **All Frequencies TX**, for satellite uplinks. Tick **Connect** to use it. If you remove it, it isn't added again.
+
+A rig's VFO and its second VFO show side by side while they are next to each other in the list. If the window is too narrow, the second one goes under the first.
+
 The Multi-Mode Decoder and BirdWatch each pick the VFOs they use, in their own settings. If you remove a VFO, what used it uses **None** until you pick another one.
 
 ### Connection Types
@@ -121,10 +125,10 @@ While **Connect** is ticked, the VFO's connection settings (**Rig**, **Protocol*
 
 **Status** shows how the VFO is doing:
 
-* **Off:** Rig Control or the VFO's **Connect** is off.
+* **Off:** Rig Control or the VFO's **Connect** is off. A second VFO that is off still shows its frequency while its rig is connected and reads it (not with rigctld). GridTracker2 only reads it there; it never tunes a VFO that is off.
 * **No port chosen:** pick one with **Choose Port**.
 * **Connecting** (yellow).
-* **Connected** (green), with the rig's name and its frequency and mode, e.g. "Connected (2 VFOs) IC-7300 14.074.000 MHz USB". The second VFO's frequency and mode are shown in brackets while its VFO is in use.
+* **Connected** (green), with the rig's name and its frequency and mode, e.g. "Connected (2 VFOs) IC-7300 14.074.000 MHz USB". The second VFO's frequency and mode are shown in its own box.
 * **No Answer** (orange): the connection is open, but the rig doesn't answer, or it stopped answering 5 seconds ago (switched off behind its CI-V interface, for example). Its last frequency isn't shown or used until it answers again. Check the baud rate, and that the rig's CI-V or CAT port is turned on. A Yaesu may need RTS High (see [Other VFO Settings](#other-vfo-settings)).
 * **Error** (red): the connection failed. A port that can't be opened is explained in full under **Choose Port**.
 

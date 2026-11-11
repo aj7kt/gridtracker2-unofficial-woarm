@@ -58,7 +58,6 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
 * **Window Theme:** Dark, Light or System.
 * **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
 * **Control Panel On Left Side:** puts the side panel on the left of the window and the map on the right.
-* **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
 * **Enable Casting:** adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See [Casting the Map](Control-Panel.md#casting-the-map). While it's on, the video's address is shown beside it; click it to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), as it's standard HLS video.
 * **Port:** the port the map's video is served on (21575 unless changed). It can be changed while **Enable Casting** is on and nothing is being cast; with **Enable Casting** off it's grayed out.
 * **Software Frame Rate** and **Software Resolution:** shown only on a computer without a hardware video encoder, where the map's video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See [Casting the Map](Control-Panel.md#casting-the-map).
@@ -87,6 +86,7 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
   * **... include Exceptions** also remembers the Exceptions for each band and mode.
   * **... include Custom Alerts** also remembers the Custom Alerts for each band and mode.
 * **Clear WSJT-X / JTDX On CQ:** when you start calling CQ, the DX Call and DX Grid left over from your last QSO are cleared in WSJT-X or JTDX.
+* **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
 
 ### Service
 
@@ -100,7 +100,7 @@ Rotor Control, Rig Control and Network Audio are set up in the [Radios](#radios-
 
 ## Radios Tab
 
-This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on. It has a box for each one that is on:
+This tab, to the right of Features, appears while Rig Control, Rotor Control or Network Audio is turned on, and so does the Radios button in the button panel, which opens Settings straight on this tab. It has a box for each one that is on:
 
 * **Rig Control:** the VFOs, see [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
 * **Rotor Control:** the rotator's connection and Follow Satellite, see [Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).

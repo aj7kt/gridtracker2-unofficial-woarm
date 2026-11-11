@@ -1983,5 +1983,6 @@
   "birdWatch.satellites.kind.fm.hover": "Een FM-repeater: werk hem met een FM-portofoon",
   "birdWatch.satellites.kind.linear.hover": "Een lineaire transponder: SSB en CW, met een full-duplex set",
   "birdWatch.satellites.kind.digital.hover": "Digitaal: packet, APRS of een andere datamode",
-  "birdWatch.satellites.kind.sstv.hover": "Zendt SSTV-beelden: ontvang ze in de multimode-decoder"
+  "birdWatch.satellites.kind.sstv.hover": "Zendt SSTV-beelden: ontvang ze in de multimode-decoder",
+  "gt.button.radios.hover": "Instellingen openen op het tabblad Radio's"
 }

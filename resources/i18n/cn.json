@@ -1984,5 +1984,6 @@
   "birdWatch.satellites.kind.fm.hover": "FM中继：可用FM手持机通联",
   "birdWatch.satellites.kind.linear.hover": "线性转发器：SSB和CW，需全双工电台",
   "birdWatch.satellites.kind.digital.hover": "数字：分组、APRS或其他数据模式",
-  "birdWatch.satellites.kind.sstv.hover": "发送SSTV图像：可在多模式解码器中接收"
+  "birdWatch.satellites.kind.sstv.hover": "发送SSTV图像：可在多模式解码器中接收",
+  "gt.button.radios.hover": "打开设置的“电台”选项卡"
 }

@@ -1983,5 +1983,6 @@
   "birdWatch.satellites.kind.fm.hover": "Przemiennik FM: pracuj z nim ręczniakiem FM",
   "birdWatch.satellites.kind.linear.hover": "Transponder liniowy: SSB i CW, z transceiverem full duplex",
   "birdWatch.satellites.kind.digital.hover": "Cyfrowe: packet, APRS lub inna emisja cyfrowa",
-  "birdWatch.satellites.kind.sstv.hover": "Nadaje obrazy SSTV: odbieraj je w dekoderze wielomodowym"
+  "birdWatch.satellites.kind.sstv.hover": "Nadaje obrazy SSTV: odbieraj je w dekoderze wielomodowym",
+  "gt.button.radios.hover": "Otwórz ustawienia na karcie Radiostacje"
 }

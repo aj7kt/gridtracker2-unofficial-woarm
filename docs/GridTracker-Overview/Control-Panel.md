@@ -139,6 +139,7 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/eventsButton.png){width=32px} | Event Viewer | Shows the [Event Viewer](#event-viewer). Right-click to choose whether it shows over the map or in a window of its own. | |
 | ![](../img/buttons/birdWatchButton.png){width=32px} | Toggle Satellite Tracking | Turns BirdWatch's satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while **BirdWatch** is on. See [BirdWatch](../BirdWatch.md). | Ctrl+F12 |
 | ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while **Multi-Mode Decoder** is on. | |
+| ![](../img/buttons/radiosButton.png){width=32px} | Radios | Opens Settings on the [Radios](Settings-Sub-Menus.md#radios-tab) tab; click again to close it. Shown while **Rig Control**, **Rotor Control** or **Network Audio** is on. | |
 | ![](../img/buttons/castButton.png){width=32px} | Cast | Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while **Enable Casting** is on, and can be clicked once a Cast device has been found. See [Casting the Map](#casting-the-map). | |
 
 The log download buttons (PSK, QRZ.com, LoTW, ClubLog and N3FJP) appear when you tick their **Menu Button** in [Settings → Logging](Settings-Sub-Menus.md#logging-tab). Online buttons are hidden in Offline Mode.
@@ -189,4 +190,4 @@ The Event Viewer opens over the map, like the Settings panel; click its red **X*
 
 Right-click the Event Viewer button to choose where it shows: **View In Main** (the panel over the map) or **View As Window** (a window of its own, which you can put anywhere on your screen).
 
-With **Open Event Viewer On Error** on in [Settings → General](Settings-Sub-Menus.md#general-tab), an error, such as a log upload that failed, opens the Event Viewer by itself.
+With **Open Event Viewer On Error** on in [Settings → Features → Operational](Settings-Sub-Menus.md#operational), an error, such as a log upload that failed, opens the Event Viewer by itself.

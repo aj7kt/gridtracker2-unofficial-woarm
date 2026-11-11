@@ -62,8 +62,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - New N3FJP Contest Log (Settings, Logging): chase stations from the Feed Roster during a contest with any of N3FJP's contest logs (CQ WW, WPX, Field Day, NAQP, the State QSO Parties and more), alongside AC Log
   - A spot you click goes to the contest log (with Enable Rig Control, your rig is tuned there too), and each QSO you log there shows as worked in GridTracker2 at once
   - Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to
-- Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio
+- Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
+- Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency
+- Settings: Open Event Viewer On Error is now in Features, Operational
 - Settings, Audio: Device is now called Output Device
 - Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown
 - Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors
@@ -142,8 +144,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to</li>
     </ul>
   </li>
-  <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio</li>
+  <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it</li>
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
+  <li>Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency</li>
+  <li>Settings: Open Event Viewer On Error is now in Features, Operational</li>
   <li>Settings, Audio: Device is now called Output Device</li>
   <li>Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown</li>
   <li>Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors</li>

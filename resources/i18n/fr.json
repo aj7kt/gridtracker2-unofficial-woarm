@@ -1983,5 +1983,6 @@
 	"birdWatch.satellites.kind.fm.hover": "Un relais FM : contactez-le avec un portatif FM",
 	"birdWatch.satellites.kind.linear.hover": "Un transpondeur linéaire : BLU et CW, avec un émetteur-récepteur full duplex",
 	"birdWatch.satellites.kind.digital.hover": "Numérique : packet, APRS ou un autre mode de données",
-	"birdWatch.satellites.kind.sstv.hover": "Envoie des images SSTV : recevez-les dans le décodeur multimode"
+	"birdWatch.satellites.kind.sstv.hover": "Envoie des images SSTV : recevez-les dans le décodeur multimode",
+	"gt.button.radios.hover": "Ouvrir les réglages sur l'onglet Radios"
 }

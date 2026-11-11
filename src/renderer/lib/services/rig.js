@@ -92,7 +92,8 @@ const RIG_CIV_MODES = { 0x00: "LSB", 0x01: "USB", 0x02: "AM", 0x03: "CW", 0x04: 
 
 // ---- The VFOs: each { id, name, connect, offset, source, of, and its rig's link: protocol, host, netPort, flrigPort, spyPort, sdrppPort
 // (and sdrppFreq: where an SDR++ Server was last tuned), port, baud, dataBits, parity, stopBits, dtr, rts (its lines: RIG_LINE_LEVELS),
-// civAddress, forceVfo }. source "own": a rig of its own, its link as set; "of": the second VFO of the VFO of (one that
+// civAddress, forceVfo, secondMade: a VFO for its rig's second VFO was made, or set up by hand (rigSecondVfoMake) }. source "own": a rig of
+// its own, its link as set; "of": the second VFO of the VFO of (one that
 // is a rig of its own, and has no other second VFO), its link that one's. A VFO with its Connect unchecked is let go (its settings free
 // to change)
 
@@ -484,6 +485,8 @@ const RIG_PROTOCOLS = {
     poll: (R) =>
     {
       if (R.vfoMode === null) return null;
+      // Not read: what it said last isn't shown as its frequency now (an unconnected second VFO's status: rigVfoSecondStatusRender)
+      if (!(R.dual && rigModeBWanted(R))) R.freqB = R.modeB = null;
       if (R.vfoMode) return "+f " + rigNetVfo(R, "a") + "\n+m " + rigNetVfo(R, "a") + "\n" + (R.dual && rigModeBWanted(R) ? "+f " + rigNetVfo(R, "b") + "\n+m " + rigNetVfo(R, "b") + "\n" : "");
       return "+f\n+m\n" + (R.dual && rigModeBWanted(R) && !R.mainSub ? "+i\n+x\n" : "");
     },
@@ -895,13 +898,27 @@ function rigSettingsRender()
   const S = GT.settings.Rigs;
   rigEnable.checked = S.enable;
   rigVfosTr.style.display = S.enable ? "" : "none";
-  // The boxes made again only when the list changed
-  const ids = rigVfos().map((v) => v.id).join(",");
+  // The boxes made again only when the list changed (or which VFO is whose second VFO). A rig's VFO and its second VFO next to each
+  // other in the list side by side, the list's order kept (it's BirdWatch's priority); wrapped one under the other when they don't fit
+  const list = rigVfos();
+  const ids = list.map((v) => v.id + (rigVfoIsSecond(v) ? ">" + v.of : "")).join(",");
   if (rigVfosDiv.dataset.ids != ids)
   {
     rigVfosDiv.dataset.ids = ids;
     rigVfosDiv.innerHTML = "";
-    for (const v of rigVfos()) rigVfosDiv.appendChild(rigVfoBoxMake(v));
+    for (let i = 0; i < list.length; i++)
+    {
+      const v = list[i], next = list[i + 1];
+      if (next && rigVfoOwner(next) === rigVfoOwner(v) && rigVfoIsSecond(v) != rigVfoIsSecond(next))
+      {
+        const pair = document.createElement("div");
+        pair.className = "rigVfoPair";
+        pair.append(rigVfoBoxMake(v), rigVfoBoxMake(next));
+        rigVfosDiv.appendChild(pair);
+        i++;
+      }
+      else rigVfosDiv.appendChild(rigVfoBoxMake(v));
+    }
   }
   rigAddVfo.style.display = rigVfos().length < RIG_VFOS_MAX ? "" : "none";
   for (const v of rigVfos()) rigVfoBoxRender(v);
@@ -1109,7 +1126,10 @@ function rigVfoSecondStatusRender(v)
   let color;
   if (!R || !rigVfoOn(v))
   {
+    // Off, gray: with its frequency as its rig reads it anyway (only read, never tuned while off; not its mode, which is asked only with
+    // it in use). Its rig not answering, or not reading it (rigctld), just Off
     text = I18N("rotor.status.off");
+    if (R && R.status == "connected" && !rigNoAnswer(R) && R.dual === true && R.freqB > 0) text += "  " + formatDialFreq(R.freqB - rigOffset(v)) + (rigOffset(v) ? " LO" : "") + " MHz";
     color = "#ccc";
   }
   else if (R.status != "connected" || rigNoAnswer(R))
@@ -1427,15 +1447,30 @@ function rigModelName(R)
   return "";
 }
 
-// "14.074.000 (435.250.000) MHz USB (LSB)": the rig's VFO, its second VFO in brackets when a VFO in use is on it, the modes. The
-// frequencies on the air: a VFO with an offset is the rig's dial less it, "LO" after it
+// "14.074.000 MHz USB": the rig's own VFO and its mode (its second VFO's are in that VFO's box: rigVfoSecondStatusRender). The frequency
+// on the air: a VFO with an offset is the rig's dial less it, "LO" after it
 function rigFrequencyText(R)
 {
   if (R.freq === null) return "";
-  const one = (dial, v) => formatDialFreq(dial - rigOffset(v)) + (rigOffset(v) ? " LO" : "");
-  const second = rigVfos().find((v) => rigVfoIsSecond(v) && v.of == R.key && rigVfoOn(v));
-  const showB = !!second && R.dual && R.freqB !== null;
-  return one(R.freq, rigVfoById(R.key)) + (showB ? " (" + one(R.freqB, second) + ")" : "") + " MHz" + (R.mode ? " " + R.mode : "") + (showB && R.modeB ? " (" + R.modeB + ")" : "");
+  const v = rigVfoById(R.key);
+  return formatDialFreq(R.freq - rigOffset(v)) + (rigOffset(v) ? " LO" : "") + " MHz" + (R.mode ? " " + R.mode : "");
+}
+
+// A rig found to have a second VFO (R.dual) gets a VFO for it, once: right after its own in the list (side by side with it), for
+// satellites' uplinks (All Frequencies TX), its Connect unchecked. Not when it has one, the list is full, or it was made before (removed
+// since: not made again)
+function rigSecondVfoMake(R)
+{
+  const v = rigVfoById(R.key);
+  if (!v || rigVfoIsSecond(v) || v.secondMade === true || R.status != "connected" || R.dual !== true || rigVfos().length >= RIG_VFOS_MAX) return;
+  v.secondMade = true;
+  // Set up by hand already: none made, now or after it is removed
+  if (rigVfos().some((x) => rigVfoIsSecond(x) && x.of == v.id)) return;
+  const second = Object.assign({}, RIG_LINK_DEFAULTS, { id: rigVfoNewId(), name: "", connect: false, offset: 0, ssbData: false, source: "of", of: v.id, satRanges: [{ lo: 0, hi: 0, dir: "tx" }] });
+  rigVfos().splice(rigVfos().indexOf(v) + 1, 0, second);
+  rigLinksSync();
+  rigSettingsRender();
+  rigRolesChanged();
 }
 
 // Its link is open but the rig hasn't said its frequency in the time it should have: shown as No Answer (a wrong baud rate, the rig's
@@ -1606,6 +1641,9 @@ function rigStatusRender(R)
   if (R.status == "connected" && R.dual && !quiet) text += " (" + I18N("rig.twoVfos") + ")";
   if (R.status == "connected" && rigModelName(R)) text += "  " + rigModelName(R);
   if (R.status == "connected" && R.freq !== null && !quiet) text += "  " + rigFrequencyText(R);
+  // Found to have a second VFO: a VFO made for it (once), after this render
+  const own = rigVfoById(R.key);
+  if (R.status == "connected" && R.dual === true && own && own.secondMade !== true && rigVfos().length < RIG_VFOS_MAX) nodeTimers.setTimeout(() => rigSecondVfoMake(R), 0);
   // A serial port that couldn't be opened is said in full under Choose Port, with the way to share the rig; Status says it in short
   const portError = rigProtocolChosen(R).serial && (R.status == "error" || R.status == "notFound");
   const portErrorEl = rigEl(R, "PortError");

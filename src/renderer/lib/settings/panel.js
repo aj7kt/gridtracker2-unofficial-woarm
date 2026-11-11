@@ -39,8 +39,26 @@ function settingsRadiosTabRender()
   const any = rig || rotor || net;
   const was = radiosSettingsButton.style.display != "none";
   radiosSettingsButton.style.display = any ? "" : "none";
+  radiosButton.style.display = any ? "" : "none";
   if (!any && radiosSettingsButton.classList.contains("active")) openSettingsTab(featuresbut, "featuresSettingsDiv");
   if (was != any) settingsTabsFit();
+}
+
+// The button panel's Radios button: Settings open on the Radios tab, or closed when it already shows that tab
+function radiosButtonClick()
+{
+  if (radiosSettingsButton.style.display == "none") return;
+  if (rootSettingsDiv.style.display == "inline-flex" && radiosSettingsButton.classList.contains("active"))
+  {
+    rootSettingsDiv.style.display = "none";
+    return;
+  }
+  closeEventViewer();
+  helpDiv.style.display = "none";
+  GT.helpShow = false;
+  rootSettingsDiv.style.display = "inline-flex";
+  openSettingsTab(radiosSettingsButton, "radiosSettingsDiv");
+  settingsTabsFit();
 }
 
 // The tabs fitted to the panel: About in the main row, or, when the main row would wrap, in the row above it (BirdWatch's, shown for it
