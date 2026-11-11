@@ -1004,9 +1004,26 @@ function rigVfoBoxRender(v)
     for (const name of ["ProtocolTr", "ProtocolNoteTr", "PortTr", "LinuxTr", "BaudTr", "CivTr", "ScopeTr", "HostTr", "LanTr", "SdrppSourceTr", "SdrppDeviceTr", "SdrppRateTr", "ForceVfoTr", "PttTr", "LinesTr"]) el(name).style.display = "none";
     el("StatusTr").style.display = "";
     el("PortError").style.display = "none";
+    // Its rig's PTT Method, shown only: "CAT (VFO-A)"
+    const owner = rigVfoOwner(v);
+    el("PttOfTr").style.display = owner ? "" : "none";
+    if (owner) el("PttOf").textContent = rigPttName(owner) + " (" + rigVfoLabel(owner).replace(/ \(.*$/, "") + ")";
     rigVfoSecondStatusRender(v);
   }
-  else rigSettingsRenderOne(GT.rigs[v.id], true, locked);
+  else
+  {
+    el("PttOfTr").style.display = "none";
+    rigSettingsRenderOne(GT.rigs[v.id], true, locked);
+  }
+}
+
+// A rig's PTT Method as its box shows it: None, CAT, VOX, DTR or RTS; one its protocol hasn't (CAT without a PTT command, DTR or RTS off a
+// serial port) shows as None, as in its menu (rigSettingsRenderOne)
+function rigPttName(v)
+{
+  const protocol = RIG_PROTOCOLS[v.protocol] || RIG_PROTOCOLS.rigctld;
+  const ok = v.ptt == "vox" || (v.ptt == "cat" && typeof protocol.setPtt == "function") || ((v.ptt == "dtr" || v.ptt == "rts") && protocol.serial);
+  return ok ? v.ptt.toUpperCase() : I18N("settings.rig.vfo.none.label");
 }
 
 // A VFO's Satellites row (rigVfoSatRanges): each range as "2m RX", "28.0 - 29.7 MHz TX" or "All Frequencies RX" with its ✕; none: not

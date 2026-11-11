@@ -1271,38 +1271,40 @@
   <!-- Background Container, as the Event Viewer's -->
   <rect x="6" y="6" width="500" height="500" rx="40" fill="#101418" stroke="#1A2229" stroke-width="12"/>
   <!-- The readout: 7.074 in green segments, the unlit ones faint, slanted as a radio's display -->
-  <rect x="52" y="44" width="408" height="148" rx="18" fill="#06120A" stroke="#22382A" stroke-width="8"/>
-  <g transform="translate(0 118) skewX(-8) translate(0 -118)" filter="url(#radiosGlow)">
-    <rect x="110" y="66" width="40" height="16" rx="7" fill="#46FF7E"/>
-    <rect x="110" y="110" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="110" y="154" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="99" y="77" width="16" height="38" rx="7" fill="#11301B"/>
-    <rect x="145" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="99" y="121" width="16" height="38" rx="7" fill="#11301B"/>
-    <rect x="145" y="121" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="206" y="66" width="40" height="16" rx="7" fill="#46FF7E"/>
-    <rect x="206" y="110" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="206" y="154" width="40" height="16" rx="7" fill="#46FF7E"/>
-    <rect x="195" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="241" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="195" y="121" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="241" y="121" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="290" y="66" width="40" height="16" rx="7" fill="#46FF7E"/>
-    <rect x="290" y="110" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="290" y="154" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="279" y="77" width="16" height="38" rx="7" fill="#11301B"/>
-    <rect x="325" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="279" y="121" width="16" height="38" rx="7" fill="#11301B"/>
-    <rect x="325" y="121" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="374" y="66" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="374" y="110" width="40" height="16" rx="7" fill="#46FF7E"/>
-    <rect x="374" y="154" width="40" height="16" rx="7" fill="#11301B"/>
-    <rect x="363" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="409" y="77" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="363" y="121" width="16" height="38" rx="7" fill="#11301B"/>
-    <rect x="409" y="121" width="16" height="38" rx="7" fill="#46FF7E"/>
-    <rect x="170" y="154" width="16" height="16" rx="5" fill="#46FF7E"/>
+  <rect x="34" y="28" width="444" height="186" rx="18" fill="#06120A" stroke="#22382A" stroke-width="8"/>
+  <g transform="translate(0 121) skewX(-8) translate(0 -121)" filter="url(#radiosGlow)">
+    <rect x="72" y="48" width="54" height="22" rx="9" fill="#46FF7E"/>
+    <rect x="72" y="110" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="72" y="172" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="57" y="63" width="22" height="54" rx="9" fill="#11301B"/>
+    <rect x="119" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="57" y="125" width="22" height="54" rx="9" fill="#11301B"/>
+    <rect x="119" y="125" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="190" y="48" width="54" height="22" rx="9" fill="#46FF7E"/>
+    <rect x="190" y="110" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="190" y="172" width="54" height="22" rx="9" fill="#46FF7E"/>
+    <rect x="175" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="237" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="175" y="125" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="237" y="125" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="294" y="48" width="54" height="22" rx="9" fill="#46FF7E"/>
+    <rect x="294" y="110" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="294" y="172" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="279" y="63" width="22" height="54" rx="9" fill="#11301B"/>
+    <rect x="341" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="279" y="125" width="22" height="54" rx="9" fill="#11301B"/>
+    <rect x="341" y="125" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="398" y="48" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="398" y="110" width="54" height="22" rx="9" fill="#46FF7E"/>
+    <rect x="398" y="172" width="54" height="22" rx="9" fill="#11301B"/>
+    <rect x="383" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="445" y="63" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="383" y="125" width="22" height="54" rx="9" fill="#11301B"/>
+    <rect x="445" y="125" width="22" height="54" rx="9" fill="#46FF7E"/>
+    <rect x="147" y="172" width="22" height="22" rx="6" fill="#46FF7E"/>
   </g>
+  <!-- The dial, a little smaller under the larger readout -->
+  <g transform="translate(256 364) scale(0.84) translate(-256 -352)">
   <!-- The dial's scale, lit up to the knob's pointer -->
   <line x1="176.3" y1="447" x2="160.9" y2="465.4" stroke="#FF5A36" stroke-width="12" stroke-linecap="round"/>
   <line x1="156.4" y1="435.6" x2="142.6" y2="447.1" stroke="#FF5A36" stroke-width="8" stroke-linecap="round"/>
@@ -1339,4 +1341,5 @@
   <circle cx="256" cy="352" r="94" fill="url(#radiosKnob)" stroke="#3A414A" stroke-width="4"/>
   <circle cx="247.3" cy="401.2" r="20" fill="url(#radiosDimple)" stroke="#59616B" stroke-width="3"/>
   <path d="M298.4,301.4 L312.6,284.6" stroke="#FF5A36" stroke-width="14" stroke-linecap="round"/>
+  </g>
 </svg>

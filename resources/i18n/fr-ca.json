@@ -1984,5 +1984,6 @@
 	"birdWatch.satellites.kind.linear.hover": "Un transpondeur linéaire : BLU et CW, avec un émetteur-récepteur full duplex",
 	"birdWatch.satellites.kind.digital.hover": "Numérique : packet, APRS ou un autre mode de données",
 	"birdWatch.satellites.kind.sstv.hover": "Envoie des images SSTV : recevez-les dans le décodeur multimode",
-	"gt.button.radios.hover": "Ouvrir les réglages sur l'onglet Radios"
+	"gt.button.radios.hover": "Ouvrir les réglages sur l'onglet Radios",
+	"settings.rig.pttOf.hover": "Se règle dans la case du VFO propre de l'appareil ; il active tout l'appareil"
 }

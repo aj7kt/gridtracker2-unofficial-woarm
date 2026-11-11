@@ -1984,5 +1984,6 @@
 	"birdWatch.satellites.kind.linear.hover": "リニアトランスポンダー：SSBとCW、全二重の無線機で",
 	"birdWatch.satellites.kind.digital.hover": "デジタル：パケット、APRSなどのデータモード",
 	"birdWatch.satellites.kind.sstv.hover": "SSTV画像を送信：マルチモードデコーダーで受信できます",
-	"gt.button.radios.hover": "設定の「無線機」タブを開く"
+	"gt.button.radios.hover": "設定の「無線機」タブを開く",
+	"settings.rig.pttOf.hover": "無線機自身のVFO欄で設定します。無線機全体を送信にします"
 }

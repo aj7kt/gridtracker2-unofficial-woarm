@@ -1977,5 +1977,6 @@
   "birdWatch.satellites.kind.linear.hover": "Un transpondedor lineal: SSB y CW, con un equipo full dúplex",
   "birdWatch.satellites.kind.digital.hover": "Digital: packet, APRS u otro modo de datos",
   "birdWatch.satellites.kind.sstv.hover": "Envía imágenes SSTV: recíbalas en el decodificador multimodo",
-  "gt.button.radios.hover": "Abrir los ajustes en la pestaña Equipos"
+  "gt.button.radios.hover": "Abrir los ajustes en la pestaña Equipos",
+  "settings.rig.pttOf.hover": "Se ajusta en el cuadro del VFO propio del equipo; activa todo el equipo"
 }

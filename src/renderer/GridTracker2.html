@@ -1632,6 +1632,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     <td class="mapRowLabel mapIndent"><label data-for="Ptt" data-i18n="settings.rig.ptt.label">PTT Method</label></td>
                     <td><select data-f="Ptt" data-i18n="settings.rig.ptt.hover" title="How the Multi-Mode Decoder keys this rig to transmit: CAT (the protocol's PTT command), VOX (the rig's own, from the audio), DTR or RTS (the serial port's line, as the rig's PTT input is set up), or None (it isn't keyed)" onchange="rigPttChanged(this);"></select></td>
                   </tr>
+                  <!-- A second VFO's: its rig's PTT Method, as set in that rig's own box, shown only (rig.js, rigVfoBoxRender) -->
+                  <tr data-f="PttOfTr">
+                    <td class="mapRowLabel mapIndent" data-i18n="settings.rig.ptt.label">PTT Method</td>
+                    <td><span data-f="PttOf" class="mapValue" style="margin-left: 0;" data-i18n="settings.rig.pttOf.hover" title="Set in the rig's own VFO box; it keys the whole rig"></span></td>
+                  </tr>
                   <!-- A serial port's DTR and RTS lines while connected (rig.js, rigPttLineDrop): High or Low, set as the port opens; the line PTT
                        Method uses shows PTT (low until the rig is keyed) -->
                   <tr data-f="LinesTr">

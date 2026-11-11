@@ -1984,5 +1984,6 @@
 	"birdWatch.satellites.kind.linear.hover": "A linear transponder: SSB and CW, with a full-duplex rig",
 	"birdWatch.satellites.kind.digital.hover": "Digital: packet, APRS or another data mode",
 	"birdWatch.satellites.kind.sstv.hover": "Sends SSTV pictures: receive them in the Multi-Mode Decoder",
-	"gt.button.radios.hover": "Open Settings on the Radios tab"
+	"gt.button.radios.hover": "Open Settings on the Radios tab",
+	"settings.rig.pttOf.hover": "Set in the rig's own VFO box; it keys the whole rig"
 }
