@@ -2983,6 +2983,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <span id="birdWatchTleAmsatStatus" class="birdTleStatus"></span>
               </div>
             </div>
+            <!-- SatNOGS DB's element sets (birdWatchSatnogsSets): the fallback for the amateur satellites the others don't have; laid out as AMSAT's -->
+            <div class="mapItem birdTleBox" id="birdWatchTleSatnogsBox">
+              <div class="birdTleBoxTitle"><a href="https://db.satnogs.org" target="_blank">SatNOGS DB</a></div>
+              <div class="birdTleRow">
+                <label class="birdTleEnable" id="birdWatchTleSatnogsEnable"><input data-i18n="birdWatch.tle.satnogs.hover" title="SatNOGS's element sets, for the amateur satellites your other sources don't have, such as newly launched ones" type="checkbox" id="birdWatchTleSatnogs" onclick="birdWatchTleSetSatnogs();"> Enable</label>
+                <span class="birdTleName" data-i18n="birdWatch.tle.satnogs.label" title="SatNOGS's element sets, for the amateur satellites your other sources don't have, such as newly launched ones">SatNOGS TLE</span>
+                <span id="birdWatchTleSatnogsStatus" class="birdTleStatus"></span>
+              </div>
+            </div>
             <!-- The Local and Remote lists, each in a box of its own, shown only while it has something in it -->
             <div class="mapItem birdTleBox" id="birdWatchTleLocalBox" style="display: none;">
               <div class="birdTleBoxTitle" data-i18n="birdWatch.tle.local.label">Local TLE Files</div>

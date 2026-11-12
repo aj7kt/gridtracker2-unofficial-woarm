@@ -114,8 +114,8 @@ function birdWatchTleOrder()
 
 // The element sets in use, in the order they win: the typed overrides first, always; then AMSAT's, the local files, the
 // remote ones and the manual (typed) TLEs in the order chosen (TLE Precedence), each group with its sources in the order
-// they were added; last, always, SatNOGS's, for a satellite none of them has (birdWatchSatnogsSets). A source that isn't enabled
-// isn't in it
+// they were added; last, SatNOGS's (unless unticked), for a satellite none of them has (birdWatchSatnogsSets). A source that isn't
+// enabled isn't in it
 function birdWatchTleOrdered()
 {
   const settings = birdWatchTleSettings();
@@ -129,7 +129,7 @@ function birdWatchTleOrdered()
     if (letter == "r") for (const source of on.filter((s) => s.kind == "remote")) list.push({ file: satTleSourceFile(source), group: "remote", name: source.url, source: source });
     if (letter == "m") for (const source of on.filter((s) => s.kind == "tle" && !s.override)) list.push({ file: satTleSourceFile(source), group: "typed", name: source.name || "NORAD " + source.norad, source: source });
   }
-  list.push({ file: path.join(satDir(), "satnogs-tle.json"), group: "satnogs", name: "SatNOGS TLE", source: null });
+  if (settings.satnogs !== false) list.push({ file: path.join(satDir(), "satnogs-tle.json"), group: "satnogs", name: "SatNOGS TLE", source: null });
   return list;
 }
 
@@ -670,6 +670,25 @@ function birdWatchTleRender()
     }
   }
   birdWatchTleAmsatStatus.textContent = amsat;
+  // SatNOGS's: how many of its element sets are taken (the amateur satellites: birdWatchSatnogsSets) and the file's date
+  const satnogsOn = settings.satnogs !== false;
+  birdWatchTleSatnogs.checked = satnogsOn;
+  birdWatchTleSatnogsEnable.lastChild.textContent = " " + I18N("birdWatch.tle.enable.label");
+  let satnogs = I18N("birdWatch.tle.off.label");
+  if (satnogsOn)
+  {
+    const file = path.join(satDir(), "satnogs-tle.json");
+    try
+    {
+      const date = fs.statSync(file).mtime.toLocaleDateString();
+      satnogs = I18N("birdWatch.tle.sets.label").replace("{n}", birdWatchSatnogsSets(file).length) + " · " + date;
+    }
+    catch (e)
+    {
+      satnogs = I18N("birdWatch.tle.notLoaded.label");
+    }
+  }
+  birdWatchTleSatnogsStatus.textContent = satnogs;
 
   // Each list, in its own box, only while it has something in it
   for (const kind of ["local", "remote", "tle"])
@@ -691,6 +710,20 @@ function birdWatchTleSetAmsat()
     fs.promises.mkdir(satDir(), { recursive: true })
       .then(() => satSyncList("dailytle", satSyncState()))
       .catch((e) => console.warn("BirdWatch AMSAT TLE: " + e.message))
+      .then(birdWatchTleRender);
+  }
+}
+
+// Use SatNOGS TLE: ticked, its file is fetched now and with each pass; unticked, it isn't fetched at all and isn't used
+function birdWatchTleSetSatnogs()
+{
+  birdWatchTleSettings().satnogs = birdWatchTleSatnogs.checked;
+  birdWatchTleRender();
+  if (birdWatchTleSatnogs.checked && satSyncAllowed())
+  {
+    fs.promises.mkdir(satDir(), { recursive: true })
+      .then(() => satSyncList("satnogs-tle", satSyncState()))
+      .catch((e) => console.warn("BirdWatch SatNOGS TLE: " + e.message))
       .then(birdWatchTleRender);
   }
 }

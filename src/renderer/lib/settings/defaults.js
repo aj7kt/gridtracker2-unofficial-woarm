@@ -169,6 +169,9 @@ const def_settings = {
     // "tle" (a typed one: name, norad, line1, line2, override); with loaded, count and error for the first two
     tle: {
       amsat: true,
+      // SatNOGS's element sets (birdWatchSatnogsSets): the fallback for the amateur satellites the other sources don't have; on unless
+      // unticked (false)
+      satnogs: true,
       // Which source wins when a satellite is in more than one: letters for AMSAT, Local, Remote and Manual (typed TLEs),
       // first wins. Typed overrides always win and aren't in it
       precedence: "alrm",

@@ -404,8 +404,8 @@ async function satSyncRun()
     await fs.promises.mkdir(satDir(), { recursive: true });
     const state = satSyncState();
 
-    // AMSAT's element sets only when the Telemetry tab says to use them
-    const names = Object.keys(SAT_LISTS).filter((name) => name != "dailytle" || GT.settings.BirdWatch.tle.amsat);
+    // AMSAT's and SatNOGS's element sets only when the Telemetry tab says to use them
+    const names = Object.keys(SAT_LISTS).filter((name) => (name != "dailytle" || GT.settings.BirdWatch.tle.amsat) && (name != "satnogs-tle" || GT.settings.BirdWatch.tle.satnogs !== false));
     for (let i = 0; i < names.length; i++)
     {
       if (i > 0) await satPause(SAT_REQUEST_GAP);

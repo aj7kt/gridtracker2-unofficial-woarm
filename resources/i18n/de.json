@@ -2237,5 +2237,7 @@
 	"mmd.manage.menu.label": "Decoder Verwalten...",
 	"mmd.manage.title.label": "Decoder Verwalten",
 	"mmd.store.enabled.label": "Aktiviert",
-	"mmd.store.enabled.hover": "Aus: Dieser Decoder wird nicht geladen, bis Sie ihn wieder einschalten. Seine Einstellungen bleiben erhalten"
+	"mmd.store.enabled.hover": "Aus: Dieser Decoder wird nicht geladen, bis Sie ihn wieder einschalten. Seine Einstellungen bleiben erhalten",
+	"birdWatch.tle.satnogs.label": "SatNOGS TLE",
+	"birdWatch.tle.satnogs.hover": "Die Bahnelemente von SatNOGS für Amateurfunksatelliten, die Ihre anderen Quellen nicht haben, etwa neu gestartete"
 }

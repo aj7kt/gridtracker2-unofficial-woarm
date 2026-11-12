@@ -2236,5 +2236,7 @@
 	"mmd.manage.menu.label": "デコーダーの管理...",
 	"mmd.manage.title.label": "デコーダーの管理",
 	"mmd.store.enabled.label": "有効",
-	"mmd.store.enabled.hover": "オフ: もう一度オンにするまで、このデコーダーは読み込まれません。設定は保持されます"
+	"mmd.store.enabled.hover": "オフ: もう一度オンにするまで、このデコーダーは読み込まれません。設定は保持されます",
+	"birdWatch.tle.satnogs.label": "SatNOGS TLE",
+	"birdWatch.tle.satnogs.hover": "他のソースにないアマチュア衛星（打ち上げ直後の衛星など）のための SatNOGS の軌道要素"
 }

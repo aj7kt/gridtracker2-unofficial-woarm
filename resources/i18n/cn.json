@@ -2237,5 +2237,7 @@
   "mmd.manage.menu.label": "管理解码器...",
   "mmd.manage.title.label": "管理解码器",
   "mmd.store.enabled.label": "启用",
-  "mmd.store.enabled.hover": "关闭：在重新开启之前不会加载此解码器。其设置会保留"
+  "mmd.store.enabled.hover": "关闭：在重新开启之前不会加载此解码器。其设置会保留",
+  "birdWatch.tle.satnogs.label": "SatNOGS TLE",
+  "birdWatch.tle.satnogs.hover": "SatNOGS 的轨道根数，用于其他来源没有的业余卫星，例如新发射的卫星"
 }

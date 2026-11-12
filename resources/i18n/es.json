@@ -2229,5 +2229,7 @@
   "mmd.manage.menu.label": "Administrar Decodificadores...",
   "mmd.manage.title.label": "Administrar Decodificadores",
   "mmd.store.enabled.label": "Activado",
-  "mmd.store.enabled.hover": "Desactivado: este decodificador no se carga hasta que lo vuelva a activar. Su configuración se conserva"
+  "mmd.store.enabled.hover": "Desactivado: este decodificador no se carga hasta que lo vuelva a activar. Su configuración se conserva",
+  "birdWatch.tle.satnogs.label": "SatNOGS TLE",
+  "birdWatch.tle.satnogs.hover": "Los elementos orbitales de SatNOGS, para los satélites de aficionados que sus otras fuentes no tienen, como los recién lanzados"
 }

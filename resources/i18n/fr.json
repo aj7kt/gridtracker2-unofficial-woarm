@@ -2236,5 +2236,7 @@
 	"mmd.manage.menu.label": "Gérer Les Décodeurs...",
 	"mmd.manage.title.label": "Gérer Les Décodeurs",
 	"mmd.store.enabled.label": "Activé",
-	"mmd.store.enabled.hover": "Désactivé : ce décodeur n'est pas chargé tant que vous ne le réactivez pas. Ses réglages sont conservés"
+	"mmd.store.enabled.hover": "Désactivé : ce décodeur n'est pas chargé tant que vous ne le réactivez pas. Ses réglages sont conservés",
+	"birdWatch.tle.satnogs.label": "SatNOGS TLE",
+	"birdWatch.tle.satnogs.hover": "Les éléments orbitaux de SatNOGS, pour les satellites radioamateurs que vos autres sources n'ont pas, comme ceux lancés récemment"
 }

@@ -276,9 +276,9 @@ The Telemetry tab chooses where BirdWatch gets its TLEs. A satellite can only be
 
 **AMSAT TLE** is AMSAT's daily set of TLEs for the amateur satellites, built in and kept up to date. Tick **Enable** to use it (it is on by default). The line shows how many element sets it holds and their date, or Off.
 
-### SatNOGS
+### SatNOGS DB
 
-BirdWatch also takes TLEs from [SatNOGS DB](https://db.satnogs.org) for the amateur satellites none of your sources has, such as one launched recently that AMSAT doesn't list yet. Only satellites with a working downlink on an amateur satellite band are taken. These TLEs are always used, and always last: AMSAT's and your own always win. They are downloaded once a day while BirdWatch is on and GridTracker2 is online, so a new install has them after its first update.
+**SatNOGS TLE** is [SatNOGS DB](https://db.satnogs.org)'s TLEs, for the amateur satellites none of your other sources has, such as one launched recently that AMSAT doesn't list yet. Only satellites with a working downlink on an amateur satellite band are taken. Tick **Enable** to use it (it is on by default). The line shows how many element sets it holds and their date, or Off. These TLEs are always used last: AMSAT's and your own always win. They are downloaded once a day while BirdWatch is on and GridTracker2 is online, so a new install has them after its first update.
 
 ### TLE Precedence
 

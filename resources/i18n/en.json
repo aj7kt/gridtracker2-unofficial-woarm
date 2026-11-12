@@ -2236,5 +2236,7 @@
 	"mmd.manage.menu.label": "Manage Decoders...",
 	"mmd.manage.title.label": "Manage Decoders",
 	"mmd.store.enabled.label": "Enabled",
-	"mmd.store.enabled.hover": "Off: this decoder isn't loaded until you turn it on again. Its settings are kept"
+	"mmd.store.enabled.hover": "Off: this decoder isn't loaded until you turn it on again. Its settings are kept",
+	"birdWatch.tle.satnogs.label": "SatNOGS TLE",
+	"birdWatch.tle.satnogs.hover": "SatNOGS's element sets, for the amateur satellites your other sources don't have, such as newly launched ones"
 }

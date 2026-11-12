@@ -2236,5 +2236,7 @@
   "mmd.manage.menu.label": "Zarządzaj Dekoderami...",
   "mmd.manage.title.label": "Zarządzaj Dekoderami",
   "mmd.store.enabled.label": "Włączony",
-  "mmd.store.enabled.hover": "Wyłączony: ten dekoder nie jest wczytywany, dopóki go ponownie nie włączysz. Jego ustawienia są zachowane"
+  "mmd.store.enabled.hover": "Wyłączony: ten dekoder nie jest wczytywany, dopóki go ponownie nie włączysz. Jego ustawienia są zachowane",
+  "birdWatch.tle.satnogs.label": "SatNOGS TLE",
+  "birdWatch.tle.satnogs.hover": "Elementy orbitalne SatNOGS dla satelitów amatorskich, których nie mają inne źródła, np. niedawno wystrzelonych"
 }

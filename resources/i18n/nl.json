@@ -2236,5 +2236,7 @@
   "mmd.manage.menu.label": "Decoders Beheren...",
   "mmd.manage.title.label": "Decoders Beheren",
   "mmd.store.enabled.label": "Ingeschakeld",
-  "mmd.store.enabled.hover": "Uit: deze decoder wordt pas weer geladen als u hem inschakelt. Zijn instellingen blijven bewaard"
+  "mmd.store.enabled.hover": "Uit: deze decoder wordt pas weer geladen als u hem inschakelt. Zijn instellingen blijven bewaard",
+  "birdWatch.tle.satnogs.label": "SatNOGS TLE",
+  "birdWatch.tle.satnogs.hover": "De baanelementen van SatNOGS, voor amateursatellieten die uw andere bronnen niet hebben, zoals pas gelanceerde"
 }
