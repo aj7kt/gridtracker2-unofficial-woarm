@@ -37,7 +37,8 @@ const CW_SAME_SIGNAL_HZ = 40;
 // with none shows no menu
 // The modes there are (the Mode menu; each plugin's added as it loads, mmdPluginLoad)
 const MMD_MODES = ["cw", "sstv", "wwv", "sat"];
-// The Mode menu's last entry, Get More... (not a mode: picking it says where more decoders will come from, the mode stays)
+// The Mode menu's last entry, Manage Decoders... (not a mode: picking it opens its box, the mode stays), under a divider (a disabled
+// entry, data-group="more" as it is: the plugins' modes go above both, mmdPluginMenu)
 const MMD_MORE = "_more";
 // CW's signals (the worklet's channels) have ids under this; the other modes' signals in its list are above (a plugin's:
 // MMD_PLUGIN_ID_BASE up, mmdPluginHost.js)
@@ -284,7 +285,7 @@ function mmdInit()
   cwMode.value = MMD_MODES.includes(GT.settings.MMD.viewMode) ? GT.settings.MMD.viewMode : "cw";
   cwMode.onchange = () =>
   {
-    // Get More... (the menu's last): the mode stays, and a note says where more decoders will come from
+    // Manage Decoders... (the menu's last): the mode stays, and its box opens
     if (cwMode.value == MMD_MORE)
     {
       cwMode.value = DEC.mode;
@@ -332,7 +333,7 @@ function mmdInit()
   }
 }
 
-// Get More... in the Mode menu: the decoders to download for this version (mmdGetMore.js)
+// Manage Decoders... in the Mode menu: the decoders to download for this version, and the installed ones' Enabled (mmdGetMore.js)
 function mmdGetMore()
 {
   mmdGetMoreOpen();

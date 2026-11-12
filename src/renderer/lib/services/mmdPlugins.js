@@ -159,7 +159,7 @@ function mmdPluginModeIds()
 // (mmdPluginModesOf), base (its folder, or its .asar's path), url (base as a file URL), dev, disabled }
 function mmdPluginsFind()
 {
-  // Get More...'s installs, updates and removals first, before any plugin file is opened
+  // Manage Decoders...'s installs, updates and removals first, before any plugin file is opened
   mmdPluginsApplyPending();
   const S = GT.settings.MMD;
   if (!Array.isArray(S.pluginsDisabled)) S.pluginsDisabled = [];
@@ -292,7 +292,7 @@ function mmdPluginsI18n()
   for (const p of GT.mmdPlugins || []) if (!p.disabled) mmdPluginI18n(p);
 }
 
-// ---- Get More... (the decoder window's mmdGetMore.js shows it; the downloads and files are done here). The download server
+// ---- Manage Decoders... (the decoder window's mmdGetMore.js shows it; the downloads and files are done here). The download server
 // (tools/mmd_plugin_pack.js --publish, CI's upload-gtserv) has each plugin under a name its bytes alone have, and for each app version a
 // signed list of them, <version>/plugins.json + .sig: this GridTracker2 reads its own version's only, so a test build's plugins are never
 // offered to an older one. Nothing is used before its signature is checked: the list's, then each download's size, SHA-256 and its own
@@ -304,7 +304,7 @@ const MMD_STORE_LIST_MAX = 1024 * 1024;
 const MMD_STORE_PLUGIN_MAX = 200 * 1024 * 1024;
 
 // Where the lists and plugins come from: the download server; on a dev run the environment's GT_PLUGIN_STORE may name another (a URL, or
-// a folder: tools/mmd_plugin_pack.js --publish's plugins/out/site/plugins/mmd/), so Get More... can be tried before anything is published
+// a folder: tools/mmd_plugin_pack.js --publish's plugins/out/site/plugins/mmd/), so Manage Decoders... can be tried before anything is published
 function mmdStoreBase()
 {
   const other = process.env.GT_PLUGIN_STORE;
@@ -388,14 +388,34 @@ async function mmdStoreList()
     e.name = String(e.name || e.id);
     e.modes = Array.isArray(e.modes) ? e.modes.map(String) : [];
     e.state = mmdStoreState(e.id, e.version);
+    Object.assign(e, mmdStoreEnabledOf(e.id));
   }
   return plugins;
 }
 
-// The plugins installed here (loaded or turned off; not a dev run's own folders) that list hasn't: Get More... can remove them too
+// The plugins installed here (loaded or turned off; not a dev run's own folders) that list hasn't: Manage Decoders... can remove them too
 function mmdStoreInstalledOthers(list)
 {
-  return (GT.mmdPlugins || []).filter((p) => !p.dev && !list.some((e) => e.id == p.id)).map((p) => ({ id: p.id, name: p.name, version: p.version, modes: p.modes.map((d) => d.label), state: mmdStoreState(p.id, null) }));
+  return (GT.mmdPlugins || []).filter((p) => !p.dev && !list.some((e) => e.id == p.id)).map((p) => Object.assign({ id: p.id, name: p.name, version: p.version, modes: p.modes.map((d) => d.label), state: mmdStoreState(p.id, null) }, mmdStoreEnabledOf(p.id)));
+}
+
+// A plugin's Enabled: { found (found at startup, so it can be turned on or off), enabled (as set now: MMD.pluginsDisabled), wasEnabled (as
+// it was at startup: loaded) }. A change is taken at the next start, as an install is
+function mmdStoreEnabledOf(id)
+{
+  const p = (GT.mmdPlugins || []).find((x) => x.id == id);
+  const disabled = GT.settings.MMD.pluginsDisabled || [];
+  return { found: !!p, enabled: !disabled.includes(id), wasEnabled: !!p && !p.disabled };
+}
+
+// A plugin turned on or off (from the next start): MMD.pluginsDisabled; its Enabled again (mmdStoreEnabledOf)
+function mmdStoreSetEnabled(id, on)
+{
+  const S = GT.settings.MMD;
+  if (!Array.isArray(S.pluginsDisabled)) S.pluginsDisabled = [];
+  S.pluginsDisabled = S.pluginsDisabled.filter((x) => x != id);
+  if (!on) S.pluginsDisabled.push(id);
+  return mmdStoreEnabledOf(id);
 }
 
 // A plugin's state here: "dev" (a dev run's own folder, which an installed one can't replace), "installPending" / "removePending" (done at

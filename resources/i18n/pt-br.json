@@ -2210,10 +2210,7 @@
   "birdWatch.event.staleTle": "O conjunto de elementos de {sat} tem {days} dias: a posição e as passagens podem estar erradas",
   "mmd.plugin.guide.label": "Guia",
   "mmd.plugin.guideOpen": "Abre o guia de {name} na janela do Guia do usuário",
-  "cwViewer.getMore.label": "Obter Mais...",
-  "cwViewer.getMore.note": "Em breve, mais decodificadores estarão disponíveis para download aqui.",
   "cwViewer.submode.label": "Submodo",
-  "mmd.store.title.label": "Obter Mais Decodificadores",
   "mmd.store.close.label": "Fechar",
   "mmd.store.restartNote.label": "As alterações entram em vigor quando o GridTracker2 reiniciar.",
   "mmd.store.restart.label": "Reiniciar Agora",
@@ -2235,5 +2232,9 @@
   "mmd.store.update.label": "Atualizar Para {version}",
   "mmd.store.remove.label": "Remover",
   "mmd.store.undo.label": "Desfazer",
-  "mmd.store.failed": "Falhou: {error}"
+  "mmd.store.failed": "Falhou: {error}",
+  "mmd.manage.menu.label": "Gerenciar Decodificadores...",
+  "mmd.manage.title.label": "Gerenciar Decodificadores",
+  "mmd.store.enabled.label": "Ativado",
+  "mmd.store.enabled.hover": "Desativado: este decodificador não é carregado até você ativá-lo de novo. Suas configurações são mantidas"
 }

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261112.0]
+## [v2.261112.1]
 
 ### MD Markup Format
 #### Map / UI
@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - New Multi-Mode Decoder (Settings, Features): decode signals right inside GridTracker2, without another program, from your rig's audio or an SDR, with a waterfall of the whole passband
   - Modes: CW, SSTV, satellite data (FUNcube, AX.100, GENESIS) and WWV / WWVH
-  - Get More..., the Mode menu's last entry: download more decoders, and update or remove them
+  - Manage Decoders..., the Mode menu's last entry: download more decoders, update or remove them, and turn them on or off
   - In most modes every signal in the passband is decoded at once
   - It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening
   - With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency
@@ -124,7 +124,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>New Multi-Mode Decoder (Settings, Features): decode signals right inside GridTracker2, without another program, from your rig's audio or an SDR, with a waterfall of the whole passband
     <ul>
       <li>Modes: CW, SSTV, satellite data (FUNcube, AX.100, GENESIS) and WWV / WWVH</li>
-      <li>Get More..., the Mode menu's last entry: download more decoders, and update or remove them</li>
+      <li>Manage Decoders..., the Mode menu's last entry: download more decoders, update or remove them, and turn them on or off</li>
       <li>In most modes every signal in the passband is decoded at once</li>
       <li>It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening</li>
       <li>With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency</li>

@@ -2210,10 +2210,7 @@
 	"birdWatch.event.staleTle": "Le jeu d'éléments de {sat} date de {days} jours : sa position et ses passages peuvent être décalés",
 	"mmd.plugin.guide.label": "Guide",
 	"mmd.plugin.guideOpen": "Ouvre le guide de {name} dans la fenêtre du Guide de l'utilisateur",
-	"cwViewer.getMore.label": "Obtenir Plus...",
-	"cwViewer.getMore.note": "D'autres décodeurs pourront bientôt être téléchargés ici.",
 	"cwViewer.submode.label": "Sous-mode",
-	"mmd.store.title.label": "Obtenir Plus De Décodeurs",
 	"mmd.store.close.label": "Fermer",
 	"mmd.store.restartNote.label": "Les modifications prennent effet au redémarrage de GridTracker2.",
 	"mmd.store.restart.label": "Redémarrer Maintenant",
@@ -2235,5 +2232,9 @@
 	"mmd.store.update.label": "Mettre À Jour Vers {version}",
 	"mmd.store.remove.label": "Supprimer",
 	"mmd.store.undo.label": "Annuler",
-	"mmd.store.failed": "Échec : {error}"
+	"mmd.store.failed": "Échec : {error}",
+	"mmd.manage.menu.label": "Gérer Les Décodeurs...",
+	"mmd.manage.title.label": "Gérer Les Décodeurs",
+	"mmd.store.enabled.label": "Activé",
+	"mmd.store.enabled.hover": "Désactivé : ce décodeur n'est pas chargé tant que vous ne le réactivez pas. Ses réglages sont conservés"
 }

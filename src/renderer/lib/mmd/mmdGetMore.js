@@ -2,10 +2,11 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Get More... (the Mode menu's last entry): the decoders this GridTracker2 version can download, from its own signed list on the download
-// server, each one's Install, Update or Remove; the downloads, checks and files are the main window's (services/mmdPlugins.js,
-// mmdStore*). A change is done at the next start, before any decoder is opened: Restart Now restarts GridTracker2 (its settings and open
-// windows saved first), and Undo lets a change go before then. Nothing is downloaded without a click
+// Manage Decoders... (the Mode menu's last entry): the decoders this GridTracker2 version can download, from its own signed list on the
+// download server, each one's Install, Update or Remove, and each installed one's Enabled; the downloads, checks, files and the setting
+// are the main window's (services/mmdPlugins.js, mmdStore*). A change is done at the next start, before any decoder is opened: Restart
+// Now restarts GridTracker2 (its settings and open windows saved first), and Undo lets an install or removal go before then. Nothing is
+// downloaded without a click
 
 // The list shown ({ plugins, others }: the list's, and the installed ones it hasn't), null until it has come; a plugin being downloaded
 const GETMORE = { list: null, busy: null, loading: false };
@@ -51,20 +52,23 @@ function mmdGetMoreStatus(text, error)
   mmdGetMoreMessage.classList.toggle("mmdGetMoreError", !!error);
 }
 
-// The table: each listed plugin, then each installed one not listed; Restart Now lit while a change waits for it
+// The table: each listed plugin, then each installed one not listed; Restart Now lit while a change waits for it (an install or removal,
+// or an Enabled changed from what was loaded)
 function mmdGetMoreRender()
 {
   const L = GETMORE.list;
   if (!L) return;
   const rows = L.plugins.map((e) => mmdGetMoreRow(e, true)).concat(L.others.map((e) => mmdGetMoreRow(e, false)));
-  const head = "<tr><th>" + I18N("mmd.store.decoder.label") + "</th><th>" + I18N("mmd.store.modes.label") + "</th><th>" + I18N("mmd.store.version.label") + "</th><th></th></tr>";
+  const head = "<tr><th>" + I18N("mmd.store.decoder.label") + "</th><th>" + I18N("mmd.store.modes.label") + "</th><th>" + I18N("mmd.store.version.label") + "</th><th>" + I18N("mmd.store.enabled.label") + "</th><th></th></tr>";
   mmdGetMoreTable.innerHTML = rows.length ? head + rows.join("") : "";
-  const waiting = L.plugins.concat(L.others).some((e) => e.state == "installPending" || e.state == "removePending");
+  const all = L.plugins.concat(L.others);
+  const waiting = all.some((e) => e.state == "installPending" || e.state == "removePending" || (e.found && e.enabled != e.wasEnabled));
   mmdGetMoreRestart.disabled = !waiting;
   mmdGetMoreRestart.classList.toggle("mmdGetMoreLit", waiting);
 }
 
-// One row: its name, modes, version (the list's, or the one installed) and what can be done with it
+// One row: its name, modes, version (the list's, or the one installed), its Enabled (one found at startup, not being removed) and what
+// can be done with it
 function mmdGetMoreRow(e, listed)
 {
   const esc = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -79,7 +83,20 @@ function mmdGetMoreRow(e, listed)
   else if (e.state == "update") action = button("mmd.store.update.label", "install") + " " + button("mmd.store.remove.label", "remove");
   else if (e.state == "installed") action = note("mmd.store.installed") + " " + button("mmd.store.remove.label", "remove");
   else action = listed ? button("mmd.store.install.label", "install") : "";
-  return "<tr><td class='mmdGetMoreName'>" + esc(e.name) + "</td><td>" + esc(e.modes.join(", ")) + "</td><td>" + esc(e.version) + "</td><td class='mmdGetMoreAction'>" + action + "</td></tr>";
+  const enabled = e.found && e.state != "removePending"
+    ? "<input type='checkbox' class='mmdGetMoreEnabled'" + (e.enabled ? " checked" : "") + " title=\"" + esc(I18N("mmd.store.enabled.hover")) + "\" onchange=\"mmdGetMoreEnabled('" + e.id + "', this.checked);\" />"
+    : "";
+  return "<tr><td class='mmdGetMoreName'>" + esc(e.name) + "</td><td>" + esc(e.modes.join(", ")) + "</td><td>" + esc(e.version) + "</td><td class='mmdGetMoreCheck'>" + enabled + "</td><td class='mmdGetMoreAction'>" + action + "</td></tr>";
+}
+
+// An Enabled clicked: the plugin turned on or off from the next start
+function mmdGetMoreEnabled(id, on)
+{
+  const L = GETMORE.list;
+  const e = L && L.plugins.concat(L.others).find((x) => x.id == id);
+  if (!e) return;
+  Object.assign(e, window.opener.mmdStoreSetEnabled(id, on));
+  mmdGetMoreRender();
 }
 
 // A row's button clicked: install (or update), remove, or undo what waits for the next start. One download at a time

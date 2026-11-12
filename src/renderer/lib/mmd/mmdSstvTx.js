@@ -43,11 +43,9 @@ const SSTV_TX_FONTS = {
 };
 // The text's sizes, as shares of the picture's height (tiny and smaller: the time stamp's menu only)
 const SSTV_TX_SIZES = { tiny: 0.04, smaller: 0.055, small: 0.07, medium: 0.1, large: 0.14, xlarge: 0.2 };
-// The places the text can go: the picture split SSTV_TX_GRID by SSTV_TX_GRID, each "row-column" ("0-0" top left, "4-4" bottom right). The
-// places of before ("top", "bottomLeft", ...) are read as theirs (mmdSstvTxSettings)
+// The places the text can go: the picture split SSTV_TX_GRID by SSTV_TX_GRID, each "row-column" ("0-0" top left, "4-4" bottom right)
 const SSTV_TX_GRID = 5;
 const SSTV_TX_PLACES = Array.from({ length: SSTV_TX_GRID * SSTV_TX_GRID }, (_, i) => Math.floor(i / SSTV_TX_GRID) + "-" + (i % SSTV_TX_GRID));
-const SSTV_TX_OLD_PLACES = { topLeft: "0-0", top: "0-2", topRight: "0-4", left: "2-0", middle: "2-2", right: "2-4", bottomLeft: "4-0", bottom: "4-2", bottomRight: "4-4" };
 
 function mmdSstvTxFont(key, px)
 {
@@ -115,10 +113,9 @@ function mmdSstvTxSettings()
   const S = GT.settings.MMD;
   if (!S.sstvTx || typeof S.sstvTx != "object") S.sstvTx = {};
   for (const key in SSTV_TX_DEFAULTS) if (!(key in S.sstvTx)) S.sstvTx[key] = SSTV_TX_DEFAULTS[key];
-  // (The time stamp's corners of before, "topRight" ..., are places too)
+  // (a place that isn't one: the default)
   for (const key of ["callPos", "gridPos", "textPos", "stampPos"])
   {
-    if (S.sstvTx[key] in SSTV_TX_OLD_PLACES) S.sstvTx[key] = SSTV_TX_OLD_PLACES[S.sstvTx[key]];
     if (!SSTV_TX_PLACES.includes(S.sstvTx[key])) S.sstvTx[key] = SSTV_TX_DEFAULTS[key];
   }
   S.sstvTx.powerDb = mmdSstvTxPowerDb(S.sstvTx.powerDb, SSTV_TX_DEFAULTS.powerDb);

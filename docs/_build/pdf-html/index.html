@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=68a5ab8e"></script>
+    <script src="_static/documentation_options.js?v=78e09340"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261112.0</p>
+<p class="gt-cover-version">Version 2.261112.1</p>
 <p class="gt-cover-date">November 12, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -156,7 +156,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261112.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261112.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -2776,7 +2776,7 @@
 <section id="the-second-line">
 <h4>The Second Line<a class="headerlink" href="#the-second-line" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>Mode:</strong> what is decoded. The modes are listed in <a class="reference internal" href="#the-modes">The Modes</a>. The mode you pick is kept when GridTracker2 restarts. The menu’s last entry, <strong>Get More…</strong>, lists more decoders you can download (see <a class="reference internal" href="#getting-more-decoders">Getting More Decoders</a>).</p></li>
+<li><p><strong>Mode:</strong> what is decoded. The modes are listed in <a class="reference internal" href="#the-modes">The Modes</a>. The mode you pick is kept when GridTracker2 restarts. The menu’s last entry, <strong>Manage Decoders…</strong>, lists more decoders you can download, and turns the ones you have on or off (see <a class="reference internal" href="#managing-decoders">Managing Decoders</a>).</p></li>
 <li><p><strong>Frequency menu:</strong> each mode’s usual frequencies. Pick one to tune your rig there. It appears only with Rig Control (see <a class="reference internal" href="#the-frequency-menu">The Frequency Menu</a>).</p></li>
 <li><p><strong>UTC:</strong> lines across the waterfall on the UTC clock, each with its time: <strong>Off</strong>, 10s, 15s, 30s or 1m.</p></li>
 </ul>
@@ -2885,12 +2885,13 @@
 </tbody>
 </table>
 <p>The right-click menus of pictures, charts and messages (copy, save, delete, rotate) are described with each mode.</p>
-<section id="getting-more-decoders">
-<h4>Getting More Decoders<a class="headerlink" href="#getting-more-decoders" title="Link to this heading">¶</a></h4>
-<p>More modes come as decoders you download. Pick <strong>Get More…</strong>, the last entry of the <strong>Mode</strong> menu, to see the ones for your version of GridTracker2:</p>
+<section id="managing-decoders">
+<h4>Managing Decoders<a class="headerlink" href="#managing-decoders" title="Link to this heading">¶</a></h4>
+<p>More modes come as decoders you download. Pick <strong>Manage Decoders…</strong>, the last entry of the <strong>Mode</strong> menu, to see the ones for your version of GridTracker2:</p>
 <ul class="simple">
 <li><p><strong>Install</strong> downloads a decoder. <strong>Update To</strong> downloads a newer version of one you have, and <strong>Remove</strong> takes one away.</p></li>
-<li><p>Each change waits until GridTracker2 restarts. Click <strong>Restart Now</strong> to restart it at once (your settings and open windows are kept), or <strong>Undo</strong> to cancel a change before then.</p></li>
+<li><p><strong>Enabled</strong> turns a decoder you have on or off. One turned off isn’t loaded and its modes leave the <strong>Mode</strong> menu; its settings are kept for when you turn it on again.</p></li>
+<li><p>Each change waits until GridTracker2 restarts. Click <strong>Restart Now</strong> to restart it at once (your settings and open windows are kept), or <strong>Undo</strong> to cancel an install or removal before then.</p></li>
 <li><p>Nothing is downloaded until you click. Each download is checked against GridTracker’s signature before it is used.</p></li>
 </ul>
 <p>Once installed, a decoder’s modes appear in the <strong>Mode</strong> menu. Each decoder has its own guide: click <strong>Guide</strong> in its box in <a class="reference internal" href="#decoders">Settings → Decoders</a>.</p>

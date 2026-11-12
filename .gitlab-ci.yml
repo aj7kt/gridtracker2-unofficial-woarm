@@ -518,7 +518,7 @@ upload-gtserv:
     - scp dist/${APPNAME}-${VERSION}-help-en.pdf ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/win7/stage/
     - ssh ${GT_SERV_USER}@${GT_SERV_ADDRESS} "ln -sf ${APPNAME}-${VERSION}-help-en.pdf ~/gt2_download/win7/stage/help-en.pdf"
     # The Multi-Mode Decoder's plugins (plugins:build --publish): each one under a name its bytes alone have (never overwritten), and this
-    # version's signed list, plugins/mmd/<version>/plugins.json, read only by this version's Get More... (no stage: an older version never
+    # version's signed list, plugins/mmd/<version>/plugins.json, read only by this version's Manage Decoders... (no stage: an older version never
     # reads it); the .htaccess keeps plugins/ from being listed
     - scp -r plugins/out/site/plugins ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/
 

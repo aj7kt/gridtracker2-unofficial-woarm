@@ -2211,10 +2211,7 @@
 	"birdWatch.event.staleTle": "Der Bahndatensatz von {sat} ist {days} Tage alt: Position und Überflugzeiten können abweichen",
 	"mmd.plugin.guide.label": "Anleitung",
 	"mmd.plugin.guideOpen": "Öffnet die Anleitung von {name} im Fenster des Benutzerhandbuchs",
-	"cwViewer.getMore.label": "Mehr Holen...",
-	"cwViewer.getMore.note": "Weitere Decoder können hier bald heruntergeladen werden.",
 	"cwViewer.submode.label": "Submodus",
-	"mmd.store.title.label": "Mehr Decoder Holen",
 	"mmd.store.close.label": "Schließen",
 	"mmd.store.restartNote.label": "Änderungen werden beim Neustart von GridTracker2 wirksam.",
 	"mmd.store.restart.label": "Jetzt Neu Starten",
@@ -2236,5 +2233,9 @@
 	"mmd.store.update.label": "Auf {version} Aktualisieren",
 	"mmd.store.remove.label": "Entfernen",
 	"mmd.store.undo.label": "Rückgängig",
-	"mmd.store.failed": "Fehlgeschlagen: {error}"
+	"mmd.store.failed": "Fehlgeschlagen: {error}",
+	"mmd.manage.menu.label": "Decoder Verwalten...",
+	"mmd.manage.title.label": "Decoder Verwalten",
+	"mmd.store.enabled.label": "Aktiviert",
+	"mmd.store.enabled.hover": "Aus: Dieser Decoder wird nicht geladen, bis Sie ihn wieder einschalten. Seine Einstellungen bleiben erhalten"
 }

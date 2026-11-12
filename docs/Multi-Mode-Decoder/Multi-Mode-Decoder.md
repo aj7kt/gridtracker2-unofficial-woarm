@@ -47,7 +47,7 @@ From top to bottom, the window has:
 
 ### The Second Line
 
-* **Mode:** what is decoded. The modes are listed in [The Modes](#the-modes). The mode you pick is kept when GridTracker2 restarts. The menu's last entry, **Get More...**, lists more decoders you can download (see [Getting More Decoders](#getting-more-decoders)).
+* **Mode:** what is decoded. The modes are listed in [The Modes](#the-modes). The mode you pick is kept when GridTracker2 restarts. The menu's last entry, **Manage Decoders...**, lists more decoders you can download, and turns the ones you have on or off (see [Managing Decoders](#managing-decoders)).
 * **Frequency menu:** each mode's usual frequencies. Pick one to tune your rig there. It appears only with Rig Control (see [The Frequency Menu](#the-frequency-menu)).
 * **UTC:** lines across the waterfall on the UTC clock, each with its time: **Off**, 10s, 15s, 30s or 1m.
 
@@ -150,12 +150,13 @@ Pick the mode in **Mode** on the second line. Each one is described in [Decoder 
 
 The right-click menus of pictures, charts and messages (copy, save, delete, rotate) are described with each mode.
 
-### Getting More Decoders
+### Managing Decoders
 
-More modes come as decoders you download. Pick **Get More...**, the last entry of the **Mode** menu, to see the ones for your version of GridTracker2:
+More modes come as decoders you download. Pick **Manage Decoders...**, the last entry of the **Mode** menu, to see the ones for your version of GridTracker2:
 
 * **Install** downloads a decoder. **Update To** downloads a newer version of one you have, and **Remove** takes one away.
-* Each change waits until GridTracker2 restarts. Click **Restart Now** to restart it at once (your settings and open windows are kept), or **Undo** to cancel a change before then.
+* **Enabled** turns a decoder you have on or off. One turned off isn't loaded and its modes leave the **Mode** menu; its settings are kept for when you turn it on again.
+* Each change waits until GridTracker2 restarts. Click **Restart Now** to restart it at once (your settings and open windows are kept), or **Undo** to cancel an install or removal before then.
 * Nothing is downloaded until you click. Each download is checked against GridTracker's signature before it is used.
 
 Once installed, a decoder's modes appear in the **Mode** menu. Each decoder has its own guide: click **Guide** in its box in [Settings → Decoders](#decoders).

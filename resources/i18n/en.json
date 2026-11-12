@@ -2210,10 +2210,7 @@
 	"birdWatch.event.staleTle": "{sat}'s element set is {days} days old: where it is and when it passes may be off",
 	"mmd.plugin.guide.label": "Guide",
 	"mmd.plugin.guideOpen": "Opens {name}'s own guide in the User Guide window",
-	"cwViewer.getMore.label": "Get More...",
-	"cwViewer.getMore.note": "More decoders will be available to download here soon.",
 	"cwViewer.submode.label": "Submode",
-	"mmd.store.title.label": "Get More Decoders",
 	"mmd.store.close.label": "Close",
 	"mmd.store.restartNote.label": "Changes take effect when GridTracker2 restarts.",
 	"mmd.store.restart.label": "Restart Now",
@@ -2235,5 +2232,9 @@
 	"mmd.store.update.label": "Update To {version}",
 	"mmd.store.remove.label": "Remove",
 	"mmd.store.undo.label": "Undo",
-	"mmd.store.failed": "Failed: {error}"
+	"mmd.store.failed": "Failed: {error}",
+	"mmd.manage.menu.label": "Manage Decoders...",
+	"mmd.manage.title.label": "Manage Decoders",
+	"mmd.store.enabled.label": "Enabled",
+	"mmd.store.enabled.hover": "Off: this decoder isn't loaded until you turn it on again. Its settings are kept"
 }

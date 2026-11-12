@@ -37,9 +37,8 @@ function mmdFallView()
   const S = GT.settings.MMD;
   if (!S.fallView || typeof S.fallView != "object") S.fallView = {};
   for (const [key, value] of Object.entries(FALL_VIEW_DEFAULTS)) if (typeof S.fallView[key] != typeof value) S.fallView[key] = value;
-  // A palette that isn't one any more: Classic. Terrain View's, from before it was taken out
+  // A palette that isn't one: Classic
   if (S.fallView.palette != "classic" && !(S.fallView.palette in MMD_PALETTES)) S.fallView.palette = "classic";
-  for (const key of ["terrain", "depth", "height"]) delete S.fallView[key];
   return S.fallView;
 }
 

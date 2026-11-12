@@ -18,19 +18,8 @@ function mmDecoderInit()
   if (!GT.settings.MMD) GT.settings.MMD = { enable: false, span: 4000, minHz: 250, maxHz: 0 };
   // The plugins (services/mmdPlugins.js): found and taken up before the window opens
   mmdPluginsFind();
-  // The band scan's seconds at each step, and the CW decoder's Wide Filter, from before they were taken out
-  delete GT.settings.MMD.scanDwell;
-  delete GT.settings.MMD.wideFilter;
-  // One Waterfall Speed for every decoder: at first the one the mode shown had (each mode had its own before), then the modes' let go
-  if (!(GT.settings.MMD.fallSpeed > 0))
-  {
-    const was = Number(GT.settings.MMD[(GT.settings.MMD.viewMode || "cw") + "FallSpeed"]);
-    GT.settings.MMD.fallSpeed = was > 0 ? was : 1;
-  }
-  for (const mode of ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "hell", "olivia"]) delete GT.settings.MMD[mode + "FallSpeed"];
-  // FT8's and FT4's time skew, from when it was kept as a setting (it's kept for the session only now: the window's DEC.skewKept)
-  delete GT.settings.MMD.ft8Skew;
-  delete GT.settings.MMD.ft4Skew;
+  // One Waterfall Speed for every decoder: 1, as heard, until one is picked
+  if (!(GT.settings.MMD.fallSpeed > 0)) GT.settings.MMD.fallSpeed = 1;
   // Nothing is sent to the rig unless Rig Control (the window's Settings, Decoders) is turned on; each mode's Set Frequency and Set Mode
   // (Decoders) are on unless turned off
   if (typeof GT.settings.MMD.rigControl != "boolean") GT.settings.MMD.rigControl = false;
@@ -39,15 +28,6 @@ function mmDecoderInit()
   {
     if (typeof GT.settings.MMD[key] != "boolean") GT.settings.MMD[key] = true;
   }
-  // FT8's USB or Data and SSB's Enable Data, from before (now each VFO's SSB Data, Rig Control): one that was on taken up by the FT8
-  // mode's VFO
-  if (GT.settings.MMD.ssbData === true || GT.settings.MMD.ft8Data === true)
-  {
-    const v = rigVfoById((GT.settings.MMD.vfos || {}).ft8) || rigVfos()[0];
-    if (v) v.ssbData = true;
-  }
-  delete GT.settings.MMD.ssbData;
-  delete GT.settings.MMD.ft8Data;
   if (!GT.settings.MMD.vfos || typeof GT.settings.MMD.vfos != "object") GT.settings.MMD.vfos = {};
   // Common VFO, new: None until one is picked (no rig read or tuned before the user says which)
   const vfos = GT.settings.MMD.vfos;
@@ -121,29 +101,13 @@ function mmDecoderInputs()
 {
   const S = GT.settings.MMD;
   if (!S.inputs || typeof S.inputs != "object") S.inputs = {};
-  // Sat Data, new: on Packet's input (a satellite's data audio); WWV on CW's (the HF rig's)
-  if (!S.inputs.sat && S.inputs.packet) S.inputs.sat = Object.assign({}, S.inputs.packet);
-  if (!S.inputs.wwv && S.inputs.cw) S.inputs.wwv = Object.assign({}, S.inputs.cw);
   // A plugin's mode, new: on the input of the mode its plugin.json names (rig.inputFrom: NAVTEX's, PSK's, CW's; FT4's, FT8's)
   for (const p of GT.mmdPlugins || [])
   {
     if (p.disabled) continue;
     for (const d of p.modes) if (d.inputFrom && !S.inputs[d.id] && S.inputs[d.inputFrom]) S.inputs[d.id] = Object.assign({}, S.inputs[d.inputFrom]);
   }
-  // The one Input Device of before (Settings -> Audio): each mode starts on it. A mode with none picked hears the first in the list
-  // (the window's mmdInputFind)
-  for (const mode of MMD_INPUT_MODES)
-  {
-    if (!S.inputs[mode] && GT.settings.app.inputCard) S.inputs[mode] = { id: GT.settings.app.inputCard, name: GT.settings.app.inputCardName || null };
-  }
-  delete GT.settings.app.inputCard;
-  delete GT.settings.app.inputCardName;
-  // Common Input Device, new: on the input of the mode shown (else FT8's, CW's), so turning it on changes nothing heard
-  if (!S.inputs.common)
-  {
-    const from = S.inputs[S.viewMode] || S.inputs.ft8 || S.inputs.cw;
-    if (from) S.inputs.common = Object.assign({}, from);
-  }
+  // (a mode with none picked hears the first in the list: the window's mmdInputFind)
   return S.inputs;
 }
 

@@ -12,7 +12,7 @@
 // CI's upload-gtserv copies to the server as it is (download2.gridtracker.org/plugins/):
 //   mmd/<id>/<id>-<version>-<12 hex of its SHA-256>.asar + .sig   each plugin; a name that never stands for other bytes, so nothing
 //                                                                 published is ever overwritten
-//   mmd/<app version>/plugins.json + .sig                         the signed list that app version's Get More... reads (only it: an
+//   mmd/<app version>/plugins.json + .sig                         the signed list that app version's Manage Decoders... reads (only it: an
 //                                                                 older version never finds a newer one's plugins)
 //   .htaccess                                                     Options -Indexes: plugins/ isn't listed
 // Dry run (checks, lists what it would write) unless "write". Usage (repo root):

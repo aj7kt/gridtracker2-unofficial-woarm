@@ -495,8 +495,8 @@ function mmdPluginMenu(d)
   const option = new Option((d.i18n && GT.i18n[d.i18n]) || d.label, d.id);
   if (d.i18n) option.dataset.i18n = d.i18n;
   option.dataset.group = d.group == "utility" ? "utility" : "ham";
-  // (Get More... stays last: MMD_MORE)
-  const more = [...cwMode.options].find((o) => o.value == MMD_MORE) || null;
+  // (Manage Decoders... and the divider above it stay last: the first of data-group="more")
+  const more = [...cwMode.options].find((o) => o.dataset.group == "more") || null;
   const group = [...cwMode.options].filter((o) => (o.dataset.group || "ham") == option.dataset.group && o.value != "cw" && o.value != MMD_MORE);
   const after = group.find((o) => o.text.localeCompare(option.text) > 0);
   if (after) cwMode.insertBefore(option, after);

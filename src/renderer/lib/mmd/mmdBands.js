@@ -39,8 +39,6 @@ function mmdBands()
     try
     {
       const data = JSON.parse(fs.readFileSync(file, "utf8"));
-      // (An edited copy from when the file had band plans: they go with its next save)
-      delete data.bandplans;
       if (!Array.isArray(data.frequencies)) data.frequencies = [];
       return data;
     }

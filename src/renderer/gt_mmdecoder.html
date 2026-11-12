@@ -278,7 +278,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         font-size: 11px;
         padding: 0 6px;
       }
-      /* Get More... (mmdGetMore.js): a box over the window, its table scrolling when it doesn't fit */
+      /* Manage Decoders... (mmdGetMore.js): a box over the window, its table scrolling when it doesn't fit */
       #mmdGetMoreBox {
         position: fixed;
         top: 56px;
@@ -323,6 +323,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       }
       .mmdGetMoreName {
         color: var(--gt-callsign);
+      }
+      #mmdGetMoreTable th:nth-child(4),
+      #mmdGetMoreTable td.mmdGetMoreCheck {
+        text-align: center;
+      }
+      .mmdGetMoreEnabled {
+        margin: 0;
+        vertical-align: middle;
       }
       #mmdGetMoreTable td.mmdGetMoreAction {
         text-align: right;
@@ -1152,7 +1160,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </div>
     <!-- What is decoded: the mode and the mode's usual frequencies (its Bandpass is in Settings, General) (shown with Rig Control connected, mmdFreqsShow) -->
     <div id="cwBar">
-      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wwv" data-group="utility">WWV / WWVH</option><option value="_more" data-group="more" data-i18n="cwViewer.getMore.label">Get More...</option></select></span>
+      <span class="cwPick"><label for="cwMode" data-i18n="cwViewer.mode.label">Mode</label><select id="cwMode" data-i18n="cwViewer.mode.hover" title="What is decoded: CW; FT8 (each 15 s period, on the UTC clock's boundaries: the computer's clock must be right); or SSTV pictures (each found by the VIS code that starts it)"><option value="cw">CW</option><option value="sat" data-i18n="settings.satDecoder.label">Sat Data</option><option value="sstv">SSTV</option><option value="wwv" data-group="utility">WWV / WWVH</option><option value="_line" data-group="more" disabled>──────────</option><option value="_more" data-group="more" data-i18n="mmd.manage.menu.label">Manage Decoders...</option></select></span>
       <span id="cwFreqsBox" class="cwPick"><select id="cwFreqs" style="display: none;" data-i18n="cwViewer.freqs.hover" title="The usual frequencies for this mode: pick one to set the rig to it, its frequency and its mode as this mode allows (Settings: Rig Control, then Decoders)"></select></span>
       <!-- The waterfall's UTC lines, every so often (not in FT8, FT4 and WSPR, which have their period lines: mmdModeSet) -->
       <span id="cwUtcBox" class="cwPick"><label for="cwUtc" data-i18n="cwViewer.utc.label">UTC</label><select id="cwUtc" data-i18n="cwViewer.utc.hover" title="Lines across the waterfall on the UTC clock, each with its time"><option value="0" data-i18n="cwViewer.utc.off">Off</option><option value="10">10s</option><option value="15">15s</option><option value="30">30s</option><option value="60">1m</option></select></span>
@@ -1163,10 +1171,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- The submode menus, on a row of their own under the second line (shown while one is: mmdModeSet) -->
     <div id="cwSubBar" class="cwBarRow" style="display: none;">
     </div>
-    <!-- Get More... (the Mode menu's last entry, mmdGetMore.js): the decoders to download for this version, each one's Install, Update or
-         Remove, done at the next start (Restart Now) -->
+    <!-- Manage Decoders... (the Mode menu's last entry, mmdGetMore.js): the decoders to download for this version, each one's Install,
+         Update or Remove, and each installed one's Enabled, done at the next start (Restart Now) -->
     <div id="mmdGetMoreBox" style="display: none;">
-      <div class="mmdGetMoreHead"><span data-i18n="mmd.store.title.label">Get More Decoders</span><span class="cwButton" onclick="mmdGetMoreClose();" data-i18n="mmd.store.close.label">Close</span></div>
+      <div class="mmdGetMoreHead"><span data-i18n="mmd.manage.title.label">Manage Decoders</span><span class="cwButton" onclick="mmdGetMoreClose();" data-i18n="mmd.store.close.label">Close</span></div>
       <div id="mmdGetMoreMessage" style="display: none;"></div>
       <table id="mmdGetMoreTable"></table>
       <div class="mmdGetMoreFoot"><span data-i18n="mmd.store.restartNote.label">Changes take effect when GridTracker2 restarts.</span><button id="mmdGetMoreRestart" class="cwButton" disabled onclick="mmdGetMoreRestartNow();" data-i18n="mmd.store.restart.label">Restart Now</button></div>

@@ -2211,10 +2211,7 @@
   "birdWatch.event.staleTle": "{sat} 的轨道根数已有 {days} 天：位置和过境时间可能有偏差",
   "mmd.plugin.guide.label": "指南",
   "mmd.plugin.guideOpen": "在用户指南窗口中打开 {name} 的指南",
-  "cwViewer.getMore.label": "获取更多...",
-  "cwViewer.getMore.note": "很快即可在此下载更多解码器。",
   "cwViewer.submode.label": "子模式",
-  "mmd.store.title.label": "获取更多解码器",
   "mmd.store.close.label": "关闭",
   "mmd.store.restartNote.label": "更改将在 GridTracker2 重启后生效。",
   "mmd.store.restart.label": "立即重启",
@@ -2236,5 +2233,9 @@
   "mmd.store.update.label": "更新到 {version}",
   "mmd.store.remove.label": "移除",
   "mmd.store.undo.label": "撤销",
-  "mmd.store.failed": "失败：{error}"
+  "mmd.store.failed": "失败：{error}",
+  "mmd.manage.menu.label": "管理解码器...",
+  "mmd.manage.title.label": "管理解码器",
+  "mmd.store.enabled.label": "启用",
+  "mmd.store.enabled.hover": "关闭：在重新开启之前不会加载此解码器。其设置会保留"
 }

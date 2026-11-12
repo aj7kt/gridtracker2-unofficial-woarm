@@ -603,7 +603,7 @@ const def_settings = {
   // Multi-Mode Decoder (Settings -> Features -> Service, mmDecoder.js): decodes in its window from the Input Device. span: its Bandwidth, the audio decoded from 0 Hz up (an SDR's can be wide). minHz, maxHz: within it, the audio decoded (Hz;
   // the Multi-Mode Decoder's [ and ], dragged on its scale; maxHz 0 is the span's top; the mode shown's, each mode's own kept in ranges:
   // { cw: { minHz, maxHz } }, a mode with none starting with the last one's). fallSpeed: the Waterfall
-  // Speed, every mode's (1 as heard; set at startup from the mode shown's own, from before). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
+  // Speed, every mode's (1 as heard, set at startup until one is picked). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
   // WWV (wwv): its Set Frequency and Set Mode (USB).
   // A plugin's own (navtexSave, FT8 / FT4's ft8Depth, ft8SendDecodes; the keyboard modes' pskSubmode, thorSubmode; Feld-Hell's hellTrim;
   // Olivia's oliviaSubmode, oliviaCenter ...): its plugin.json's settings, added where missing as it's found (services/mmdPlugins.js).

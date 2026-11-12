@@ -2210,10 +2210,7 @@
   "birdWatch.event.staleTle": "Zestaw elementów {sat} ma {days} dni: pozycja i przeloty mogą być niedokładne",
   "mmd.plugin.guide.label": "Przewodnik",
   "mmd.plugin.guideOpen": "Otwiera przewodnik {name} w oknie podręcznika użytkownika",
-  "cwViewer.getMore.label": "Pobierz Więcej...",
-  "cwViewer.getMore.note": "Wkrótce będzie można tu pobrać więcej dekoderów.",
   "cwViewer.submode.label": "Podtryb",
-  "mmd.store.title.label": "Pobierz Więcej Dekoderów",
   "mmd.store.close.label": "Zamknij",
   "mmd.store.restartNote.label": "Zmiany zaczną działać po ponownym uruchomieniu GridTracker2.",
   "mmd.store.restart.label": "Uruchom Ponownie Teraz",
@@ -2235,5 +2232,9 @@
   "mmd.store.update.label": "Aktualizuj Do {version}",
   "mmd.store.remove.label": "Usuń",
   "mmd.store.undo.label": "Cofnij",
-  "mmd.store.failed": "Niepowodzenie: {error}"
+  "mmd.store.failed": "Niepowodzenie: {error}",
+  "mmd.manage.menu.label": "Zarządzaj Dekoderami...",
+  "mmd.manage.title.label": "Zarządzaj Dekoderami",
+  "mmd.store.enabled.label": "Włączony",
+  "mmd.store.enabled.hover": "Wyłączony: ten dekoder nie jest wczytywany, dopóki go ponownie nie włączysz. Jego ustawienia są zachowane"
 }

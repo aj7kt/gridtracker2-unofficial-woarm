@@ -2210,10 +2210,7 @@
 	"birdWatch.event.staleTle": "{sat} の軌道要素は {days} 日前のものです: 位置やパスの時刻がずれている可能性があります",
 	"mmd.plugin.guide.label": "ガイド",
 	"mmd.plugin.guideOpen": "{name} のガイドをユーザーガイドのウィンドウで開きます",
-	"cwViewer.getMore.label": "さらに入手...",
-	"cwViewer.getMore.note": "近日中に、ここからさらに多くのデコーダーをダウンロードできるようになります。",
 	"cwViewer.submode.label": "サブモード",
-	"mmd.store.title.label": "デコーダーを追加",
 	"mmd.store.close.label": "閉じる",
 	"mmd.store.restartNote.label": "変更は GridTracker2 の再起動後に反映されます。",
 	"mmd.store.restart.label": "今すぐ再起動",
@@ -2235,5 +2232,9 @@
 	"mmd.store.update.label": "{version} に更新",
 	"mmd.store.remove.label": "削除",
 	"mmd.store.undo.label": "元に戻す",
-	"mmd.store.failed": "失敗: {error}"
+	"mmd.store.failed": "失敗: {error}",
+	"mmd.manage.menu.label": "デコーダーの管理...",
+	"mmd.manage.title.label": "デコーダーの管理",
+	"mmd.store.enabled.label": "有効",
+	"mmd.store.enabled.hover": "オフ: もう一度オンにするまで、このデコーダーは読み込まれません。設定は保持されます"
 }

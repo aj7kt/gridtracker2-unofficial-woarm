@@ -183,7 +183,7 @@ function rigVfosNormalize()
   {
     if (typeof v.id != "string" || !v.id || ids.has(v.id)) v.id = rigVfoNewId(ids);
     ids.add(v.id);
-    // (DTR and RTS: a VFO saved before they were there has neither, and gets its protocol's, below)
+    // (DTR and RTS: one not set gets its protocol's, below)
     for (const [key, value] of Object.entries(RIG_LINK_DEFAULTS)) if (v[key] === undefined && key != "dtr" && key != "rts") v[key] = value;
     v.name = typeof v.name == "string" ? v.name.slice(0, 20) : "";
     // Not connected until the user checks Connect
