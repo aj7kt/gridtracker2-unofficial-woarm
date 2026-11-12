@@ -82,6 +82,27 @@ function birdWatchSatInfo(norad)
   return D.map.get(Number(norad)) || null;
 }
 
+// The SatNOGS satellites on a temporary catalog number: the real number each follows (norad_follow_id) -> its temporary one, for the
+// element sets filed under the real one (birdWatchTleRebuild). Not when the database has a satellite of its own under the real number
+function birdWatchSatFollows()
+{
+  birdWatchSatInfo(0);
+  const D = GT.birdWatchDb;
+  if (!D) return new Map();
+  if (D.followsStamp !== D.stamp)
+  {
+    const follows = new Map();
+    for (const [norad, sat] of D.map)
+    {
+      const real = Number(sat.norad_follow_id);
+      if (real > 0 && real != norad && !D.map.has(real)) follows.set(real, norad);
+    }
+    D.follows = follows;
+    D.followsStamp = D.stamp;
+  }
+  return D.follows;
+}
+
 // The name under the short one: the database's own when it differs, else the first other name it lists
 function birdWatchLongName(info, name)
 {

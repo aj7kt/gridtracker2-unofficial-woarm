@@ -24,7 +24,7 @@ const TLE_WATCH_DELAY = 3000;
 //   name           the name line before its two lines, "" when there is none
 //   line1, line2   the two lines
 //   epoch          when the element set is for, in ms since 1970
-//   group          the source group it came from: "override", "amsat", "local", "remote" or "typed"
+//   group          the source group it came from: "override", "amsat", "local", "remote", "typed" or "satnogs" (the fallback)
 //   source         the name of that source, as the Telemetry tab lists it
 //   amsat          true for an amateur satellite: one AMSAT's lists have (its daily element sets or its frequency list),
 //                  whichever source this element set came from
@@ -114,7 +114,8 @@ function birdWatchTleOrder()
 
 // The element sets in use, in the order they win: the typed overrides first, always; then AMSAT's, the local files, the
 // remote ones and the manual (typed) TLEs in the order chosen (TLE Precedence), each group with its sources in the order
-// they were added. A source that isn't enabled isn't in it
+// they were added; last, always, SatNOGS's, for a satellite none of them has (birdWatchSatnogsSets). A source that isn't enabled
+// isn't in it
 function birdWatchTleOrdered()
 {
   const settings = birdWatchTleSettings();
@@ -128,7 +129,68 @@ function birdWatchTleOrdered()
     if (letter == "r") for (const source of on.filter((s) => s.kind == "remote")) list.push({ file: satTleSourceFile(source), group: "remote", name: source.url, source: source });
     if (letter == "m") for (const source of on.filter((s) => s.kind == "tle" && !s.override)) list.push({ file: satTleSourceFile(source), group: "typed", name: source.name || "NORAD " + source.norad, source: source });
   }
+  list.push({ file: path.join(satDir(), "satnogs-tle.json"), group: "satnogs", name: "SatNOGS TLE", source: null });
   return list;
+}
+
+// ---- SatNOGS's element sets (satnogs-tle.json, birdWatchSync.js): the fallback, so a satellite AMSAT doesn't list yet (a new one, on a
+// temporary catalog number) is tracked with its transmitters. Only the satellites a ham can hear: those with a live transmitter whose
+// downlink is on an amateur satellite band (BIRD_WATCH_SATNOGS_BANDS), and not re-entered. Each is filed under SatNOGS's own catalog number
+// (norad_cat_id), its lines renumbered to it where they carry another (a temporary number's real one), and named as SatNOGS names it.
+// Read again only when one of its files changes
+
+// The amateur satellite service's downlink bands (Hz)
+const BIRD_WATCH_SATNOGS_BANDS = [[28.0e6, 29.7e6], [144.0e6, 146.0e6], [435.0e6, 438.0e6], [2400e6, 2450e6], [5830e6, 5850e6], [10450e6, 10500e6], [24048e6, 24050e6]];
+
+GT.birdWatchSatnogsTle = { stamp: "", sets: [] };
+
+function birdWatchSatnogsSets(file)
+{
+  const C = GT.birdWatchSatnogsTle;
+  try
+  {
+    const files = [file, path.join(satDir(), "transmitters.json"), path.join(satDir(), "satellites.json")];
+    const stamp = files.map((f) => { const stat = fs.statSync(f); return stat.mtimeMs + ":" + stat.size; }).join("|");
+    if (stamp == C.stamp) return C.sets;
+    const heard = new Set();
+    for (const t of JSON.parse(fs.readFileSync(files[1], "utf8")))
+    {
+      const hz = Number(t.downlink_low);
+      if (t && t.alive && BIRD_WATCH_SATNOGS_BANDS.some(([low, high]) => hz >= low && hz <= high)) heard.add(t.sat_id);
+    }
+    const sets = [];
+    for (const item of JSON.parse(fs.readFileSync(file, "utf8")))
+    {
+      const norad = Number(item && item.norad_cat_id);
+      if (!(norad > 0 && norad <= 99999) || !heard.has(item.sat_id) || typeof item.tle1 != "string" || typeof item.tle2 != "string") continue;
+      const info = birdWatchSatInfo(norad);
+      if (info && info.status == "re-entered") continue;
+      const name = (info && info.name) || String(item.tle0 || "").replace(/^0 /, "").trim();
+      const set = birdWatchTleParse(name + "\n" + item.tle1.trim() + "\n" + item.tle2.trim())[0];
+      if (set) sets.push(set.norad == norad ? set : birdWatchTleRenumbered(set, norad));
+    }
+    C.sets = sets;
+    C.stamp = stamp;
+  }
+  catch (e)
+  {
+    // Not fetched yet (it isn't shipped), or unreadable: none
+    C.sets = [];
+    C.stamp = "";
+  }
+  return C.sets;
+}
+
+// An element set under another catalog number: both lines' numbers changed to it, their checksums written again
+function birdWatchTleRenumbered(set, norad)
+{
+  const id = String(norad).padStart(5, "0");
+  const fix = (line) =>
+  {
+    const body = line.slice(0, 2) + id + line.slice(7, 68);
+    return body + birdWatchTleChecksum(body);
+  };
+  return birdWatchTleSet(norad, set.name, fix(set.line1), fix(set.line2), set.epoch);
 }
 
 // The element set files in use, for whatever uses them, first to win first
@@ -197,6 +259,7 @@ function birdWatchTleParse(text)
 function birdWatchTleSetsOf(entry)
 {
   const L = GT.birdWatchTles;
+  if (entry.group == "satnogs") return birdWatchSatnogsSets(entry.file);
   if (entry.source && entry.source.kind == "tle")
   {
     const s = entry.source;
@@ -220,7 +283,9 @@ function birdWatchTleSetsOf(entry)
 }
 
 // The list again, from the sources in order: the first to have a satellite has it. Only while BirdWatch is on. The same as before
-// (most renders of the Telemetry tab change nothing): the listeners aren't told, so the tracker keeps the passes and the Skeds it has
+// (most renders of the Telemetry tab change nothing): the listeners aren't told, so the tracker keeps the passes and the Skeds it has.
+// An element set for the real number a SatNOGS satellite on a temporary one follows (birdWatchSatFollows) is that satellite's, under its
+// temporary number (where its transmitters are), so it is listed once
 function birdWatchTleRebuild()
 {
   const L = GT.birdWatchTles;
@@ -229,11 +294,18 @@ function birdWatchTleRebuild()
   if (GT.settings.BirdWatch.enable)
   {
     const amsat = birdWatchAmsatNorads();
+    const follows = birdWatchSatFollows();
+    const db = GT.birdWatchDb ? GT.birdWatchDb.map : new Map();
     for (const entry of birdWatchTleOrdered())
     {
-      for (const set of birdWatchTleSetsOf(entry))
+      for (let set of birdWatchTleSetsOf(entry))
       {
-        if (!map.has(set.norad)) map.set(set.norad, birdWatchTleEntry(set, entry.group, entry.name, amsat.has(set.norad)));
+        const as = follows.get(set.norad);
+        // (AMSAT may list it by either number: a SatNOGS one on a temporary number by the real one it follows)
+        const info = db.get(as !== undefined ? as : set.norad);
+        const amateur = amsat.has(set.norad) || (as !== undefined && amsat.has(as)) || (!!info && amsat.has(Number(info.norad_follow_id)));
+        if (as !== undefined) set = birdWatchTleRenumbered(set, as);
+        if (!map.has(set.norad)) map.set(set.norad, birdWatchTleEntry(set, entry.group, entry.name, amateur));
       }
     }
   }
@@ -753,10 +825,10 @@ function birdWatchTleFind(norad)
       return false;
     }
   };
-  // The first of AMSAT, the local and the remote sources that has it, in the order of TLE Precedence
+  // The first of AMSAT, the local and the remote sources that has it, in the order of TLE Precedence; then SatNOGS's (JSON: its sets)
   for (const entry of birdWatchTleOrdered())
   {
-    if (entry.group != "typed" && entry.group != "override" && scan(entry.file)) return { source: entry.name };
+    if (entry.group == "satnogs" ? birdWatchSatnogsSets(entry.file).some((set) => set.norad == norad) : entry.group != "typed" && entry.group != "override" && scan(entry.file)) return { source: entry.name };
   }
   return null;
 }

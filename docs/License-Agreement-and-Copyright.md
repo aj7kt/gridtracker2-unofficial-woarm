@@ -55,4 +55,6 @@ BirdWatch's satellite names, details, modes and transmitters come from [SatNOGS 
 
 The amateur satellites' element sets (TLE) and frequency list come from [AMSAT](https://www.amsat.org), The Radio Amateur Satellite Corporation. The frequency list is gathered by the [amateur-satellite-database](https://github.com/palewire/amateur-satellite-database) project, Copyright (c) 2021 Los Angeles Times Data Desk, MIT License.
 
+Element sets for the satellites AMSAT doesn't list are downloaded by BirdWatch from SatNOGS DB, which gets them from [Space-Track.org](https://www.space-track.org). They aren't shipped with GridTracker2.
+
 The full notices ship with GridTracker2 in `resources/data/sat/NOTICE.txt`.

@@ -8,9 +8,11 @@
 //   modes.json, satellites.json, transmitters.json                SatNOGS DB (db.satnogs.org), CC BY-SA 4.0
 //   amsat-active-frequencies.json, amsat-all-frequencies.json     AMSAT list, mirrored by github.com/palewire/amateur-satellite-database (MIT)
 //   dailytle.txt                                                  AMSAT's daily element sets (TLE) of the amateur satellites (amsat.org/tle/current)
+//   satnogs-tle.json                                              SatNOGS DB's element sets of its satellites (Space-Track's), the fallback for a
+//                                                                 satellite no other source has (birdWatchTle.js). Not shipped: only fetched here
 //   version.json                                                  the date (YYYYMMDD) of the newest data; sync.json: a hash of each file
 // Each file is kept as it was sent and replaced only when it changed. One pass about every 24 hours, started a while after
-// startup (not at once, and spread out, so thousands of copies don't call at the same moment): six requests, one second
+// startup (not at once, and spread out, so thousands of copies don't call at the same moment): seven requests, one second
 // apart. A pass that fails tries again later, further apart each time. Nothing is shown.
 
 const SATNOGS_API = "https://db.satnogs.org/api/";
@@ -183,7 +185,10 @@ const SAT_LISTS = {
   "amsat-active-frequencies": { url: AMSAT_DATA + "amsat-active-frequencies.json", minimum: 100, check: (item) => typeof item.name == "string" },
   "amsat-all-frequencies": { url: AMSAT_DATA + "amsat-all-frequencies.json", minimum: 1000, check: (item) => typeof item.name == "string" },
   // Not JSON: element sets, a name line and two element lines for each satellite (about 100; they age in days)
-  "dailytle": { url: AMSAT_TLE, text: true, minimum: 50 }
+  "dailytle": { url: AMSAT_TLE, text: true, minimum: 50 },
+  // SatNOGS's element sets, one for each of its satellites (filed under its own catalog number, norad_cat_id; the lines may carry another:
+  // a temporary number's real one). Not in tools/sat_update.js: Space-Track's data isn't shipped with the release, each copy fetches it
+  "satnogs-tle": { url: SATNOGS_API + "tle/?format=json", minimum: 500, check: (item) => typeof item.tle1 == "string" && typeof item.tle2 == "string" && typeof item.sat_id == "string" && Number(item.norad_cat_id) > 0 }
 };
 
 // Element sets (TLE) in a text: how many are complete and correct (two lines of 69 characters, the same catalog number

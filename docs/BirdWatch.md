@@ -276,9 +276,13 @@ The Telemetry tab chooses where BirdWatch gets its TLEs. A satellite can only be
 
 **AMSAT TLE** is AMSAT's daily set of TLEs for the amateur satellites, built in and kept up to date. Tick **Enable** to use it (it is on by default). The line shows how many element sets it holds and their date, or Off.
 
+### SatNOGS
+
+BirdWatch also takes TLEs from [SatNOGS DB](https://db.satnogs.org) for the amateur satellites none of your sources has, such as one launched recently that AMSAT doesn't list yet. Only satellites with a working downlink on an amateur satellite band are taken. These TLEs are always used, and always last: AMSAT's and your own always win. They are downloaded once a day while BirdWatch is on and GridTracker2 is online, so a new install has them after its first update.
+
 ### TLE Precedence
 
-When a satellite is in more than one source, the first source in this order that has it is used (AMSAT, Local, Remote, TLE by default). An override (below) always wins.
+When a satellite is in more than one source, the first source in this order that has it is used (AMSAT, Local, Remote, TLE by default). An override (below) always wins, and SatNOGS's TLEs come after all of them.
 
 ### Add TLE
 
@@ -415,5 +419,6 @@ The Multi-Mode Decoder's **Follow BirdWatch** switches the decoder to the mode o
 
 * Satellite names, details, modes and transmitters come from [SatNOGS DB](https://db.satnogs.org), by the [Libre Space Foundation](https://libre.space) and its volunteer contributors, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 * The amateur satellites' element sets (TLE) and frequencies come from [AMSAT](https://www.amsat.org), The Radio Amateur Satellite Corporation. Thank you, AMSAT, for keeping the amateur satellites flying and their element sets up to date.
+* Element sets for the satellites AMSAT doesn't list come from SatNOGS DB, which gets them from [Space-Track.org](https://www.space-track.org).
 
 These credits are also shown at the bottom of the Satellites tab. See [License Agreement and Copyright](License-Agreement-and-Copyright.md#satellite-data) for the full notices.

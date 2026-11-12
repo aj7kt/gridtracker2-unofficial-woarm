@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261112.1]
+## [v2.261112.2]
 
 ### MD Markup Format
 #### Map / UI
@@ -52,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - QSOs you log while a satellite is up are logged as satellite contacts, with its name
   - The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows
   - Works offline with the satellite data that comes with GridTracker2, and keeps it up to date while you're online, thanks to SatNOGS DB (Libre Space Foundation) and AMSAT
+  - Newly launched amateur satellites that AMSAT doesn't list yet can be tracked too, from SatNOGS DB
   - The User Guide's BirdWatch chapter describes it all
 
 #### Network Audio
@@ -154,6 +155,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>QSOs you log while a satellite is up are logged as satellite contacts, with its name</li>
       <li>The Multi-Mode Decoder can follow it, switching to the mode of the transmitter your radio follows</li>
       <li>Works offline with the satellite data that comes with GridTracker2, and keeps it up to date while you're online, thanks to SatNOGS DB (Libre Space Foundation) and AMSAT</li>
+      <li>Newly launched amateur satellites that AMSAT doesn't list yet can be tracked too, from SatNOGS DB</li>
       <li>The User Guide's BirdWatch chapter describes it all</li>
     </ul>
   </li>
