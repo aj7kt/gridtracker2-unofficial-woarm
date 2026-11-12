@@ -1,0 +1,21 @@
+{
+  "$comment": "Olivia's Frequency menu entries, added to the band plans (resources/data/bands.json, its schema)",
+  "frequencies": [
+        {"mode": "Olivia", "band": "160m", "freq": 1.8255, "rigMode": "USB", "note": "Calling 8/250, IARU R2", "primary": true},
+        {"mode": "Olivia", "band": "160m", "freq": 1.8375, "rigMode": "USB", "note": "Calling 8/250, IARU R1"},
+        {"mode": "Olivia", "band": "80m", "freq": 3.5815, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "40m", "freq": 7.0385, "rigMode": "USB", "note": "Calling 8/250, IARU R2", "primary": true},
+        {"mode": "Olivia", "band": "40m", "freq": 7.071, "rigMode": "USB", "note": "Calling 8/250, secondary"},
+        {"mode": "Olivia", "band": "30m", "freq": 10.1415, "rigMode": "USB", "note": "Calling 8/250", "primary": true},
+        {"mode": "Olivia", "band": "30m", "freq": 10.1425, "rigMode": "USB", "note": "32/1000"},
+        {"mode": "Olivia", "band": "20m", "freq": 14.071, "rigMode": "USB", "note": "Calling 8/250", "primary": true},
+        {"mode": "Olivia", "band": "20m", "freq": 14.107, "rigMode": "USB", "note": "32/1000"},
+        {"mode": "Olivia", "band": "17m", "freq": 18.0975, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "15m", "freq": 21.071, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "12m", "freq": 24.921, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "10m", "freq": 28.121, "rigMode": "USB", "note": "Calling 8/250"},
+        {"mode": "Olivia", "band": "6m", "freq": 50.2905, "rigMode": "USB", "note": "Calling 16/500, IARU R2"},
+        {"mode": "Olivia", "band": "60m", "freq": 5.359, "rigMode": "USB", "note": "8/250, 60m segment"},
+        {"mode": "Olivia", "band": "2m", "freq": 144.13475, "rigMode": "USB", "note": "16/500"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "feld-hell.wav",
+      "module": "hell",
+      "name": "Feld-Hell",
+      "modes": [
+        "hell"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Feld-Hell at 1000 Hz: a CQ from Q1HEL and a reply from Q2ABC",
+      "source": "generated"
+    }
+  ]
+}

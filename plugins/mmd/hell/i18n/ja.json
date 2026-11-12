@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "Hell 信号を待っています: ウォーターフォール上の信号をクリックすると読み取ります",
+	"cwViewer.hell.found": "検出",
+	"cwViewer.hell.sub.hover": "読み取る Hellschreiber の速度: Feld-Hell、または高速の X5 と X9。ウォーターフォール上の信号をクリックすると読み取り、その帯域内をクリックすると最も強い信号の検索に戻ります",
+	"cwViewer.hell.trim.hover": "傾いた印字をまっすぐにします: 右下がりなら上げ、右上がりなら下げます。値をクリックすると 0 に戻ります",
+	"cwViewer.hell.tape.hover": "受信した Hell 信号をそのまま印字します。各行は 2 回: まっすぐな方を読んでください"
+}

@@ -339,6 +339,8 @@ function renderMap()
   createGlobalMapLayer("lineGrids");
   createGlobalMapLayer("longGrids", 4500);
   createGlobalMapLayer("bigGrids", 50000, 4501);
+  // The Multi-Mode Decoder's layer: what its modes put on the map
+  createGlobalMapLayer("mmd");
   createGlobalMapLayer("baFlight");
   createGlobalMapLayer("pskFlights");
   createGlobalMapLayer("pskSpots");
@@ -396,6 +398,7 @@ function renderMap()
       GT.layerVectors.lineGrids,
       GT.layerVectors.longGrids,
       GT.layerVectors.bigGrids,
+      GT.layerVectors.mmd,
       GT.layerVectors.baFlight,
       GT.layerVectors.pskFlights,
       GT.layerVectors.pskSpots,

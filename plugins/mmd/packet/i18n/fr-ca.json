@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "Paquets",
+	"settings.packetDecoder.setMode.hover": "Choisir une fréquence dans le menu Fréquence règle le mode de la radio : FM en VHF, LSB pour le packet HF",
+	"cwViewer.packet.header.from": "De",
+	"cwViewer.packet.header.to": "À / Chemin",
+	"cwViewer.packet.empty": "Aucun paquet décodé pour l'instant : AFSK 1200 (APRS), FSK 9600 et HF 300 bauds sont tous écoutés. Cliquez dans la cascade pour verrouiller le packet HF sur un endroit",
+	"cwViewer.packet.status": "Paquets : {count} décodés, {utc}",
+	"cwViewer.packet.via": "via {sat}",
+	"cwViewer.packet.kind.position": "Position",
+	"cwViewer.packet.kind.object": "Objet",
+	"cwViewer.packet.kind.item": "Élément",
+	"cwViewer.packet.kind.status": "Statut",
+	"cwViewer.packet.kind.message": "Message à {to}",
+	"cwViewer.packet.kind.weather": "Météo",
+	"cwViewer.packet.kind.telemetry": "Télémesure",
+	"cwViewer.packet.locked": "Packet HF verrouillé : {hz} Hz",
+	"cwViewer.packet.heardAt": "Entendu à {hz} Hz : cliquez pour y verrouiller le packet HF"
+}

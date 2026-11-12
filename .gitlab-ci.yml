@@ -10,6 +10,10 @@ variables:
   ELECTRON_CACHE: '$CI_PROJECT_DIR/.cache/electron'
   electron_config_cache: '$CI_PROJECT_DIR/.cache/electron'
   ELECTRON_BUILDER_CACHE: '$CI_PROJECT_DIR/.cache/electron-builder'
+  # Secret Detection: the Multi-Mode Decoder plugins' dev signing key is committed on purpose (every developer packs and tries plugins
+  # with it; only a dev run trusts it, never an installed GridTracker2: tools/mmd_plugin_pack.js). The free-plugin key never is
+  # (named .txt: the repo's push rules refuse .pem and .key files)
+  SECRET_DETECTION_EXCLUDED_PATHS: 'plugins/dev-key-private.txt'
 
   # nothing in this file will be allowed to run automatically except for:
   # 1. merge requests // MR should validate linting at the least
@@ -38,6 +42,7 @@ win:build:
     - win
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|win_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -96,6 +101,7 @@ win7:build:
     - win
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|win_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -161,6 +167,7 @@ mac:build:
   image: macos-15-xcode-16
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|mac_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -197,6 +204,7 @@ lin:build:
   image: electronuserland/builder
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -233,6 +241,7 @@ arm64:build:
   image: arm64v8/fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_|arm_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -278,6 +287,7 @@ arm32:build:
   image: arm64v8/fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_|arm_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   artifacts:
     reports:
       dotenv: build.env
@@ -313,11 +323,41 @@ arm32:build:
     - npm run build:arm32
     - ls dist
 
+# The Multi-Mode Decoder's plugins (plugins/mmd/<id>/): each packed into <id>.asar and signed with the free-plugin key (the variable
+# MMD_FREE_SIGNING_KEY), as tools/mmd_plugin_pack.js does; with the download server's tree for this app version (--publish:
+# plugins/out/site/plugins/, each plugin and this version's signed plugins.json), which upload-gtserv copies there on v and b tags
+plugins:build:
+  stage: build
+  retry:
+    max: 2
+    when: script_failure
+  image: electronuserland/builder
+  rules:
+    - if: $CI_COMMIT_TAG =~ '/(v|test_|plugins_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
+  artifacts:
+    name: 'plugins-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '$CI_PROJECT_DIR/plugins/out/'
+    when: on_success
+  cache:
+    paths:
+      - .cache/
+      - node_modules/
+    when: always
+  before_script:
+    - npm install
+  script:
+    - test -n "$MMD_FREE_SIGNING_KEY" || (echo "MMD_FREE_SIGNING_KEY is not set" && exit 1)
+    - node tools/mmd_plugin_pack.js write --publish
+    - ls -lR plugins/out
+
 win:upload:
   stage: upload
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|win_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: win:build
       artifacts: true
@@ -334,6 +374,7 @@ win7:upload:
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|win_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: win7:build
       artifacts: true
@@ -350,6 +391,7 @@ mac:upload:
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|mac_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: mac:build
       artifacts: true
@@ -368,6 +410,7 @@ lin:upload:
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: lin:build
       artifacts: true
@@ -391,6 +434,7 @@ arm:upload:
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/(v|test_|lin_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: arm64:build
       artifacts: true
@@ -423,6 +467,7 @@ upload-gtserv:
   image: fedora:40
   rules:
     - if: $CI_COMMIT_TAG =~ '/v.*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: win:build
       artifacts: true
@@ -445,6 +490,8 @@ upload-gtserv:
     - job: lin:upload
       artifacts: true
     - job: arm:upload
+      artifacts: true
+    - job: plugins:build
       artifacts: true
   stage: release
   before_script:
@@ -470,12 +517,17 @@ upload-gtserv:
     # Win7's stage the same (the guide is made by mac:build, in dist/)
     - scp dist/${APPNAME}-${VERSION}-help-en.pdf ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/win7/stage/
     - ssh ${GT_SERV_USER}@${GT_SERV_ADDRESS} "ln -sf ${APPNAME}-${VERSION}-help-en.pdf ~/gt2_download/win7/stage/help-en.pdf"
+    # The Multi-Mode Decoder's plugins (plugins:build --publish): each one under a name its bytes alone have (never overwritten), and this
+    # version's signed list, plugins/mmd/<version>/plugins.json, read only by this version's Get More... (no stage: an older version never
+    # reads it); the .htaccess keeps plugins/ from being listed
+    - scp -r plugins/out/site/plugins ${GT_SERV_USER}@${GT_SERV_ADDRESS}:~/gt2_download/
 
 
+# The GitLab Release: v tags only (main's releases), anchored so a b tag (a branch build) with a "v" in it doesn't make one
 auto-release-main:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   rules:
-    - if: $CI_COMMIT_TAG =~ '/v.*/'
+    - if: $CI_COMMIT_TAG =~ /^v/
   needs:
     - job: win:build
       artifacts: true
@@ -593,6 +645,7 @@ update-discord:
   stage: publish
   rules:
     - if: $CI_COMMIT_TAG =~ '/v.*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   needs:
     - job: upload-gtserv
       artifacts: true
@@ -731,6 +784,7 @@ virustotal_push:
   image: fedora:42
   rules:
     - if: '$CI_COMMIT_TAG =~ /^(v|test_|win_).*/'
+    - if: $CI_COMMIT_TAG =~ /^b/
   before_script:
     - |
       dnf install node curl-minimal -y

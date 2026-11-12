@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "Luisteren naar een Hell-signaal: klik er een aan in de waterval om het te lezen",
+	"cwViewer.hell.found": "Gevonden",
+	"cwViewer.hell.sub.hover": "De gelezen Hellschreiber-snelheid: Feld-Hell, of de snellere vormen X5 en X9. Klik een signaal in de waterval aan om het te lezen; klik binnen de band om weer het sterkste te zoeken",
+	"cwViewer.hell.trim.hover": "Zet een scheve afdruk recht: verhoog als hij naar rechts daalt, verlaag als hij stijgt. Klik op de waarde om terug te zetten naar 0",
+	"cwViewer.hell.tape.hover": "Het Hell-signaal afgedrukt zoals het gehoord wordt, elke regel twee keer: lees de kopie die recht staat"
+}

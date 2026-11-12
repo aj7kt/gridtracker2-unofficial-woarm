@@ -214,17 +214,30 @@ function mediaCheck()
 
   });
 
-  // data/modes.json: per mode { digital, phone, color }; GT.modes / GT.modes_phone keep their mode -> bool shape
+  // data/modes.json: per mode { group, color, parentMode }. group is LoTW's mode group: DATA, PHONE, CW or IMAGE (SSTV, FAX, ATV);
+  // GT.modes / GT.modes_phone keep their mode -> bool shape (digital: DATA, phone: PHONE). parentMode: a submode's ADIF mode (FT4:
+  // MFSK, USB: SSB). A submode with no color of its own is shown in its parent's (applyModeColorSettings), and isn't in the Mode
+  // filter or Mode Colors
   const modeData = requireJson("data/modes.json");
   GT.modes = {};
   GT.modes_phone = {};
   GT.modeColors = {};
+  GT.modeGroup = {};
+  GT.modeParent = {};
+  GT.modeParentColor = {};
   for (const key in modeData)
   {
-    GT.modes[key] = modeData[key].digital;
-    GT.modes_phone[key] = modeData[key].phone;
-    GT.modeColors[key] = modeData[key].color;
-    gtModeFilter.appendChild(newOption(key));
+    const entry = modeData[key];
+    GT.modes[key] = entry.group == "DATA";
+    GT.modes_phone[key] = entry.group == "PHONE";
+    GT.modeGroup[key] = entry.group;
+    if (entry.parentMode) GT.modeParent[key] = entry.parentMode;
+    if (entry.color)
+    {
+      GT.modeColors[key] = entry.color;
+      gtModeFilter.appendChild(newOption(key));
+    }
+    else GT.modeParentColor[key] = true;
   }
   // Feeds name JS8 "JS8CALL"
   GT.modeColors.JS8CALL = GT.modeColors.JS8;

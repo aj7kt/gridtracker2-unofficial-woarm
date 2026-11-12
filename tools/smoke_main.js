@@ -31,7 +31,7 @@
   step("mode data", () => Object.keys(GT.modes).length + " modes, " + Object.keys(GT.modeColors).length + " colors");
   step("hotkey list", () => { generatePrintTable(); return Object.keys(GT.hotKeys).length + " hotkeys, " + printableHotKeyTable.rows.length + " rows"; });
   step("rtsn state", () => GT.gtState);
-  step("windows", () => ["callRosterWindowHandle", "statsWindowHandle", "lookupWindowHandle", "baWindowHandle", "alertWindowHandle"].map(k => k.replace("WindowHandle", "") + ":" + (GT[k] && !GT[k].closed ? "up" : "-")).join(" "));
+  step("windows", () => ["callRosterWindowHandle", "statsWindowHandle", "lookupWindowHandle", "baWindowHandle", "alertWindowHandle", "logQsoWindowHandle"].map(k => k.replace("WindowHandle", "") + ":" + (GT[k] && !GT[k].closed ? "up" : "-")).join(" "));
   await sleep(1500);
   if (startAudioRoster) showAudioAlertsRoster(startAudioRoster);
   window.removeEventListener("error", onErr);

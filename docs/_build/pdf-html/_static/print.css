@@ -35,6 +35,8 @@ section.gt-chapter > h2:first-child { margin-top: 0; }
 h3 { font-size: 15pt; color: var(--gt-accent); margin: 16pt 0 6pt; }
 h4 { font-size: 12.5pt; margin: 13pt 0 4pt; }
 h5, h6 { font-size: 11pt; margin: 11pt 0 3pt; }
+/* A plugin's guide (one page, build.js --plugin: body.gt-plugin): its # is the h1, its title, over its ## sections (h2) */
+body.gt-plugin div.body section > h1 { font-size: 24pt; color: var(--gt-accent); border-bottom: 3px solid var(--gt-accent); padding-bottom: 5pt; margin: 0 0 12pt; }
 
 /* Contents page */
 nav.gt-toc { break-after: page; font-size: 9.5pt; column-count: 2; column-gap: 0.35in; }

@@ -3,11 +3,11 @@
 // See LICENSE for more information.
 
 // The Multi-Mode Decoder's Test Signals (the button beside the levels): recordings in resources/test-signals (listed in its index.json,
-// made by tools/make_test_signals.js) of the mode's signals, often several at once and some with an RSID first, played into the decoder's
+// made by tools/make_test_signals.js; a plugin's in its own test-signals folder) of the mode's signals, often several at once and some with an RSID first, played into the decoder's
 // own input while it listens (the Input Device silenced meanwhile and a noise floor played in its place, so it's heard alone, as on a
-// band: mmdTestNoise), everything decoded before cleared first. FT8's and FT4's start on a period's boundary.
-// What they decode stays in the window: FT8's and FT4's periods heard while one played aren't passed to GridTracker's instance, and
-// SSTV's pictures aren't saved by themselves (mmdTestHeard)
+// band: mmdTestNoise), everything decoded before cleared first. A mode decoded in periods (FT8's, FT4's: a recording with sync) starts on a
+// period's boundary. What they decode stays in the window: FT8's and FT4's periods heard while one played aren't passed to GridTracker's
+// instance, and SSTV's pictures aren't saved by themselves (mmdTestHeard)
 
 const TEST = {
   list: null,      // index.json's signals, read once
@@ -18,7 +18,7 @@ const TEST = {
   heardFrom: 0,    // what was heard from and to while one played (ms): decodes of this are kept in the window
   heardTo: 0,
   timer: null,
-  oliviaSaved: null, // Olivia's submode and centre before one played, put back after
+  def: null,       // the registration of the mode it played in (its testStart's settings put back by its testEnd)
   noise: null        // the noise floor played with it (mmdTestNoise)
 };
 // After one ends, what the decoders still hear of it (FT8's period decoded after its end ...): kept in the window this long too (ms)
@@ -42,6 +42,8 @@ function mmdTestList()
     {
       TEST.list = [];
     }
+    // The plugins' own (each with dir, its folder: mmdPluginHost.js)
+    TEST.list = TEST.list.concat(mmdPluginsTestSignals());
   }
   return TEST.list;
 }
@@ -106,7 +108,7 @@ async function mmdTestPlay(t)
   let buffer;
   try
   {
-    const file = fs.readFileSync(path.join(resourcesPath, "test-signals", t.file));
+    const file = fs.readFileSync(path.join(t.dir || path.join(resourcesPath, "test-signals"), t.file));
     buffer = await ctx.decodeAudioData(file.buffer.slice(file.byteOffset, file.byteOffset + file.length));
   }
   catch (e)
@@ -127,21 +129,13 @@ function mmdTestStart(t, buffer, clear)
   mmdTestStop();
   const ctx = DEC.ctx, node = DEC.node;
   if (!ctx || !node) return false;
-  // Olivia: your submode and centre kept, put back when it ends (an RSID in it, or the recording's own, moves them meanwhile)
-  if (mmdOliviaMode())
-  {
-    const S = GT.settings.MMD;
-    TEST.oliviaSaved = { submode: S.oliviaSubmode, center: S.oliviaCenter };
-    if (t.olivia)
-    {
-      S.oliviaSubmode = t.olivia.submode;
-      S.oliviaCenter = t.olivia.center;
-      mmdOliviaMenu();
-      mmdOliviaRestart();
-    }
-  }
+  // The mode's own settings kept, put back when it ends, the recording's set (its registration's testStart and testEnd: Olivia's submode
+  // and centre, which an RSID in it, or the recording's own, moves meanwhile)
+  TEST.def = mmdPluginOf();
+  mmdPluginCall(TEST.def, "testStart", t);
+  // A recording of a mode decoded in periods (its sync: FT8's, FT4's) starts on the mode's next period (its registration's periodMs)
   let delay = 0;
-  const period = t.sync == "ft8" ? 15000 : t.sync == "ft4" ? 7500 : 0;
+  const period = t.sync ? mmdPluginPeriodMs() : 0;
   if (period)
   {
     const now = Date.now();
@@ -245,21 +239,10 @@ function mmdTestDone()
   }
   // The Input Device heard again
   mmdSwApply();
-  // Olivia's submode and centre as they were before it
-  const saved = TEST.oliviaSaved;
-  TEST.oliviaSaved = null;
-  if (saved)
-  {
-    const S = GT.settings.MMD;
-    const moved = S.oliviaSubmode != saved.submode || S.oliviaCenter != saved.center;
-    S.oliviaSubmode = saved.submode;
-    S.oliviaCenter = saved.center;
-    if (moved && mmdOliviaMode())
-    {
-      mmdOliviaMenu();
-      mmdOliviaRestart();
-    }
-  }
+  // The mode's own settings as they were before it (Olivia's submode and centre)
+  const def = TEST.def;
+  TEST.def = null;
+  mmdPluginCall(def, "testEnd");
   nodeTimers.clearInterval(TEST.timer);
   TEST.timer = null;
   mmdTestRender();

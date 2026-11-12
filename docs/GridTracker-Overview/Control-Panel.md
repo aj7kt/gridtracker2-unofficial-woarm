@@ -117,6 +117,7 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/settingsButton.png){width=32px} | Settings | Opens the [Settings](Settings-Sub-Menus.md) panel. | Ctrl+S |
 | ![](../img/buttons/adifLoadDiv.png){width=32px} | Load ADIF Log | Opens any ADIF log file and adds it to your logbook. The file is also added to Local File(s) in Settings → Logging, so it loads at every start. | Ctrl+L |
 | ![](../img/buttons/buttonAdifCheckBoxDiv.png){width=32px} | Reload Local ADIF Files | Reloads the local files listed in Settings → Logging. Shown when its **Menu Button** is ticked. | |
+| ![](../img/buttons/logQsoButtonDiv.png){width=32px} | Log QSO | Opens the [Log QSO](../Making-GridTracker-Work-For-You/Other-Windows.md#log-qso) window to log a QSO by hand, filled in from your rig; click again to close it, right-click for a fresh one. Shown with **Log QSOs By Hand** on in Settings → Logging. | F2 |
 | ![](../img/buttons/timezoneButton.png){width=32px} | Time Zones | Shows the time zones. Hover over a zone to see its name, offset and local time. | Ctrl+H |
 | ![](../img/buttons/gridOverlayButton.png){width=32px} | All Grid Overlay | Draws and labels the Maidenhead grid lines. | Ctrl+B |
 | ![](../img/buttons/equatorButton.png){width=32px} | Major Parallels and Meridians | Draws the Equator, the tropics, the polar circles and the prime meridian. | |
@@ -138,7 +139,7 @@ Buttons that open a window toggle it: click once to open, again to close. **Righ
 | ![](../img/buttons/santaButton.png){width=32px} | Santa Tracker | Follows Santa and his reindeer around the world. Shown from December 1st to 25th. | |
 | ![](../img/buttons/eventsButton.png){width=32px} | Event Viewer | Shows the [Event Viewer](#event-viewer). Right-click to choose whether it shows over the map or in a window of its own. | |
 | ![](../img/buttons/birdWatchButton.png){width=32px} | Toggle Satellite Tracking | Turns BirdWatch's satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while **BirdWatch** is on. See [BirdWatch](../BirdWatch.md). | Ctrl+F12 |
-| ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while **Multi-Mode Decoder** is on. | |
+| ![](../img/buttons/mmDecoderButton.png){width=32px} | Toggle Multi-Mode Decoder | Opens the [Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md) window; right-click to bring it forward. A green dot on it means the decoder is listening in the background. Shown while **Multi-Mode Decoder** is on. | |
 | ![](../img/buttons/radiosButton.png){width=32px} | Radios | Opens Settings on the [Radios](Settings-Sub-Menus.md#radios-tab) tab; click again to close it. Shown while **Rig Control**, **Rotor Control** or **Network Audio** is on. | |
 | ![](../img/buttons/castButton.png){width=32px} | Cast | Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while **Enable Casting** is on, and can be clicked once a Cast device has been found. See [Casting the Map](#casting-the-map). | |
 
@@ -173,7 +174,7 @@ The band activity graph, the Quick Stats and the Map View Filters can each be mo
 
 ## Event Viewer
 
-Click the **Event Viewer** button in the button panel to see what has happened, newest first. Each event has its **Time**, its **Source** (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the **Event** itself:
+Click the **Event Viewer** button in the button panel to see what has happened, newest first. Each event has its **Time** (hours, minutes and seconds, in UTC or, while the clock shows it, your local time), its **Source** (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the **Event** itself:
 
 * band and mode changes;
 * decodes that set off a Custom Alert, with a 🚩;

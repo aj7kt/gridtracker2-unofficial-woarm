@@ -130,8 +130,9 @@ async function mmdNetOutput(device)
   let ctx = null;
   try
   {
-    // (Only at the stream's rate: at another, the audio sent would be off pitch)
-    ctx = new AudioContext({ latencyHint: "playback", sampleRate: send.rate });
+    // (Only at the stream's rate: at another, the audio sent would be off pitch. "interactive", never "playback": a "playback" context
+    // misses a render callback now and then, measured 2026-11-11, and the audio of it would be lost)
+    ctx = new AudioContext({ latencyHint: "interactive", sampleRate: send.rate });
     await ctx.audioWorklet.addModule("lib/mmd/mmdWorklet.js");
     const node = new AudioWorkletNode(ctx, "pcm-out", { numberOfInputs: 1, numberOfOutputs: 0, channelCount: 1, channelCountMode: "explicit", processorOptions: { chunk: Math.round(ctx.sampleRate * MMD_NET_OUT_CHUNK_S) } });
     node.port.onmessage = (event) =>

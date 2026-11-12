@@ -8,6 +8,7 @@ Object.assign(CR,
   developerMode: false,
   modes: {},
   modes_phone: {},
+  modeGroup: {},
   day: 0,
   dayAsString: "0",
   menuHide: null,
@@ -492,6 +493,13 @@ function initiateQso(thisHash)
     return;
   }
   window.opener.initiateQso(thisHash);
+}
+
+// A Feed Roster call double-clicked: Log QSO opened filled in from its spot, as its right-click's Log QSO... does (with Log QSOs By Hand
+// on: logQsoFromFeedSpot in qso/logQso.js). The clicks before it tuned to the spot as a click does
+function rosterCallDoubleClick(thisHash)
+{
+  if (isFeedEntry(thisHash) && window.opener.logQsoFeedAvailable()) window.opener.logQsoFromFeedSpot(thisHash);
 }
 
 function callLookup(thisHash, grid)
@@ -1295,6 +1303,7 @@ function updateWorked()
 {
   CR.modes = GT.modes;
   CR.modes_phone = GT.modes_phone;
+  CR.modeGroup = GT.modeGroup;
   processAllAwardTrackers();
 }
 
@@ -2191,6 +2200,8 @@ function handleContextMenu(ev)
     if (name === "Callsign")
     {
       CR.targetHash = parent.id;
+      // Log QSO...: a Feed Roster spot's, with Log QSO on (Settings -> Logging: logQso.js)
+      CR.callMenuLogQso.visible = isFeedEntry(parent.id) && window.opener.logQsoFeedAvailable();
       CR.callMenu.popup();
     }
     else if (name === "Calling")
@@ -2290,7 +2301,7 @@ function handleContextMenu(ev)
 function getTypeFromMode(mode)
 {
   if (CR.modes[mode]) return "Digital";
-  if (CR.modes_phone[mode]) return "Phone";
+  if (CR.modes_phone[mode] || CR.modeGroup[mode] === "IMAGE") return "Phone";
   return "";
 }
 
@@ -2417,7 +2428,8 @@ function workAwardObject(obj, band, mode, isDigital, isPhone, unique = null)
     obj.bands.Digital[band] = ~~obj.bands.Digital[band] + 1;
     obj.modes.Digital[mode] = ~~obj.modes.Digital[mode] + 1;
   }
-  if (isPhone)
+  // Image QSOs (SSTV, FAX, ATV: their LoTW mode group) count toward Phone, as for DXCC
+  if (isPhone || CR.modeGroup[mode] === "IMAGE")
   {
     obj.bands.Phone[band] = ~~obj.bands.Phone[band] + 1;
     obj.modes.Phone[mode] = ~~obj.modes.Phone[mode] + 1;
@@ -4007,6 +4019,15 @@ function createRestOfMenus()
   });
 
   CR.callMenu.append(CR.callMenuRotator);
+
+  // A Feed Roster spot: the Log QSO window, filled in from it (shown with Log QSO on, Settings -> Logging: handleContextMenu)
+  CR.callMenuLogQso = new MenuItem({
+    type: "normal",
+    label: I18N("logQso.menu.label"),
+    visible: false,
+    click: function () { window.opener.logQsoFromFeedSpot(CR.targetHash); }
+  });
+  CR.callMenu.append(CR.callMenuLogQso);
   CR.callMenu.append(new MenuItem({ type: "separator" }));
  
   CR.callMenu.append(new MenuItem({

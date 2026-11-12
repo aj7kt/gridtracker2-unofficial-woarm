@@ -256,7 +256,8 @@ function birdWatchWorkerMessage(event)
   }
   else if (m.type == "passes")
   {
-    birdWatchPanelPasses(m);
+    // (the export's own, 72 hours of them, aren't the panel's: birdWatchExport.js)
+    if (m.id !== "export" && m.id !== "exportEnd") birdWatchPanelPasses(m);
     birdWatchExportCollect(m);
   }
   else if (m.type == "path" || m.type == "arc") birdWatchPredictMessage(m);

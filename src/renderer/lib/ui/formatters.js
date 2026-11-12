@@ -14,11 +14,14 @@ const BAND_MAP = (function() {
   const tempBands = [
      1, "160m",   3, "80m",    5, "60m",    7, "40m",   10, "30m",
     14, "20m",   18, "17m",   21, "15m",   24, "12m",   27, "11m", 
-    28, "10m",   29, "10m",   40, "8m",    50, "6m",    51, "6m", 
-    52, "6m",    53, "6m",    54, "6m",    70, "4m",   141, "2m", 
-   142, "2m",   143, "2m",   144, "2m",   145, "2m",   146, "2m", 
-   147, "2m",   148, "2m",   219, "1.25m", 220, "1.25m", 
-   221, "1.25m", 222, "1.25m", 223, "1.25m", 224, "1.25m", 225, "1.25m"
+    28, "10m",   29, "10m",   40, "8m",    41, "8m",    42, "8m",
+    43, "8m",    44, "8m",    45, "8m",    50, "6m",    51, "6m",
+    52, "6m",    53, "6m",    54, "6m",    55, "5m",    56, "5m",
+    57, "5m",    58, "5m",    59, "5m",    60, "5m",    61, "5m",
+    62, "5m",    63, "5m",    64, "5m",    65, "5m",    66, "5m",
+    67, "5m",    68, "5m",    69, "5m",    70, "4m",    71, "4m",
+   144, "2m",   145, "2m",   146, "2m",   147, "2m",   148, "2m",
+   222, "1.25m", 223, "1.25m", 224, "1.25m", 225, "1.25m"
   ];
   
   for (let i = 0; i < tempBands.length; i += 2) {
@@ -41,15 +44,17 @@ function formatBand(freq) {
   if (intFreq >= 24000 && intFreq <= 24250) return "1.2cm";
   if (intFreq >= 47000 && intFreq <= 47200) return "6mm";
   if (intFreq >= 75500 && intFreq <= 81000) return "4mm";
-  if (intFreq >= 122500 && intFreq <= 123000) return "2.5mm";
-  if (intFreq >= 134000 && intFreq <= 141000) return "2mm";
+  if (intFreq >= 119980 && intFreq <= 123000) return "2.5mm";
+  if (intFreq >= 134000 && intFreq <= 149000) return "2mm";
   if (intFreq >= 241000 && intFreq <= 250000) return "1mm";
+  if (intFreq >= 300000 && intFreq <= 7500000) return "submm";
   if (intFreq === 0)
   {
     const f = +freq;
 
     if (f >= 0.472 && f <= 0.479) return "630m";
-    if (f >= 0.1357 && f <= 0.1485) return "2200m";
+    if (f >= 0.501 && f <= 0.504) return "560m";
+    if (f >= 0.1357 && f <= 0.1378) return "2200m";
     if (f >= 0.009 && f <= 0.02) return "4000m";
   }
 

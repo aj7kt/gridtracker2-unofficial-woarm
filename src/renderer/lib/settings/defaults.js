@@ -445,7 +445,29 @@ const def_settings = {
     },
     lastFetch: {
       lotw_qsl: 0
-    }
+    },
+    // Queue QSOs To Send Later (Settings -> Logging, Send Later: qsoQueue.js): QSOs logged here at once, what goes out to the logging
+    // programs and online logbooks queued until Send All (off). queueAutoSend: Send All After, Send All on its own once queueSendAfter
+    // QSOs are queued (off; 25)
+    queueQsos: false,
+    queueAutoSend: false,
+    queueSendAfter: 25,
+    // Log QSO (Settings -> Logging: logQso.js, its window gt_logqso.html): the button panel's Log QSO, the Feed Roster's and the
+    // decoder's Log QSO menu items and buttons, to log one QSO by hand (off). logQsoPower: the Power last logged with it, offered again
+    // ("" none); logQsoVfo: the Rig Control VFO it reads (its id; "" the first one connected). Its card (logQsoWindow.js):
+    // logQsoLayout, its QSO view's tiles in order ([] the default), logQsoLayouts, its My Station view's ({ station }; not there: the
+    // default), logQsoView, the view shown ("qso", "station"), logQsoLocked (the lock: on unless opened),
+    // logQsoSticky, what the station's own added fields held when last logged where it differs from what GridTracker knows (FIELD: value)
+    logQso: false,
+    logQsoPower: "",
+    logQsoVfo: "",
+    logQsoLayout: [],
+    logQsoLayouts: {},
+    logQsoWidths: {},
+    logQsoColWidth: 115,
+    logQsoView: "qso",
+    logQsoLocked: true,
+    logQsoSticky: {}
   },
   msg: {
     msgSimplepush: false,
@@ -582,36 +604,30 @@ const def_settings = {
   // the Multi-Mode Decoder's [ and ], dragged on its scale; maxHz 0 is the span's top; the mode shown's, each mode's own kept in ranges:
   // { cw: { minHz, maxHz } }, a mode with none starting with the last one's). fallSpeed: the Waterfall
   // Speed, every mode's (1 as heard; set at startup from the mode shown's own, from before). fallShare: the waterfall's height as a share of its window, dragged on the bar under it (0: as laid out).
-  // ft8Depth: the FT8 Decoder's Depth, "normal" (ft8_lib as it comes) or "deep" (ft8wasm.c's passes, fine reading, guesses ...).
-  // ft8SendDecodes, ft4SendDecodes: Send Decodes To Call Roster, FT8's (or FT4's) decodes into the Call Roster too, not only the map,
-  // through GridTracker's instance MMD (open while the decoder is on, in the window's Mode) (both off).
-  // PSK31, RTTY, MFSK and DominoEX / THOR (thor): their Set Frequency and Set Mode (USB). pskSubmode ("psk31", "psk63", "psk125",
-  // "qpsk31"), mfskSubmode ("mfsk16", "mfsk32"), thorSubmode ("dominoex 11", "thor 16", "dominoex all" ...): their submode menus. NAVTEX (navtex), Feld-Hell (hell) and WEFAX (wefax): their Set Frequency and Set
-  // Mode (USB); hellSubmode ("feld", "x5", "x9"), hellTrim (ppm: the print's slant), wefaxLpm and wefaxIoc ("auto" or a number), wefaxTrim (ppm: the chart's slant).
-  // navtexSave: NAVTEX's Save Messages, each complete message as a text file in NAVTEX Messages (off).
-  // Olivia: oliviaSubmode ("olivia 8/500", "contestia 16/500" ...: its menu), oliviaCenter (audio Hz: where its signal is).
+  // WWV (wwv): its Set Frequency and Set Mode (USB).
+  // A plugin's own (navtexSave, FT8 / FT4's ft8Depth, ft8SendDecodes; the keyboard modes' pskSubmode, thorSubmode; Feld-Hell's hellTrim;
+  // Olivia's oliviaSubmode, oliviaCenter ...): its plugin.json's settings, added where missing as it's found (services/mmdPlugins.js).
+  // pluginsDisabled: the ids of the plugins turned off (found, not loaded).
   // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
-  // UTC clock every 10, 15, 30 or 60 s (0 none) in every mode but FT8 and FT4. ft8SlotFinder, ft4SlotFinder: the clearest places to
-  // transmit marked on the waterfall (off unless turned on). rsid: the RSIDs heard in every mode named on the waterfall (on). commonInput, commonVfo:
+  // UTC clock every 10, 15, 30 or 60 s (0 none) in every mode not decoded in periods. rsid: the RSIDs heard in every mode named on the
+  // waterfall (on). commonInput, commonVfo:
   // every mode on the one Input Device (inputs.common) and the one VFO (vfos.common: None until picked), each mode's own kept for when
   // they're off (on).
-  // viewMode: the mode the window decodes (its Mode menu): "cw", "ft8", "ft4", "sstv", "packet" ...; the instance MMD's mode too, with the
-  // window closed. FT4's own: ft4SetFreq, ft4SetMode (its mode
-  // USB). USB or LSB is set as the rig's data mode when the VFO's SSB Data is checked (Rigs.vfos[].ssbData).
+  // viewMode: the mode the window decodes (its Mode menu): "cw", "sstv", "sat", "wwv", a plugin's ("ft8", "psk31") ...; the instance MMD's
+  // mode too, with the window closed. USB or LSB is set as the rig's data mode when the VFO's SSB Data is checked (Rigs.vfos[].ssbData).
   // rigControl (the window's Settings, Decoders): whether the decoder may send the rig anything at all; then for each mode, a frequency
-  // picked in the window's Frequency menu: ft8SetFreq, cwSetFreq, sstvSetFreq, packetSetFreq tune the rig there, ft8SetMode, cwSetMode,
-  // sstvSetMode, packetSetMode set its mode (each on its own; FT8 USB, its data mode with the VFO's SSB Data; CW CW; SSTV its sideband; Packet FM,
-  // HF packet LSB), on unless turned off.
+  // picked in the window's Frequency menu: cwSetFreq, sstvSetFreq tune the rig there, cwSetMode, sstvSetMode set its mode (each on its
+  // own; CW CW; SSTV its sideband), on unless turned off.
   // rigControl off: nothing is sent unless turned on.
-  // WEFAX's own the same way: wefaxSave each chart saved as it ends, into wefaxFolder ("": WEFAX Charts beside it, mmDecoderWefaxFolder).
   // The SSTV Decoder's: sstvSave each picture saved as it ends, into sstvFolder ("": SSTV Pictures in
-  // GridTracker's own folder, mmDecoderSstvFolder). saveAsDir: where a picture was last saved with Save, by kind, { sstv, wefax }
-  // (mmdSstvSaveAs: the dialog opens there next time). inputs: each mode's Input Device, { cw: { id, name } } (its menu in the window);
+  // GridTracker's own folder, mmDecoderSstvFolder). saveAsDir: where a picture was last saved with Save, by kind, { sstv, wefax (a plugin's) }
+  // (mmdPicSaveAs: the dialog opens there next time). inputs: each mode's Input Device, { cw: { id, name } } (its menu in the window);
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO). tuneLocked: the lock on the divider beside the frequency (mmdTuneLockClick): unlocked, the mouse
-  // wheel over the frequency tunes the rig (mmdTuneWheel); locked unless unlocked
-  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, ft8Depth: "normal", rigControl: false, ft8SetFreq: true, ft8SetMode: true, ft8SendDecodes: false, ft4SetFreq: true, ft4SetMode: true, ft4SendDecodes: false, followBirdWatch: false, utcLines: 30, ft8SlotFinder: false, ft4SlotFinder: false, rsid: true, commonInput: true, commonVfo: true, psk31SetFreq: true, psk31SetMode: true, rttySetFreq: true, rttySetMode: true, mfskSetFreq: true, mfskSetMode: true, thorSetFreq: true, thorSetMode: true, navtexSetFreq: true, navtexSetMode: true, hellSetFreq: true, hellSetMode: true, wefaxSetFreq: true, wefaxSetMode: true, wsprSetFreq: true, wsprSetMode: true, oliviaSetFreq: true, oliviaSetMode: true, hellSubmode: "feld", hellTrim: 0, navtexSave: false, wefaxLpm: "auto", wefaxIoc: "auto", wefaxTrim: 0, pskSubmode: "psk31", mfskSubmode: "mfsk16", thorSubmode: "dominoex 11", oliviaSubmode: "olivia 8/500", oliviaCenter: 1500, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, packetSetFreq: true, packetSetMode: true, sstvSave: false, sstvFolder: "", wefaxSave: false, wefaxFolder: "", saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18 },
+  // wheel over the frequency tunes the rig (mmdTuneWheel); locked unless unlocked. (Log QSO's own setting is adifLog.logQso: its buttons
+  // and menu items in the decoder, mmdLogQso.js, show with it on)
+  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, rigControl: false, followBirdWatch: false, utcLines: 30, rsid: true, commonInput: true, commonVfo: true, wwvSetFreq: true, wwvSetMode: true, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, sstvSave: true, sstvFolder: "",saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18, pluginsDisabled: [] },
   // Network Audio (Settings -> Features -> Service, its streams in the Radios tab; netAudio.js): audio streams on the LAN, each an Input Device or an Output Device of the
   // Multi-Mode Decoder. streams: [{ id ("n1" ...), name (the user's own), connect (unchecked: not opened, its settings free to change),
   // protocol ("vban", "rtp", "pulse": NET_AUDIO_PROTOCOLS), dir ("in", "out"), host, port, streamName, rate, channels, channel ("left",

@@ -1,0 +1,8 @@
+{
+	"settings.psk31Decoder.label": "PSK31",
+	"settings.rttyDecoder.label": "RTTY",
+	"settings.mfskDecoder.label": "MFSK",
+	"settings.thorDecoder.label": "DominoEX / THOR",
+	"cwViewer.key.allSpeeds": "全速度",
+	"cwViewer.key.hover": "デコードするサブモード: 通過帯域内のその信号をすべて見つけてデコードします。受信した RSID をクリックすると設定されます"
+}

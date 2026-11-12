@@ -1,0 +1,18 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "olivia-3.wav",
+      "module": "olivia",
+      "name": "Olivia / Contestia",
+      "modes": [
+        "olivia"
+      ],
+      "signals": 3,
+      "rsid": true,
+      "sync": null,
+      "description": "Olivia and Contestia one after another, each after its RSID: Olivia 8/500 at 900 Hz, Contestia 8/250 at 1600 Hz, Olivia 16/500 at 2350 Hz",
+      "source": "generated"
+    }
+  ]
+}

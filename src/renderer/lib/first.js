@@ -10,6 +10,9 @@ const path = /** @type {typeof import("path")} */ (window.require("path"));
 const fs = /** @type {typeof import("fs")} */ (window.require("fs"));
 const process = /** @type {typeof import("process")} */ (window.require("process"));
 
+// A callsign with any pre- and post-indicators, as GridTracker has told one for years: here so every window has the same one
+const CALLSIGN_REGEXP = /^([A-Z0-9]+\/){0,1}([0-9][A-Z]{1,2}[0-9]|[A-Z]{1,2}[0-9])([A-Z0-9]+)(\/[A-Z0-9/]+){0,1}$/;
+
 const originalConsole = {
   log: console.log.bind(console),
   error: console.error.bind(console),

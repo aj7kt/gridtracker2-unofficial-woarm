@@ -6,6 +6,8 @@ function readLocaleFile(locale)
     try
     {
       GT.i18n = requireJson(GT.languages[locale]);
+      // (read again: the MMD plugins' strings back in, services/mmdPlugins.js)
+      if (typeof mmdPluginsI18n == "function") mmdPluginsI18n();
     }
     catch (e)
     {

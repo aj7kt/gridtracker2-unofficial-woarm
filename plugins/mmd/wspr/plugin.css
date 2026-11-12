@@ -1,0 +1,62 @@
+/* WSPR mode's list: each 2 minute period's stations, the newest first, as the decoder's other lists are drawn */
+#wsprList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#wsprTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.wsprUtcCol {
+  width: 62px;
+}
+.wsprDbCol {
+  width: 36px;
+}
+.wsprFreqCol {
+  width: 100px;
+}
+/* DT (to -1.0), Drift and dBm */
+.wsprDtCol {
+  width: 50px;
+}
+.wsprCallCol {
+  width: 90px;
+}
+.wsprGridCol {
+  width: 64px;
+}
+#wsprTable th {
+  position: sticky;
+  top: 0;
+  background-color: #111;
+  color: #aaa;
+  font-weight: normal;
+  text-align: left;
+  padding: 2px 6px;
+}
+#wsprTable td {
+  padding: 1px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-family: monospace;
+  font-size: 13px;
+  color: #ddd;
+}
+#wsprTable td.wsprNum {
+  color: #aaa;
+}
+#wsprTable td.wsprCall {
+  color: var(--gt-callsign);
+}
+#wsprTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+#wsprEmpty {
+  color: #888;
+  padding: 6px;
+}

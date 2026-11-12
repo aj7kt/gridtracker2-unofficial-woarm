@@ -1,11 +1,11 @@
-// Builds src/renderer/lib/mmd/ft8.wasm (the Multi-Mode Decoder's FT8 mode) from src/wasm/ft8/ (ft8wasm.c and ft8_lib beside it, MIT) with Emscripten.
+// Builds plugins/mmd/ftx/ft8.wasm (the Multi-Mode Decoder's FT8 / FT4 plugin) from src/wasm/ft8/ (ft8wasm.c and ft8_lib beside it, MIT) with Emscripten.
 // Usage (repo root): node tools/build_ft8_wasm.js [write] [--emsdk=C:\path\to\emsdk] [--out=file.wasm] [--profile]
-// Dry run unless "write": builds into an OS temp folder and says whether the result differs from the one in lib/mmd/. --out writes the
+// Dry run unless "write": builds into an OS temp folder and says whether the result differs from the plugin's. --out writes the
 // build to that file only, for trying a change offline; --profile (with --out) keeps function names for a CPU profile.
 //
 // - Needs the Emscripten SDK installed and activated, found as tools/build_cw_wasm.js finds it (--emsdk=, else EMSDK, else ~/emsdk).
 // - A standalone module with no JavaScript glue. ft8_lib's logging and number formatting bring in WASI's fd_write, fd_seek, fd_close and
-//   proc_exit: the viewer answers them (mmDecoder.js, mmdFt8Load).
+//   proc_exit: its worker answers them (plugins/mmd/ftx/ft8Worker.js).
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -16,7 +16,7 @@ const write = args.includes("write");
 const opt = (name, def) => (args.find((a) => a.startsWith(`--${name}=`)) || `=${def}`).split("=").slice(1).join("=");
 const srcDir = "src/wasm/ft8";
 const lib = path.join(srcDir, "ft8_lib");
-const outFile = "src/renderer/lib/mmd/ft8.wasm";
+const outFile = "plugins/mmd/ftx/ft8.wasm";
 const fail = (msg) =>
 {
   console.log(msg + " - nothing written");
@@ -77,7 +77,7 @@ console.log(`built ${bytes.length} bytes`);
 console.log("imports: " + (WebAssembly.Module.imports(mod).map((i) => i.module + "." + i.name).join(", ") || "none"));
 const missing = exportsList.filter((f) => !WebAssembly.Module.exports(mod).some((e) => e.name == f));
 if (missing.length) fail("missing exports: " + missing.join(", "));
-// --out=<file.wasm>: written there only, for trying a change offline (never into lib/mmd/)
+// --out=<file.wasm>: written there only, for trying a change offline (never into the plugin's folder)
 const outOnly = opt("out", "");
 if (outOnly)
 {

@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "Packet",
+	"settings.packetDecoder.setMode.hover": "Wybór częstotliwości w menu Częstotliwość ustawia emisję radia: FM na VHF, LSB dla packetu na KF",
+	"cwViewer.packet.header.from": "Od",
+	"cwViewer.packet.header.to": "Do / Ścieżka",
+	"cwViewer.packet.empty": "Nie zdekodowano jeszcze pakietów: nasłuchiwane są AFSK 1200 (APRS), FSK 9600 i KF 300 bodów. Kliknij wodospad, aby zablokować packet HF w jednym miejscu",
+	"cwViewer.packet.status": "Packet: {count} zdekodowano, {utc}",
+	"cwViewer.packet.via": "przez {sat}",
+	"cwViewer.packet.kind.position": "Pozycja",
+	"cwViewer.packet.kind.object": "Obiekt",
+	"cwViewer.packet.kind.item": "Element",
+	"cwViewer.packet.kind.status": "Status",
+	"cwViewer.packet.kind.message": "Wiadomość do {to}",
+	"cwViewer.packet.kind.weather": "Pogoda",
+	"cwViewer.packet.kind.telemetry": "Telemetria",
+	"cwViewer.packet.locked": "Packet HF zablokowany: {hz} Hz",
+	"cwViewer.packet.heardAt": "Słyszany na {hz} Hz: kliknij, aby tam zablokować packet HF"
+}

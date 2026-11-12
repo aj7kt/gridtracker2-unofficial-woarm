@@ -816,6 +816,8 @@ function workSpotOn(instance, callObj)
 // it), made the active rig with Focus Rig; otherwise Gen Msgs on the active WSJT-X / JTDX
 function workFeedCallObj(callObj)
 {
+  // With Log QSO on (Settings -> Logging), the spot is remembered for its phone form (logQso.js); the click does what it always has
+  logQsoRememberSpot(callObj);
   const instance = feedSpotTarget(callObj);
   if (instance == null)
   {
@@ -1176,8 +1178,17 @@ class PinData {
   }
 }
 
+// The RTSN server's checks on a callsign key (spots.js parseCallsignKey). Its lists and spots end up in map tooltips (HTML),
+// so anything else is skipped: from an older server, or changed on the way (the connection isn't encrypted)
+const RTSN_CALL_REGEXP = /^[A-Z0-9/]{1,10}$/;
+const RTSN_BAND_REGEXP = /^\d{1,4}(\.\d{1,2})?(m|cm|mm)$/;
+const RTSN_MODE_REGEXP = /^[A-Z0-9 ./+?-]{1,16}$/;
+
+// cid: call | band | mode | grid
 function addNewCall(cid) {
   const parts = cid.split("|");
+  if (parts.length != 4 || !RTSN_CALL_REGEXP.test(parts[0]) || !RTSN_BAND_REGEXP.test(parts[1]) ||
+    !RTSN_MODE_REGEXP.test(parts[2]) || !FEED_GRID_REGEXP.test(parts[3])) return;
   const call = parts[0];
 
   const fCall = formatCallsign(call);
@@ -1435,10 +1446,12 @@ function gtChatStateMachine()
 
 function gtSpotMessage(jsmesg)
 {
-  if ("O" in jsmesg)
+  if (typeof jsmesg.O === "string")
   {
+    // call | grid | dB | Hz | mode, shown in the map's spot tooltip (HTML)
     const parts = jsmesg.O.split("|");
-    if (parts.length == 5)
+    if (parts.length == 5 && RTSN_CALL_REGEXP.test(parts[0]) && FEED_GRID_REGEXP.test(parts[1]) &&
+      Number.isFinite(Number(parts[2])) && Number.isFinite(Number(parts[3])) && RTSN_MODE_REGEXP.test(parts[4]))
     {
       addNewRTSNSpot(parts);
     }

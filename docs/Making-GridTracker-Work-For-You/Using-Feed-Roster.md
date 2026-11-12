@@ -72,7 +72,11 @@ See [N3FJP AC Log](../Third-Party-Integrations/N3FJP-AC-Log-Integration.md) and 
 
 For CW and phone activators when no logging program is connected, click the park in the POTA column or the summit in the SOTA column to log the QSO yourself. This is offered while no AC Log or Log4OM is connected and no WSJT-X or JTDX is on the spot's band and mode; hover over the park or summit to check.
 
-The **Log POTA / SOTA QSO** window opens with the details filled in from the spot: your call, the station worked, the park and summit, the date and time (UTC), frequency, band and mode, and signal reports. Check them, add a comment if you like, and click **Log QSO** (or press **Enter**). The QSO is logged like any other, and a park QSO is spotted to POTA.
+The [Log QSO](Other-Windows.md#log-qso) window opens with the details filled in from the spot: the station worked, its park (`POTA_REF`) and summit (`SOTA_REF`), the date and time (UTC), frequency, band and mode, and signal reports. Check them, add a comment if you like, and click **Log QSO** (or press **Enter**). The QSO is logged like any other, and a park QSO is spotted to POTA. This works whether or not **Log QSOs By Hand** is on.
+
+### Logging Any Spot's QSO
+
+With **Log QSOs By Hand** on in Settings → Logging, double-click a call in the Feed Roster, or right-click it and pick **Log QSO...**: the [Log QSO](Other-Windows.md#log-qso) window opens filled in from the spot (call, park, summit, grid, frequency and mode). After you click a spot and tune to it, the side panel's **Log QSO** button fills in the same while your rig is still on the spot. Clicking a spot does what it always does.
 
 ## DX Feed Spots on the Map
 

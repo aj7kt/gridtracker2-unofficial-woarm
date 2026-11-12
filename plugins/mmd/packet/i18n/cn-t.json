@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "分組",
+	"settings.packetDecoder.setMode.hover": "在頻率選單中選擇頻率會設定電台的模式：VHF 為 FM，HF 分組為 LSB",
+	"cwViewer.packet.header.from": "來自",
+	"cwViewer.packet.header.to": "發往 / 路徑",
+	"cwViewer.packet.empty": "尚未解碼任何分組：AFSK 1200（APRS）、FSK 9600 和 HF 300 鮑都在收聽。點擊瀑布圖可將 HF 分組鎖定在一處",
+	"cwViewer.packet.status": "分組：已解碼 {count} 個，{utc}",
+	"cwViewer.packet.via": "經 {sat}",
+	"cwViewer.packet.kind.position": "位置",
+	"cwViewer.packet.kind.object": "物件",
+	"cwViewer.packet.kind.item": "項目",
+	"cwViewer.packet.kind.status": "狀態",
+	"cwViewer.packet.kind.message": "發給 {to} 的訊息",
+	"cwViewer.packet.kind.weather": "天氣",
+	"cwViewer.packet.kind.telemetry": "遙測",
+	"cwViewer.packet.locked": "HF 分組已鎖定：{hz} Hz",
+	"cwViewer.packet.heardAt": "在 {hz} Hz 收到：點擊將 HF 分組鎖定在該處"
+}

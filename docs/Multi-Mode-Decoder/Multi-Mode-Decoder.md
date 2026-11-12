@@ -1,10 +1,8 @@
 # The Multi-Mode Decoder
 
-The **Multi-Mode Decoder** decodes the signals your receiver hears, right inside GridTracker2, without another program. It listens to your rig's audio (or an SDR's), shows the whole passband as a waterfall, and decodes every signal it finds there in the mode you pick: CW, FT8, FT4, PSK, RTTY, MFSK, DominoEX and THOR, Olivia, NAVTEX, Feld-Hell, WEFAX, WSPR, SSTV, Packet and satellite data.
+The **Multi-Mode Decoder** decodes the signals your receiver hears, right inside GridTracker2, without another program. It listens to your rig's audio (or an SDR's), shows the whole passband as a waterfall, and decodes every signal it finds there in the mode you pick: CW, SSTV, satellite data and WWV / WWVH.
 
 You don't need Rig Control to use it. Without it, the decoder shows audio frequencies (Hz in your receiver's passband). With it, the decoder shows each signal at its frequency on the air, and can tune your rig.
-
-Its FT8, FT4 and WSPR decodes can also go to GridTracker2's map, alerts and Call Roster, as if they came from WSJT-X.
 
 This chapter covers the window and the settings shared by every mode. Each mode is described in [Decoder Modes](Decoder-Modes.md).
 
@@ -20,7 +18,7 @@ Turning **Multi-Mode Decoder** off hides the window, stops it listening and remo
 
 ### Listening in the Background
 
-While **Multi-Mode Decoder** is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. Its decodes keep reaching the map and the Call Roster (see [Decodes in GridTracker2](#decodes-in-gridtracker2)). Pictures, charts and NAVTEX messages keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.
+While **Multi-Mode Decoder** is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. GridTracker2's **MMD** instance stays open (see [Decodes in GridTracker2](#decodes-in-gridtracker2)). Pictures and charts keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.
 
 A green dot on the **Toggle Multi-Mode Decoder** button shows that it is listening in the background. Hover over the button and its tooltip says so. Turn **Multi-Mode Decoder** off to stop it listening and let go of the sound card.
 
@@ -36,7 +34,7 @@ From top to bottom, the window has:
 4. the scale, with the **[** and **]** handles;
 5. the waterfall;
 6. the frequency bar, with the frequency, band and mode;
-7. the decoded lines (or, in SSTV, WEFAX and Feld-Hell, the pictures or the tape).
+7. the decoded lines (or, in SSTV, the pictures).
 
 ### The Top Line
 
@@ -45,16 +43,15 @@ From top to bottom, the window has:
 * **Levels:** the audio levels of the Input Device, for example `-3 dB  45%`. Hover over them to set them (see [Audio Levels](#audio-levels)).
 * **Test Signals:** plays recordings of the mode's signals into the decoder (see [Test Signals](#test-signals)).
 * **Detect Modes:** listens for every mode at once and names each signal it finds (see [Detect Modes](#detect-modes)).
-* The status, on the right: **Listening**, **Starting audio…**, or an error in orange, such as an Input Device that couldn't be opened. In FT8, FT4 and WSPR the status is on the frequency bar instead.
+* The status, on the right: **Listening**, **Starting audio…**, or an error in orange, such as an Input Device that couldn't be opened.
 
 ### The Second Line
 
-* **Mode:** what is decoded. The modes are listed in [The Modes](#the-modes). The mode you pick is kept when GridTracker2 restarts.
+* **Mode:** what is decoded. The modes are listed in [The Modes](#the-modes). The mode you pick is kept when GridTracker2 restarts. The menu's last entry, **Get More...**, lists more decoders you can download (see [Getting More Decoders](#getting-more-decoders)).
 * **Frequency menu:** each mode's usual frequencies. Pick one to tune your rig there. It appears only with Rig Control (see [The Frequency Menu](#the-frequency-menu)).
-* **UTC:** lines across the waterfall on the UTC clock, each with its time: **Off**, 10s, 15s, 30s or 1m. FT8, FT4 and WSPR don't have this menu; their waterfall shows each period instead.
-* **Slot Finder** (FT8 and FT4): marks the clearest frequency to transmit on in the even and odd periods.
+* **UTC:** lines across the waterfall on the UTC clock, each with its time: **Off**, 10s, 15s, 30s or 1m.
 
-Some modes add a row of their own under the second line: the submode menu for PSK, MFSK, DominoEX / THOR, Olivia and Feld-Hell, and the chart controls for WEFAX. See [Decoder Modes](Decoder-Modes.md).
+A mode can add a row of its own under the second line, such as a **Submode** menu. See [Decoder Modes](Decoder-Modes.md).
 
 ### The Scale and the Waterfall
 
@@ -76,30 +73,28 @@ The bar between the waterfall and the decoded lines shows, in its center:
 * with Rig Control, the rig's frequency, band and mode, for example **14.074.00 (20m) USB** (the frequency in green, the band in yellow, the mode in orange);
 * without it, the audio decoded, from the **[** to the **Bandpass**, for example **250 Hz - 4 kHz** in cyan.
 
-In FT8, FT4 and WSPR its right end shows the status and how far into the period it is, for example `[ 7 / 15 ]`.
-
 Drag the bar up or down to give the waterfall or the decoded lines more room.
 
 ### The Decoded Lines
 
-Under the bar are the decoded lines, the newest kept in view. Their columns depend on the mode. In CW, for example, each signal has one line with its **Frequency**, **dB** (its signal over the noise), **WPM** and **Decoded Text**. PSK, RTTY, MFSK, DominoEX / THOR and Olivia use the same list, with the **Baud** in place of WPM.
+Under the bar are the decoded lines, the newest kept in view. Their columns depend on the mode. In CW, for example, each signal has one line with its **Frequency**, **dB** (its signal over the noise), **WPM** and **Decoded Text**. A mode can use the same list, with the **Baud** in place of WPM.
 
 A **CQ** is highlighted in yellow, the call after it in cyan, and its line is shaded green.
 
 ## Working With Signals
 
-These work in CW and in the modes listed the same way: PSK, RTTY, MFSK, DominoEX / THOR and Olivia.
+These work in CW, and in the modes listed the same way.
 
 * **Hover linking:** hover over a line and its signal is marked on the waterfall. Hover over a signal on the waterfall and its line is shaded.
-* **Pinning:** click a line to pin its signal (in CW, PSK, RTTY, MFSK and DominoEX / THOR, a click on the signal on the waterfall does it too). Its marks stay on the waterfall and its line stays listed, even while you tune elsewhere. Its line has a light red edge. Click it again to let it go.
+* **Pinning:** click a line to pin its signal (in CW, a click on the signal on the waterfall does it too). Its marks stay on the waterfall and its line stays listed, even while you tune elsewhere. Its line has a light red edge. Click it again to let it go.
 * **Deleting a line:** right-click a line and pick **Delete**. A station that is still sending is listed again with what it sends next.
 * **Copying text:** select text in a line with the mouse to copy it. A click that selects text doesn't pin.
 
-In FT8 and FT4, a click on the waterfall or a message sets the focus instead, and a right-click on the waterfall turns the time skew on or off. Other modes have clicks of their own (Packet, Feld-Hell, Olivia). See [Decoder Modes](Decoder-Modes.md).
+Other modes can have clicks of their own. See [Decoder Modes](Decoder-Modes.md).
 
 ### Tuning Lock
 
-With Rig Control on, a lock sits before the rig's frequency on the divider. Gold and closed, tuning is locked (as it starts); grey and open, it is unlocked. Click the lock to unlock it: the mouse wheel on the waterfall then tunes your rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz), each step landing on that step's round number. A label over the waterfall shows the frequency tuned to and the change (its total while you keep turning the wheel), then fades; a click on the band scope shows one over the scope the same way. In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock it; a middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed: the decoder sends nothing to the rig then.
+With Rig Control on, a lock sits before the rig's frequency on the divider. Gold and closed, tuning is locked (as it starts); grey and open, it is unlocked. Click the lock to unlock it: the mouse wheel on the waterfall then tunes your rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz), each step landing on that step's round number. A label over the waterfall shows the frequency tuned to and the change (its total while you keep turning the wheel), then fades; a click on the band scope shows one over the scope the same way. Click it again to lock it; a middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed: the decoder sends nothing to the rig then.
 
 ## Test Signals
 
@@ -107,7 +102,6 @@ With Rig Control on, a lock sits before the rig's frequency on the divider. Gold
 
 * The window is cleared first. The recording is then played into the decoder over a band's noise floor, and what your radio hears is silenced while it plays.
 * Many recordings have several stations at once. Every mode has some.
-* FT8 and FT4 recordings start on a period's boundary: the button shows **Test Starts In** and the seconds left.
 * While one plays, the button shows **Stop Test** and the seconds left. Click it to stop.
 * What a test decodes stays in the window. It isn't sent to the map or the Call Roster, and its pictures aren't saved by themselves.
 
@@ -115,19 +109,19 @@ The button is shown while the decoder is listening and the mode has test signals
 
 ## Detect Modes
 
-Not sure what a signal is? Click **Detect Modes**. The decoder listens for every mode at once and names each signal it finds, once it decodes: CW (with its speed), PSK31, PSK63, PSK125, QPSK31, RTTY (with its baud and shift), MFSK16, MFSK32, DominoEX and THOR (with their speed), Packet, SSTV (with its mode), each FT8 and FT4 station (with its message), and any mode an RSID names.
+Not sure what a signal is? Click **Detect Modes**. The decoder listens for every mode at once and names each signal it finds, once it decodes: CW (with its speed), SSTV (with its mode), the modes of the decoders you've added, and any mode an RSID names.
 
-![Detect Modes: a CW, a PSK31 and an RTTY signal found and named](../img/GT2_MMD_Detect.jpg)
+![Detect Modes: signals found and named](../img/GT2_MMD_Detect.jpg)
 
 * Each signal is labeled on the waterfall, and listed in place of the decoded lines with its **Mode**, **Frequency**, **dB** and what was **Heard**.
-* Click one, on the waterfall or in the list, to decode it: its mode and submode are picked and Detect Modes turns off. A CW signal is pinned, an HF packet station is locked onto, and the FT8 or FT4 focus is put on the station.
+* Click one, on the waterfall or in the list, to decode it: its mode and submode are picked and Detect Modes turns off. A CW signal is pinned.
 * The button is orange while Detect Modes is on. Click it again to go back to the mode you were in. Picking a mode in **Mode** also ends it.
 
 ## RSID
 
 Many digital-mode programs (fldigi, MultiPSK and others) can start a transmission with an RSID, a short burst that names its mode. With **RSID** on (in [Settings → General](#general), on unless you turn it off), the decoder names each RSID it hears on the waterfall where the transmission starts, in every mode: for example **RSID Olivia 8/500**, **RSID MT63-1000L** or **RSID BPSK31**.
 
-Click an RSID of a mode decoded here (BPSK31, BPSK63, BPSK125, QPSK31, RTTY 45, MFSK16, MFSK32, DominoEX, THOR, Packet 1200, Olivia, Contestia) to switch to that mode and submode. The transmission is decoded from its start, and nothing already decoded is cleared.
+Click an RSID of a mode decoded here (one of the decoders you've added) to switch to that mode and submode. The transmission is decoded from its start, and nothing already decoded is cleared.
 
 ## Audio Levels
 
@@ -150,22 +144,21 @@ Pick the mode in **Mode** on the second line. Each one is described in [Decoder 
 | Mode | What it decodes |
 | --- | --- |
 | [CW](Decoder-Modes.md#cw) | Every CW signal in the passband, each on its own line with its speed. |
-| [DominoEX / THOR](Decoder-Modes.md#dominoex-and-thor) | Every DominoEX or THOR signal, at the speed you pick or all speeds at once. |
-| [Feld-Hell](Decoder-Modes.md#feld-hell) | Hellschreiber, printed on a tape as it is heard (Feld-Hell, X5 and X9). |
-| [FT4](Decoder-Modes.md#ft8-and-ft4) | Each 7.5 second FT4 period. |
-| [FT8](Decoder-Modes.md#ft8-and-ft4) | Each 15 second FT8 period. |
-| [MFSK](Decoder-Modes.md#mfsk) | Every MFSK16 or MFSK32 signal. |
-| [NAVTEX](Decoder-Modes.md#navtex) | Maritime safety broadcasts on 518 and 490 kHz and HF NAVTEX. |
-| [Olivia](Decoder-Modes.md#olivia-and-contestia) | An Olivia or Contestia signal, in the submode you pick. |
-| [Packet](Decoder-Modes.md#packet) | AX.25 packets and APRS: AFSK 1200, FSK 9600, GMSK 4800 and HF 300 baud. |
-| [PSK](Decoder-Modes.md#psk) | Every PSK31, PSK63, PSK125 or QPSK31 signal. |
-| [RTTY](Decoder-Modes.md#rtty) | Every RTTY signal, its shift and baud found by itself. |
 | [Sat Data](Decoder-Modes.md#sat-data) | Satellite telemetry frames and SSDV pictures. |
 | [SSTV](Decoder-Modes.md#sstv) | Slow-scan TV pictures, received and sent. |
-| [WEFAX](Decoder-Modes.md#wefax) | Weather fax charts. |
-| [WSPR](Decoder-Modes.md#wspr) | Each 2 minute WSPR period. |
+| [WWV / WWVH](Decoder-Modes.md#wwv-and-wwvh) | NIST's time stations: their time code, and how far your PC clock is off. |
 
 The right-click menus of pictures, charts and messages (copy, save, delete, rotate) are described with each mode.
+
+### Getting More Decoders
+
+More modes come as decoders you download. Pick **Get More...**, the last entry of the **Mode** menu, to see the ones for your version of GridTracker2:
+
+* **Install** downloads a decoder. **Update To** downloads a newer version of one you have, and **Remove** takes one away.
+* Each change waits until GridTracker2 restarts. Click **Restart Now** to restart it at once (your settings and open windows are kept), or **Undo** to cancel a change before then.
+* Nothing is downloaded until you click. Each download is checked against GridTracker's signature before it is used.
+
+Once installed, a decoder's modes appear in the **Mode** menu. Each decoder has its own guide: click **Guide** in its box in [Settings → Decoders](#decoders).
 
 ## Using Rig Control
 
@@ -174,7 +167,7 @@ The decoder works on its own, from audio alone. Rig Control is optional. It lets
 * read the rig's frequency and mode, so signals are shown at their frequency on the air and the frequency bar shows the band;
 * tune the rig, from the Frequency menu, the mouse wheel on the waterfall (unlocked) or a click on the band scope;
 * set the rig's mode when you pick a frequency;
-* give FT8, FT4 and WSPR decodes their band in GridTracker2.
+* give GridTracker2's MMD instance its band.
 
 To use it:
 
@@ -190,12 +183,12 @@ While BirdWatch follows a satellite with a rig, the decoder sends that rig nothi
 
 ### The Frequency Menu
 
-With Rig Control on and the mode's VFO read, the Frequency menu appears on the second line. It lists the mode's usual frequencies, each with its band, for example **20m (14.074.00)**. WEFAX and NAVTEX list their stations by name instead. The frequency your rig is on is picked in the menu; on another frequency, the menu shows **-**.
+With Rig Control on and the mode's VFO read, the Frequency menu appears on the second line. It lists the mode's usual frequencies, each with its band, for example **20m (14.074.00)**. WWV / WWVH lists its stations by name instead. The frequency your rig is on is picked in the menu; on another frequency, the menu shows **-**.
 
 Picking a frequency sends your rig what that mode allows in [Settings → Decoders](#decoders):
 
 * **Set Frequency:** tunes the rig there;
-* **Set Mode:** sets the rig's mode, for example CW for CW, USB for FT8 and the digital modes, LSB below 10 MHz and USB above for SSTV, FM for VHF packet and LSB for HF packet.
+* **Set Mode:** sets the rig's mode, for example CW for CW, USB for the digital modes, and LSB below 10 MHz and USB above for SSTV.
 
 Both are on unless you turn them off. With both off, the menu isn't shown. With **Data** ticked for the VFO's **SSB** in Rig Control, the digital modes use the rig's data mode (USB-D, PKTUSB, DATA-U) instead of plain USB or LSB.
 
@@ -203,7 +196,7 @@ Sat Data has no Frequency menu.
 
 The frequencies come from the [Band Plans](#band-plans) tab, where you can change them.
 
-With a mode's **Set Frequency** on, picking that mode in the **Mode** menu tunes the rig to the mode's main frequency on the band you're on (its usual calling or activity frequency, ticked **Main** in [Band Plans](#band-plans): FT8 on 20 meters goes to 14.074, not its DXpedition frequency). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode's nearest frequency, and to its main frequency there. A rig already on one of the mode's frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn't tune the rig, since the signal is where the rig already is.
+With a mode's **Set Frequency** on, picking that mode in the **Mode** menu tunes the rig to the mode's main frequency on the band you're on (its usual calling or activity frequency, ticked **Main** in [Band Plans](#band-plans)). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode's nearest frequency, and to its main frequency there. A rig already on one of the mode's frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn't tune the rig, since the signal is where the rig already is.
 
 ## The Band Scope
 
@@ -251,21 +244,27 @@ The HW level isn't shown for an SDR input; SW still works.
 
 ## Decodes in GridTracker2
 
-While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named **MMD**, as it has one for each WSJT-X or JTDX. Its mode is the decoder's mode (CW, PSK63, RTTY, Olivia, FT8 ...), and its band is the one Rig Control reads on that mode's VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn't know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.
-
-* **FT8 and FT4:** the decodes go to GridTracker2's map and alerts, as a WSJT-X instance's do.
-* **Send Decodes To Call Roster** (FT8 and FT4 each, in [Settings → Decoders](#decoders); off until you turn it on): the decodes go to the Call Roster as well, and **MMD** appears among the roster's instances. Turn it off and the calls it put in the Call Roster are taken out.
-* **WSPR:** the decodes go to the map, as WSJT-X's WSPR decodes do.
-
-While **Send Decodes To Call Roster** is on but Rig Control isn't reading the mode's VFO, the decoder's settings show "Waiting for Rig Control to read the FT8 VFO's dial" (or FT4's) in orange.
-
-```{note}
-The MMD instance only receives. Clicking one of its stations in the Call Roster can't answer it, since the decoder doesn't transmit FT8 or FT4.
-```
+While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named **MMD**, as it has one for each WSJT-X or JTDX. Its mode is the decoder's mode (CW, SSTV ...), and its band is the one Rig Control reads on that mode's VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn't know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.
 
 ## Sending SSTV Pictures
 
 In **SSTV** mode the picture view has two tabs on its header: **Receive** (the pictures received) and **Send**, which builds a picture and transmits it through your rig. See [Sending Pictures](Decoder-Modes.md#sending-pictures).
+
+## Logging a QSO
+
+The decoder can fill in a QSO you made in CW, SSTV, the modes of the decoders you've added that QSOs are made in, or on phone, in GridTracker2's [Log QSO](../Making-GridTracker-Work-For-You/Other-Windows.md#log-qso) window, which logs it. Turn on **Log QSOs By Hand** in [Settings → Logging](../GridTracker-Overview/Settings-Sub-Menus.md#logging-tab) (off until you turn it on); the decoder's Log QSO buttons and menu items show with it.
+
+The **Log QSO** window opens filled in from:
+
+* **A line's right-click, Log QSO...** (CW, and the modes listed the same way), or **an SSTV picture's right-click**. The call is the one the decoded text names (the call after the last DE, else after CQ); the frequency is the signal's own on the air (with Rig Control), the time on is when its line started (an SSTV picture's start), the mode and submode are the ones decoded. An SSTV picture's mode (Martin 1, Scottie 2 ...) goes in the comment.
+* **Log QSO** on the second line, in those modes: the pinned line (SSTV: the picture shown), else a form with the mode, the frequency and the time filled in for you to type the call.
+* **Log Phone QSO** on the top line, shown while Rig Control reads the decoder's VFO in a voice mode (USB, LSB, AM, FM, D-STAR, C4FM, FreeDV ...), whatever mode is shown. The frequency and mode are the rig's, and the time on is when you opened it. If you clicked a station in the Feed Roster (or a spot on the map) and the rig is still within 1 kHz of that spot, its call, park and grid are filled in, and the time on is when you clicked it.
+
+The reports start at 599 (59 on phone, 595 for SSTV). Check the window, fill in what's missing, and log it there: see [Log QSO](../Making-GridTracker-Work-For-You/Other-Windows.md#log-qso).
+
+```{note}
+The decoder has no Log QSO for the modes no QSO is made in (WWV, Sat Data).
+```
 
 ## Settings
 
@@ -283,7 +282,7 @@ The waterfall, for every mode:
   * **WSJT-X:** the levels as heard, with **Gain** (contrast) and **Zero** (the level drawn black) sliders.
   * **Crisp:** the noise drawn black, with **Floor** (dB over the noise still drawn black) and **Range** (dB from black to white) sliders.
 * **Palette:** the waterfall's colors: **Classic**, **Ember**, **Twilight**, **Neon**, **Aurora**, **Clear Sight** (easy to read with red-green color blindness), **Prism**, **Glacier**, **Phosphor**, **Moonlight** or **Paper**.
-* **Resolution:** sharper in time or in frequency: **By Mode** (CW, PSK and RTTY sharp in time for crisp dots and dashes, FT8 and FT4 sharp in frequency), **Sharpest Time**, **Sharp Time**, **Balanced** or **Sharp Frequency**.
+* **Resolution:** sharper in time or in frequency: **By Mode** (CW sharp in time for crisp dots and dashes), **Sharpest Time**, **Sharp Time**, **Balanced** or **Sharp Frequency**.
 * **Window:** **Hann** or **Blackman-Harris** (a darker floor beside strong signals).
 * **Sharp Pixels:** each frequency drawn as a sharp block.
 
@@ -291,7 +290,7 @@ Then:
 
 * **Bandpass:** the audio decoded, from 0 Hz up. 2.5k to 4.5k suits a rig's passband; 10k, 44.1k, 48k and 96k are for an SDR's wider stream (the last three are the whole of a stream at that sample rate). Changing it starts the decoder again.
 * **Rig Control:** lets the decoder read each mode's VFO and send the rig what each mode allows. Off until you turn it on; off, the decoder has nothing to do with your rigs and shows audio frequencies only. See [Using Rig Control](#using-rig-control).
-* **Follow BirdWatch:** shown while BirdWatch is on with its Satellite Tracking toggled on. As BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8 or FT4). You can still change **Mode** afterwards. While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO, and the VFO menus show it grayed out. Off until you turn it on.
+* **Follow BirdWatch:** shown while BirdWatch is on with its Satellite Tracking toggled on. As BirdWatch's rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV or Sat Data). You can still change **Mode** afterwards. While BirdWatch is on with its Rig Control, every mode reads BirdWatch's Downlink VFO, and the VFO menus show it grayed out. Off until you turn it on.
 * **RSID:** names the mode of a transmission on the waterfall when its sender starts it with an RSID (see [RSID](#rsid)). On unless you turn it off.
 * **Common Input Device:** one Input Device for every mode, picked in the menu under it. Off, each mode uses its own (on the **Decoders** tab), as you left it. On unless you turn it off.
 * **Common Output Device:** one Output Device for every mode that transmits (SSTV), picked in the menu under it. Off, SSTV uses its own. On unless you turn it off.
@@ -310,7 +309,7 @@ The [band scope](#the-band-scope) strip:
 * **Out Of Band Shading:** how strongly what's outside the amateur bands is shaded in the theme's warning color, from 0% (not at all) to 100% (solid). 18% unless you change it.
 ### Decoders
 
-The **Decoders** tab has a box for each mode. Each box can have:
+The **Decoders** tab has a box for each mode. (The decoder's Log QSO buttons and menu items show with **Log QSOs By Hand** on in GridTracker2's Settings → Logging: see [Logging a QSO](#logging-a-qso).) Each box can have:
 
 * **Input Device:** the rig's audio this mode listens to. Shown while **Common Input Device** is off.
 * **Output Device** (SSTV): the audio output pictures are sent to (the rig's audio input). Shown while **Common Output Device** is off.
@@ -319,13 +318,9 @@ The **Decoders** tab has a box for each mode. Each box can have:
 
 Some modes have settings of their own here, described in [Decoder Modes](Decoder-Modes.md):
 
-* **FT8:** **Depth** (**Normal** or **Deep**) and **Send Decodes To Call Roster**.
-* **FT4:** **Send Decodes To Call Roster**.
-* **NAVTEX:** **Save Messages**.
 * **SSTV:** **Save Pictures**, and its **Folder** (click it to open it, **Choose** to pick another).
-* **WEFAX:** **Save Charts**, and its own **Folder**, the same way.
 
-Running one sound card for several radios? Turn off **Common Input Device** and **Common VFO**, and give each mode its own. For example, FT8 can listen to an SDR on a VFO of its own while CW listens to your HF rig.
+Running one sound card for several radios? Turn off **Common Input Device** and **Common VFO**, and give each mode its own. For example, SSTV can listen to an SDR on a VFO of its own while CW listens to your HF rig.
 
 A VFO removed in Rig Control is taken out of every mode's menu at once; a mode that used it uses **None** until you pick another.
 

@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "Listening for a Hell signal: click one on the waterfall to read it",
+	"cwViewer.hell.found": "Found",
+	"cwViewer.hell.sub.hover": "The Hellschreiber speed read: Feld-Hell, or its faster forms X5 and X9. Click a signal on the waterfall to read it; click inside its band to go back to finding the strongest",
+	"cwViewer.hell.trim.hover": "Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0",
+	"cwViewer.hell.tape.hover": "The Hell signal printed as it is heard, each line twice: read whichever copy is straight"
+}

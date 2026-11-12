@@ -31,7 +31,7 @@
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
 <p class="gt-cover-version">Version 2.261110.1</p>
-<p class="gt-cover-date">November 10, 2026</p>
+<p class="gt-cover-date">November 12, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
             
@@ -168,7 +168,7 @@
 <li><p><strong>Colors tab.</strong> Change the color of any band, and of the Gridsquare Colors on the map, from Settings → Colors. Map pins are now drawn in the band colors.</p></li>
 <li><p><strong>Roster Columns tab.</strong> Each roster has a Columns tab where you can show, hide, reorder and recolor every column.</p></li>
 <li><p><strong>New map layers and buttons.</strong> Range Rings, Major Parallels and Meridians, a Tropospheric Inversion VHF prediction layer (with 6 m Es areas), a choice of grayline terminator (Horizon, Civil, Nautical or Astronomical), the US weather radar restored, new base maps, and the option to put the side panel on the left side of the window.</p></li>
-<li><p><strong>Multi-Mode Decoder.</strong> Decode CW, FT8, FT4, PSK, RTTY, MFSK, DominoEX and THOR, Olivia, NAVTEX, Feld-Hell, WEFAX, WSPR, SSTV, Packet and satellite data right in GridTracker2, from your rig’s or an SDR’s audio, with a waterfall of the whole passband. FT8, FT4 and WSPR decodes can go to the map and Call Roster, and SSTV pictures can be sent. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
+<li><p><strong>Multi-Mode Decoder.</strong> Decode CW, SSTV, satellite data and WWV / WWVH time signals right in GridTracker2, from your rig’s or an SDR’s audio, with a waterfall of the whole passband. SSTV pictures can be sent too. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
 <li><p><strong>BirdWatch satellite tracking.</strong> Amateur satellites on the map with their footprints and ground tracks, a BirdWatch panel with each satellite’s position, AOS and LOS and sky views, a pass timeline you can export to your calendar, and pass alerts. With Rig Control your radio follows a satellite’s downlink and uplink, Doppler-corrected through the pass, and with Rotor Control your antenna follows it too. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></li>
 <li><p><strong>Network Audio.</strong> Audio in and out over your home network, for the Multi-Mode Decoder: VBAN (Voicemeeter), RTP and the simple TCP protocol of PipeWire and PulseAudio, and the audio of a FlexRadio (DAX) or a networked Icom. See <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>.</p></li>
 <li><p><strong>Rig and Rotor Control.</strong> GridTracker2 can now read and tune your rigs and SDRs itself (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood and Yaesu CAT, SPY Server, SDR++), and turn your antenna rotator (Yaesu GS-232, Easycomm II, SPID, rotctld, CatRotator / PstRotator). See <a class="reference internal" href="#document-Rig-and-Rotor-Control"><span class="std std-doc">Rig and Rotor Control</span></a>.</p></li>
@@ -782,122 +782,127 @@
 <td><p>Reloads the local files listed in Settings → Logging. Shown when its <strong>Menu Button</strong> is ticked.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/timezoneButton.png"><img alt="" src="_images/timezoneButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/logQsoButtonDiv.png"><img alt="" src="_images/logQsoButtonDiv.png" style="width: 32px;" /></a></p></td>
+<td><p>Log QSO</p></td>
+<td><p>Opens the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window to log a QSO by hand, filled in from your rig; click again to close it, right-click for a fresh one. Shown with <strong>Log QSOs By Hand</strong> on in Settings → Logging.</p></td>
+<td><p>F2</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/timezoneButton.png"><img alt="" src="_images/timezoneButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Time Zones</p></td>
 <td><p>Shows the time zones. Hover over a zone to see its name, offset and local time.</p></td>
 <td><p>Ctrl+H</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/gridOverlayButton.png"><img alt="" src="_images/gridOverlayButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/gridOverlayButton.png"><img alt="" src="_images/gridOverlayButton.png" style="width: 32px;" /></a></p></td>
 <td><p>All Grid Overlay</p></td>
 <td><p>Draws and labels the Maidenhead grid lines.</p></td>
 <td><p>Ctrl+B</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/equatorButton.png"><img alt="" src="_images/equatorButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/equatorButton.png"><img alt="" src="_images/equatorButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Major Parallels and Meridians</p></td>
 <td><p>Draws the Equator, the tropics, the polar circles and the prime meridian.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/rangeRingsButton.png"><img alt="" src="_images/rangeRingsButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/rangeRingsButton.png"><img alt="" src="_images/rangeRingsButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Range Rings</p></td>
 <td><p>Draws distance rings around your grid.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/radarButton.png"><img alt="" src="_images/radarButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/radarButton.png"><img alt="" src="_images/radarButton.png" style="width: 32px;" /></a></p></td>
 <td><p>US Radar</p></td>
 <td><p>Shows the US weather radar.</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/predButton.png"><img alt="" src="_images/predButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/predButton.png"><img alt="" src="_images/predButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Prediction Layer</p></td>
 <td><p>Cycles through the propagation prediction layers. Right-click to pick one directly, and to show or hide its legend. See <a class="reference internal" href="#document-GridTracker-Overview/GridTracker-Map-View-—-Main-WIndow#prediction-layers"><span class="std std-ref">Prediction Layers</span></a>.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/conditionsButton.png"><img alt="" src="_images/conditionsButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/conditionsButton.png"><img alt="" src="_images/conditionsButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Current Conditions</p></td>
 <td><p>Opens the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#current-conditions"><span class="std std-ref">Conditions</span></a> window. While GridTracker2 receives the planetary K index, the button shows it, with an arrow for its trend; it pulses during a geomagnetic storm (Kp above 5).</p></td>
 <td><p>Ctrl+E</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonSpotsBoxDiv.png"><img alt="" src="_images/buttonSpotsBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonSpotsBoxDiv.png"><img alt="" src="_images/buttonSpotsBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>Spot Reports</p></td>
 <td><p>Cycles between off, <strong>RX Spots</strong> (the stations that heard you, on the map) and <strong>RX Heatmap</strong>. Right-click to pick one directly and to show or hide the spots legend.</p></td>
 <td><p>Ctrl+O</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/lookupButton.png"><img alt="" src="_images/lookupButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/lookupButton.png"><img alt="" src="_images/lookupButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Lookup</p></td>
 <td><p>Opens the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#callsign-lookup"><span class="std std-ref">Lookup</span></a> window.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonPsk24CheckBoxDiv.png"><img alt="" src="_images/buttonPsk24CheckBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonPsk24CheckBoxDiv.png"><img alt="" src="_images/buttonPsk24CheckBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>PSK 24 Hour Report</p></td>
 <td><p>Loads the stations that heard you on PSK-Reporter in the last 24 hours.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonQRZCheckBoxDiv.png"><img alt="" src="_images/buttonQRZCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonQRZCheckBoxDiv.png"><img alt="" src="_images/buttonQRZCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>QRZ.com Log</p></td>
 <td><p>Downloads your QRZ.com logbook.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonLOTWCheckBoxDiv.png"><img alt="" src="_images/buttonLOTWCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonLOTWCheckBoxDiv.png"><img alt="" src="_images/buttonLOTWCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>LoTW Log</p></td>
 <td><p>Downloads your Logbook of The World confirmations.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonClubCheckBoxDiv.png"><img alt="" src="_images/buttonClubCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonClubCheckBoxDiv.png"><img alt="" src="_images/buttonClubCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>ClubLog Log</p></td>
 <td><p>Downloads your ClubLog logbook.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/buttonAcLogCheckBoxDiv.png"><img alt="" src="_images/buttonAcLogCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/buttonAcLogCheckBoxDiv.png"><img alt="" src="_images/buttonAcLogCheckBoxDiv.png" style="width: 32px;" /></a></p></td>
 <td><p>N3FJP Log</p></td>
 <td><p>Downloads the log from N3FJP AC Log.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/potaButton.png"><img alt="" src="_images/potaButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/potaButton.png"><img alt="" src="_images/potaButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Parks On The Air</p></td>
 <td><p>Shows POTA activations on the map. Shown while <strong>POTA Hunting</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/gtFlagButton.png"><img alt="" src="_images/gtFlagButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/gtFlagButton.png"><img alt="" src="_images/gtFlagButton.png" style="width: 32px;" /></a></p></td>
 <td><p>GridTracker Spotters</p></td>
 <td><p>Shows the other GridTracker2 users who are spotting. Hover over the button to see how many are on the map.</p></td>
 <td><p>Ctrl+G</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/dxcwFeedButton.png"><img alt="" src="_images/dxcwFeedButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/dxcwFeedButton.png"><img alt="" src="_images/dxcwFeedButton.png" style="width: 32px;" /></a></p></td>
 <td><p>DX Feed Spots</p></td>
 <td><p>Shows DX Cluster and CW Skimmer spots on the map. Shown while <strong>DX Feeds</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/sotaMapButton.png"><img alt="" src="_images/sotaMapButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/sotaMapButton.png"><img alt="" src="_images/sotaMapButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Summits on the Air</p></td>
 <td><p>Shows SOTA activators on the map. Shown while <strong>SOTA Chasing</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/santaButton.png"><img alt="" src="_images/santaButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/santaButton.png"><img alt="" src="_images/santaButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Santa Tracker</p></td>
 <td><p>Follows Santa and his reindeer around the world. Shown from December 1st to 25th.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/eventsButton.png"><img alt="" src="_images/eventsButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/eventsButton.png"><img alt="" src="_images/eventsButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Event Viewer</p></td>
 <td><p>Shows the <a class="reference internal" href="#event-viewer">Event Viewer</a>. Right-click to choose whether it shows over the map or in a window of its own.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/birdWatchButton.png"><img alt="" src="_images/birdWatchButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/birdWatchButton.png"><img alt="" src="_images/birdWatchButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Toggle Satellite Tracking</p></td>
 <td><p>Turns BirdWatch’s satellite tracking on and off: its panel, the satellites on the map, and its Auto-Track, Doppler and Pass Timeline buttons. Shown while <strong>BirdWatch</strong> is on. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></td>
 <td><p>Ctrl+F12</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/mmDecoderButton.png"><img alt="" src="_images/mmDecoderButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/mmDecoderButton.png"><img alt="" src="_images/mmDecoderButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Toggle Multi-Mode Decoder</p></td>
-<td><p>Opens the <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> window; right-click to bring it forward. A green dot on it means the decoder is listening in the background (FT8, FT4 or WSPR). Shown while <strong>Multi-Mode Decoder</strong> is on.</p></td>
+<td><p>Opens the <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">Multi-Mode Decoder</span></a> window; right-click to bring it forward. A green dot on it means the decoder is listening in the background. Shown while <strong>Multi-Mode Decoder</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="_images/radiosButton.png"><img alt="" src="_images/radiosButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="_images/radiosButton.png"><img alt="" src="_images/radiosButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Radios</p></td>
 <td><p>Opens Settings on the <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#radios-tab"><span class="std std-ref">Radios</span></a> tab; click again to close it. Shown while <strong>Rig Control</strong>, <strong>Rotor Control</strong> or <strong>Network Audio</strong> is on.</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Cast</p></td>
 <td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on, and can be clicked once a Cast device has been found. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
 <td><p></p></td>
@@ -934,7 +939,7 @@
 </section>
 <section id="event-viewer">
 <h3>Event Viewer<a class="headerlink" href="#event-viewer" title="Link to this heading">¶</a></h3>
-<p>Click the <strong>Event Viewer</strong> button in the button panel to see what has happened, newest first. Each event has its <strong>Time</strong>, its <strong>Source</strong> (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the <strong>Event</strong> itself:</p>
+<p>Click the <strong>Event Viewer</strong> button in the button panel to see what has happened, newest first. Each event has its <strong>Time</strong> (hours, minutes and seconds, in UTC or, while the clock shows it, your local time), its <strong>Source</strong> (GridTracker, Logging, Decode, WSJT-X, Roster, BirdWatch, Rotor, SOTA or Cast) and the <strong>Event</strong> itself:</p>
 <ul class="simple">
 <li><p>band and mode changes;</p></li>
 <li><p>decodes that set off a Custom Alert, with a 🚩;</p></li>
@@ -1055,7 +1060,7 @@
 <h4>Service<a class="headerlink" href="#service" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>BirdWatch (Satellite Tracking):</strong> passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See <a class="reference internal" href="#document-BirdWatch"><span class="std std-doc">BirdWatch</span></a>.</p></li>
-<li><p><strong>Multi-Mode Decoder:</strong> decodes CW, FT8, FT4, PSK, RTTY, SSTV and many other modes from your rig’s or an SDR’s audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
+<li><p><strong>Multi-Mode Decoder:</strong> decodes CW, SSTV, satellite data and WWV / WWVH from your rig’s or an SDR’s audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p></li>
 <li><p><strong>Rotor Control:</strong> turns your antenna rotator toward a station (the roster’s <strong>Aim Rotator</strong>, or <strong>Ctrl</strong>+click on the map) or a BirdWatch satellite. The rotator can be on a serial port (Yaesu GS-232, Easycomm II, SPID), or reached through Hamlib’s rotctld, CatRotator or PstRotator. See <a class="reference internal" href="#document-Rig-and-Rotor-Control#rotor-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
 <li><p><strong>Rig Control:</strong> GridTracker2’s own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See <a class="reference internal" href="#document-Rig-and-Rotor-Control#rig-control"><span class="std std-ref">Rig and Rotor Control</span></a>.</p></li>
 <li><p><strong>Network Audio:</strong> audio over your network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder. See <a class="reference internal" href="#document-Network-Audio"><span class="std std-doc">Network Audio</span></a>.</p></li>
@@ -1121,7 +1126,7 @@
 <section id="lookups">
 <h4>Lookups<a class="headerlink" href="#lookups" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>Add Lookup Data to QSO Log event:</strong> when you log a QSO, details from the lookup (name, QTH and so on) are added to the QSO GridTracker2 logs.</p>
+<li><p><strong>Add Lookup Data to QSO Log event:</strong> when you log a QSO, details from the lookup (name, QTH and so on) are added to the QSO GridTracker2 logs. They only fill what the QSO has empty: what your logging program sent or you typed is kept. A grid the QSO already has (the one the station sent, or one you typed) is kept too; the lookup’s grid only replaces one that isn’t a real grid square.</p>
 <ul>
 <li><p><strong>Add Lookup Grid if QSO Grid Missing:</strong> if the QSO has no grid, the grid from the lookup is used.</p></li>
 </ul>
@@ -1243,7 +1248,7 @@
 </section>
 <section id="mode-colors">
 <h4>Mode Colors<a class="headerlink" href="#mode-colors" title="Link to this heading">¶</a></h4>
-<p>The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab’s mode list and in the Statistics window.</p>
+<p>The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab’s mode list and in the Statistics window. Submodes that aren’t listed (THOR16, OLIVIA 8/500, …) are shown in their mode’s color.</p>
 <p>The Matrix, Amber CRT, Night Vision and OLED Minimal App Themes show bands and modes in the Statistics and Lookup windows in shades of their own color instead.</p>
 <p>Each box has a <strong>Reset Colors</strong> button in its title to return to the defaults.</p>
 </section>
@@ -1297,6 +1302,25 @@
 <li><p><strong>HRD Logbook &lt;= v6.8.x:</strong> older versions of Ham Radio Deluxe’s logbook. For version 6.9 and later use ADIF UDP / N1MM.</p></li>
 </ul>
 </section>
+<section id="psk-reporter-24-hour-history">
+<h4>PSK-Reporter 24 Hour History<a class="headerlink" href="#psk-reporter-24-hour-history" title="Link to this heading">¶</a></h4>
+<p>Loads the stations that heard you on PSK-Reporter over the last 24 hours. These are reception reports, not QSOs.</p>
+</section>
+<section id="log-qso">
+<h4>Log QSO<a class="headerlink" href="#log-qso" title="Link to this heading">¶</a></h4>
+<p><strong>Log QSOs By Hand</strong> (off until you turn it on) adds the <strong>Log QSO</strong> button to the side panel (and <strong>F2</strong>), the Feed Roster’s <strong>Log QSO…</strong> on a call, and the Multi-Mode Decoder’s Log QSO buttons and menu items. They open the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window, for logging a QSO you made by hand.</p>
+</section>
+<section id="send-later">
+<h4>Send Later<a class="headerlink" href="#send-later" title="Link to this heading">¶</a></h4>
+<p><strong>Queue QSOs To Send Later</strong> (off until you turn it on) is for sending your QSOs on in a batch, for example after a POTA trip or once a year, online or offline. With it on, each new QSO (from WSJT-X, JTDX, MSHV, a logging program’s ADIF broadcast or the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window) is still logged in GridTracker2 at once, so the map and the rosters show it worked, and in the GridTracker2 backup log when that’s on. What would go to your logging programs and online logbooks waits in a queue instead, kept on your computer, so it survives a restart. A queued QSO isn’t spotted to POTA, then or later.</p>
+<p>While it’s on, or QSOs are queued, the line under it shows <strong>Queued QSOs</strong> and their number, and:</p>
+<ul class="simple">
+<li><p><strong>Send All:</strong> sends each queued QSO to your logging programs and online logbooks, as it would have gone when you logged it (not into GridTracker2’s own log again). It waits while GridTracker2 is offline. If a QSO can’t be handed on, it stops there and keeps that QSO and the ones after it.</p></li>
+<li><p><strong>Export ADIF:</strong> saves the queued QSOs to an ADIF file you pick. They stay queued.</p></li>
+<li><p><strong>Send All After</strong> (off until you tick it) and a number (25 at first): Send All starts by itself once that many QSOs are queued, unless GridTracker2 is offline; then it starts with the next QSO queued after you’re back online.</p></li>
+</ul>
+<p>Queued QSOs can’t be edited or deleted here; edit them in your logging program once they’re sent, or export them first.</p>
+</section>
 <section id="online-logbooks">
 <h4>Online Logbooks<a class="headerlink" href="#online-logbooks" title="Link to this heading">¶</a></h4>
 <p>Enter your account details and click <strong>Test</strong> to check them.</p>
@@ -1309,10 +1333,6 @@
 <li><p><strong>Cloudlog/Wavelog:</strong> the URL of your server, an API key, and the <strong>Station Profile</strong> (click <strong>Test</strong> to load the list).</p></li>
 <li><p><strong>HamCQ.cn:</strong> API key.</p></li>
 </ul>
-</section>
-<section id="psk-reporter-24-hour-history">
-<h4>PSK-Reporter 24 Hour History<a class="headerlink" href="#psk-reporter-24-hour-history" title="Link to this heading">¶</a></h4>
-<p>Loads the stations that heard you on PSK-Reporter over the last 24 hours. These are reception reports, not QSOs.</p>
 </section>
 </section>
 <section id="audio-alerts-tab">
@@ -1900,7 +1920,11 @@
 <section id="logging-a-pota-or-sota-qso-by-hand">
 <h4>Logging a POTA or SOTA QSO by Hand<a class="headerlink" href="#logging-a-pota-or-sota-qso-by-hand" title="Link to this heading">¶</a></h4>
 <p>For CW and phone activators when no logging program is connected, click the park in the POTA column or the summit in the SOTA column to log the QSO yourself. This is offered while no AC Log or Log4OM is connected and no WSJT-X or JTDX is on the spot’s band and mode; hover over the park or summit to check.</p>
-<p>The <strong>Log POTA / SOTA QSO</strong> window opens with the details filled in from the spot: your call, the station worked, the park and summit, the date and time (UTC), frequency, band and mode, and signal reports. Check them, add a comment if you like, and click <strong>Log QSO</strong> (or press <strong>Enter</strong>). The QSO is logged like any other, and a park QSO is spotted to POTA.</p>
+<p>The <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window opens with the details filled in from the spot: the station worked, its park (<code class="docutils literal notranslate"><span class="pre">POTA_REF</span></code>) and summit (<code class="docutils literal notranslate"><span class="pre">SOTA_REF</span></code>), the date and time (UTC), frequency, band and mode, and signal reports. Check them, add a comment if you like, and click <strong>Log QSO</strong> (or press <strong>Enter</strong>). The QSO is logged like any other, and a park QSO is spotted to POTA. This works whether or not <strong>Log QSOs By Hand</strong> is on.</p>
+</section>
+<section id="logging-any-spot-s-qso">
+<h4>Logging Any Spot’s QSO<a class="headerlink" href="#logging-any-spot-s-qso" title="Link to this heading">¶</a></h4>
+<p>With <strong>Log QSOs By Hand</strong> on in Settings → Logging, double-click a call in the Feed Roster, or right-click it and pick <strong>Log QSO…</strong>: the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window opens filled in from the spot (call, park, summit, grid, frequency and mode). After you click a spot and tune to it, the side panel’s <strong>Log QSO</strong> button fills in the same while your rig is still on the spot. Clicking a spot does what it always does.</p>
 </section>
 </section>
 <section id="dx-feed-spots-on-the-map">
@@ -2111,7 +2135,7 @@
 </section>
 <section id="where-new-qsos-go">
 <h3>Where New QSOs Go<a class="headerlink" href="#where-new-qsos-go" title="Link to this heading">¶</a></h3>
-<p>When you log a QSO in WSJT-X or JTDX (or a program that broadcasts ADIF, or by hand from the Feed Roster), GridTracker2 adds it to your logbook and sends it to every log ticked <strong>Log QSO</strong>:</p>
+<p>When you log a QSO in WSJT-X or JTDX (or a program that broadcasts ADIF, or by hand in the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window), GridTracker2 adds it to your logbook and sends it to every log ticked <strong>Log QSO</strong>:</p>
 <ul class="simple">
 <li><p><strong>GridTracker2</strong>, its own backup log;</p></li>
 <li><p>logging programs: <strong>ADIF UDP / N1MM</strong>, <strong>Log4OM</strong>, <strong>N3FJP Loggers</strong>, <strong>DXKeeper</strong>, <strong>HRD Logbook</strong>;</p></li>
@@ -2122,6 +2146,7 @@
 <li><p><strong>LoTW</strong> uploads go through TQSL. Choose the TQSL program (<strong>TQSL Path</strong>, not needed on macOS), your certificate’s <strong>TQSL Password</strong> if it has one, and your <strong>Station Name</strong> (the station location in TQSL). An upload that fails, for example while you are offline, is queued and sent with your next QSO.</p></li>
 <li><p>With <strong>Add Lookup Data to QSO Log event</strong> on in Settings → Lookups, details from the callsign lookup (name, QTH, grid and so on) are added to the QSO before it is sent.</p></li>
 <li><p>QSOs with a known POTA activator or SOTA summit get its <code class="docutils literal notranslate"><span class="pre">POTA_REF</span></code> or <code class="docutils literal notranslate"><span class="pre">SOTA_REF</span></code>.</p></li>
+<li><p>With <strong>Queue QSOs To Send Later</strong> on (Settings → Logging, <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#send-later"><span class="std std-ref">Send Later</span></a>), new QSOs are added to your logbook and the backup log at once, and what goes to the logging programs and online logbooks waits until you click <strong>Send All</strong>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -2261,7 +2286,7 @@
 <li><p><strong>Score Card:</strong> your best band and mode, with worked and confirmed counts, for callsigns, grids, DXCC entities, CQ and ITU zones, continents, US states, US counties, prefixes and Canadian provinces, plus your longest and shortest distances.</p></li>
 <li><p><strong>DX Marathon:</strong> the DXCC entities and CQ zones you worked in each of the last five years.</p></li>
 <li><p><strong>Award Types:</strong> worked and confirmed counts for each award, by band, mode and type of mode.</p></li>
-<li><p><strong>Mode Types:</strong> your QSOs by Mixed, Digital, Phone, CW and Other.</p></li>
+<li><p><strong>Mode Types:</strong> your QSOs by Mixed, Digital, Phone, CW, Image (SSTV, FAX and ATV) and Other. Image QSOs count toward Phone as well, as they do for DXCC.</p></li>
 <li><p><strong>Distances:</strong> your longest and shortest QSOs by band, mode and type. Click a callsign to look it up.</p></li>
 </ul>
 </section>
@@ -2310,13 +2335,46 @@
 <p><img alt="The Callsign Lookup window" src="_images/GT2_Lookup.jpg" /></p>
 <p>The lookup service is chosen in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#lookups-tab"><span class="std std-ref">Settings → Lookups</span></a>: Callook (US callsigns only, no login), HamQTH, QRZ.com or QRZCQ.com. What is shown depends on the service. From the top:</p>
 <ul class="simple">
-<li><p><strong>Generate Messages</strong> puts the call and grid into WSJT-X or JTDX without calling. <strong>Clear</strong> empties the window. When GridTracker acknowledges the station, that is shown above these buttons;</p></li>
+<li><p><strong>Generate Messages</strong> puts the call and grid into WSJT-X or JTDX without calling. <strong>Clear</strong> empties the window. When GridTracker acknowledges the station, its note is shown above these buttons and its emoji before the call on the card;</p></li>
 <li><p>a card with the station’s photo, name and address. Click the card to copy the address. Under it are the grid (click to copy it; highlighted when it is new to you) and the distance and bearing from you;</p></li>
 <li><p>your own log for that call: the bands and modes you have worked and confirmed it on, your last QSO, and the bands you have worked its DXCC entity on. A band with a dashed outline is worked but not yet confirmed; a filled one is confirmed;</p></li>
 <li><p>the <strong>Details</strong>: license class, DXCC entity, zones, IOTA, time zone, county, latitude and longitude, QSL information, and whether the station uses LoTW, eQSL and ClubLog OQRS.</p></li>
 </ul>
 <p>If a lookup doesn’t fit in the window, the rest scrolls.</p>
 <p>With <strong>Open Lookup on Transmit</strong> on in Settings → Lookups, the station you start calling is looked up automatically. The Lookup window isn’t available in Offline Mode.</p>
+</section>
+<section id="log-qso">
+<h3>Log QSO<a class="headerlink" href="#log-qso" title="Link to this heading">¶</a></h3>
+<p>GridTracker2 is a log viewer, not a logging program, but it can hand on a QSO you made by hand: a phone or CW contact on your rig, a POTA or SOTA activator from the Feed Roster, or something the Multi-Mode Decoder heard. Turn on <strong>Log QSOs By Hand</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#logging-tab"><span class="std std-ref">Settings → Logging</span></a> (off until you turn it on); a <strong>Log QSO</strong> button joins the side panel. The QSO is logged like one logged in WSJT-X: into GridTracker2’s own log (so the map and the rosters show it worked), the backup log at once, and every logging program and online logbook ticked <strong>Log QSO</strong> in Settings → Logging. Log QSO only makes a new QSO: it never changes or deletes one already logged.</p>
+<p><img alt="The Log QSO window" src="_images/GT2_Log_QSO.png" /></p>
+<p>The window opens from:</p>
+<ul class="simple">
+<li><p><strong>The Log QSO button</strong> (or <strong>F2</strong>): with Rig Control on, the frequency and, in a voice mode, the mode are your rig’s, and the time on is now. If you clicked a station in the Feed Roster (or a spot on the map) and the rig is still within 1 kHz of it, its call, park and grid are filled in too. Click the button again to hide the window; shown again (the button, <strong>F2</strong>), the card is just as you left it until you log it or click <strong>Cancel</strong>. Right-click the button to start a fresh one.</p></li>
+<li><p><strong>The Feed Roster</strong>: double-click a call, or right-click it and pick <strong>Log QSO…</strong>, or click a park or summit in its POTA or SOTA column (see <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Using-Feed-Roster#logging-a-pota-or-sota-qso-by-hand"><span class="std std-ref">Logging a POTA or SOTA QSO by Hand</span></a>).</p></li>
+<li><p><strong>The Multi-Mode Decoder</strong>: a decoded line’s right-click, its <strong>Log QSO</strong> and <strong>Log Phone QSO</strong> buttons (see <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder#logging-a-qso"><span class="std std-ref">Logging a QSO</span></a>).</p></li>
+</ul>
+<p>At the top is the call, large, with chips beside the tabs below it: the frequency in MHz while <strong>Freq</strong> isn’t on the card; while the <strong>My Station</strong> tab shows (the QSO’s own tiles out of sight), the frequency, the band and mode in their colors and the grid; always, the bearing and distance to that grid (short path, from the grid on <strong>My Station</strong>, in your Distance Units from Settings → General), the time in UTC, a note when your log already has that call on that band and mode today (it doesn’t stop you logging it), and, with <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#send-later"><span class="std std-ref">Queue QSOs To Send Later</span></a> on, how many QSOs are waiting. Beside it are the <strong>VFO</strong> menu, which picks the Rig Control VFO the frequency and mode come from (the first one connected, unless you pick another), and the lock. Along its foot are the card’s two tabs, <strong>QSO</strong> and <strong>My Station</strong>, over the tiles. Each tab has its own tiles; whichever one shows, both tabs’ fields go on the QSO you log.</p>
+<p>While the window is open it follows your rig: tune it, or switch it to another voice mode, and <strong>Freq</strong> and <strong>Mode</strong> change with it. Once you type a frequency or pick a mode yourself, that one stays. A QSO from the Multi-Mode Decoder keeps the frequency it was heard on. When nothing else gives a card its mode, it starts in the last mode you picked or logged since GridTracker2 started.</p>
+<p>Below, each field has its own tile. To start with the <strong>QSO</strong> tab has <strong>Band</strong> (ADIF’s bands: it follows your rig’s frequency until you pick one), <strong>Mode</strong> (each mode as ADIF names it: <strong>SSB / USB</strong>, <strong>PSK / PSK31</strong>, <strong>DIGITALVOICE / DSTAR</strong> …), <strong>Grid</strong>, <strong>Time On</strong> and <strong>Time Off</strong> (each with <strong>Now</strong>; in UTC, or in your local time, labeled with its zone such as PST, while GridTracker2’s clock shows local time; the QSO is logged in UTC either way), <strong>RST Sent / Rcvd</strong> (599 at first, 59 on phone), <strong>Name</strong>, <strong>Power</strong>, <strong>Comment</strong>, <strong>POTA</strong> and <strong>SOTA</strong>. <strong>Freq</strong> can be added from <strong>Add Fields</strong> (the QSO still gets your rig’s frequency without it; with a band picked and no rig, it’s logged with the band alone, except for a QSO with a park). Add <strong>DXCC</strong> and <strong>Country</strong> to have the call’s DXCC entity and its name follow the call as you type it (until you type in them yourself). Clear the call to start the next QSO, or type a call on a card that came without one: every other field is cleared, the times are set to now and the reports to the mode’s, and only the mode, your rig’s frequency and <strong>My Station</strong> stay. A different call starts the card over as new once it settles (you leave its box or stop typing for a moment), the same way, even on a card that came with a call from a Feed Roster spot or the Multi-Mode Decoder. Once the call is in (you leave its box, stop typing for a moment, or it came filled in), GridTracker2 looks it up with your lookup service (<a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#lookups-tab"><span class="std std-ref">Settings → Lookups</span></a>) and fills in the name and grid, and, when you’ve added their fields, the city, state, county, CQ and ITU zones, IOTA, e-mail, QSL route, latitude, longitude and web address. Only empty boxes are filled: nothing you typed is replaced.</p>
+<p><strong>Power</strong>, <strong>Comment</strong>, <strong>Propagation Mode</strong>, <strong>Satellite</strong>, <strong>Satellite Mode</strong> and <strong>Rx Freq</strong> have a small <strong>Retain</strong> switch at the right of their label. With it on, what you type or log there is kept (also when GridTracker2 is closed and started again): it starts the next card, and clearing the call leaves it; with it off, the field starts empty each time. Power’s is on until you switch it off; the others are off.</p>
+<p>Each tile is labeled with the field’s name, such as <strong>Station Callsign</strong> or <strong>Propagation Mode</strong>; hover over it to see the ADIF field it fills (such as <code class="docutils literal notranslate"><span class="pre">STATION_CALLSIGN</span></code>) and what ADIF says goes in it. A field with a set list of values shows it when you click in it, and narrows it as you type: ADIF’s own lists (propagation modes, continents, ARRL sections, QSL codes, Morse keys, regions …), the contest names ADIF knows (you can type any other), the bands, the DXCC entities, and the states and provinces of the QSO’s DXCC entity (the <strong>DXCC</strong> box’s, else the call’s; for your own state, yours). Pick with the mouse, or with the arrow keys and <strong>Enter</strong>; <strong>Esc</strong> closes the list. The <strong>POTA</strong> and <strong>SOTA</strong> boxes (yours on <strong>My Station</strong> too) search as you type, once you’ve typed two characters: with POTA Hunting on, POTA’s park list, and while SOTA Chasing runs, the SOTA summit list. Each match is offered by its reference or its name, such as US-2852 or Silver Falls, and shows the park’s or summit’s name and where it is. A park or summit that isn’t in the list can still be typed in, as long as it’s written the right way. In a county box, once its state is filled in, pick from that state’s counties; picking a county fills in an empty state. Without <code class="docutils literal notranslate"><span class="pre">DXCC</span></code> on the card, GridTracker2 still logs the call’s DXCC entity.</p>
+<p>Check the card, fill in what’s missing, and click <strong>Log QSO</strong> (or press <strong>Enter</strong>); <strong>Cancel</strong> closes it. Only plain letters, digits and punctuation go in the boxes, as ADIF files carry them: an accented letter loses its accent as you type it (é becomes e, ß ss), and other characters, such as emoji or Japanese, are left out. Each box is checked as you type in it: while what’s in it isn’t right it’s outlined in red, with the reason at the bottom, and <strong>Log QSO</strong> checks every box. Each field takes what ADIF allows in it: a grid of 4, 6, 8 or 10 characters (CN87, CN87XN, CN87XN12 or CN87XN12AB), CQ zone 1 to 40, ITU zone 1 to 90, an IOTA number such as NA-065, a WWFF reference such as KFF-1234, a U.S. county by its name, such as Linn (the box shows the name; the QSO gets it with its state from the state box, OR,Linn, as ADIF writes it), a callsign in <strong>Station Callsign</strong> and <strong>Operator</strong>, a date such as 20261111 (or 2026-11-11), a latitude or longitude such as N044 37.800 (or decimal degrees, which are changed to that), two or four VUCC grids such as CN87,CN88, and only ADIF’s own values in a field with a set list. A QSO the same as the last one logged isn’t logged twice, and one your Logbook Filters would leave out isn’t logged (the card says why). A field left empty is not written to the QSO at all.</p>
+<section id="my-station">
+<h4>My Station<a class="headerlink" href="#my-station" title="Link to this heading">¶</a></h4>
+<p><strong>My Station</strong> holds your own station’s details, filled in from what GridTracker2 knows: your callsign as <code class="docutils literal notranslate"><span class="pre">STATION_CALLSIGN</span></code> and <code class="docutils literal notranslate"><span class="pre">OPERATOR</span></code>, your grid as <code class="docutils literal notranslate"><span class="pre">MY_GRIDSQUARE</span></code>, and from where its center is, your CQ and ITU zones, latitude and longitude (when you add them) and, in the U.S., your state and county (<code class="docutils literal notranslate"><span class="pre">MY_STATE</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_CNTY</span></code>, shown as Linn and logged as OR,Linn), your DXCC entity and its name, and the rig of the VFO the card reads (<code class="docutils literal notranslate"><span class="pre">MY_RIG</span></code>). What it doesn’t know is left blank, for you to fill in or leave: your city, antenna, and your own park, summit or other activity (<code class="docutils literal notranslate"><span class="pre">MY_POTA_REF</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_SOTA_REF</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_WWFF_REF</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_SIG</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_SIG_INFO</span></code>). What you type here is kept as you type it, logged or not, and every card starts with it from then on (it’s saved with your settings); a field you leave as GridTracker2 filled it in follows your settings (a new grid, another rig).</p>
+</section>
+<section id="arranging-the-card">
+<h4>Arranging the Card<a class="headerlink" href="#arranging-the-card" title="Link to this heading">¶</a></h4>
+<p>Each tab is arranged on its own. Right-click the card for <strong>Add Fields</strong>: the ADIF fields the tab showing can have, by kind. On <strong>QSO</strong>: <strong>Parks And Summits</strong>, <strong>Location</strong>, <strong>Contest</strong> (contest name, serials, exchanges, class, ARRL section, check, precedence, WPX prefix; <strong>Serial Sent</strong> counts up by one with each QSO you log), <strong>QSL</strong>, <strong>Contacted Station</strong>, <strong>Propagation</strong> and <strong>Other</strong>. On <strong>My Station</strong>: <strong>Callsign And Equipment</strong>, <strong>Location</strong> and <strong>Parks And Summits</strong>, every one of your own station’s fields. None of the contest fields is on the card until you add it. An added field stays on the card; with the lock open (below), hover over it for its <strong>x</strong> to take it off again; no field can be taken off while the lock is shut. <strong>Freq</strong> can be taken off the same way, since the band is enough: the card still follows your rig and the QSO still gets the rig’s frequency when there is one; add it again from the top of <strong>Add Fields</strong>.</p>
+<p>Not offered: the fields your logging program and online logbooks keep themselves (the LoTW, eQSL, Club Log, QRZ.com and other upload and confirmation fields), and the <code class="docutils literal notranslate"><span class="pre">_INTL</span></code> fields, which ADIF files of the kind GridTracker2 sends (ADI) can’t carry.</p>
+<p>The lock at the top right is the card’s master lock. While it’s shut the card stays as it is: <strong>Unlock Fields</strong>, <strong>Unlock Widths</strong>, <strong>Reset Layout</strong> and taking a field off are greyed out in the right-click menu, the fields have no <strong>x</strong>, and the window can’t be resized. <strong>Add Fields</strong> still works, and adding a field opens the lock, so you can place, size or take off what you added. Click the lock to open it; then you can resize the window, and pick <strong>Unlock Fields</strong> to move the tiles: drag one to where you want it, then pick <strong>Lock Fields</strong> (or press <strong>Esc</strong>). Click the lock again (or press <strong>Esc</strong> once nothing else is unlocked) to shut it. It’s shut again whenever the window is hidden, and the card always opens with it shut.</p>
+<p>Pick <strong>Unlock Widths</strong> in the right-click menu to size the tiles: each tile shows <strong>1×</strong> and <strong>2×</strong> buttons in its label, to make it one or two columns wide, and a bar above the card has a <strong>1× Width</strong> slider for how wide a column is (115 to 320 pixels; the card fits as many columns as the window does and stretches them to fill it). Pick <strong>Lock Widths</strong> (or press <strong>Esc</strong>) when done. The widths are saved at once and kept for each field, so a field you take off and add again comes back at the width you gave it. When a tile doesn’t fit in what’s left of a row, it starts the next row and the tile before it widens to fill the row, so the rows stay even at any window size.</p>
+<p><strong>Reset Layout</strong> puts the tab’s tiles back as they started, at their own widths, and the window and the <strong>1× Width</strong> back to their first size. When a Feed Roster spot has a park or a summit, its <strong>POTA</strong> or <strong>SOTA</strong> tile shows for that QSO even if you haven’t added it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A park goes to the QSO only with POTA Hunting on (Settings → Features), as for every QSO GridTracker2 logs.</p>
+</div>
+</section>
 </section>
 <section id="current-conditions">
 <h3>Current Conditions<a class="headerlink" href="#current-conditions" title="Link to this heading">¶</a></h3>
@@ -2663,7 +2721,7 @@
 </section>
 <section id="clocks-and-gaps">
 <h3>Clocks and Gaps<a class="headerlink" href="#clocks-and-gaps" title="Link to this heading">¶</a></h3>
-<p>A network stream comes from a computer with its own clock, and its packets arrive in bursts. GridTracker2 holds a short queue of the audio (about 0.2 s) and plays it a tiny bit faster or slower to keep up with the sender, so no samples are lost or doubled and SSTV pictures and weather faxes stay straight.</p>
+<p>A network stream comes from a computer with its own clock, and its packets arrive in bursts. GridTracker2 holds a short queue of the audio (about 0.2 s) and plays it a tiny bit faster or slower to keep up with the sender, so no samples are lost or doubled and SSTV pictures stay straight.</p>
 <p>Packets lost on the way (VBAN, RTP, FlexRadio DAX and Icom LAN number theirs) are replaced with the same length of silence, so the timing stays true. TCP never loses audio, but can’t tell when the server drops some.</p>
 </section>
 <section id="firewall">
@@ -2673,9 +2731,8 @@
 </section>
 <span id="document-Multi-Mode-Decoder/Multi-Mode-Decoder"></span><section id="the-multi-mode-decoder">
 <h2>The Multi-Mode Decoder<a class="headerlink" href="#the-multi-mode-decoder" title="Link to this heading">¶</a></h2>
-<p>The <strong>Multi-Mode Decoder</strong> decodes the signals your receiver hears, right inside GridTracker2, without another program. It listens to your rig’s audio (or an SDR’s), shows the whole passband as a waterfall, and decodes every signal it finds there in the mode you pick: CW, FT8, FT4, PSK, RTTY, MFSK, DominoEX and THOR, Olivia, NAVTEX, Feld-Hell, WEFAX, WSPR, SSTV, Packet and satellite data.</p>
+<p>The <strong>Multi-Mode Decoder</strong> decodes the signals your receiver hears, right inside GridTracker2, without another program. It listens to your rig’s audio (or an SDR’s), shows the whole passband as a waterfall, and decodes every signal it finds there in the mode you pick: CW, SSTV, satellite data and WWV / WWVH.</p>
 <p>You don’t need Rig Control to use it. Without it, the decoder shows audio frequencies (Hz in your receiver’s passband). With it, the decoder shows each signal at its frequency on the air, and can tune your rig.</p>
-<p>Its FT8, FT4 and WSPR decodes can also go to GridTracker2’s map, alerts and Call Roster, as if they came from WSJT-X.</p>
 <p>This chapter covers the window and the settings shared by every mode. Each mode is described in <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>.</p>
 <section id="turning-it-on">
 <h3>Turning It On<a class="headerlink" href="#turning-it-on" title="Link to this heading">¶</a></h3>
@@ -2688,7 +2745,7 @@
 <p>Turning <strong>Multi-Mode Decoder</strong> off hides the window, stops it listening and removes the button.</p>
 <section id="listening-in-the-background">
 <h4>Listening in the Background<a class="headerlink" href="#listening-in-the-background" title="Link to this heading">¶</a></h4>
-<p>While <strong>Multi-Mode Decoder</strong> is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. Its decodes keep reaching the map and the Call Roster (see <a class="reference internal" href="#decodes-in-gridtracker2">Decodes in GridTracker2</a>). Pictures, charts and NAVTEX messages keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.</p>
+<p>While <strong>Multi-Mode Decoder</strong> is on, the decoder listens and decodes all the time in the mode you picked, whether its window is showing, hidden or minimized. Hidden, it only stops drawing the waterfall. GridTracker2’s <strong>MMD</strong> instance stays open (see <a class="reference internal" href="#decodes-in-gridtracker2">Decodes in GridTracker2</a>). Pictures and charts keep coming in, and are saved if you set them to be. Show the window again to see everything that came meanwhile. A picture being sent stops when you hide the window.</p>
 <p>A green dot on the <strong>Toggle Multi-Mode Decoder</strong> button shows that it is listening in the background. Hover over the button and its tooltip says so. Turn <strong>Multi-Mode Decoder</strong> off to stop it listening and let go of the sound card.</p>
 </section>
 </section>
@@ -2703,7 +2760,7 @@
 <li><p>the scale, with the <strong>[</strong> and <strong>]</strong> handles;</p></li>
 <li><p>the waterfall;</p></li>
 <li><p>the frequency bar, with the frequency, band and mode;</p></li>
-<li><p>the decoded lines (or, in SSTV, WEFAX and Feld-Hell, the pictures or the tape).</p></li>
+<li><p>the decoded lines (or, in SSTV, the pictures).</p></li>
 </ol>
 <section id="the-top-line">
 <h4>The Top Line<a class="headerlink" href="#the-top-line" title="Link to this heading">¶</a></h4>
@@ -2713,18 +2770,17 @@
 <li><p><strong>Levels:</strong> the audio levels of the Input Device, for example <code class="docutils literal notranslate"><span class="pre">-3</span> <span class="pre">dB</span>&#160; <span class="pre">45%</span></code>. Hover over them to set them (see <a class="reference internal" href="#audio-levels">Audio Levels</a>).</p></li>
 <li><p><strong>Test Signals:</strong> plays recordings of the mode’s signals into the decoder (see <a class="reference internal" href="#test-signals">Test Signals</a>).</p></li>
 <li><p><strong>Detect Modes:</strong> listens for every mode at once and names each signal it finds (see <a class="reference internal" href="#detect-modes">Detect Modes</a>).</p></li>
-<li><p>The status, on the right: <strong>Listening</strong>, <strong>Starting audio…</strong>, or an error in orange, such as an Input Device that couldn’t be opened. In FT8, FT4 and WSPR the status is on the frequency bar instead.</p></li>
+<li><p>The status, on the right: <strong>Listening</strong>, <strong>Starting audio…</strong>, or an error in orange, such as an Input Device that couldn’t be opened.</p></li>
 </ul>
 </section>
 <section id="the-second-line">
 <h4>The Second Line<a class="headerlink" href="#the-second-line" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>Mode:</strong> what is decoded. The modes are listed in <a class="reference internal" href="#the-modes">The Modes</a>. The mode you pick is kept when GridTracker2 restarts.</p></li>
+<li><p><strong>Mode:</strong> what is decoded. The modes are listed in <a class="reference internal" href="#the-modes">The Modes</a>. The mode you pick is kept when GridTracker2 restarts. The menu’s last entry, <strong>Get More…</strong>, lists more decoders you can download (see <a class="reference internal" href="#getting-more-decoders">Getting More Decoders</a>).</p></li>
 <li><p><strong>Frequency menu:</strong> each mode’s usual frequencies. Pick one to tune your rig there. It appears only with Rig Control (see <a class="reference internal" href="#the-frequency-menu">The Frequency Menu</a>).</p></li>
-<li><p><strong>UTC:</strong> lines across the waterfall on the UTC clock, each with its time: <strong>Off</strong>, 10s, 15s, 30s or 1m. FT8, FT4 and WSPR don’t have this menu; their waterfall shows each period instead.</p></li>
-<li><p><strong>Slot Finder</strong> (FT8 and FT4): marks the clearest frequency to transmit on in the even and odd periods.</p></li>
+<li><p><strong>UTC:</strong> lines across the waterfall on the UTC clock, each with its time: <strong>Off</strong>, 10s, 15s, 30s or 1m.</p></li>
 </ul>
-<p>Some modes add a row of their own under the second line: the submode menu for PSK, MFSK, DominoEX / THOR, Olivia and Feld-Hell, and the chart controls for WEFAX. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>.</p>
+<p>A mode can add a row of its own under the second line, such as a <strong>Submode</strong> menu. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>.</p>
 </section>
 <section id="the-scale-and-the-waterfall">
 <h4>The Scale and the Waterfall<a class="headerlink" href="#the-scale-and-the-waterfall" title="Link to this heading">¶</a></h4>
@@ -2741,28 +2797,27 @@
 <li><p>with Rig Control, the rig’s frequency, band and mode, for example <strong>14.074.00 (20m) USB</strong> (the frequency in green, the band in yellow, the mode in orange);</p></li>
 <li><p>without it, the audio decoded, from the <strong>[</strong> to the <strong>Bandpass</strong>, for example <strong>250 Hz - 4 kHz</strong> in cyan.</p></li>
 </ul>
-<p>In FT8, FT4 and WSPR its right end shows the status and how far into the period it is, for example <code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">7</span> <span class="pre">/</span> <span class="pre">15</span> <span class="pre">]</span></code>.</p>
 <p>Drag the bar up or down to give the waterfall or the decoded lines more room.</p>
 </section>
 <section id="the-decoded-lines">
 <h4>The Decoded Lines<a class="headerlink" href="#the-decoded-lines" title="Link to this heading">¶</a></h4>
-<p>Under the bar are the decoded lines, the newest kept in view. Their columns depend on the mode. In CW, for example, each signal has one line with its <strong>Frequency</strong>, <strong>dB</strong> (its signal over the noise), <strong>WPM</strong> and <strong>Decoded Text</strong>. PSK, RTTY, MFSK, DominoEX / THOR and Olivia use the same list, with the <strong>Baud</strong> in place of WPM.</p>
+<p>Under the bar are the decoded lines, the newest kept in view. Their columns depend on the mode. In CW, for example, each signal has one line with its <strong>Frequency</strong>, <strong>dB</strong> (its signal over the noise), <strong>WPM</strong> and <strong>Decoded Text</strong>. A mode can use the same list, with the <strong>Baud</strong> in place of WPM.</p>
 <p>A <strong>CQ</strong> is highlighted in yellow, the call after it in cyan, and its line is shaded green.</p>
 </section>
 </section>
 <section id="working-with-signals">
 <h3>Working With Signals<a class="headerlink" href="#working-with-signals" title="Link to this heading">¶</a></h3>
-<p>These work in CW and in the modes listed the same way: PSK, RTTY, MFSK, DominoEX / THOR and Olivia.</p>
+<p>These work in CW, and in the modes listed the same way.</p>
 <ul class="simple">
 <li><p><strong>Hover linking:</strong> hover over a line and its signal is marked on the waterfall. Hover over a signal on the waterfall and its line is shaded.</p></li>
-<li><p><strong>Pinning:</strong> click a line to pin its signal (in CW, PSK, RTTY, MFSK and DominoEX / THOR, a click on the signal on the waterfall does it too). Its marks stay on the waterfall and its line stays listed, even while you tune elsewhere. Its line has a light red edge. Click it again to let it go.</p></li>
+<li><p><strong>Pinning:</strong> click a line to pin its signal (in CW, a click on the signal on the waterfall does it too). Its marks stay on the waterfall and its line stays listed, even while you tune elsewhere. Its line has a light red edge. Click it again to let it go.</p></li>
 <li><p><strong>Deleting a line:</strong> right-click a line and pick <strong>Delete</strong>. A station that is still sending is listed again with what it sends next.</p></li>
 <li><p><strong>Copying text:</strong> select text in a line with the mouse to copy it. A click that selects text doesn’t pin.</p></li>
 </ul>
-<p>In FT8 and FT4, a click on the waterfall or a message sets the focus instead, and a right-click on the waterfall turns the time skew on or off. Other modes have clicks of their own (Packet, Feld-Hell, Olivia). See <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>.</p>
+<p>Other modes can have clicks of their own. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>.</p>
 <section id="tuning-lock">
 <h4>Tuning Lock<a class="headerlink" href="#tuning-lock" title="Link to this heading">¶</a></h4>
-<p>With Rig Control on, a lock sits before the rig’s frequency on the divider. Gold and closed, tuning is locked (as it starts); grey and open, it is unlocked. Click the lock to unlock it: the mouse wheel on the waterfall then tunes your rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz), each step landing on that step’s round number. A label over the waterfall shows the frequency tuned to and the change (its total while you keep turning the wheel), then fades; a click on the band scope shows one over the scope the same way. In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock it; a middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed: the decoder sends nothing to the rig then.</p>
+<p>With Rig Control on, a lock sits before the rig’s frequency on the divider. Gold and closed, tuning is locked (as it starts); grey and open, it is unlocked. Click the lock to unlock it: the mouse wheel on the waterfall then tunes your rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz), each step landing on that step’s round number. A label over the waterfall shows the frequency tuned to and the change (its total while you keep turning the wheel), then fades; a click on the band scope shows one over the scope the same way. Click it again to lock it; a middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed: the decoder sends nothing to the rig then.</p>
 </section>
 </section>
 <section id="test-signals">
@@ -2771,7 +2826,6 @@
 <ul class="simple">
 <li><p>The window is cleared first. The recording is then played into the decoder over a band’s noise floor, and what your radio hears is silenced while it plays.</p></li>
 <li><p>Many recordings have several stations at once. Every mode has some.</p></li>
-<li><p>FT8 and FT4 recordings start on a period’s boundary: the button shows <strong>Test Starts In</strong> and the seconds left.</p></li>
 <li><p>While one plays, the button shows <strong>Stop Test</strong> and the seconds left. Click it to stop.</p></li>
 <li><p>What a test decodes stays in the window. It isn’t sent to the map or the Call Roster, and its pictures aren’t saved by themselves.</p></li>
 </ul>
@@ -2779,18 +2833,18 @@
 </section>
 <section id="detect-modes">
 <h3>Detect Modes<a class="headerlink" href="#detect-modes" title="Link to this heading">¶</a></h3>
-<p>Not sure what a signal is? Click <strong>Detect Modes</strong>. The decoder listens for every mode at once and names each signal it finds, once it decodes: CW (with its speed), PSK31, PSK63, PSK125, QPSK31, RTTY (with its baud and shift), MFSK16, MFSK32, DominoEX and THOR (with their speed), Packet, SSTV (with its mode), each FT8 and FT4 station (with its message), and any mode an RSID names.</p>
-<p><img alt="Detect Modes: a CW, a PSK31 and an RTTY signal found and named" src="_images/GT2_MMD_Detect.jpg" /></p>
+<p>Not sure what a signal is? Click <strong>Detect Modes</strong>. The decoder listens for every mode at once and names each signal it finds, once it decodes: CW (with its speed), SSTV (with its mode), the modes of the decoders you’ve added, and any mode an RSID names.</p>
+<p><img alt="Detect Modes: signals found and named" src="_images/GT2_MMD_Detect.jpg" /></p>
 <ul class="simple">
 <li><p>Each signal is labeled on the waterfall, and listed in place of the decoded lines with its <strong>Mode</strong>, <strong>Frequency</strong>, <strong>dB</strong> and what was <strong>Heard</strong>.</p></li>
-<li><p>Click one, on the waterfall or in the list, to decode it: its mode and submode are picked and Detect Modes turns off. A CW signal is pinned, an HF packet station is locked onto, and the FT8 or FT4 focus is put on the station.</p></li>
+<li><p>Click one, on the waterfall or in the list, to decode it: its mode and submode are picked and Detect Modes turns off. A CW signal is pinned.</p></li>
 <li><p>The button is orange while Detect Modes is on. Click it again to go back to the mode you were in. Picking a mode in <strong>Mode</strong> also ends it.</p></li>
 </ul>
 </section>
 <section id="rsid">
 <h3>RSID<a class="headerlink" href="#rsid" title="Link to this heading">¶</a></h3>
 <p>Many digital-mode programs (fldigi, MultiPSK and others) can start a transmission with an RSID, a short burst that names its mode. With <strong>RSID</strong> on (in <a class="reference internal" href="#general">Settings → General</a>, on unless you turn it off), the decoder names each RSID it hears on the waterfall where the transmission starts, in every mode: for example <strong>RSID Olivia 8/500</strong>, <strong>RSID MT63-1000L</strong> or <strong>RSID BPSK31</strong>.</p>
-<p>Click an RSID of a mode decoded here (BPSK31, BPSK63, BPSK125, QPSK31, RTTY 45, MFSK16, MFSK32, DominoEX, THOR, Packet 1200, Olivia, Contestia) to switch to that mode and submode. The transmission is decoded from its start, and nothing already decoded is cleared.</p>
+<p>Click an RSID of a mode decoded here (one of the decoders you’ve added) to switch to that mode and submode. The transmission is decoded from its start, and nothing already decoded is cleared.</p>
 </section>
 <section id="audio-levels">
 <h3>Audio Levels<a class="headerlink" href="#audio-levels" title="Link to this heading">¶</a></h3>
@@ -2819,51 +2873,28 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#cw"><span class="std std-ref">CW</span></a></p></td>
 <td><p>Every CW signal in the passband, each on its own line with its speed.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#dominoex-and-thor"><span class="std std-ref">DominoEX / THOR</span></a></p></td>
-<td><p>Every DominoEX or THOR signal, at the speed you pick or all speeds at once.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#feld-hell"><span class="std std-ref">Feld-Hell</span></a></p></td>
-<td><p>Hellschreiber, printed on a tape as it is heard (Feld-Hell, X5 and X9).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#ft8-and-ft4"><span class="std std-ref">FT4</span></a></p></td>
-<td><p>Each 7.5 second FT4 period.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#ft8-and-ft4"><span class="std std-ref">FT8</span></a></p></td>
-<td><p>Each 15 second FT8 period.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#mfsk"><span class="std std-ref">MFSK</span></a></p></td>
-<td><p>Every MFSK16 or MFSK32 signal.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#navtex"><span class="std std-ref">NAVTEX</span></a></p></td>
-<td><p>Maritime safety broadcasts on 518 and 490 kHz and HF NAVTEX.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#olivia-and-contestia"><span class="std std-ref">Olivia</span></a></p></td>
-<td><p>An Olivia or Contestia signal, in the submode you pick.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#packet"><span class="std std-ref">Packet</span></a></p></td>
-<td><p>AX.25 packets and APRS: AFSK 1200, FSK 9600, GMSK 4800 and HF 300 baud.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#psk"><span class="std std-ref">PSK</span></a></p></td>
-<td><p>Every PSK31, PSK63, PSK125 or QPSK31 signal.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#rtty"><span class="std std-ref">RTTY</span></a></p></td>
-<td><p>Every RTTY signal, its shift and baud found by itself.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#sat-data"><span class="std std-ref">Sat Data</span></a></p></td>
 <td><p>Satellite telemetry frames and SSDV pictures.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#sstv"><span class="std std-ref">SSTV</span></a></p></td>
 <td><p>Slow-scan TV pictures, received and sent.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#wefax"><span class="std std-ref">WEFAX</span></a></p></td>
-<td><p>Weather fax charts.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#wspr"><span class="std std-ref">WSPR</span></a></p></td>
-<td><p>Each 2 minute WSPR period.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#wwv-and-wwvh"><span class="std std-ref">WWV / WWVH</span></a></p></td>
+<td><p>NIST’s time stations: their time code, and how far your PC clock is off.</p></td>
 </tr>
 </tbody>
 </table>
 <p>The right-click menus of pictures, charts and messages (copy, save, delete, rotate) are described with each mode.</p>
+<section id="getting-more-decoders">
+<h4>Getting More Decoders<a class="headerlink" href="#getting-more-decoders" title="Link to this heading">¶</a></h4>
+<p>More modes come as decoders you download. Pick <strong>Get More…</strong>, the last entry of the <strong>Mode</strong> menu, to see the ones for your version of GridTracker2:</p>
+<ul class="simple">
+<li><p><strong>Install</strong> downloads a decoder. <strong>Update To</strong> downloads a newer version of one you have, and <strong>Remove</strong> takes one away.</p></li>
+<li><p>Each change waits until GridTracker2 restarts. Click <strong>Restart Now</strong> to restart it at once (your settings and open windows are kept), or <strong>Undo</strong> to cancel a change before then.</p></li>
+<li><p>Nothing is downloaded until you click. Each download is checked against GridTracker’s signature before it is used.</p></li>
+</ul>
+<p>Once installed, a decoder’s modes appear in the <strong>Mode</strong> menu. Each decoder has its own guide: click <strong>Guide</strong> in its box in <a class="reference internal" href="#decoders">Settings → Decoders</a>.</p>
+</section>
 </section>
 <section id="using-rig-control">
 <h3>Using Rig Control<a class="headerlink" href="#using-rig-control" title="Link to this heading">¶</a></h3>
@@ -2872,7 +2903,7 @@
 <li><p>read the rig’s frequency and mode, so signals are shown at their frequency on the air and the frequency bar shows the band;</p></li>
 <li><p>tune the rig, from the Frequency menu, the mouse wheel on the waterfall (unlocked) or a click on the band scope;</p></li>
 <li><p>set the rig’s mode when you pick a frequency;</p></li>
-<li><p>give FT8, FT4 and WSPR decodes their band in GridTracker2.</p></li>
+<li><p>give GridTracker2’s MMD instance its band.</p></li>
 </ul>
 <p>To use it:</p>
 <ol class="arabic simple">
@@ -2887,16 +2918,16 @@
 <p>While BirdWatch follows a satellite with a rig, the decoder sends that rig nothing: the Frequency menu is grayed out until BirdWatch stops following it.</p>
 <section id="the-frequency-menu">
 <h4>The Frequency Menu<a class="headerlink" href="#the-frequency-menu" title="Link to this heading">¶</a></h4>
-<p>With Rig Control on and the mode’s VFO read, the Frequency menu appears on the second line. It lists the mode’s usual frequencies, each with its band, for example <strong>20m (14.074.00)</strong>. WEFAX and NAVTEX list their stations by name instead. The frequency your rig is on is picked in the menu; on another frequency, the menu shows <strong>-</strong>.</p>
+<p>With Rig Control on and the mode’s VFO read, the Frequency menu appears on the second line. It lists the mode’s usual frequencies, each with its band, for example <strong>20m (14.074.00)</strong>. WWV / WWVH lists its stations by name instead. The frequency your rig is on is picked in the menu; on another frequency, the menu shows <strong>-</strong>.</p>
 <p>Picking a frequency sends your rig what that mode allows in <a class="reference internal" href="#decoders">Settings → Decoders</a>:</p>
 <ul class="simple">
 <li><p><strong>Set Frequency:</strong> tunes the rig there;</p></li>
-<li><p><strong>Set Mode:</strong> sets the rig’s mode, for example CW for CW, USB for FT8 and the digital modes, LSB below 10 MHz and USB above for SSTV, FM for VHF packet and LSB for HF packet.</p></li>
+<li><p><strong>Set Mode:</strong> sets the rig’s mode, for example CW for CW, USB for the digital modes, and LSB below 10 MHz and USB above for SSTV.</p></li>
 </ul>
 <p>Both are on unless you turn them off. With both off, the menu isn’t shown. With <strong>Data</strong> ticked for the VFO’s <strong>SSB</strong> in Rig Control, the digital modes use the rig’s data mode (USB-D, PKTUSB, DATA-U) instead of plain USB or LSB.</p>
 <p>Sat Data has no Frequency menu.</p>
 <p>The frequencies come from the <a class="reference internal" href="#band-plans">Band Plans</a> tab, where you can change them.</p>
-<p>With a mode’s <strong>Set Frequency</strong> on, picking that mode in the <strong>Mode</strong> menu tunes the rig to the mode’s main frequency on the band you’re on (its usual calling or activity frequency, ticked <strong>Main</strong> in <a class="reference internal" href="#band-plans">Band Plans</a>: FT8 on 20 meters goes to 14.074, not its DXpedition frequency). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode’s nearest frequency, and to its main frequency there. A rig already on one of the mode’s frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn’t tune the rig, since the signal is where the rig already is.</p>
+<p>With a mode’s <strong>Set Frequency</strong> on, picking that mode in the <strong>Mode</strong> menu tunes the rig to the mode’s main frequency on the band you’re on (its usual calling or activity frequency, ticked <strong>Main</strong> in <a class="reference internal" href="#band-plans">Band Plans</a>). A band without a main frequency for the mode uses the one nearest the dial. When the mode has no frequency on that band, the rig goes to the band of the mode’s nearest frequency, and to its main frequency there. A rig already on one of the mode’s frequencies is left there. A mode picked any other way (by an RSID, Detect Modes or Follow BirdWatch) doesn’t tune the rig, since the signal is where the rig already is.</p>
 </section>
 </section>
 <section id="the-band-scope">
@@ -2943,21 +2974,26 @@
 </section>
 <section id="decodes-in-gridtracker2">
 <h3>Decodes in GridTracker2<a class="headerlink" href="#decodes-in-gridtracker2" title="Link to this heading">¶</a></h3>
-<p>While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named <strong>MMD</strong>, as it has one for each WSJT-X or JTDX. Its mode is the decoder’s mode (CW, PSK63, RTTY, Olivia, FT8 …), and its band is the one Rig Control reads on that mode’s VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn’t know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.</p>
-<ul class="simple">
-<li><p><strong>FT8 and FT4:</strong> the decodes go to GridTracker2’s map and alerts, as a WSJT-X instance’s do.</p></li>
-<li><p><strong>Send Decodes To Call Roster</strong> (FT8 and FT4 each, in <a class="reference internal" href="#decoders">Settings → Decoders</a>; off until you turn it on): the decodes go to the Call Roster as well, and <strong>MMD</strong> appears among the roster’s instances. Turn it off and the calls it put in the Call Roster are taken out.</p></li>
-<li><p><strong>WSPR:</strong> the decodes go to the map, as WSJT-X’s WSPR decodes do.</p></li>
-</ul>
-<p>While <strong>Send Decodes To Call Roster</strong> is on but Rig Control isn’t reading the mode’s VFO, the decoder’s settings show “Waiting for Rig Control to read the FT8 VFO’s dial” (or FT4’s) in orange.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The MMD instance only receives. Clicking one of its stations in the Call Roster can’t answer it, since the decoder doesn’t transmit FT8 or FT4.</p>
-</div>
+<p>While the Multi-Mode Decoder is turned on in Settings → Features, GridTracker2 has an instance named <strong>MMD</strong>, as it has one for each WSJT-X or JTDX. Its mode is the decoder’s mode (CW, SSTV …), and its band is the one Rig Control reads on that mode’s VFO. Without Rig Control, its frequency is 0 and GridTracker2 doesn’t know its band. It is there whether the window is open or not, and the Event Viewer notes when it starts and closes.</p>
 </section>
 <section id="sending-sstv-pictures">
 <h3>Sending SSTV Pictures<a class="headerlink" href="#sending-sstv-pictures" title="Link to this heading">¶</a></h3>
 <p>In <strong>SSTV</strong> mode the picture view has two tabs on its header: <strong>Receive</strong> (the pictures received) and <strong>Send</strong>, which builds a picture and transmits it through your rig. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes#sending-pictures"><span class="std std-ref">Sending Pictures</span></a>.</p>
+</section>
+<section id="logging-a-qso">
+<h3>Logging a QSO<a class="headerlink" href="#logging-a-qso" title="Link to this heading">¶</a></h3>
+<p>The decoder can fill in a QSO you made in CW, SSTV, the modes of the decoders you’ve added that QSOs are made in, or on phone, in GridTracker2’s <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a> window, which logs it. Turn on <strong>Log QSOs By Hand</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#logging-tab"><span class="std std-ref">Settings → Logging</span></a> (off until you turn it on); the decoder’s Log QSO buttons and menu items show with it.</p>
+<p>The <strong>Log QSO</strong> window opens filled in from:</p>
+<ul class="simple">
+<li><p><strong>A line’s right-click, Log QSO…</strong> (CW, and the modes listed the same way), or <strong>an SSTV picture’s right-click</strong>. The call is the one the decoded text names (the call after the last DE, else after CQ); the frequency is the signal’s own on the air (with Rig Control), the time on is when its line started (an SSTV picture’s start), the mode and submode are the ones decoded. An SSTV picture’s mode (Martin 1, Scottie 2 …) goes in the comment.</p></li>
+<li><p><strong>Log QSO</strong> on the second line, in those modes: the pinned line (SSTV: the picture shown), else a form with the mode, the frequency and the time filled in for you to type the call.</p></li>
+<li><p><strong>Log Phone QSO</strong> on the top line, shown while Rig Control reads the decoder’s VFO in a voice mode (USB, LSB, AM, FM, D-STAR, C4FM, FreeDV …), whatever mode is shown. The frequency and mode are the rig’s, and the time on is when you opened it. If you clicked a station in the Feed Roster (or a spot on the map) and the rig is still within 1 kHz of that spot, its call, park and grid are filled in, and the time on is when you clicked it.</p></li>
+</ul>
+<p>The reports start at 599 (59 on phone, 595 for SSTV). Check the window, fill in what’s missing, and log it there: see <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Other-Windows#log-qso"><span class="std std-ref">Log QSO</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The decoder has no Log QSO for the modes no QSO is made in (WWV, Sat Data).</p>
+</div>
 </section>
 <section id="settings">
 <h3>Settings<a class="headerlink" href="#settings" title="Link to this heading">¶</a></h3>
@@ -2976,7 +3012,7 @@
 </ul>
 </li>
 <li><p><strong>Palette:</strong> the waterfall’s colors: <strong>Classic</strong>, <strong>Ember</strong>, <strong>Twilight</strong>, <strong>Neon</strong>, <strong>Aurora</strong>, <strong>Clear Sight</strong> (easy to read with red-green color blindness), <strong>Prism</strong>, <strong>Glacier</strong>, <strong>Phosphor</strong>, <strong>Moonlight</strong> or <strong>Paper</strong>.</p></li>
-<li><p><strong>Resolution:</strong> sharper in time or in frequency: <strong>By Mode</strong> (CW, PSK and RTTY sharp in time for crisp dots and dashes, FT8 and FT4 sharp in frequency), <strong>Sharpest Time</strong>, <strong>Sharp Time</strong>, <strong>Balanced</strong> or <strong>Sharp Frequency</strong>.</p></li>
+<li><p><strong>Resolution:</strong> sharper in time or in frequency: <strong>By Mode</strong> (CW sharp in time for crisp dots and dashes), <strong>Sharpest Time</strong>, <strong>Sharp Time</strong>, <strong>Balanced</strong> or <strong>Sharp Frequency</strong>.</p></li>
 <li><p><strong>Window:</strong> <strong>Hann</strong> or <strong>Blackman-Harris</strong> (a darker floor beside strong signals).</p></li>
 <li><p><strong>Sharp Pixels:</strong> each frequency drawn as a sharp block.</p></li>
 </ul>
@@ -2984,7 +3020,7 @@
 <ul class="simple">
 <li><p><strong>Bandpass:</strong> the audio decoded, from 0 Hz up. 2.5k to 4.5k suits a rig’s passband; 10k, 44.1k, 48k and 96k are for an SDR’s wider stream (the last three are the whole of a stream at that sample rate). Changing it starts the decoder again.</p></li>
 <li><p><strong>Rig Control:</strong> lets the decoder read each mode’s VFO and send the rig what each mode allows. Off until you turn it on; off, the decoder has nothing to do with your rigs and shows audio frequencies only. See <a class="reference internal" href="#using-rig-control">Using Rig Control</a>.</p></li>
-<li><p><strong>Follow BirdWatch:</strong> shown while BirdWatch is on with its Satellite Tracking toggled on. As BirdWatch’s rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV, Packet, Sat Data, FT8 or FT4). You can still change <strong>Mode</strong> afterwards. While BirdWatch is on with its Rig Control, every mode reads BirdWatch’s Downlink VFO, and the VFO menus show it grayed out. Off until you turn it on.</p></li>
+<li><p><strong>Follow BirdWatch:</strong> shown while BirdWatch is on with its Satellite Tracking toggled on. As BirdWatch’s rig starts following a satellite transmitter, the decoder switches to its mode (CW, SSTV or Sat Data). You can still change <strong>Mode</strong> afterwards. While BirdWatch is on with its Rig Control, every mode reads BirdWatch’s Downlink VFO, and the VFO menus show it grayed out. Off until you turn it on.</p></li>
 <li><p><strong>RSID:</strong> names the mode of a transmission on the waterfall when its sender starts it with an RSID (see <a class="reference internal" href="#rsid">RSID</a>). On unless you turn it off.</p></li>
 <li><p><strong>Common Input Device:</strong> one Input Device for every mode, picked in the menu under it. Off, each mode uses its own (on the <strong>Decoders</strong> tab), as you left it. On unless you turn it off.</p></li>
 <li><p><strong>Common Output Device:</strong> one Output Device for every mode that transmits (SSTV), picked in the menu under it. Off, SSTV uses its own. On unless you turn it off.</p></li>
@@ -3005,7 +3041,7 @@
 </section>
 <section id="decoders">
 <h4>Decoders<a class="headerlink" href="#decoders" title="Link to this heading">¶</a></h4>
-<p>The <strong>Decoders</strong> tab has a box for each mode. Each box can have:</p>
+<p>The <strong>Decoders</strong> tab has a box for each mode. (The decoder’s Log QSO buttons and menu items show with <strong>Log QSOs By Hand</strong> on in GridTracker2’s Settings → Logging: see <a class="reference internal" href="#logging-a-qso">Logging a QSO</a>.) Each box can have:</p>
 <ul class="simple">
 <li><p><strong>Input Device:</strong> the rig’s audio this mode listens to. Shown while <strong>Common Input Device</strong> is off.</p></li>
 <li><p><strong>Output Device</strong> (SSTV): the audio output pictures are sent to (the rig’s audio input). Shown while <strong>Common Output Device</strong> is off.</p></li>
@@ -3014,13 +3050,9 @@
 </ul>
 <p>Some modes have settings of their own here, described in <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>:</p>
 <ul class="simple">
-<li><p><strong>FT8:</strong> <strong>Depth</strong> (<strong>Normal</strong> or <strong>Deep</strong>) and <strong>Send Decodes To Call Roster</strong>.</p></li>
-<li><p><strong>FT4:</strong> <strong>Send Decodes To Call Roster</strong>.</p></li>
-<li><p><strong>NAVTEX:</strong> <strong>Save Messages</strong>.</p></li>
 <li><p><strong>SSTV:</strong> <strong>Save Pictures</strong>, and its <strong>Folder</strong> (click it to open it, <strong>Choose</strong> to pick another).</p></li>
-<li><p><strong>WEFAX:</strong> <strong>Save Charts</strong>, and its own <strong>Folder</strong>, the same way.</p></li>
 </ul>
-<p>Running one sound card for several radios? Turn off <strong>Common Input Device</strong> and <strong>Common VFO</strong>, and give each mode its own. For example, FT8 can listen to an SDR on a VFO of its own while CW listens to your HF rig.</p>
+<p>Running one sound card for several radios? Turn off <strong>Common Input Device</strong> and <strong>Common VFO</strong>, and give each mode its own. For example, SSTV can listen to an SDR on a VFO of its own while CW listens to your HF rig.</p>
 <p>A VFO removed in Rig Control is taken out of every mode’s menu at once; a mode that used it uses <strong>None</strong> until you pick another.</p>
 </section>
 <section id="band-plans">
@@ -3044,145 +3076,22 @@
 <p>Pick a mode in the <strong>Mode</strong> menu on the window’s second line. Each mode below has its own list or picture view, and some have controls of their own on a row under the second line. The mode you pick is kept when GridTracker2 restarts.</p>
 <p>A few things work the same way in most modes:</p>
 <ul class="simple">
-<li><p><strong>Frequency menu:</strong> each mode’s usual frequencies, beside the <strong>Mode</strong> menu. It shows only when <strong>Rig Control</strong> is on (the window’s <strong>Settings</strong> → <strong>General</strong>), the mode’s VFO is connected, and the mode’s <strong>Set Frequency</strong> or <strong>Set Mode</strong> is ticked (the window’s <strong>Settings</strong> → <strong>Decoders</strong>; both are on unless you turn them off). Picking a frequency tunes the rig there (<strong>Set Frequency</strong>) and sets the rig’s mode (<strong>Set Mode</strong>). For USB and LSB, a VFO with <strong>SSB Data</strong> ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window’s <strong>Band Plans</strong> tab, where you can edit them. With the mode’s <strong>Set Frequency</strong> on, picking a mode in the <strong>Mode</strong> menu tunes the rig to its main frequency on the band you’re on (<strong>Main</strong> in Band Plans, such as FT8’s 14.074 on 20 meters). When the mode has none on that band, the rig goes to its main frequency on the band of its nearest. A rig already on one of the mode’s frequencies stays there.</p></li>
-<li><p><strong>Tuning lock:</strong> with <strong>Rig Control</strong> on, a lock sits before the rig’s frequency on the divider: gold and closed while tuning is locked (as it starts), grey and open while unlocked. Click it to unlock: the mouse wheel on the waterfall then tunes the rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz). In FT8 and FT4, while the time skew is on, the wheel moves the skew instead. Click it again to lock. A middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed and nothing is sent to the rig.</p></li>
-<li><p><strong>Right-click a line:</strong> in CW, PSK, RTTY, MFSK, DominoEX / THOR and Olivia, right-click a decoded line and pick <strong>Delete</strong> to remove it. A station that is still sending is listed again with what it sends next.</p></li>
+<li><p><strong>Frequency menu:</strong> each mode’s usual frequencies, beside the <strong>Mode</strong> menu. It shows only when <strong>Rig Control</strong> is on (the window’s <strong>Settings</strong> → <strong>General</strong>), the mode’s VFO is connected, and the mode’s <strong>Set Frequency</strong> or <strong>Set Mode</strong> is ticked (the window’s <strong>Settings</strong> → <strong>Decoders</strong>; both are on unless you turn them off). Picking a frequency tunes the rig there (<strong>Set Frequency</strong>) and sets the rig’s mode (<strong>Set Mode</strong>). For USB and LSB, a VFO with <strong>SSB Data</strong> ticked (Settings → Radios → Rig Control) is set to its data mode instead. The frequencies come from the window’s <strong>Band Plans</strong> tab, where you can edit them. With the mode’s <strong>Set Frequency</strong> on, picking a mode in the <strong>Mode</strong> menu tunes the rig to its main frequency on the band you’re on (<strong>Main</strong> in Band Plans, such as SSTV’s 14.230 on 20 meters). When the mode has none on that band, the rig goes to its main frequency on the band of its nearest. A rig already on one of the mode’s frequencies stays there.</p></li>
+<li><p><strong>Tuning lock:</strong> with <strong>Rig Control</strong> on, a lock sits before the rig’s frequency on the divider: gold and closed while tuning is locked (as it starts), grey and open while unlocked. Click it to unlock: the mouse wheel on the waterfall then tunes the rig, 10 Hz a step (hold Shift for 100 Hz, Ctrl for 1 Hz). Click it again to lock. A middle-click on the waterfall locks or unlocks it too. While BirdWatch follows a satellite with the rig, the lock stays closed and nothing is sent to the rig.</p></li>
+<li><p><strong>Right-click a line:</strong> in CW (and the modes listed the same way), right-click a decoded line and pick <strong>Delete</strong> to remove it. A station that is still sending is listed again with what it sends next.</p></li>
 </ul>
 <section id="cw">
 <h3>CW<a class="headerlink" href="#cw" title="Link to this heading">¶</a></h3>
 <p>CW decodes every CW signal in the passband at once, each on its own line. It follows each operator’s own speed, weighting and spacing (Farnsworth too) and copes with fading. A strong signal is taken out of the audio the others are decoded from, so a weaker station right beside it can still be read.</p>
 <p><img alt="CW mode: several stations at once, each CQ highlighted" src="_images/GT2_MMD_CW.jpg" /></p>
 <ul class="simple">
-<li><p><strong>The list:</strong> <strong>Frequency</strong> (on the air with Rig Control, otherwise the audio frequency), <strong>dB</strong> (the signal over the noise in a narrow filter, so higher than FT8’s dB), <strong>WPM</strong> and <strong>Decoded Text</strong>.</p></li>
+<li><p><strong>The list:</strong> <strong>Frequency</strong> (on the air with Rig Control, otherwise the audio frequency), <strong>dB</strong> (the signal over the noise in a narrow filter, so higher than WSJT-X’s dB over 2500 Hz), <strong>WPM</strong> and <strong>Decoded Text</strong>.</p></li>
 <li><p>A <strong>CQ</strong> and the call after it are highlighted, and the line is shaded green.</p></li>
 <li><p>Text already decoded is corrected as the decoder learns an operator’s timing, for example at the start of a transmission or after a change of speed. Corrected text glows for a moment.</p></li>
 <li><p>Click a line, or a signal on the waterfall, to pin it.</p></li>
 <li><p><strong>Frequency menu:</strong> the QRP calling frequencies from 160 to 10 meters, a 60 meter frequency, the 6 meter CW calling frequency and the 2 meter CW center of activity. <strong>Set Mode</strong> sets the rig to CW.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s CW beacon switches the decoder to CW.</p></li>
 </ul>
-</section>
-<section id="ft8-and-ft4">
-<h3>FT8 and FT4<a class="headerlink" href="#ft8-and-ft4" title="Link to this heading">¶</a></h3>
-<p>FT8 and FT4 decode each period on their own, without WSJT-X: 15 seconds for FT8, 7.5 seconds for FT4. Periods run on the UTC clock, so your computer’s clock must be right. FT8 gets a few fewer decodes than WSJT-X: about nine in ten on a busy band.</p>
-<p><img alt="FT8 mode: each period's decodes, with a yellow mark on the scale for each station" src="_images/GT2_MMD_FT8.jpg" /></p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>UTC</strong>, <strong>dB</strong> (over 2500 Hz, as WSJT-X gives it), <strong>DT</strong>, <strong>Freq</strong> (audio Hz) and <strong>Message</strong>. The newest period is on top, with a line above each period’s first message.</p></li>
-<li><p>Most messages show about 3 seconds before the period ends. Any new ones found at the end are added under them.</p></li>
-<li><p>A message decoded a harder way is marked as WSJT-X marks its own (hover over the mark for what it means): <strong>o</strong> for ordered statistics decoding, <strong>a1</strong> for a guessed CQ, <strong>a2</strong> for a guessed call to you, <strong>a3</strong> and <strong>a4</strong> for the next message of a QSO or station heard on that frequency two periods before, and <strong>c</strong> for a message added to the same message sent two periods before.</p></li>
-<li><p>A yellow mark on the scale shows each station decoded in the last two periods.</p></li>
-<li><p>The bar under the waterfall shows how far into the period the decoder is, for example <strong>[ 7 / 15 ]</strong>.</p></li>
-</ul>
-<section id="focus">
-<h4>Focus<a class="headerlink" href="#focus" title="Link to this heading">¶</a></h4>
-<p>Click the waterfall, or click a message, to put a 50 Hz focus band (red) there. It is searched harder each period. Drag it along the waterfall to move it, and click inside it to let go. In FT8 the focus works at the <strong>Deep</strong> depth only; FT4 always uses it.</p>
-</section>
-<section id="time-skew">
-<h4>Time Skew<a class="headerlink" href="#time-skew" title="Link to this heading">¶</a></h4>
-<p>For a station whose clock is off, such as a DXpedition with no time source:</p>
-<ol class="arabic simple">
-<li><p>Right-click the waterfall. Orange period lines replace the usual gray ones, with the skew and their UTC time above them.</p></li>
-<li><p>Turn the mouse wheel to move the timing (0.1 second a notch, or a second with <strong>Shift</strong>) until the orange lines line up with the station’s transmissions.</p></li>
-<li><p>Every period is now decoded on that timing, and <strong>DT</strong> shows in orange, counted from the usual timing. Stations that are on time aren’t decoded meanwhile.</p></li>
-<li><p>Right-click again to go back on time.</p></li>
-</ol>
-<p>The skew is kept until GridTracker2 closes (FT8’s and FT4’s separately), so turning it on again comes back to it. <strong>Clear</strong> leaves it on; tuning the rig elsewhere or changing mode turns it off.</p>
-</section>
-<section id="slot-finder">
-<h4>Slot Finder<a class="headerlink" href="#slot-finder" title="Link to this heading">¶</a></h4>
-<p>Tick <strong>Slot Finder</strong> on the second line (FT8 and FT4 each have their own, off at first) to mark the clearest frequency to transmit on, from what was heard and decoded lately. Each mark is labeled with its audio frequency and <strong>Even</strong>, <strong>Odd</strong> or <strong>Even + Odd</strong> for the periods it is clear in.</p>
-</section>
-<section id="settings">
-<h4>Settings<a class="headerlink" href="#settings" title="Link to this heading">¶</a></h4>
-<p>In the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>FT8</strong> and <strong>FT4</strong>:</p>
-<ul class="simple">
-<li><p><strong>Depth</strong> (FT8 only): <strong>Normal</strong>, the default, decodes each period once, quickly. <strong>Deep</strong> takes out each signal decoded and searches again for weaker ones it covered, tries the harder ways above, decodes early and uses the focus. It finds more, at the cost of more processor time. FT4 always decodes at Normal depth, plus the focus.</p></li>
-<li><p><strong>Send Decodes To Call Roster:</strong> sends the decodes to the <a class="reference internal" href="#document-Making-GridTracker-Work-For-You/Using-Call-Roster"><span class="std std-doc">Call Roster</span></a> as well as the map. The band comes from Rig Control reading the mode’s VFO; until it does, an orange note says <strong>Waiting for Rig Control to read the FT8 VFO’s dial</strong>.</p></li>
-<li><p><strong>Set Mode</strong> sets the rig to USB (its data mode with the VFO’s <strong>SSB Data</strong>).</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>FT8 and FT4 decodes go to GridTracker2’s map and alerts through an instance named <strong>MMD</strong>, as a WSJT-X instance’s do, whether the window is showing or not (as every mode keeps decoding: see <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder#listening-in-the-background"><span class="std std-ref">Listening in the Background</span></a>). The decoder doesn’t transmit, so MMD can’t be answered.</p>
-</div>
-<ul class="simple">
-<li><p><strong>Frequency menu:</strong> FT8’s dial frequencies from 160 meters to 70 cm, with the DXpedition (Fox/Hound) frequencies and regional ones noted. FT4 has WSJT-X’s FT4 dial frequencies from 80 to 2 meters, and 1.843 MHz on 160 meters (not in WSJT-X’s list, but where FT4 is usually heard there).</p></li>
-<li><p>With <strong>Follow BirdWatch</strong>, a satellite transmitter in FT8 or FT4 switches the decoder to that mode.</p></li>
-</ul>
-<p>Built on ft8_lib by Kārlis Goba, YL3JG. The searching again, the harder ways and the early decode follow WSJT-X, with thanks to Joe Taylor, K1JT, and the WSJT development team.</p>
-</section>
-</section>
-<section id="psk">
-<h3>PSK<a class="headerlink" href="#psk" title="Link to this heading">¶</a></h3>
-<p>PSK decodes every PSK signal in the passband, each on its own line. Pick the submode on the row under the second line: <strong>PSK31</strong>, <strong>PSK63</strong>, <strong>PSK125</strong> or <strong>QPSK31</strong>.</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> and <strong>Decoded Text</strong>, as in CW. A CQ and its call are highlighted.</p></li>
-<li><p>Click a line, or a signal on the waterfall, to pin it.</p></li>
-<li><p>Changing the submode clears the list and listens afresh.</p></li>
-<li><p>A signal that starts with an RSID is found as soon as it starts. Click its RSID label on the waterfall to switch to its submode.</p></li>
-<li><p><strong>Frequency menu:</strong> PSK31’s usual frequencies from 160 to 2 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-</section>
-<section id="rtty">
-<h3>RTTY<a class="headerlink" href="#rtty" title="Link to this heading">¶</a></h3>
-<p>RTTY decodes every RTTY signal in the passband, each on its own line. Each signal’s shift (170, 425 or 850 Hz) and speed (45.45, 50 or 75 baud) is found by itself, so there is no submode to pick.</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> (as read) and <strong>Decoded Text</strong>, as in CW. A CQ and its call are highlighted.</p></li>
-<li><p>Click a line, or a signal on the waterfall, to pin it.</p></li>
-<li><p>A signal that starts with an RSID is found as soon as it starts.</p></li>
-<li><p><strong>Frequency menu:</strong> the usual RTTY frequencies from 160 to 10 meters, and W1AW’s RTTY bulletin frequencies on 6 and 2 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-</section>
-<section id="mfsk">
-<h3>MFSK<a class="headerlink" href="#mfsk" title="Link to this heading">¶</a></h3>
-<p>MFSK decodes every MFSK16 or MFSK32 signal in the passband, each found by itself and listed as PSK’s are. Pick <strong>MFSK16</strong> or <strong>MFSK32</strong> on the row under the second line. MFSK16 copies down to about 13 dB below the noise (in 3 kHz).</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> and <strong>Decoded Text</strong>.</p></li>
-<li><p>An RSID clicked on the waterfall sets the submode.</p></li>
-<li><p><strong>Frequency menu:</strong> MFSK16 from 160 to 2 meters: the W1AW bulletin frequencies (6 and 2 meters among them), the frequencies used in New Zealand, and others. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-<p>Written from ZL1BPU’s published MFSK16 specification and IZ8BLY’s varicode.</p>
-</section>
-<section id="dominoex-and-thor">
-<h3>DominoEX and THOR<a class="headerlink" href="#dominoex-and-thor" title="Link to this heading">¶</a></h3>
-<p>The <strong>DominoEX / THOR</strong> mode decodes every DominoEX or THOR signal in the passband, each found by itself and listed as PSK’s are. No tuning is needed, and a signal that drifts is followed.</p>
-<ul class="simple">
-<li><p><strong>Submode</strong> (the row under the second line): <strong>DominoEX</strong> or <strong>THOR</strong> at speed 4, 5, 8, 11, 16 or 22, or <strong>DominoEX All Speeds</strong> / <strong>THOR All Speeds</strong> to decode every speed at once. The default is DominoEX 11.</p></li>
-<li><p><strong>The list:</strong> <strong>Frequency</strong>, <strong>dB</strong>, <strong>Baud</strong> (the speed) and <strong>Decoded Text</strong>.</p></li>
-<li><p>An RSID clicked on the waterfall sets the submode.</p></li>
-<li><p><strong>Frequency menu:</strong> a DominoEX frequency on each band from 160 to 2 meters, and the THOR22 NBEMS net frequency on 80 meters. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-<p>Written from ZL1BPU’s published DominoEX descriptions, with THOR’s error correction as W1HKJ describes it.</p>
-</section>
-<section id="olivia-and-contestia">
-<h3>Olivia and Contestia<a class="headerlink" href="#olivia-and-contestia" title="Link to this heading">¶</a></h3>
-<p>The <strong>Olivia</strong> mode decodes one Olivia or Contestia signal at a time.</p>
-<ul class="simple">
-<li><p><strong>Submode</strong> (the row under the second line): <strong>Olivia</strong> or <strong>Contestia</strong> at 4/250, 8/250, 8/500, 16/500, 16/1000 or 32/1000 (tones / bandwidth in Hz). The default is Olivia 8/500.</p></li>
-<li><p><strong>Where to listen:</strong> click the signal on the waterfall. Dashed lines on the waterfall show the band decoded, with the submode at the bottom between them.</p></li>
-<li><p>An RSID heard for one of these submodes sets both the submode and where to listen, unless the signal being decoded is still printing.</p></li>
-<li><p><strong>The list:</strong> the signal’s line, as PSK’s is, with its <strong>Baud</strong>.</p></li>
-<li><p><strong>Frequency menu:</strong> the Olivia calling frequencies from 160 to 6 meters (8/250 on HF, 16/500 on 6 meters), a 60 meter and a 2 meter frequency, and the 32/1000 frequencies on 30 and 20 meters. Pick a frequency and put the signal at 1500 Hz on the waterfall. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-</section>
-<section id="feld-hell">
-<h3>Feld-Hell<a class="headerlink" href="#feld-hell" title="Link to this heading">¶</a></h3>
-<p>Feld-Hell prints Hellschreiber on a tape as it is heard, line after line, the newest line at the bottom. Each line is printed twice, one copy above the other, as Hell’s own machines printed it: a print that slants out of one copy is whole in the other. Nothing is decoded into letters; you read the print.</p>
-<ul class="simple">
-<li><p><strong>Submode</strong> (the row under the second line): <strong>Feld-Hell</strong>, <strong>Feld-Hell X5</strong> or <strong>Feld-Hell X9</strong>.</p></li>
-<li><p>The strongest Hell signal is found by itself, shown by cyan dashed lines on the waterfall. Click another signal on the waterfall to read it instead (orange lines), and click inside its band to go back to finding the strongest. The status shows where it is read and how strong.</p></li>
-<li><p><strong>Trim:</strong> click <strong>−</strong> or <strong>+</strong> to straighten a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0.</p></li>
-<li><p><strong>Frequency menu:</strong> the Feld Hell Club’s frequencies from 160 to 6 meters, and a 60 meter and a 2 meter frequency. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-</section>
-<section id="wspr">
-<h3>WSPR<a class="headerlink" href="#wspr" title="Link to this heading">¶</a></h3>
-<p>WSPR decodes each 2 minute period once it has ended: every station between 1350 and 1650 Hz of audio, down to about -28 dB.</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>UTC</strong>, <strong>dB</strong>, <strong>DT</strong>, <strong>Frequency</strong> (MHz on the air with Rig Control, otherwise audio Hz), <strong>Drift</strong>, <strong>Call</strong>, <strong>Grid</strong>, <strong>dBm</strong> and <strong>Distance</strong> (in the distance unit of Settings). The newest period is on top.</p></li>
-<li><p>The bar under the waterfall shows how far into the period the decoder is, for example <strong>[ 47 / 120 ]</strong>.</p></li>
-<li><p>Decodes go to GridTracker2’s map as WSJT-X’s WSPR decodes do.</p></li>
-<li><p><strong>Frequency menu:</strong> the WSPR dial frequencies from 2200 meters (136 kHz) to 70 cm. <strong>Set Mode</strong> sets the rig to USB (its data mode with the VFO’s <strong>SSB Data</strong>).</p></li>
-</ul>
-<p>Written from the published WSPR protocol (K1JT’s description and G4JNT’s specification).</p>
 </section>
 <section id="sstv">
 <h3>SSTV<a class="headerlink" href="#sstv" title="Link to this heading">¶</a></h3>
@@ -3194,9 +3103,21 @@
 <li><p>You don’t need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong. Dashed lines on the waterfall show where its sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found.</p></li>
 <li><p>A sender whose sound card runs a little fast or slow, one that drifts, or a satellite’s Doppler, is put right, so the picture stays straight and its colors true.</p></li>
 <li><p>A sender that fades out part way is read on to the end, so the rest still comes if it comes back.</p></li>
-<li><p>Right-click a picture for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong>, <strong>Filter</strong> (the same as WEFAX’s, see <a class="reference internal" href="#wefax">WEFAX</a>) or <strong>Delete</strong>.</p></li>
+<li><p>Right-click a picture for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>), <strong>Filter</strong> or <strong>Delete</strong>. A rotated or filtered picture is saved and copied as shown.</p></li>
+<li><p><strong>Filter</strong> (once the picture has ended) cleans up a noisy one. Use as many as you like, one after another:</p>
+<ul>
+<li><p><strong>Sharpen:</strong> crisper lines and lettering.</p></li>
+<li><p><strong>Noise Reduction:</strong> takes out specks and static, keeping lines and lettering.</p></li>
+<li><p><strong>Smooth:</strong> softens grainy noise.</p></li>
+<li><p><strong>Auto Contrast:</strong> stretches a faded picture to its full range.</p></li>
+<li><p><strong>Equalize:</strong> spreads the levels evenly, to bring out a faint picture.</p></li>
+<li><p><strong>Lighten</strong> and <strong>Darken:</strong> lighten or darken the middle tones, keeping black and white.</p></li>
+<li><p><strong>Invert:</strong> swaps black and white.</p></li>
+<li><p><strong>Undo</strong> takes back the last filter (the number beside it says how many can be undone, up to 20). <strong>Undo All</strong> takes them all back. A file saved already stays as it was.</p></li>
+</ul>
+</li>
 <li><p>Each time the window opens, the newest 12 pictures in the save folder are back in the strip.</p></li>
-<li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; off at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go, as its last two folders (hover over it to see the whole path, click it to open it); <strong>Choose</strong> picks another.</p></li>
+<li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; on at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go, as its last two folders (hover over it to see the whole path, click it to open it); <strong>Choose</strong> picks another.</p></li>
 <li><p><strong>Frequency menu:</strong> the usual SSTV frequencies from 160 to 2 meters, and the ISS’s SSTV events on 145.800 MHz. There are none on 60 and 30 meters, where pictures may not be sent. <strong>Set Mode</strong> sets the rig to the frequency’s sideband (LSB below 10 MHz, USB above), or FM for the ISS.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s SSTV transmitter switches the decoder to SSTV.</p></li>
 </ul>
@@ -3243,24 +3164,6 @@
 <p>Written from the published SSTV mode specifications (JL Barber, N7CXI), with ideas from slowrx by Oona Räisänen, OH2EIQ.</p>
 </section>
 </section>
-<section id="packet">
-<h3>Packet<a class="headerlink" href="#packet" title="Link to this heading">¶</a></h3>
-<p>Packet decodes AX.25 packets, listening for all of these at once: AFSK 1200 (APRS, the ISS’s digipeater), FSK 9600 and GMSK 4800 (G3RUH, from a rig’s 9600 data audio), and HF packet at 300 baud.</p>
-<ul class="simple">
-<li><p><strong>The list:</strong> <strong>UTC</strong>, <strong>Baud</strong>, <strong>From</strong>, <strong>To / Path</strong> and <strong>Message</strong>, one packet a line, the newest on top. A packet with one bit wrong, or two side by side, is put right rather than lost.</p></li>
-<li><p>APRS is read: positions (plain, compressed and Mic-E, with the grid, course, speed and altitude), messages, status, objects, items, weather and telemetry. Other packets are shown as they are.</p></li>
-<li><p>A message to you is highlighted.</p></li>
-<li><p>AFSK 1200 heard through an SSB receiver (a satellite’s packets, or a rig tuned a little off) is decoded up to 600 Hz off its usual tones.</p></li>
-<li><p><strong>HF packet</strong> is found wherever its tones land between the <strong>[</strong> and <strong>]</strong>, so a station a little off frequency is still decoded. Each place one was heard lately is ticked at the top of the waterfall; hover over a 300 baud line’s <strong>Baud</strong> to see where it was heard.</p>
-<ul>
-<li><p>Click the waterfall, or a 300 baud line, to lock onto that place: only it is decoded, marked by a tick with guard lines either side. Click inside the guards to let go.</p></li>
-</ul>
-</li>
-<li><p>A packet heard while BirdWatch follows a satellite with the rig is marked <strong>via</strong> that satellite, in cyan.</p></li>
-<li><p><strong>Frequency menu:</strong> HF APRS (7.0486, 10.1476, 14.103 and 28.14 MHz), 300 baud packet on 80, 17, 15 and 12 meters, 10 meter APRS (29.25 MHz FM), 6 meter packet calling (50.62 MHz FM), the VHF APRS frequencies around the world, and the ISS’s digipeater (145.825 MHz, and 437.825 MHz). <strong>Set Mode</strong> sets the rig to FM for VHF and LSB for HF packet.</p></li>
-<li><p>With <strong>Follow BirdWatch</strong>, a satellite transmitter sending AFSK, AX.25 or G3RUH switches the decoder to Packet.</p></li>
-</ul>
-</section>
 <section id="sat-data">
 <h3>Sat Data<a class="headerlink" href="#sat-data" title="Link to this heading">¶</a></h3>
 <p>Sat Data decodes satellite telemetry frames. It listens for:</p>
@@ -3277,57 +3180,30 @@
 <li><p>Sat Data has no Frequency menu: tune with BirdWatch.</p></li>
 </ul>
 </section>
-<section id="navtex">
-<h3>NAVTEX<a class="headerlink" href="#navtex" title="Link to this heading">¶</a></h3>
-<p>NAVTEX receives the maritime safety broadcasts: weather forecasts, navigational warnings, search and rescue and more. They are sent on 518 kHz (international, in English), 490 kHz (national languages) and HF channels. Each station sends in its own 10 minute slot every 4 hours.</p>
+<section id="wwv-and-wwvh">
+<h3>WWV and WWVH<a class="headerlink" href="#wwv-and-wwvh" title="Link to this heading">¶</a></h3>
+<p><strong>WWV / WWVH</strong> in the Mode menu reads NIST’s time stations, WWV in Fort Collins, Colorado, and WWVH on Kauai, Hawaii: their time code and their second pulses, and how far your computer’s clock is from them. Both stations share 2.5, 5, 10 and 15 MHz; WWV is also on 20 and 25 MHz. (Canada’s CHU went off the air on June 22, 2026.)</p>
 <ul class="simple">
-<li><p><strong>The list:</strong> each message (ZCZC to NNNN) in a block of its own, the newest on top. Its header shows the station, subject and number (for example <strong>WA42</strong>), the subject’s name (<strong>Navigational warning</strong>, <strong>Weather forecast</strong>, <strong>Search and rescue</strong> …), the UTC time, the frequency, and how cleanly it was received: the share of errors in green (received well), yellow, or <strong>incomplete</strong> in red. The message’s text follows, as sent.</p></li>
-<li><p>A station in the middle of a message shows in a <strong>Receiving</strong> block on top.</p></li>
-<li><p>A message already received cleanly isn’t listed again when its station repeats it: its header says <strong>heard 2×</strong> (and so on) instead, as NAVTEX receivers do.</p></li>
-<li><p>Right-click a message for <strong>Copy To Clipboard</strong>, <strong>Save Message…</strong> or <strong>Delete</strong>.</p></li>
-<li><p><strong>Save Messages</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>NAVTEX</strong>; off at first) saves each complete message as a text file in the <strong>NAVTEX Messages</strong> folder, beside GridTracker2’s own folders, named by its UTC time, station, subject and number. A saved message’s header says <strong>saved</strong>.</p></li>
-<li><p><strong>Frequency menu:</strong> NAVTEX 490 and 518 kHz, HF NAVTEX 4209.5 kHz and the HF maritime safety channels from 4210 to 26100.5 kHz, each named. <strong>Set Mode</strong> sets the rig to USB.</p></li>
-</ul>
-</section>
-<section id="wefax">
-<h3>WEFAX<a class="headerlink" href="#wefax" title="Link to this heading">¶</a></h3>
-<p>WEFAX receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the same picture view as SSTV, the newest 12 kept in a strip on the right; click one to see it large. WEFAX’s charts are kept apart from SSTV’s pictures.</p>
-<p><a class="reference internal" href="_images/GT2_MMD_WEFAX.jpg"><img alt="WEFAX mode: a wave period chart from NMC Point Reyes, with earlier charts in the strip" src="_images/GT2_MMD_WEFAX.jpg" style="width: 480px;" /></a></p>
-<ul class="simple">
-<li><p>A chart starts by itself with its start tone, or with its phasing lines (the black lines with a white mark that follow the start tone) when static garbles the tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: <strong>LPM</strong> (lines a minute: <strong>Auto</strong>, 60, 90, 120 or 240) and <strong>IOC</strong> (the chart’s width: <strong>Auto</strong>, 576 or 288).</p></li>
-<li><p><strong>Start Now</strong> begins a chart that is already being sent. <strong>Stop</strong> ends the chart being received. A chart keeps going through a fade of up to two minutes.</p></li>
-<li><p>Charts are kept straight and lined up by themselves, even when the sound card’s clock is off or audio is lost for a moment. Many stations place a chart partway across the line, so its right side would show on the left: GridTracker2 finds the strip of blank paper between the chart’s edges and starts each line after it, as the chart comes in.</p>
+<li><p><strong>Tuning:</strong> USB with the dial 1 kHz under the carrier, for example 9.999 MHz for 10 MHz. The carrier then sits at 1000 Hz on the waterfall, with the time code’s 100 Hz either side of it, which a rig’s SSB filter would cut with the dial on the carrier. AM works too. The decoder finds the carrier by itself, so the dial doesn’t have to be exact.</p></li>
+<li><p><strong>The view:</strong> the time as the stations send it (UTC, to the second), the date and the day of the year, DUT1 (UT1 less UTC), the leap second warning and U.S. daylight saving time, as the time code gives them. These change rarely, so a change is shown only once two minutes running read it (one misread minute doesn’t show). Under it, each station and how strongly its second pulses come in, or <strong>not heard</strong>: WWV’s pulses are 1000 Hz, WWVH’s 1200 Hz, so both are timed on their own when both are heard.</p></li>
+<li><p><strong>PC clock:</strong> for example <strong>PC clock is 0.183 s ahead (± 0.050 s, 5 min)</strong>, from the last 5 minutes. Each minute’s pulses are timed against your computer’s clock, less the radio path from your location (your grid square in GridTracker2’s settings) to each station: a sky wave off the ionosphere at about 300 km, in one hop up to 3500 km and more beyond. Hover over it for how it is worked out.</p>
 <ul>
-<li><p><strong>Trim:</strong> click <strong>−</strong> or <strong>+</strong> until the chart’s upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.</p></li>
+<li><p>The audio’s delay from the antenna into the decoder is taken off too: 24 ms, measured with an IC-7300 through its USB sound card against internet time. The computer’s own output delay is measured as it runs, but the rest (the rig’s DSP, its sound card and the driver) differs from one setup to another and isn’t measured, so the offset is given as good to about ±0.05 s. With network audio or an SDR server, the delay is a different one, and the offset says so.</p></li>
+<li><p>Until the time code has been read (it needs the 100 Hz, so not with the dial on the carrier in USB), the offset is to the nearest second only, and says so.</p></li>
+<li><p>When the stations fade out (or audio is lost for a moment), the time is no longer shown: <strong>Pulses lost: listening for them again</strong> until they are found, and the seconds are counted again from there. A minute read and confirmed before is remembered, so second 0 and the minute are found again at once.</p></li>
+<li><p>The audio’s own delay can change by itself by 10 ms or more (the sound card or its driver catching up after a hiccup). The stations’ pulses don’t move, so when their pulses move (both stations’ alike, when both are heard) and the offset moves with them, the view says <strong>The audio’s delay changed by +10 ms (the sound card or its driver): the offset started again</strong>, and the offset is worked out afresh from that minute on.</p></li>
+<li><p>A first reading of the time code that the next minute hasn’t confirmed yet is marked <strong>Not Confirmed</strong>, and its date is shown only when it is within an hour of your computer’s clock; its pulses are timed to the nearest second.</p></li>
 </ul>
 </li>
-<li><p>The header above the chart shows its line rate and width (for example <strong>WEFAX 120/576</strong>), its UTC time, frequency and band, and <strong>saved</strong> once it is.</p></li>
-<li><p>Right-click a chart for <strong>Save Picture…</strong>, <strong>Copy To Clipboard</strong>, <strong>Rotate</strong> (<strong>90° Right</strong>, <strong>90° Left</strong>, <strong>180°</strong> or <strong>As Received</strong>, for charts some stations send sideways), <strong>Filter</strong> or <strong>Delete</strong>. A rotated or filtered chart is saved and copied as shown.</p></li>
-<li><p><strong>Filter</strong> (once the chart has ended) cleans up a noisy chart. Use as many as you like, one after another:</p>
+<li><p><strong>Set PC Clock:</strong> shown once the offset has held steady for 3 minutes or more with the time code read, and is at least 0.25 s (five times its ±0.05 s, so the clock ends up much nearer than it was), with a sound card’s audio. Click it and confirm (the question says how accurate it is), and your system asks for an administrator’s permission (Windows’ UAC prompt, your Linux desktop’s password prompt, or macOS’s). The clock is moved by the offset shown, counted from when you answer the prompt. GridTracker2 never sets the clock by itself.</p>
 <ul>
-<li><p><strong>Sharpen:</strong> crisper lines and lettering.</p></li>
-<li><p><strong>Noise Reduction:</strong> takes out specks and static, keeping lines and lettering.</p></li>
-<li><p><strong>Smooth:</strong> softens grainy noise.</p></li>
-<li><p><strong>Auto Contrast:</strong> stretches a faded chart to full black and white.</p></li>
-<li><p><strong>Equalize:</strong> spreads the gray levels evenly, to bring out a faint chart.</p></li>
-<li><p><strong>Lighten</strong> and <strong>Darken:</strong> lighten or darken the middle grays, keeping black and white.</p></li>
-<li><p><strong>Invert:</strong> swaps black and white.</p></li>
-<li><p><strong>Undo</strong> takes back the last filter (the number beside it says how many can be undone, up to 20). <strong>Undo All</strong> takes them all back. A file saved already stays as it was.</p></li>
+<li><p>A clock that keeps its time from the internet is more accurate than this, and will set itself back at its next sync. Set PC Clock is for a computer with no internet time, such as one in the field.</p></li>
 </ul>
 </li>
-<li><p>Each time the window opens, the newest 12 charts in the save folder are back in the strip.</p></li>
-<li><p><strong>Save Charts</strong> (under <strong>WEFAX</strong> in the window’s <strong>Settings</strong> → <strong>Decoders</strong>; off at first) saves each chart as a PNG when it ends, however much of it came. <strong>Folder</strong> shows where they go, as SSTV’s does (<code class="docutils literal notranslate"><span class="pre">WEFAX</span> <span class="pre">Charts</span></code> at first, beside SSTV’s <code class="docutils literal notranslate"><span class="pre">SSTV</span> <span class="pre">Pictures</span></code>; click it to open it); <strong>Choose</strong> picks another.</p></li>
-<li><p><strong>Frequency menu:</strong> the stations heard around the world (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s, the UK’s and others), grouped by the station’s location (in alphabetical order, each one’s frequencies lowest first), each named with its assigned frequency and its hours where it has them. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>The list:</strong> each minute timed, the newest on top: <strong>UTC</strong>, <strong>Station</strong>, <strong>Time Code</strong> (<strong>Read</strong>, <strong>Counted</strong> on from the last minute read when a minute was too weak to read, <strong>Not Confirmed</strong> for a first reading that the next minute hasn’t confirmed yet, or <strong>Nearest Second</strong>), <strong>Pulses</strong> (the second pulses timed that minute), <strong>Offset (s)</strong> (that minute’s, the path taken off), <strong>Path (ms)</strong> (with its number of hops) and <strong>dB</strong>.</p></li>
+<li><p><strong>Frequency menu:</strong> 2.5, 5, 10, 15, 20 and 25 MHz, each 1 kHz under the carrier. <strong>Set Mode</strong> sets the rig to USB.</p></li>
 </ul>
-<section id="auto-tune">
-<h4>Auto-Tune<a class="headerlink" href="#auto-tune" title="Link to this heading">¶</a></h4>
-<p>With <strong>Rig Control</strong> on, tick <strong>Auto-Tune</strong> on the WEFAX row to have the rig tuned to each next chart from the stations’ published schedules (NOAA’s, Germany’s, Japan’s, Korea’s, Australia’s and the UK’s), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or <strong>No chart scheduled</strong>.</p>
-<ul class="simple">
-<li><p>For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).</p></li>
-<li><p>A frequency whose chart never starts is passed over for a while.</p></li>
-<li><p>Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.</p></li>
-</ul>
-</section>
+<p>Written from NIST Special Publication 432, <em>NIST Time and Frequency Radio Stations: WWV, WWVH, and WWVB</em>.</p>
 </section>
 </section>
 <span id="document-BirdWatch"></span><section id="birdwatch">
@@ -3765,7 +3641,7 @@
 </section>
 <section id="multi-mode-decoder">
 <h4>Multi-Mode Decoder<a class="headerlink" href="#multi-mode-decoder" title="Link to this heading">¶</a></h4>
-<p>The Multi-Mode Decoder’s <strong>Follow BirdWatch</strong> switches the decoder to the mode of the transmitter your radio follows (CW, SSTV, Packet, Sat Data, FT8 or FT4), and listens on BirdWatch’s downlink VFO. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p>
+<p>The Multi-Mode Decoder’s <strong>Follow BirdWatch</strong> switches the decoder to the mode of the transmitter your radio follows (CW, SSTV or Sat Data), and listens on BirdWatch’s downlink VFO. See <a class="reference internal" href="#document-Multi-Mode-Decoder/Multi-Mode-Decoder"><span class="std std-doc">The Multi-Mode Decoder</span></a>.</p>
 </section>
 </section>
 <section id="data-credits">
@@ -4503,10 +4379,13 @@ Linux users, please include the output of: uname -r)
 <tr class="row-odd"><td><p>F1</p></td>
 <td><p>Show the hotkey list</p></td>
 </tr>
-<tr class="row-even"><td><p>F11</p></td>
+<tr class="row-even"><td><p>F2</p></td>
+<td><p>Open (or close) the Log QSO window, with Log QSOs By Hand on</p></td>
+</tr>
+<tr class="row-odd"><td><p>F11</p></td>
 <td><p>Full screen on or off</p></td>
 </tr>
-<tr class="row-odd"><td><p>F12</p></td>
+<tr class="row-even"><td><p>F12</p></td>
 <td><p>Hide or show the side panel</p></td>
 </tr>
 </tbody>
@@ -4695,7 +4574,7 @@ Linux users, please include the output of: uname -r)
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2026, GridTracker.org.
-      Last updated on Nov 11, 2026.
+      Last updated on Nov 12, 2026.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>

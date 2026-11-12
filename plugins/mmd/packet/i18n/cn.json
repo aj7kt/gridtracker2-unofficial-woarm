@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "分组",
+	"settings.packetDecoder.setMode.hover": "在频率菜单中选择频率会设置电台的模式：VHF 为 FM，HF 分组为 LSB",
+	"cwViewer.packet.header.from": "来自",
+	"cwViewer.packet.header.to": "发往 / 路径",
+	"cwViewer.packet.empty": "尚未解码任何分组：AFSK 1200（APRS）、FSK 9600 和 HF 300 波特都在收听。点击瀑布图可将 HF 分组锁定在一处",
+	"cwViewer.packet.status": "分组：已解码 {count} 个，{utc}",
+	"cwViewer.packet.via": "经 {sat}",
+	"cwViewer.packet.kind.position": "位置",
+	"cwViewer.packet.kind.object": "对象",
+	"cwViewer.packet.kind.item": "项目",
+	"cwViewer.packet.kind.status": "状态",
+	"cwViewer.packet.kind.message": "发给 {to} 的消息",
+	"cwViewer.packet.kind.weather": "天气",
+	"cwViewer.packet.kind.telemetry": "遥测",
+	"cwViewer.packet.locked": "HF 分组已锁定：{hz} Hz",
+	"cwViewer.packet.heardAt": "在 {hz} Hz 收到：点击将 HF 分组锁定在该处"
+}

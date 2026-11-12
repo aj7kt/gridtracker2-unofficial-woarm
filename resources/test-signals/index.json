@@ -49,58 +49,6 @@
       }
     },
     {
-      "file": "ft8-5.wav",
-      "module": "ft8",
-      "name": "FT8",
-      "modes": [
-        "ft8"
-      ],
-      "signals": 5,
-      "rsid": false,
-      "sync": "ft8",
-      "description": "FT8, two 15 s periods: period 1 (0 s): CQ Q1TST CN87 (600 Hz, -4 dB), CQ DX Q2ABC FN31 (1000 Hz, -12 dB), Q3XYZ Q4GRD EM12 (1450 Hz, -1 dB), Q5RX Q6KLM -07 (1900 Hz, +3 dB), Q7ABC Q8DEF R-11 (2400 Hz, -13 dB); period 2 (15 s): Q1TST Q9AA DM79 (800 Hz, -9 dB), Q4GRD Q3XYZ -04 (1250 Hz, -6 dB), Q6KLM Q5RX R-02 (1700 Hz, 0 dB), Q8DEF Q7ABC RR73 (2150 Hz, -11 dB), Q2ABC Q9ZZ FN20 (2600 Hz, -13 dB)",
-      "source": "generated"
-    },
-    {
-      "file": "ft4-5.wav",
-      "module": "ft8",
-      "name": "FT4",
-      "modes": [
-        "ft4"
-      ],
-      "signals": 5,
-      "rsid": false,
-      "sync": "ft4",
-      "description": "FT4, two 7.5 s periods: period 1 (0 s): CQ Q1TST CN87 (500 Hz, -2 dB), CQ Q2ABC FN31 (1000 Hz, -8 dB), Q3XYZ Q4GRD EM12 (1500 Hz, +4 dB), Q5RX Q6KLM -07 (2000 Hz, -5 dB), Q7ABC Q8DEF R-11 (2500 Hz, -10 dB); period 2 (7.5 s): Q1TST Q9AA DM79 (700 Hz, -6 dB), Q4GRD Q3XYZ -04 (1250 Hz, 0 dB), Q6KLM Q5RX R+02 (1800 Hz, -9 dB), Q8DEF Q7ABC RR73 (2300 Hz, -3 dB)",
-      "source": "generated"
-    },
-    {
-      "file": "feld-hell.wav",
-      "module": "hell",
-      "name": "Feld-Hell",
-      "modes": [
-        "hell"
-      ],
-      "signals": 1,
-      "rsid": false,
-      "sync": null,
-      "description": "Feld-Hell at 1000 Hz: a CQ from Q1HEL and a reply from Q2ABC",
-      "source": "generated"
-    },
-    {
-      "file": "mfsk-3.wav",
-      "module": "mfsk",
-      "name": "MFSK16 / MFSK32",
-      "modes": [
-        "mfsk"
-      ],
-      "signals": 3,
-      "rsid": false,
-      "sync": null,
-      "description": "Three MFSK signals a moment apart: MFSK16 at 700 Hz, MFSK32 at 1500 Hz, MFSK16 at 2300 Hz",
-      "source": "generated"
-    },
-    {
       "file": "mixed-rsid.wav",
       "module": "mixed",
       "name": "CW + PSK31 + RTTY + Olivia",
@@ -114,110 +62,6 @@
       "rsid": true,
       "sync": null,
       "description": "CW at 500 Hz, then after their RSIDs PSK31 at 900 Hz, RTTY centred on 1400 Hz and Olivia 8/500 at 2100 Hz, all at once",
-      "source": "generated"
-    },
-    {
-      "file": "navtex.wav",
-      "module": "navtex",
-      "name": "NAVTEX",
-      "modes": [
-        "navtex"
-      ],
-      "signals": 1,
-      "rsid": false,
-      "sync": null,
-      "description": "A NAVTEX broadcast (SITOR B, 100 baud, 170 Hz shift) centred on 1000 Hz: phasing, then a test message ZCZC QA01 from a fictional station",
-      "source": "generated"
-    },
-    {
-      "file": "olivia-3.wav",
-      "module": "olivia",
-      "name": "Olivia / Contestia",
-      "modes": [
-        "olivia"
-      ],
-      "signals": 3,
-      "rsid": true,
-      "sync": null,
-      "description": "Olivia and Contestia one after another, each after its RSID: Olivia 8/500 at 900 Hz, Contestia 8/250 at 1600 Hz, Olivia 16/500 at 2350 Hz",
-      "source": "generated"
-    },
-    {
-      "file": "packet-aprs.wav",
-      "module": "packet",
-      "name": "APRS, AFSK 1200",
-      "modes": [
-        "packet"
-      ],
-      "signals": 1,
-      "rsid": false,
-      "sync": null,
-      "description": "AFSK 1200 APRS, five packets one after another: Q1TST-9>APRS,WIDE1-1,WIDE2-1:=4737.25N/12220.50W>GridTracker2 test signal, mobile on 146.520 | Q2ABC>APRS,Q3DIG-1*,WIDE2-1:>GridTracker2 test: status via a digipeater | Q1TST-9>APRS,WIDE2-2::Q5RX-7   :Hello from the GridTracker2 test signal{01 | Q4WX-13>APRS:_10301230c220s004g009t054r000p012P008h87b10152 | Q3DIG-1>APRS,WIDE2-1:;TESTNET  *301900z4736.00N/12219.00W-Test net Thursdays 1900 on 146.520",
-      "source": "generated"
-    },
-    {
-      "file": "packet-hf300.wav",
-      "module": "packet",
-      "name": "HF Packet, 300 Baud",
-      "modes": [
-        "packet"
-      ],
-      "signals": 1,
-      "rsid": false,
-      "sync": null,
-      "description": "HF packet, 300 baud AFSK (1600 / 1800 Hz), three APRS packets one after another: Q6HF>APRS:=4041.00N/07400.00W-GridTracker2 HF packet test, 300 baud | Q7HF-10>APRS:>HF APRS test: 10.1476 MHz LSB | Q6HF>APRS::Q7HF-10  :QSL, 300 baud copied{02",
-      "source": "generated"
-    },
-    {
-      "file": "psk31-5.wav",
-      "module": "psk31",
-      "name": "BPSK31",
-      "modes": [
-        "psk31"
-      ],
-      "signals": 5,
-      "rsid": true,
-      "sync": null,
-      "description": "Five BPSK31 signals at once (600, 900, 1250, 1650, 2100 Hz), those at 600 and 1650 Hz after their RSID",
-      "source": "generated"
-    },
-    {
-      "file": "psk-variants.wav",
-      "module": "psk31",
-      "name": "PSK63, PSK125, QPSK31",
-      "modes": [
-        "psk31"
-      ],
-      "signals": 6,
-      "rsid": false,
-      "sync": null,
-      "description": "PSK63 at 600 and 1750 Hz, PSK125 at 1300 and 2250 Hz and QPSK31 at 900 and 2700 Hz, all at once",
-      "source": "generated"
-    },
-    {
-      "file": "rtty-5.wav",
-      "module": "rtty",
-      "name": "RTTY 45/170",
-      "modes": [
-        "rtty"
-      ],
-      "signals": 5,
-      "rsid": true,
-      "sync": null,
-      "description": "Five RTTY signals at once, 45.45 baud 170 Hz shift, centred on 550, 1000, 1450, 1900, 2350 Hz; those at 550 and 1900 Hz after their RSID",
-      "source": "generated"
-    },
-    {
-      "file": "rtty-variants.wav",
-      "module": "rtty",
-      "name": "RTTY 50/75 Baud, 425/850 Hz",
-      "modes": [
-        "rtty"
-      ],
-      "signals": 4,
-      "rsid": false,
-      "sync": null,
-      "description": "Four RTTY signals at other bauds and shifts: 50 baud 170 Hz at 600 Hz, 45.45 baud 425 Hz at 1250 Hz, 50 baud 850 Hz at 2100 Hz, 75 baud 170 Hz at 2950 Hz",
       "source": "generated"
     },
     {
@@ -270,32 +114,6 @@
       "rsid": false,
       "sync": null,
       "description": "SSTV Robot 36 (VIS code 8, 1500 to 2300 Hz): a test card, colour bars, a grey ramp, a grid, GRIDTRACKER2 and TEST",
-      "source": "generated"
-    },
-    {
-      "file": "dominoex-thor.wav",
-      "module": "thor",
-      "name": "DominoEX / THOR",
-      "modes": [
-        "thor"
-      ],
-      "signals": 6,
-      "rsid": false,
-      "sync": null,
-      "description": "DominoEX and THOR at several speeds, two or three at once: DominoEX 11 at 800 Hz, THOR 16 at 1500 Hz, DominoEX 22 at 2300 Hz, DominoEX 8 at 1150 Hz, THOR 11 at 2000 Hz, DominoEX 16 at 2700 Hz",
-      "source": "generated"
-    },
-    {
-      "file": "wefax.wav",
-      "module": "wefax",
-      "name": "WEFAX 120 LPM, IOC 576",
-      "modes": [
-        "wefax"
-      ],
-      "signals": 1,
-      "rsid": false,
-      "sync": null,
-      "description": "Weather fax (HF radiofax, 120 LPM, IOC 576, black 1500 Hz to white 2300 Hz): start tone, 10 s of phasing, an 80 line test chart (GRIDTRACKER2 TEST, gray steps, a grid, rings), stop tone",
       "source": "generated"
     }
   ]

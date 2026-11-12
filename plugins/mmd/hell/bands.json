@@ -1,0 +1,17 @@
+{
+  "$comment": "Feld-Hell's Frequency menu entries, added to the band plans (resources/data/bands.json, its schema)",
+  "frequencies": [
+        {"mode": "Feld-Hell", "band": "160m", "freq": 1.843, "rigMode": "USB", "note": "Feld Hell Club (1.843-1.844)"},
+        {"mode": "Feld-Hell", "band": "80m", "freq": 3.578, "rigMode": "USB", "note": "Feld Hell Club (3.578-3.586)"},
+        {"mode": "Feld-Hell", "band": "40m", "freq": 7.08, "rigMode": "USB", "note": "Feld Hell Club (7.080-7.090)"},
+        {"mode": "Feld-Hell", "band": "30m", "freq": 10.137, "rigMode": "USB", "note": "Feld Hell Club (10.137-10.143)"},
+        {"mode": "Feld-Hell", "band": "20m", "freq": 14.063, "rigMode": "USB", "note": "Feld Hell Club calling (14.063 and up to 14.069)"},
+        {"mode": "Feld-Hell", "band": "17m", "freq": 18.098, "rigMode": "USB", "note": "Feld Hell Club (18.098-18.105)"},
+        {"mode": "Feld-Hell", "band": "15m", "freq": 21.063, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "12m", "freq": 24.924, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "10m", "freq": 28.063, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "6m", "freq": 50.286, "rigMode": "USB", "note": "Feld Hell Club"},
+        {"mode": "Feld-Hell", "band": "60m", "freq": 5.3515, "rigMode": "USB", "note": "60m segment"},
+        {"mode": "Feld-Hell", "band": "2m", "freq": 144.13, "rigMode": "USB"}
+  ]
+}

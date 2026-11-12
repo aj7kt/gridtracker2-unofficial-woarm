@@ -1600,10 +1600,11 @@ function sendToLogger(ADIF, options = {})
   // BirdWatch: a contact made through the selected satellite (birdWatchLog.js)
   birdWatchLogTag(record);
 
+  // TX_PWR: ADIF's Number of watts ("100W" -> 100; a fraction kept, 0.5 W stays 0.5)
   if ("TX_PWR" in record)
   {
-    record.TX_PWR = parseInt(record.TX_PWR);
-    if (isNaN(record.TX_PWR))
+    record.TX_PWR = parseFloat(record.TX_PWR);
+    if (isNaN(record.TX_PWR) || record.TX_PWR < 0)
     {
       delete record.TX_PWR;
     }
@@ -1639,19 +1640,21 @@ function sendToLogger(ADIF, options = {})
   if (GT.settings.app.lookupMerge == true && record.CALL in GT.lookupCache)
   {
     let lookup = GT.lookupCache[record.CALL];
+    // The lookup only fills fields the QSO has empty: what the logger sent or was typed in always stands
     for (const key in lookup)
     {
-      if (key in GT.adifLookupMap)
+      if (key in GT.adifLookupMap && String(record[GT.adifLookupMap[key]] || "").trim().length == 0 && lookup[key] != null && String(lookup[key]).length > 0)
       {
         record[GT.adifLookupMap[key]] = lookup[key];
       }
     }
-    if ("GRIDSQUARE" in record && "grid" in lookup)
+    // A real grid the QSO came with (the decode's, the logger's, one typed in: 4, 6 or 8 characters) always stands over the
+    // lookup's; the lookup's only takes the place of one that isn't a grid
+    if ("GRIDSQUARE" in record && "grid" in lookup && record.GRIDSQUARE.length > 0 && !/^[A-R]{2}[0-9]{2}([A-X]{2}([0-9]{2})?)?$/i.test(record.GRIDSQUARE) &&
+      /^[A-R]{2}[0-9]{2}([A-X]{2})?$/i.test(String(lookup.grid)))
     {
-      if (record.GRIDSQUARE.substr(0, 4) == lookup.grid.substr(0, 4))
-      {
-        record.GRIDSQUARE = lookup.grid;
-      }
+      record.GRIDSQUARE = lookup.grid;
+      delete record.GRIDSQUARE_EXT;
     }
     if (GT.settings.app.lookupMissingGrid && "grid" in lookup && (!("GRIDSQUARE" in record) || record.GRIDSQUARE.length == 0))
     {
@@ -1744,34 +1747,18 @@ function finishSendingReport(record, localOnly = false)
     GT.lastReport = report;
 
     addEvent("log", "<font style='color:#FFA500'>▲ </font><font style='color:var(--gt-title)'> " + I18N("gt.log.newQSO") + " </font><font style='color:var(--gt-callsign)'>" + record.CALL + "</font><font style='color:#FFA500'> ▲</font>");
-    
-    if (!localOnly && GT.settings.app.potaFeatureEnabled && "POTA_REF" in record)
+
+    // Queue QSOs To Send Later on (Settings -> Logging, qsoQueue.js): logged here at once as a local-only QSO is, what goes out queued
+    // (sent later by Send All, without a POTA spot: that's only for the moment the QSO is made)
+    const queued = !localOnly && qsoQueueOn();
+
+    if (!localOnly && !queued && GT.settings.app.potaFeatureEnabled && "POTA_REF" in record)
     {
       reportPotaQSO(record);
       addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.spottedPota") + "</font>");
     }
 
-    if (!localOnly && GT.settings.N1MM.enable == true && GT.settings.N1MM.port > 1024 && GT.settings.N1MM.ip.length > 4)
-    {
-      sendUdpMessage(
-        report,
-        report.length,
-        parseInt(GT.settings.N1MM.port),
-        GT.settings.N1MM.ip
-      );
-      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "N1MM") + "</font>");
-    }
-
-    if (!localOnly && GT.settings.log4OM.enable == true && GT.settings.log4OM.port > 1024 && GT.settings.log4OM.ip.length > 4)
-    {
-      sendUdpMessage(
-        "ADD " + report,
-        report.length + 4,
-        parseInt(GT.settings.log4OM.port),
-        GT.settings.log4OM.ip
-      );
-      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "Log4OM") + "</font>");
-    }
+    if (!localOnly && !queued) qsoToUdpLoggers(report);
 
     try
     {
@@ -1781,157 +1768,195 @@ function finishSendingReport(record, localOnly = false)
     {
       addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionInternal") + "</font>");
     }
+    // The backup log: every QSO at once, queued or not, before anything below (never deferred, never again from Send All), so
+    // there's always a permanent record of every ADIF record made, whatever fails later
     writeBackupLogQso(report, record);
-    // (the logging programs and services below: not for a local-only QSO)
-    if (localOnly)
+    // (the logging programs and services below: not for a local-only QSO; a queued one's wait in the queue)
+    if (localOnly || queued)
     {
+      if (queued) qsoQueueAdd(report);
       afterQsoLogged();
       return;
     }
 
-    try
-    {
-      sendQrzLogEntry(reportNoStateNoCnty);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "QRZ") + "</font>");
-      console.error(e);
-    }
-
-    try
-    {
-      sendClubLogEntry(report);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "ClubLog") + "</font>");
-      console.error(e);
-    }
-
-    try
-    {
-      sendHrdLogEntry(report);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HrdLog.net") + "</font>");
-      console.error(e);
-    }
-
-    try
-    {
-      sendCloudlogEntry(report);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "Cloudlog") + "</font>");
-      console.error(e);
-    }
-
-    if (GT.settings.acLog.enable == true && GT.settings.acLog.port > 0 && GT.settings.acLog.ip.length > 4)
-    {
-      try
-      {
-        sendACLogMessage(record, GT.settings.acLog.port, GT.settings.acLog.ip);
-        addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "N3FJP") + "</font>");
-      }
-      catch (e)
-      {
-        addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "N3FJP") + "</font>");
-        console.error(e);
-      }
-    }
-
-    if (GT.settings.dxkLog.enable == true && GT.settings.dxkLog.port > 0 && GT.settings.dxkLog.ip.length > 4)
-    {
-      try
-      {
-        let DXreport = "";
-        for (const key in record)
-        {
-          if ("MY_GRIDSQUARE" in record)
-          {
-            record.MY_GRIDSQUARE = record.MY_GRIDSQUARE.substr(0, 6);
-          }
-          if ("GRIDSQUARE" in record)
-          {
-            record.GRIDSQUARE = record.GRIDSQUARE.substr(0, 6);
-          }
-
-          DXreport += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
-        }
-        DXreport += "<EOR>";
-
-        sendDXKeeperLogMessage(DXreport, GT.settings.dxkLog.port, GT.settings.dxkLog.ip);
-        addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "DXKeeper") + "</font>");
-      }
-      catch (e)
-      {
-        addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "DXKeeper") + "</font>");
-        console.error(e);
-      }
-    }
-
-    if (GT.settings.HRDLogbookLog.enable == true && GT.settings.HRDLogbookLog.port > 0 && GT.settings.HRDLogbookLog.ip.length > 4)
-    {
-      try
-      {
-        sendHRDLogbookEntry(record, GT.settings.HRDLogbookLog.port, GT.settings.HRDLogbookLog.ip);
-        addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "HRD Logbook") + "</font>");
-      }
-      catch (e)
-      {
-        addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HRD") + "</font>");
-        console.error(e);
-      }
-    }
-
-    try
-    {
-      sendLotwLogEntry(report, callsignFile, gridFile);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "LoTW") + "</font>");
-      console.error(e);
-    }
-
-    try
-    {
-      sendHamCQEntry(report);
-    }
-    catch (e)
-    {
-      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HamCQ") + "</font>");
-      console.error(e);
-    }
-
-    if (logeQSLQSOCheckBox.checked == true && (nicknameeQSLCheckBox.checked == false || (nicknameeQSLCheckBox.checked == true && eQSLNickname.value.trim().length > 0)))
-    {
-      if (nicknameeQSLCheckBox.checked == true)
-      {
-        record.APP_EQSL_QTH_NICKNAME = eQSLNickname.value.trim();
-      }
-      let eQSLreport = "";
-      for (let key in record)
-      {
-        eQSLreport += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
-      }
-      eQSLreport += "<EOR>";
-
-      try
-      {
-        sendeQSLEntry(eQSLreport);
-      }
-      catch (e)
-      {
-        addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "eQSL") + "</font>");
-        console.error(e);
-      }
-    }
-
+    qsoToLoggersAndServices(record, report, reportNoStateNoCnty, callsignFile, gridFile);
     afterQsoLogged();
+  }
+}
+
+// A QSO (report: its ADIF record) to N1MM Logger+ and Log4OM over UDP, each when it's set up (Settings -> Logging): from
+// finishSendingReport as a QSO is logged, and Send All (a queued QSO: qsoQueue.js)
+function qsoToUdpLoggers(report)
+{
+  if (GT.settings.N1MM.enable == true && GT.settings.N1MM.port > 1024 && GT.settings.N1MM.ip.length > 4)
+  {
+    sendUdpMessage(
+      report,
+      report.length,
+      parseInt(GT.settings.N1MM.port),
+      GT.settings.N1MM.ip
+    );
+    addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "N1MM") + "</font>");
+  }
+
+  if (GT.settings.log4OM.enable == true && GT.settings.log4OM.port > 1024 && GT.settings.log4OM.ip.length > 4)
+  {
+    sendUdpMessage(
+      "ADD " + report,
+      report.length + 4,
+      parseInt(GT.settings.log4OM.port),
+      GT.settings.log4OM.ip
+    );
+    addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "Log4OM") + "</font>");
+  }
+}
+
+// A QSO to the online logbooks and the other logging programs, each when it's set up (Settings -> Logging): from finishSendingReport
+// after GridTracker's own log and the backup log, and Send All (a queued QSO: qsoQueue.js). record: its fields (DXKeeper's grids are
+// cut to 6 characters in it, eQSL's QTH nickname added), report: its ADIF record, reportNoStateNoCnty: QRZ's, callsignFile and gridFile:
+// the station call and grid the LoTW queue file is named by
+function qsoToLoggersAndServices(record, report, reportNoStateNoCnty, callsignFile, gridFile)
+{
+  try
+  {
+    sendQrzLogEntry(reportNoStateNoCnty);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "QRZ") + "</font>");
+    console.error(e);
+  }
+
+  try
+  {
+    sendClubLogEntry(report);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "ClubLog") + "</font>");
+    console.error(e);
+  }
+
+  try
+  {
+    sendHrdLogEntry(report);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HrdLog.net") + "</font>");
+    console.error(e);
+  }
+
+  try
+  {
+    sendCloudlogEntry(report);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "Cloudlog") + "</font>");
+    console.error(e);
+  }
+
+  if (GT.settings.acLog.enable == true && GT.settings.acLog.port > 0 && GT.settings.acLog.ip.length > 4)
+  {
+    try
+    {
+      sendACLogMessage(record, GT.settings.acLog.port, GT.settings.acLog.ip);
+      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "N3FJP") + "</font>");
+    }
+    catch (e)
+    {
+      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "N3FJP") + "</font>");
+      console.error(e);
+    }
+  }
+
+  if (GT.settings.dxkLog.enable == true && GT.settings.dxkLog.port > 0 && GT.settings.dxkLog.ip.length > 4)
+  {
+    try
+    {
+      let DXreport = "";
+      for (const key in record)
+      {
+        if ("MY_GRIDSQUARE" in record)
+        {
+          record.MY_GRIDSQUARE = record.MY_GRIDSQUARE.substr(0, 6);
+        }
+        if ("GRIDSQUARE" in record)
+        {
+          record.GRIDSQUARE = record.GRIDSQUARE.substr(0, 6);
+        }
+
+        DXreport += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
+      }
+      DXreport += "<EOR>";
+
+      sendDXKeeperLogMessage(DXreport, GT.settings.dxkLog.port, GT.settings.dxkLog.ip);
+      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "DXKeeper") + "</font>");
+    }
+    catch (e)
+    {
+      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "DXKeeper") + "</font>");
+      console.error(e);
+    }
+  }
+
+  if (GT.settings.HRDLogbookLog.enable == true && GT.settings.HRDLogbookLog.port > 0 && GT.settings.HRDLogbookLog.ip.length > 4)
+  {
+    try
+    {
+      sendHRDLogbookEntry(record, GT.settings.HRDLogbookLog.port, GT.settings.HRDLogbookLog.ip);
+      addEvent("log", "<font style='color:var(--gt-label)'>" + I18N("gt.log.loggedTo").replace("{0}", "HRD Logbook") + "</font>");
+    }
+    catch (e)
+    {
+      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HRD") + "</font>");
+      console.error(e);
+    }
+  }
+
+  try
+  {
+    sendLotwLogEntry(report, callsignFile, gridFile);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "LoTW") + "</font>");
+    console.error(e);
+  }
+
+  try
+  {
+    sendHamCQEntry(report);
+  }
+  catch (e)
+  {
+    addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "HamCQ") + "</font>");
+    console.error(e);
+  }
+
+  if (logeQSLQSOCheckBox.checked == true && (nicknameeQSLCheckBox.checked == false || (nicknameeQSLCheckBox.checked == true && eQSLNickname.value.trim().length > 0)))
+  {
+    if (nicknameeQSLCheckBox.checked == true)
+    {
+      record.APP_EQSL_QTH_NICKNAME = eQSLNickname.value.trim();
+    }
+    let eQSLreport = "";
+    for (let key in record)
+    {
+      eQSLreport += "<" + key + ":" + record[key].length + ">" + record[key] + " ";
+    }
+    eQSLreport += "<EOR>";
+
+    try
+    {
+      sendeQSLEntry(eQSLreport);
+    }
+    catch (e)
+    {
+      addEvent("log", "<font style='color:var(--gt-error)'>" + I18N("gt.log.exceptionService").replace("{0}", "eQSL") + "</font>");
+      console.error(e);
+    }
   }
 }
 

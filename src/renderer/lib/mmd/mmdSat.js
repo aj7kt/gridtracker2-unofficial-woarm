@@ -95,6 +95,12 @@ function mmdSatClear()
 
 const SAT_KIND_NAMES = { funcube: "FUNcube", ax100: "AX.100", genesis: "GENESIS" };
 
+// Text with the characters a screen can't show as dots
+function mmdSatPrintable(text)
+{
+  return String(text || "").replace(/[\x00-\x1f\x7f-\x9f]/g, "·");
+}
+
 function mmdSatMessage(m)
 {
   if (m.type != "frame" || DEC.mode != "sat") return;
@@ -103,7 +109,7 @@ function mmdSatMessage(m)
     kind: SAT_KIND_NAMES[m.kind] || m.kind,
     baud: m.baud,
     sat: window.opener.mmDecoderSatellite(),
-    summary: mmdPacketPrintable(m.summary || ""),
+    summary: mmdSatPrintable(m.summary || ""),
     hex: m.hex || "",
     bytes: m.bytes,
     fec: m.fec || ""
@@ -266,3 +272,22 @@ function mmdSatRender()
   satRows.innerHTML = SAT.lines.map(mmdSatLine).join("");
   satEmpty.style.display = SAT.lines.length ? "none" : "";
 }
+
+// Sat Data in the decoder's mode registry (mmdPluginHost.js): satellite telemetry and pictures from the input's own samples
+mmdRegisterMode({
+  id: "sat",
+  name: "Sat Data",
+  modes: ["sat"],
+  input: "raw",
+  audio: (data) => mmdSatAudio(data),
+  shown: (on) =>
+  {
+    satList.style.display = on ? "" : "none";
+  },
+  entered: () => mmdSatReset(),
+  clear: () => mmdSatClear(),
+  retune: () =>
+  {
+    if (DEC.mode == "sat") mmdSatReset();
+  }
+});

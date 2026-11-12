@@ -1,0 +1,21 @@
+{
+  "id": "packet",
+  "name": "Packet",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "Packet", "i18n": "settings.packetDecoder.label", "group": "ham" },
+  "input": "raw",
+  "rig": { "inputFrom": "ft8", "instanceModes": ["PKT"] },
+  "settings": { "packetSetFreq": true, "packetSetMode": true },
+  "scripts": ["mmdPacket.js"],
+  "workers": ["packetWorker.js"],
+  "ui": "ui.html",
+  "css": "plugin.css",
+  "bands": { "file": "bands.json", "mode": "Packet" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": {}
+}

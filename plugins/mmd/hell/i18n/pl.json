@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "Nasłuch sygnału Hell: kliknij jeden na wodospadzie, aby go odczytać",
+	"cwViewer.hell.found": "Znaleziony",
+	"cwViewer.hell.sub.hover": "Odczytywana prędkość Hellschreibera: Feld-Hell lub szybsze odmiany X5 i X9. Kliknij sygnał na wodospadzie, aby go odczytać; kliknij w jego paśmie, aby wrócić do szukania najsilniejszego",
+	"cwViewer.hell.trim.hover": "Prostuje pochylony wydruk: zwiększ, jeśli opada w prawo, zmniejsz, jeśli się wznosi. Kliknij wartość, aby przywrócić 0",
+	"cwViewer.hell.tape.hover": "Sygnał Hell drukowany tak, jak jest słyszany, każda linia dwa razy: czytaj kopię, która jest prosta"
+}

@@ -378,7 +378,14 @@ function applyModeColorSettings()
     GT.modeColors[mode] = (typeof saved === "string" && BAND_COLOR_REGEXP.test(saved)) ? saved : GT.defaultModeColors[mode];
   }
   GT.modeColors.JS8CALL = GT.modeColors.JS8;
+  modeColorsToSubmodes();
   renderModeColorSettings();
+}
+
+// The submodes with no color of their own in data/modes.json (GT.modeParentColor) take their parent mode's
+function modeColorsToSubmodes()
+{
+  for (const mode in GT.modeParentColor) GT.modeColors[mode] = GT.modeColors[GT.modeParent[mode]];
 }
 
 function renderModeColorSettings()
@@ -396,6 +403,7 @@ function changeModeColor(mode, input)
   const hex = input.value.substring(1).toUpperCase();
   GT.modeColors[mode] = hex;
   if (mode === "JS8") GT.modeColors.JS8CALL = hex;
+  modeColorsToSubmodes();
 
   if (hex === GT.defaultModeColors[mode].toUpperCase())
   {

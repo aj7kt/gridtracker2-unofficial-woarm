@@ -1,0 +1,11 @@
+{
+	"cwViewer.wspr.header.drift": "漂移",
+	"cwViewer.wspr.empty": "尚未解碼 WSPR：每個 2 分鐘週期結束後解碼",
+	"cwViewer.wspr.status": "WSPR：已解碼 {count} 個，{utc}",
+	"cwViewer.wspr.decoding": "WSPR：正在解碼 {utc} 起的週期",
+	"cwViewer.wspr.waiting": "WSPR：正在監聽，第一個解碼週期從 {utc} 開始",
+	"cwViewer.wspr.header.call": "呼號",
+	"cwViewer.wspr.header.grid": "網格",
+	"cwViewer.wspr.header.dbm": "dBm",
+	"cwViewer.wspr.header.distance": "距離"
+}

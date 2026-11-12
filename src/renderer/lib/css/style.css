@@ -5064,6 +5064,13 @@ table.birdDopplerTable {
   gap: 10px;
 }
 
+/* An acknowledged station's emoji before its call on the Lookup card, as tall as the call's capitals */
+.lookupCallAck {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+}
+
 .lookupCall {
   color: var(--gt-hover-accent);
   font-size: 36px;
@@ -6375,6 +6382,12 @@ button:focus {
   pointer-events: none;
 }
 
+/* Settings -> Logging, Send Later (qsoQueue.js): a button that can't be used now greyed (its tooltip still says why: Send All offline) */
+.mapGroup .button.qsoQueueOff {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .mapGroup .mapInline {
   display: inline-block;
   margin-left: 4px;
@@ -6516,6 +6529,22 @@ button:focus {
 }
 
 /* Online Logbooks takes the top row's width rather than setting it (its own content would widen the tab) */
+/* Logging's second row: PSK Reporter, Log QSO and Send Later side by side, sharing the tab's width (set by the top row) and wrapping when
+   it's narrow */
+.mapLoggingRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: stretch;
+  align-self: stretch;
+  contain: inline-size;
+}
+
+.mapLoggingRow > .mapGroup {
+  flex: 1 1 0;
+  min-width: min-content;
+}
+
 .mapLogging > .mapGroup.mapFull {
   flex: none;
   align-self: stretch;

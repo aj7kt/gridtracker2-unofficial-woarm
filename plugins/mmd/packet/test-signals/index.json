@@ -1,0 +1,31 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "packet-aprs.wav",
+      "module": "packet",
+      "name": "APRS, AFSK 1200",
+      "modes": [
+        "packet"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "AFSK 1200 APRS, five packets one after another: Q1TST-9>APRS,WIDE1-1,WIDE2-1:=4737.25N/12220.50W>GridTracker2 test signal, mobile on 146.520 | Q2ABC>APRS,Q3DIG-1*,WIDE2-1:>GridTracker2 test: status via a digipeater | Q1TST-9>APRS,WIDE2-2::Q5RX-7   :Hello from the GridTracker2 test signal{01 | Q4WX-13>APRS:_10301230c220s004g009t054r000p012P008h87b10152 | Q3DIG-1>APRS,WIDE2-1:;TESTNET  *301900z4736.00N/12219.00W-Test net Thursdays 1900 on 146.520",
+      "source": "generated"
+    },
+    {
+      "file": "packet-hf300.wav",
+      "module": "packet",
+      "name": "HF Packet, 300 Baud",
+      "modes": [
+        "packet"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "HF packet, 300 baud AFSK (1600 / 1800 Hz), three APRS packets one after another: Q6HF>APRS:=4041.00N/07400.00W-GridTracker2 HF packet test, 300 baud | Q7HF-10>APRS:>HF APRS test: 10.1476 MHz LSB | Q6HF>APRS::Q7HF-10  :QSL, 300 baud copied{02",
+      "source": "generated"
+    }
+  ]
+}

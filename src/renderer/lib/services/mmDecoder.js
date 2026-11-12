@@ -16,6 +16,8 @@ GT.mmdFollowVfo = null;
 function mmDecoderInit()
 {
   if (!GT.settings.MMD) GT.settings.MMD = { enable: false, span: 4000, minHz: 250, maxHz: 0 };
+  // The plugins (services/mmdPlugins.js): found and taken up before the window opens
+  mmdPluginsFind();
   // The band scan's seconds at each step, and the CW decoder's Wide Filter, from before they were taken out
   delete GT.settings.MMD.scanDwell;
   delete GT.settings.MMD.wideFilter;
@@ -25,15 +27,15 @@ function mmDecoderInit()
     const was = Number(GT.settings.MMD[(GT.settings.MMD.viewMode || "cw") + "FallSpeed"]);
     GT.settings.MMD.fallSpeed = was > 0 ? was : 1;
   }
-  for (const mode of ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia"]) delete GT.settings.MMD[mode + "FallSpeed"];
-  if (!["normal", "deep"].includes(GT.settings.MMD.ft8Depth)) GT.settings.MMD.ft8Depth = "normal";
+  for (const mode of ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "hell", "olivia"]) delete GT.settings.MMD[mode + "FallSpeed"];
   // FT8's and FT4's time skew, from when it was kept as a setting (it's kept for the session only now: the window's DEC.skewKept)
   delete GT.settings.MMD.ft8Skew;
   delete GT.settings.MMD.ft4Skew;
   // Nothing is sent to the rig unless Rig Control (the window's Settings, Decoders) is turned on; each mode's Set Frequency and Set Mode
   // (Decoders) are on unless turned off
   if (typeof GT.settings.MMD.rigControl != "boolean") GT.settings.MMD.rigControl = false;
-  for (const key of ["ft8SetMode", "ft4SetMode", "cwSetMode", "sstvSetMode", "packetSetMode", "psk31SetMode", "rttySetMode", "mfskSetMode", "thorSetMode", "navtexSetMode", "hellSetMode", "wefaxSetMode", "wsprSetMode", "oliviaSetMode", "ft8SetFreq", "ft4SetFreq", "cwSetFreq", "sstvSetFreq", "packetSetFreq", "psk31SetFreq", "rttySetFreq", "mfskSetFreq", "thorSetFreq", "navtexSetFreq", "hellSetFreq", "wefaxSetFreq", "wsprSetFreq", "oliviaSetFreq"])
+  // (a plugin's from its plugin.json's settings: services/mmdPlugins.js)
+  for (const key of ["cwSetMode", "sstvSetMode", "wwvSetMode", "cwSetFreq", "sstvSetFreq", "wwvSetFreq"])
   {
     if (typeof GT.settings.MMD[key] != "boolean") GT.settings.MMD[key] = true;
   }
@@ -46,9 +48,6 @@ function mmDecoderInit()
   }
   delete GT.settings.MMD.ssbData;
   delete GT.settings.MMD.ft8Data;
-  // FT8's and FT4's Send Decodes To Call Roster (through the instance "MMD", mmDecoderInstanceDecodes): off unless turned on
-  if (typeof GT.settings.MMD.ft8SendDecodes != "boolean") GT.settings.MMD.ft8SendDecodes = false;
-  if (typeof GT.settings.MMD.ft4SendDecodes != "boolean") GT.settings.MMD.ft4SendDecodes = false;
   if (!GT.settings.MMD.vfos || typeof GT.settings.MMD.vfos != "object") GT.settings.MMD.vfos = {};
   // Common VFO, new: None until one is picked (no rig read or tuned before the user says which)
   const vfos = GT.settings.MMD.vfos;
@@ -110,30 +109,27 @@ function mmDecoderSstvFolder()
   return GT.settings.MMD.sstvFolder || path.join(path.dirname(GT.appData), "SSTV Pictures");
 }
 
-// WEFAX's Save Charts folder: the one chosen, else "WEFAX Charts" beside "SSTV Pictures"
-function mmDecoderWefaxFolder()
-{
-  return GT.settings.MMD.wefaxFolder || path.join(path.dirname(GT.appData), "WEFAX Charts");
-}
 
 // ---- Input Devices: each mode's own (the window's Input Device menu), { id, name } in MMD.inputs, found by its id, else by its
 // name (ids can change), as the Output Device is. inputCards: the audio inputs last seen ({ id: name }), so a change is warned of as the
 // Output Device's are (Settings -> Audio, Warning On Change)
 
-const MMD_INPUT_MODES = ["cw", "ft8", "ft4", "sstv", "packet", "sat", "psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia", "wspr"];
+// (each plugin's mode added as it's found: mmdPluginTake)
+const MMD_INPUT_MODES = ["cw", "sstv", "sat", "wwv"];
 
 function mmDecoderInputs()
 {
   const S = GT.settings.MMD;
   if (!S.inputs || typeof S.inputs != "object") S.inputs = {};
-  // Packet, new: on the input FT8 listens to (a rig's data audio)
-  if (!S.inputs.packet && S.inputs.ft8) S.inputs.packet = Object.assign({}, S.inputs.ft8);
-  // FT4, new: on FT8's input (the same rig audio); Sat Data on Packet's (a satellite's data audio), PSK31 and RTTY on CW's (the HF rig's)
-  if (!S.inputs.ft4 && S.inputs.ft8) S.inputs.ft4 = Object.assign({}, S.inputs.ft8);
-  // WSPR, new: on FT8's input too
-  if (!S.inputs.wspr && S.inputs.ft8) S.inputs.wspr = Object.assign({}, S.inputs.ft8);
+  // Sat Data, new: on Packet's input (a satellite's data audio); WWV on CW's (the HF rig's)
   if (!S.inputs.sat && S.inputs.packet) S.inputs.sat = Object.assign({}, S.inputs.packet);
-  for (const mode of ["psk31", "rtty", "mfsk", "thor", "navtex", "hell", "wefax", "olivia"]) if (!S.inputs[mode] && S.inputs.cw) S.inputs[mode] = Object.assign({}, S.inputs.cw);
+  if (!S.inputs.wwv && S.inputs.cw) S.inputs.wwv = Object.assign({}, S.inputs.cw);
+  // A plugin's mode, new: on the input of the mode its plugin.json names (rig.inputFrom: NAVTEX's, PSK's, CW's; FT4's, FT8's)
+  for (const p of GT.mmdPlugins || [])
+  {
+    if (p.disabled) continue;
+    for (const d of p.modes) if (d.inputFrom && !S.inputs[d.id] && S.inputs[d.inputFrom]) S.inputs[d.id] = Object.assign({}, S.inputs[d.inputFrom]);
+  }
   // The one Input Device of before (Settings -> Audio): each mode starts on it. A mode with none picked hears the first in the list
   // (the window's mmdInputFind)
   for (const mode of MMD_INPUT_MODES)
@@ -453,32 +449,21 @@ const MMD_INSTANCE_SETTLE_MAX_MS = 15000;
 GT.mmdInstance = { live: false, mode: "", hidden: false, sentAt: 0, key: "", decoding: false, waitSince: 0, settleBand: "", settleSince: 0 };
 
 // Each Multi-Mode Decoder mode's names, from its submode's own to its parent mode's: the first in data/modes.json is the instance's mode.
-// S: the decoder's settings (the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...; DominoEX / THOR's and Olivia's not
-// picked yet: the one the window decodes then, mmdKey.js's and mmdOlivia.js's default)
+// S: the decoder's settings (a plugin's with the submode picked: "psk63", "dominoex 11", "x5", "olivia 8/500" ...)
 const MMD_INSTANCE_MODES = {
   cw: () => ["CW"],
-  ft8: () => ["FT8"],
-  ft4: () => ["FT4"],
   sstv: () => ["SSTV"],
-  wefax: () => ["WEFAX", "FAX"],
-  hell: (S) => (S.hellSubmode == "x5" || S.hellSubmode == "x9" ? ["HELL" + S.hellSubmode] : []).concat("HELL"),
-  packet: () => ["PKT"],
   // Sat Data (FUNcube BPSK, AX.100, GENESIS): no mode of its own in modes.json
-  sat: () => ["DATA"],
-  psk31: (S) => [S.pskSubmode, "PSK"],
-  rtty: () => ["RTTY"],
-  mfsk: (S) => [S.mfskSubmode, "MFSK"],
-  thor: (S) => [String(S.thorSubmode || "dominoex 11").replace(" ", ""), String(S.thorSubmode || "dominoex 11").split(" ")[0]],
-  navtex: () => ["NAVTEX", "TOR"],
-  olivia: (S) => [S.oliviaSubmode || "olivia 8/500", String(S.oliviaSubmode || "olivia 8/500").split(" ")[0]],
-  wspr: () => ["WSPR"]
+  sat: () => ["DATA"]
+  // (a plugin's from its plugin.json's rig.instanceModes: services/mmdPlugins.js)
 };
 
 // The instance's mode: the window's Mode (and its submode) as data/modes.json names it; null for one it has no name for
 function mmDecoderInstanceModeName(mode = GT.settings.MMD.viewMode)
 {
   const names = Object.hasOwn(MMD_INSTANCE_MODES, mode) ? MMD_INSTANCE_MODES[mode](GT.settings.MMD) : [];
-  return names.map((name) => String(name || "").toUpperCase()).find((name) => GT.modes && Object.hasOwn(GT.modes, name)) || null;
+  // Only modes with a color of their own (as before submodes were listed: THOR16, OLIVIA 8/500, NAVTEX are named THOR, OLIVIA, TOR)
+  return names.map((name) => String(name || "").toUpperCase()).find((name) => GT.modes && Object.hasOwn(GT.modes, name) && !Object.hasOwn(GT.modeParentColor || {}, name)) || null;
 }
 
 // From the window, as it starts or stops listening, or shows and hides: whether it listens while it isn't shown
@@ -508,7 +493,7 @@ function mmDecoderInstanceTick()
   }
   const key = mode + "|" + Math.round(read.freq) + "|" + read.mode + "|" + mmDecoderInstanceCall() + "|" + mmDecoderInstanceGrid();
   if (!I.live || key != I.key || Date.now() - I.sentAt >= MMD_INSTANCE_HEARTBEAT_MS) mmDecoderInstanceStatus(read, mode, key);
-  // Into the Call Roster only in FT8 or FT4 with its Send Decodes To Call Roster on; seen by it at all only with one of them on
+  // Into the Call Roster only in a mode with its Send Decodes To Call Roster on (FT8's, FT4's); seen by it at all only with one of them on
   mmDecoderInstanceRoster(S[S.viewMode + "SendDecodes"] === true);
   mmDecoderInstanceRosterSeen();
   mmDecoderBackgroundRender();
@@ -584,14 +569,14 @@ function mmDecoderInstanceDecoding(on)
   mmDecoderInstanceStatus(mmDecoderInstanceRead(), I.mode, I.key);
 }
 
-// From the window: a period's messages in FT8 or FT4 (mode; start: the period's start, ms UTC; each line [dB, DT, audio Hz, message]), as
-// Decodes (the map, alerts), in the instance's mode only; into the Call Roster too with that mode's Send Decodes To Call Roster on
-// (wsjtx.js: the instance's noRoster)
-function mmDecoderInstanceDecodes(mode, start, lines)
+// From the window: a period's messages in a mode decoded as WSJT-X's are (a plugin's: FT8's, FT4's; mode; start: the period's start, ms
+// UTC; each line [dB, DT, audio Hz, message]; modeChar: WSJT-X's for the mode, FT8's "~", FT4's "+"), as Decodes (the map, alerts), in
+// the instance's mode only; into the Call Roster too with that mode's Send Decodes To Call Roster on (wsjtx.js: the instance's noRoster)
+function mmDecoderInstanceDecodes(mode, start, lines, modeChar)
 {
   const I = GT.mmdInstance;
   const S = GT.settings.MMD;
-  if (!I.live || !(MMD_INSTANCE_ID in GT.instances) || mode != S.viewMode || !(mode == "ft8" || mode == "ft4")) return;
+  if (!I.live || !(MMD_INSTANCE_ID in GT.instances) || mode != S.viewMode || typeof modeChar != "string" || !modeChar) return;
   const instance = GT.instances[MMD_INSTANCE_ID];
   const status = instance.status;
   if (!status) return;
@@ -603,7 +588,7 @@ function mmDecoderInstanceDecodes(mode, start, lines)
     const message = {
       magic_key: 0xadbccbda, schema_number: 2, type: 2, Id: MMD_INSTANCE_ID,
       NW: 1, TM: Number(start) % 86400000, SR: Math.round(Number(line[0]) || 0), DT: Math.round((Number(line[1]) || 0) * 10) / 10,
-      DF: Math.round(Number(line[2]) || 0), MO: mode == "ft4" ? "+" : "~", Msg: text, LC: 0, OA: 0,
+      DF: Math.round(Number(line[2]) || 0), MO: modeChar, Msg: text, LC: 0, OA: 0,
       OF: status.Frequency, OC: status.DEcall, OG: status.DEgrid, OM: status.MO, OB: status.Band, SP: status.SopMode
     };
     wsjtInstanceDispatch(instance, message, null);
@@ -643,15 +628,15 @@ function mmDecoderInstanceWspr(start, list)
   }
 }
 
-// The Call Roster sees the instance (its instance selector, its count, its RX / Decode indicator: wsjtx.js) only while FT8's or FT4's
-// Send Decodes To Call Roster is on. instanceCount counts the instances that can be in the roster (wsjtInstanceOpen counts each new one,
-// handleClosed takes one off for canRoster's): kept so as this changes
+// The Call Roster sees the instance (its instance selector, its count, its RX / Decode indicator: wsjtx.js) only while one of the modes'
+// Send Decodes To Call Roster is on (a plugin's mode's <mode>SendDecodes: FT8's, FT4's). instanceCount counts the instances that can be in
+// the roster (wsjtInstanceOpen counts each new one, handleClosed takes one off for canRoster's): kept so as this changes
 function mmDecoderInstanceRosterSeen()
 {
   const instance = GT.instances[MMD_INSTANCE_ID];
   if (!instance) return;
   const S = GT.settings.MMD;
-  const seen = S.ft8SendDecodes === true || S.ft4SendDecodes === true;
+  const seen = mmdPluginModeIds().some((mode) => S[mode + "SendDecodes"] === true);
   instance.hideFromRoster = !seen;
   if (instance.canRoster === seen) return;
   instance.canRoster = seen;
@@ -712,7 +697,9 @@ function mmDecoderBackgroundRender()
 // nothing is followed, and while BirdWatch is off or its Satellite Tracking is toggled off (Follow BirdWatch isn't shown then either)
 function mmDecoderBirdWatchMode()
 {
+  // (a follow left from another satellite than the one selected isn't BirdWatch's now)
   if (typeof birdWatchStickyPrevious != "function" || !GT.rigDoppler || !birdWatchPanelShown()) return null;
+  if (!GT.birdWatchTrack || GT.birdWatchTrack.selected != GT.rigDoppler.norad) return null;
   const t = birdWatchStickyPrevious();
   if (!t) return null;
   return { uuid: t.uuid, mode: mmDecoderModeOf(t.mode), baud: Number(t.baud) || 0, satnogs: t.mode || "" };

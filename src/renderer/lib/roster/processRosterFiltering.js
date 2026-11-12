@@ -1,4 +1,4 @@
-const CALLSIGN_REGEXP = /^([A-Z0-9]+\/){0,1}([0-9][A-Z]{1,2}[0-9]|[A-Z]{1,2}[0-9])([A-Z0-9]+)(\/[A-Z0-9/]+){0,1}$/;
+// (A callsign: first.js's CALLSIGN_REGEXP)
 const GRID_REGEXP = /^[A-Z]{2}[0-9]{2}$/;
 
 function processRosterFiltering(callRoster, rosterSettings)

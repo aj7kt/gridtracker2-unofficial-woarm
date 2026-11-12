@@ -260,6 +260,9 @@ function birdWatchAutoUpdate()
     }
     return;
   }
+  // A satellite always up (geostationary: its one pass longer than Skeds' BIRD_WATCH_SKED_ALWAYS_MS) never sets, so kept "until it
+  // sets" it would hold the pick for good: it's picked only when no other satellite is up or coming up
+  let always = null;
   for (const norad of GT.settings.BirdWatch.tracked)
   {
     const sat = T.last.get(norad);
@@ -268,6 +271,11 @@ function birdWatchAutoUpdate()
     const pass = T.passes.get(norad).list.find((x) => x.los > now && x.maxEl >= minEl) || null;
     if (!pass) continue;
     const rank = birdWatchAutoRank(norad);
+    if (pass.los - pass.aos > BIRD_WATCH_SKED_ALWAYS_MS)
+    {
+      if (sat.up && (!always || rank < always.rank)) always = { norad: norad, rank: rank };
+      continue;
+    }
     if (sat.up && pass === current) up.push({ norad: norad, los: pass.los, rank: rank });
     else
     {
@@ -282,6 +290,7 @@ function birdWatchAutoUpdate()
   else if (up.length && (best < BIRD_WATCH_AUTO_DEAF || !nextHeard)) pick = usable.some((s) => s.norad == T.autoPick) ? T.autoPick : usable.sort((a, b) => a.los - b.los)[0].norad;
   else if (nextHeard) pick = nextHeard.norad;
   else if (next) pick = next.norad;
+  else if (always) pick = always.norad;
   if (pick && pick != T.autoPick)
   {
     T.autoPick = pick;

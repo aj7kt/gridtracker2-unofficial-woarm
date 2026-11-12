@@ -1,0 +1,31 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "ft8-5.wav",
+      "module": "ft8",
+      "name": "FT8",
+      "modes": [
+        "ft8"
+      ],
+      "signals": 5,
+      "rsid": false,
+      "sync": "ft8",
+      "description": "FT8, two 15 s periods: period 1 (0 s): CQ Q1TST CN87 (600 Hz, -4 dB), CQ DX Q2ABC FN31 (1000 Hz, -12 dB), Q3XYZ Q4GRD EM12 (1450 Hz, -1 dB), Q5RX Q6KLM -07 (1900 Hz, +3 dB), Q7ABC Q8DEF R-11 (2400 Hz, -13 dB); period 2 (15 s): Q1TST Q9AA DM79 (800 Hz, -9 dB), Q4GRD Q3XYZ -04 (1250 Hz, -6 dB), Q6KLM Q5RX R-02 (1700 Hz, 0 dB), Q8DEF Q7ABC RR73 (2150 Hz, -11 dB), Q2ABC Q9ZZ FN20 (2600 Hz, -13 dB)",
+      "source": "generated"
+    },
+    {
+      "file": "ft4-5.wav",
+      "module": "ft8",
+      "name": "FT4",
+      "modes": [
+        "ft4"
+      ],
+      "signals": 5,
+      "rsid": false,
+      "sync": "ft4",
+      "description": "FT4, two 7.5 s periods: period 1 (0 s): CQ Q1TST CN87 (500 Hz, -2 dB), CQ Q2ABC FN31 (1000 Hz, -8 dB), Q3XYZ Q4GRD EM12 (1500 Hz, +4 dB), Q5RX Q6KLM -07 (2000 Hz, -5 dB), Q7ABC Q8DEF R-11 (2500 Hz, -10 dB); period 2 (7.5 s): Q1TST Q9AA DM79 (700 Hz, -6 dB), Q4GRD Q3XYZ -04 (1250 Hz, 0 dB), Q6KLM Q5RX R+02 (1800 Hz, -9 dB), Q8DEF Q7ABC RR73 (2300 Hz, -3 dB)",
+      "source": "generated"
+    }
+  ]
+}

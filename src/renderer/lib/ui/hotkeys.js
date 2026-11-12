@@ -31,62 +31,61 @@ function onMyKeyDown(event)
 
   if (rootSettingsDiv.style.display == "none")
   {
-    if (event.code in GT.hotKeys)
+    const hotKey = hotKeyOf(event);
+    if (hotKey)
     {
-      if (GT.hotKeys[event.code].extKey != null && GT.hotKeys[event.code].extKey in event && event[GT.hotKeys[event.code].extKey] == false)
-      {
-        return;
-      }
-      if (GT.hotKeys[event.code].param1 != null)
+      if (hotKey.param1 != null)
       {
         let param2 = null;
-        if (GT.hotKeys[event.code].param2 != null)
+        if (hotKey.param2 != null)
         {
-          if (GT.hotKeys[event.code].param2 in event) { param2 = event[GT.hotKeys[event.code].param2]; }
+          if (hotKey.param2 in event) { param2 = event[hotKey.param2]; }
         }
-        GT.hotKeys[event.code].func(GT.hotKeys[event.code].param1, param2);
+        hotKey.func(hotKey.param1, param2);
         event.preventDefault();
       }
       else
       {
-        GT.hotKeys[event.code].func();
-        event.preventDefault();
-      }
-    }
-    else if (event.key in GT.hotKeys)
-    {
-      if (GT.hotKeys[event.key].extKey != null && GT.hotKeys[event.key].extKey in event && event[GT.hotKeys[event.key].extKey] == false)
-      {
-        return;
-      }
-      if (GT.hotKeys[event.key].param1 != null)
-      {
-        let param2 = null;
-        if (GT.hotKeys[event.key].param2 != null)
-        {
-          if (GT.hotKeys[event.key].param2 in event) { param2 = event[GT.hotKeys[event.key].param2]; }
-        }
-        GT.hotKeys[event.key].func(GT.hotKeys[event.key].param1, param2);
-        event.preventDefault();
-      }
-      else
-      {
-        GT.hotKeys[event.key].func();
+        hotKey.func();
         event.preventDefault();
       }
     }
   }
 }
 
+// The hotkey a key press is (by its code, else its key): one held with its modifier (Ctrl+F12) before one without it (F12), so the two can
+// be different hotkeys; one that needs a modifier not held isn't it
+const HOTKEY_MODIFIERS = ["ctrlKey", "shiftKey", "altKey"];
+function hotKeyOf(event)
+{
+  for (const key of [event.code, event.key])
+  {
+    for (const mod of HOTKEY_MODIFIERS)
+    {
+      if (event[mod] && hotKeyId(key, mod) in GT.hotKeys) return GT.hotKeys[hotKeyId(key, mod)];
+    }
+    if (key in GT.hotKeys) return GT.hotKeys[key];
+  }
+  return null;
+}
+
+// Where a hotkey is kept in GT.hotKeys: by its key, and one needing a modifier by both (so Ctrl+F12 doesn't take F12's place)
+function hotKeyId(key, extKey)
+{
+  return extKey ? extKey + "+" + key : key;
+}
+
 function registerHotKey(name, key, func, param1 = null, param2 = null, extKey = null, descPrefix = null)
 {
-  GT.hotKeys[key] = {};
-  GT.hotKeys[key].name = name;
-  GT.hotKeys[key].func = func;
-  GT.hotKeys[key].param1 = param1;
-  GT.hotKeys[key].param2 = param2;
-  GT.hotKeys[key].extKey = extKey;
-  GT.hotKeys[key].descPrefix = descPrefix;
+  const id = hotKeyId(key, extKey);
+  GT.hotKeys[id] = {};
+  GT.hotKeys[id].key = key;
+  GT.hotKeys[id].name = name;
+  GT.hotKeys[id].func = func;
+  GT.hotKeys[id].param1 = param1;
+  GT.hotKeys[id].param2 = param2;
+  GT.hotKeys[id].extKey = extKey;
+  GT.hotKeys[id].descPrefix = descPrefix;
 }
 
 function registerHotKeys()
@@ -144,6 +143,8 @@ function registerHotKeys()
   registerHotKey("Toggle Fullscreen", "F11", toggleFullscreen);
   registerHotKey("Toggle Sidebar Panel", "F12", toggleMenu);
   registerHotKey("Hot Key List (This List)", "F1", toggleHelp);
+  // With Log QSO on (Settings -> Logging): as its button in the button panel
+  registerHotKey("Open Log QSO Window", "F2", logQsoButton, true);
 
   generatePrintTable();
 }

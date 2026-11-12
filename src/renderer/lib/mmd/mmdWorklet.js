@@ -20,6 +20,17 @@ class CwDecoderProcessor extends AudioWorkletProcessor
     this.ok = false;
     // The rig was retuned (mmdRetune): what was found is let go, and the rows after carry the retune's number
     this.seq = 0;
+    // Each message's object and transfer list, filled in again for each one (postMessage copies them as it is called), and the one empty
+    // revisions object nearly every row has (never written to): the audio thread makes as little as it can, as each thing it makes is
+    // memory its garbage collector must free again, and a collection pauses it. (The buffers that go out are new each time: one handed
+    // over is the page's, and one sent back would come as a new object all the same, measured no better)
+    this.ft8Message = { type: "ft8audio", samples: null, end: 0, seq: 0 };
+    this.ft8Transfer = [null];
+    this.rawMessage = { type: "rawaudio", samples: null, rate: sampleRate, seq: 0 };
+    this.rawTransfer = [null];
+    this.rowMessage = { type: "row", seq: 0, row: null, view: null, channels: null, events: null, revisions: null };
+    this.rowTransfer = [null, null, null, null];
+    this.noRevisions = Object.freeze({});
     // The audio decoded (Settings, Min Freq and Max Freq: "range", Hz)
     this.port.onmessage = (event) =>
     {
@@ -107,7 +118,13 @@ class CwDecoderProcessor extends AudioWorkletProcessor
       this.rawOut[this.rawCount++] = samples[j];
       if (this.rawCount == this.rawSize)
       {
-        this.port.postMessage({ type: "rawaudio", samples: this.rawOut, rate: sampleRate, seq: this.seq }, [this.rawOut.buffer]);
+        const message = this.rawMessage;
+        message.samples = this.rawOut;
+        message.rate = sampleRate;
+        message.seq = this.seq;
+        this.rawTransfer[0] = this.rawOut.buffer;
+        this.port.postMessage(message, this.rawTransfer);
+        message.samples = this.rawTransfer[0] = null;
         this.rawOut = new Float32Array(this.rawSize);
         this.rawCount = 0;
       }
@@ -133,7 +150,13 @@ class CwDecoderProcessor extends AudioWorkletProcessor
         this.ft8Next += this.ft8Step;
         if (this.ft8Count == FT8_CHUNK)
         {
-          this.port.postMessage({ type: "ft8audio", samples: this.ft8Out, end: currentTime + (j + 1) / sampleRate, seq: this.seq }, [this.ft8Out.buffer]);
+          const message = this.ft8Message;
+          message.samples = this.ft8Out;
+          message.end = currentTime + (j + 1) / sampleRate;
+          message.seq = this.seq;
+          this.ft8Transfer[0] = this.ft8Out.buffer;
+          this.port.postMessage(message, this.ft8Transfer);
+          message.samples = this.ft8Transfer[0] = null;
           this.ft8Out = new Float32Array(FT8_CHUNK);
           this.ft8Count = 0;
         }
@@ -151,31 +174,64 @@ class CwDecoderProcessor extends AudioWorkletProcessor
     if (this.ft8) this.ft8Feed(samples);
     if (this.raw) this.rawFeed(samples);
     const X = this.wasm;
-    new Float32Array(X.memory.buffer, X.cw_input(), samples.length).set(samples);
+    this.inputView = this.memoryView(this.inputView, Float32Array, X.cw_input(), samples.length);
+    this.inputView.set(samples);
     if (X.cw_process(samples.length))
     {
-      const row = new Uint8Array(X.memory.buffer, X.cw_row(), this.bins).slice();
-      const channels = new Float32Array(X.memory.buffer, X.cw_channels(), this.channelCount * CW_CHANNEL_FIELDS).slice();
+      this.rowView = this.memoryView(this.rowView, Uint8Array, X.cw_row(), this.bins);
+      const row = this.rowView.slice();
+      this.channelsView = this.memoryView(this.channelsView, Float32Array, X.cw_channels(), this.channelCount * CW_CHANNEL_FIELDS);
+      const channels = this.channelsView.slice();
       const count = X.cw_event_count();
-      const events = new Int32Array(X.memory.buffer, X.cw_events(), count * 2).slice();
+      // (Their count changes from row to row: read from a view of all its memory)
+      const events = new Int32Array(count * 2);
+      this.memory32 = this.memoryView(this.memory32, Int32Array, 0, X.memory.buffer.byteLength >> 2);
+      const from = X.cw_events() >> 2;
+      for (let i = 0; i < events.length; i++) events[i] = this.memory32[from + i];
       // A transmission read again (an event below 0): its text, by its slot. Plain ASCII, read byte by byte
-      const revisions = {};
+      let revisions = this.noRevisions;
       for (let i = 1; i < events.length; i += 2)
       {
         if (events[i] >= 0) continue;
+        if (revisions === this.noRevisions) revisions = {};
         const slot = -events[i] - 1;
         const at = X.cw_revision_text(slot);
-        const bytes = new Uint8Array(X.memory.buffer);
+        this.memory8 = this.memoryView(this.memory8, Uint8Array, 0, X.memory.buffer.byteLength);
+        const bytes = this.memory8;
         let text = "";
         for (let k = at; at && bytes[k]; k++) text += String.fromCharCode(bytes[k]);
         revisions[slot] = text;
       }
       X.cw_events_clear();
       // The waterfall's spectrum (cw_view): each bin's dB over its floor, then its dB re full scale
-      const view = new Float32Array(X.memory.buffer, X.cw_view(), this.bins * 2).slice();
-      this.port.postMessage({ type: "row", seq: this.seq, row: row, view: view, channels: channels, events: events, revisions: revisions }, [row.buffer, view.buffer, channels.buffer, events.buffer]);
+      this.viewView = this.memoryView(this.viewView, Float32Array, X.cw_view(), this.bins * 2);
+      const view = this.viewView.slice();
+      const message = this.rowMessage;
+      message.seq = this.seq;
+      message.row = row;
+      message.view = view;
+      message.channels = channels;
+      message.events = events;
+      message.revisions = revisions;
+      const transfer = this.rowTransfer;
+      transfer[0] = row.buffer;
+      transfer[1] = view.buffer;
+      transfer[2] = channels.buffer;
+      transfer[3] = events.buffer;
+      this.port.postMessage(message, transfer);
+      message.row = message.view = message.channels = message.events = message.revisions = null;
+      transfer[0] = transfer[1] = transfer[2] = transfer[3] = null;
     }
     return true;
+  }
+
+  // A view of the module's memory: the one made before (old) while it still is one of that place (once its memory has grown, the views
+  // made before are of the memory it had: made again)
+  memoryView(old, Type, at, length)
+  {
+    const buffer = this.wasm.memory.buffer;
+    if (old && old.buffer === buffer && old.byteOffset == at && old.length == length) return old;
+    return new Type(buffer, at, length);
   }
 }
 
@@ -330,6 +386,8 @@ class PcmInProcessor extends AudioWorkletProcessor
   push(samples)
   {
     // Back after running dry: the silence the gap is filled with let go, as much as was played meanwhile; the stream's audio ends the count
+    // (the piece queued from its first sample after the silence let go)
+    let first = 0;
     if (this.dry)
     {
       let zeros = true;
@@ -344,11 +402,11 @@ class PcmInProcessor extends AudioWorkletProcessor
         const skip = Math.min(samples.length, Math.floor(this.owed));
         this.owed -= skip;
         if (skip == samples.length) return;
-        samples = samples.slice(skip);
+        first = skip;
       }
     }
     const size = this.queue.length;
-    for (let i = 0; i < samples.length; i++)
+    for (let i = first; i < samples.length; i++)
     {
       this.queue[(this.head + this.count) % size] = samples[i];
       if (this.count < size) this.count++;
@@ -425,6 +483,8 @@ class PcmOutProcessor extends AudioWorkletProcessor
     this.chunk = Math.max(128, (options && options.processorOptions && options.processorOptions.chunk) || 960);
     this.buffer = new Float32Array(this.chunk);
     this.fill = 0;
+    // The transfer list each piece goes out with, filled in again each time
+    this.transfer = [null];
   }
 
   process(inputs)
@@ -436,7 +496,9 @@ class PcmOutProcessor extends AudioWorkletProcessor
       this.buffer[this.fill++] = input ? input[i] : 0;
       if (this.fill == this.chunk)
       {
-        this.port.postMessage(this.buffer, [this.buffer.buffer]);
+        this.transfer[0] = this.buffer.buffer;
+        this.port.postMessage(this.buffer, this.transfer);
+        this.transfer[0] = null;
         this.buffer = new Float32Array(this.chunk);
         this.fill = 0;
       }

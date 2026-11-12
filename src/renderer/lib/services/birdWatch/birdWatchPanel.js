@@ -106,6 +106,9 @@ function birdWatchSatDescription(norad, tle, info)
   return lines.join("\n");
 }
 
+// A selected satellite's element set this many days old (or more) is said to be old in the Event Viewer
+const BIRD_WATCH_TLE_STALE_DAYS = 14;
+
 // Left click on a satellite on the map: select it, or clear the selection when it already is. auto: Auto-Track's pick (Sticky Mode then)
 function birdWatchSelect(norad, auto = false)
 {
@@ -131,6 +134,9 @@ function birdWatchSelect(norad, auto = false)
   const tle = norad ? birdWatchTleGet(norad) : null;
   const name = tle ? tle.name : String(norad);
   addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(norad ? I18N(auto ? "birdWatch.event.autoSelected" : "birdWatch.event.selected").replace("{sat}", () => name) : I18N("birdWatch.event.deselected")) + "</font>");
+  // An old element set: where it is and when it passes drift further off each day
+  const days = tle && tle.epoch > 0 ? Math.floor((Date.now() - tle.epoch) / 86400000) : 0;
+  if (days >= BIRD_WATCH_TLE_STALE_DAYS) addEvent("birdwatch", "<font style='color:var(--gt-warning)'>" + htmlEntities(I18N("birdWatch.event.staleTle").replace("{sat}", () => name).replace("{days}", days)) + "</font>");
   // The rig follows the transmitter last followed on the new satellite, or (Sticky Mode, Auto-Track's pick only) the previous satellite's mode
   if (norad) birdWatchStickyFollow(norad, previous, auto);
 }
@@ -559,7 +565,7 @@ function birdWatchNumbers(norad)
     aos: pass ? birdWatchTimeAzHtml(pass.aos, pass.aosAz) : "-",
     los: pass ? birdWatchTimeAzHtml(pass.los, pass.losAz) : "-",
     dos: pass ? toDHMS((pass.los - pass.aos) / 1000) : "-",
-    max: pass ? "<span title='" + userTimeString(pass.maxElTime) + "'>" + pass.maxEl.toFixed(1) + "&deg;</span>" + (pass.visible ? " <span title='" + I18N("birdWatch.visible.hover") + "'>\u{1F441}</span>" : "") : "-",
+    max: pass ? "<span title='" + userTimeString(pass.maxElTime) + "'>" + pass.maxEl.toFixed(1) + "&deg;</span>" + (pass.visible ? " <span title='" + htmlEntities(I18N("birdWatch.visible.hover")).replace(/'/g, "&#39;") + "'>\u{1F441}</span>" : "") : "-",
     ttgoLabel: I18N(sat.up ? "birdWatch.info.timeToLos" : "birdWatch.info.timeToAos"),
     ttgoShort: I18N(sat.up ? "birdWatch.info.tlos" : "birdWatch.info.taos"),
     ttgoFull: I18N(sat.up ? "birdWatch.tip.timeToLos" : "birdWatch.tip.timeToAos"),

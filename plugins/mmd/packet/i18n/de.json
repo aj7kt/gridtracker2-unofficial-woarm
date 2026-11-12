@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "Packet",
+	"settings.packetDecoder.setMode.hover": "Die Wahl einer Frequenz im Frequenzmenü setzt die Betriebsart des Rigs: FM für VHF, LSB für HF-Packet",
+	"cwViewer.packet.header.from": "Von",
+	"cwViewer.packet.header.to": "An / Pfad",
+	"cwViewer.packet.empty": "Noch keine Pakete dekodiert: AFSK 1200 (APRS), FSK 9600 und HF 300 Baud werden alle abgehört. Klicken Sie in den Wasserfall, um HF-Packet auf eine Stelle festzulegen",
+	"cwViewer.packet.status": "Packet: {count} dekodiert, {utc}",
+	"cwViewer.packet.via": "über {sat}",
+	"cwViewer.packet.kind.position": "Position",
+	"cwViewer.packet.kind.object": "Objekt",
+	"cwViewer.packet.kind.item": "Element",
+	"cwViewer.packet.kind.status": "Status",
+	"cwViewer.packet.kind.message": "Nachricht an {to}",
+	"cwViewer.packet.kind.weather": "Wetter",
+	"cwViewer.packet.kind.telemetry": "Telemetrie",
+	"cwViewer.packet.locked": "HF-Packet fest: {hz} Hz",
+	"cwViewer.packet.heardAt": "Gehört bei {hz} Hz: klicken, um HF-Packet dort festzulegen"
+}

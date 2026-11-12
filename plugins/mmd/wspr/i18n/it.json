@@ -1,0 +1,11 @@
+{
+	"cwViewer.wspr.header.drift": "Deriva",
+	"cwViewer.wspr.empty": "Nessun WSPR decodificato finora: ogni periodo di 2 minuti viene decodificato al termine",
+	"cwViewer.wspr.status": "WSPR: {count} decodificati, {utc}",
+	"cwViewer.wspr.decoding": "WSPR: decodifica del periodo delle {utc}",
+	"cwViewer.wspr.waiting": "WSPR: in ascolto, il primo periodo decodificato inizia alle {utc}",
+	"cwViewer.wspr.header.call": "Nominativo",
+	"cwViewer.wspr.header.grid": "Locatore",
+	"cwViewer.wspr.header.dbm": "dBm",
+	"cwViewer.wspr.header.distance": "Distanza"
+}

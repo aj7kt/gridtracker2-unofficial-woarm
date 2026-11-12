@@ -89,7 +89,7 @@ function eventsMeasure(event, force = false)
   context.font = "12px Sans-Serif";
   for (const e of force ? GT.events : [event])
   {
-    W.time = Math.max(W.time, width(userTimeString(e.time)));
+    W.time = Math.max(W.time, width(eventsTimeString(e.time)));
     W.source = Math.max(W.source, width(eventsSourceName(e.source)));
     // Its text's width on one line, for its height where the Event column wraps it
     e.textWidth = width(eventsPlainText(eventsRowHtml(e)));
@@ -266,7 +266,7 @@ function eventsDraw(list, force)
   for (let i = first; i < last; i++)
   {
     const e = GT.events[i];
-    const div = row([["eventTime", userTimeString(e.time)], ["eventSource", htmlEntities(eventsSourceName(e.source))], ["eventText", eventsRowHtml(e)]], false);
+    const div = row([["eventTime", eventsTimeString(e.time)], ["eventSource", htmlEntities(eventsSourceName(e.source))], ["eventText", eventsRowHtml(e)]], false);
     rows.push([e, div]);
     nodes.push(div);
   }
@@ -416,6 +416,15 @@ function closeEventViewer()
 }
 
 // The time's form changed (local or UTC, toggleTime): the time column measured again and every list redrawn
+// An event's time, without its date: HH:MM:SS UTC, or HH:MM:SS local while GridTracker's clock shows local time (its click, toggleTime)
+function eventsTimeString(ms)
+{
+  const d = new Date(ms);
+  const pad = (n) => String(n).padStart(2, "0");
+  if (GT.settings.app.useLocalTime == 1) return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+  return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + " UTC";
+}
+
 function eventsTimeFormatChanged()
 {
   eventsMeasure(null, true);

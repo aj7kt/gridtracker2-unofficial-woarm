@@ -1,0 +1,21 @@
+{
+  "id": "navtex",
+  "name": "NAVTEX",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "NAVTEX", "group": "utility" },
+  "input": "raw",
+  "rig": { "inputFrom": "cw", "instanceModes": ["NAVTEX", "TOR"] },
+  "settings": { "navtexSetFreq": true, "navtexSetMode": true, "navtexSave": false },
+  "scripts": ["mmdNavtex.js"],
+  "workers": ["navtexWorker.js"],
+  "ui": "ui.html",
+  "css": "plugin.css",
+  "bands": { "file": "bands.json", "mode": "NAVTEX" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": { "freqGrouping": "note", "fallScale": 1 }
+}

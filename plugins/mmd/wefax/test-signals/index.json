@@ -1,0 +1,18 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "wefax.wav",
+      "module": "wefax",
+      "name": "WEFAX 120 LPM, IOC 576",
+      "modes": [
+        "wefax"
+      ],
+      "signals": 1,
+      "rsid": false,
+      "sync": null,
+      "description": "Weather fax (HF radiofax, 120 LPM, IOC 576, black 1500 Hz to white 2300 Hz): start tone, 10 s of phasing, an 80 line test chart (GRIDTRACKER2 TEST, gray steps, a grid, rings), stop tone",
+      "source": "generated"
+    }
+  ]
+}

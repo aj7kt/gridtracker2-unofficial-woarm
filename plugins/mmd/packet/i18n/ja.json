@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "パケット",
+	"settings.packetDecoder.setMode.hover": "周波数メニューで周波数を選ぶと無線機のモードを設定します：VHF は FM、HF パケットは LSB",
+	"cwViewer.packet.header.from": "送信元",
+	"cwViewer.packet.header.to": "宛先 / 経路",
+	"cwViewer.packet.empty": "まだパケットはデコードされていません：AFSK 1200（APRS）、FSK 9600、HF 300 ボーをすべて受信しています。ウォーターフォールをクリックすると HF パケットをその位置に固定します",
+	"cwViewer.packet.status": "パケット：{count} 件デコード、{utc}",
+	"cwViewer.packet.via": "{sat} 経由",
+	"cwViewer.packet.kind.position": "位置",
+	"cwViewer.packet.kind.object": "オブジェクト",
+	"cwViewer.packet.kind.item": "アイテム",
+	"cwViewer.packet.kind.status": "ステータス",
+	"cwViewer.packet.kind.message": "{to} へのメッセージ",
+	"cwViewer.packet.kind.weather": "気象",
+	"cwViewer.packet.kind.telemetry": "テレメトリ",
+	"cwViewer.packet.locked": "HF パケット固定：{hz} Hz",
+	"cwViewer.packet.heardAt": "{hz} Hz で受信：クリックで HF パケットをそこに固定"
+}

@@ -12,11 +12,13 @@ const BANDS = {
   version: 0,      // counts the changes (the Frequency menu is filled again)
   mode: ""         // the frequencies shown ("": every mode's)
 };
-// The Mode menu's modes as the file names them
-const BANDS_MODE_NAMES = { cw: "CW", ft8: "FT8", ft4: "FT4", sstv: "SSTV", packet: "Packet", psk31: "PSK31", rtty: "RTTY", mfsk: "MFSK", thor: "DominoEX", navtex: "NAVTEX", hell: "Feld-Hell", wefax: "WEFAX", olivia: "Olivia", sat: "Sat Data", wspr: "WSPR" };
+// The Mode menu's modes as the file names them (a plugin's added as it loads, mmdPluginLoad: its own rows from its bands.json)
+const BANDS_MODE_NAMES = { cw: "CW", sstv: "SSTV", wwv: "WWV", sat: "Sat Data" };
 const BANDS_RIG_MODES = ["USB", "LSB", "CW", "FM", "AM"];
-// The modes whose Frequency menu names each frequency's station (its note): broadcasts, many stations
-const BANDS_NOTE_MODES = ["wefax", "navtex"];
+// The modes whose Frequency menu names each frequency's station (its note): broadcasts, many stations (and a plugin's that says so)
+const BANDS_NOTE_MODES = ["wwv"];
+// ... and groups them by the station's location (its note after the call sign: a plugin's that says so, WEFAX's)
+const BANDS_PLACE_MODES = [];
 
 function mmdBandsShippedFile()
 {
@@ -50,6 +52,8 @@ function mmdBands()
   const edited = fs.existsSync(mmdBandsEditedFile()) ? read(mmdBandsEditedFile()) : null;
   BANDS.edited = !!edited;
   BANDS.data = edited || read(mmdBandsShippedFile()) || { frequencies: [] };
+  // The plugins' rows, for their modes the file has none of (mmdPluginHost.js)
+  mmdPluginsBands(BANDS.data);
   return BANDS.data;
 }
 

@@ -1,0 +1,11 @@
+{
+	"cwViewer.wspr.header.drift": "Dryf",
+	"cwViewer.wspr.empty": "Jeszcze nie zdekodowano WSPR: każdy 2-minutowy okres jest dekodowany po jego zakończeniu",
+	"cwViewer.wspr.status": "WSPR: zdekodowano {count}, {utc}",
+	"cwViewer.wspr.decoding": "WSPR: dekodowanie okresu od {utc}",
+	"cwViewer.wspr.waiting": "WSPR: nasłuch, pierwszy dekodowany okres zaczyna się o {utc}",
+	"cwViewer.wspr.header.call": "Znak",
+	"cwViewer.wspr.header.grid": "Lokator",
+	"cwViewer.wspr.header.dbm": "dBm",
+	"cwViewer.wspr.header.distance": "Odległość"
+}

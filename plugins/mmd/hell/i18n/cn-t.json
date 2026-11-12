@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "正在監聽 Hell 信號：在瀑布圖上點擊一個信號即可讀取",
+	"cwViewer.hell.found": "已找到",
+	"cwViewer.hell.sub.hover": "讀取的 Hellschreiber 速度：Feld-Hell，或其更快的 X5 和 X9。點擊瀑布圖上的信號即可讀取；點擊其頻帶內即可恢復尋找最強信號",
+	"cwViewer.hell.trim.hover": "校正傾斜的列印：向右下傾斜時調高，向上傾斜時調低。點擊數值可恢復為 0",
+	"cwViewer.hell.tape.hover": "Hell 信號按收聽到的樣子列印，每行兩次：閱讀較直的那一份"
+}

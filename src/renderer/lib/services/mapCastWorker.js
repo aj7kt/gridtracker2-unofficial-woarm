@@ -26,6 +26,8 @@
 
 const http = require("http");
 const { Buffer } = require("buffer");
+// Node's timers, as every window uses: never Chromium's, which can be slowed while a window is hidden
+const nodeTimers = require("timers");
 
 // A segment's length (a key frame starts each)
 const CAST_SEGMENT_SECONDS = 2;
@@ -240,7 +242,7 @@ function workerListen(msg)
     if (W.server == server) self.postMessage({ type: "listening", port: server.address().port });
   });
   W.server = server;
-  W.idleTimer = setInterval(workerIdleCheck, CAST_IDLE_CHECK_MS);
+  W.idleTimer = nodeTimers.setInterval(workerIdleCheck, CAST_IDLE_CHECK_MS);
 }
 
 const CAST_HEADERS = { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" };
@@ -382,7 +384,7 @@ function workerTick()
     }
   }
   const next = W.start ? W.start + ((W.slot + 1) * 1000) / W.fps : now + 1000 / W.fps;
-  W.tick = setTimeout(workerTick, Math.max(1, next - performance.now() + 1));
+  W.tick = nodeTimers.setTimeout(workerTick, Math.max(1, next - performance.now() + 1));
 }
 
 // The capture's frames as they come (a track handed over, or its frames' stream), until it ends (said, so it's started again) or
@@ -452,7 +454,7 @@ function workerFrame(captured)
 // The video no longer made (the server goes on: a request asks for it again)
 function workerEncodeStop()
 {
-  clearTimeout(W.tick);
+  nodeTimers.clearTimeout(W.tick);
   W.tick = null;
   workerUntrack();
   if (W.encoder && W.encoder.state != "closed") W.encoder.close();
@@ -500,7 +502,7 @@ function workerViewers()
 
 function workerStop()
 {
-  clearInterval(W.idleTimer);
+  nodeTimers.clearInterval(W.idleTimer);
   workerEncodeStop();
   if (W.server)
   {

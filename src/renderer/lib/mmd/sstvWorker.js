@@ -366,8 +366,10 @@ function sstvVisAt(t)
   return { code, shift, error };
 }
 
-// The readings not searched yet that have 300 ms after them: each start (1 ms apart) tried; of a run of starts that all read the same
-// code, the one read best. True when a picture has begun
+// The readings not searched yet that have 300 ms after them: each start (1 ms apart) tried; of a run of starts in a row that each read
+// a header of a mode known here, the one read best (a start a few ms off the real one straddles two bits each window and can misread as
+// another code, often one no mode has: it neither counts nor ends the run, which used to skip the real header 300 ms on). True when a
+// picture has begun
 function sstvVisSearch()
 {
   const ms = SSTV_MS;
@@ -379,8 +381,9 @@ function sstvVisSearch()
   let t = from;
   for (; t <= last; t += 6)
   {
-    const v = sstvVisAt(t);
-    if (v && (!best || v.code == best.code))
+    let v = sstvVisAt(t);
+    if (v && !SSTV_MODES.some((m) => m.vis == v.code)) v = null;
+    if (v)
     {
       if (!best || v.error < best.error) best = { ...v, t };
       continue;

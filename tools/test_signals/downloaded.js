@@ -1,6 +1,6 @@
 // Recordings downloaded (tools/make_test_signals.js), kept in resources/test-signals/ as they are: real signals, as other programs sent
 // them. Each converted to a mono 16 bit WAV at 12000 Hz (peak 0.7) from its original; only public domain or freely licensed files
-// (sources and licenses in resources/test-signals/README.md)
+// (sources and licenses in resources/test-signals/README.md). And recordings made off the air for GridTracker2, the same way
 
 const DOWNLOADED = [
   {

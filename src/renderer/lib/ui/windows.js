@@ -17,9 +17,12 @@ function openConditionsWindow(show = true)
 }
 
 // The User Guide window: left click toggles it, right click (toggle false) only shows it. It's opened on first use
-// and shown once loaded (gt_guide.html), since whether it was showing isn't restored
-function openUserGuideWindow(toggle = true)
+// and shown once loaded (gt_guide.html), since whether it was showing isn't restored. file: another PDF to show in it (a Multi-Mode
+// Decoder plugin's own guide, mmdPluginGuide), else the User Guide; one other than it shows now is shown, not toggled away
+function openUserGuideWindow(toggle = true, file = null)
 {
+  const other = (file || null) !== (GT.userGuideFile || null);
+  GT.userGuideFile = file || null;
   if (GT.userGuideWindowHandle == null)
   {
     GT.userGuideShowOnLoad = true;
@@ -27,7 +30,18 @@ function openUserGuideWindow(toggle = true)
   }
   else if (GT.userGuideWindowInitialized)
   {
-    electron.ipcRenderer.send(toggle ? "toggleWin" : "showWin", "gt_guide");
+    if (other)
+    {
+      try
+      {
+        GT.userGuideWindowHandle.window.userGuideLoad();
+      }
+      catch (e)
+      {
+        // Not loaded: it loads GT.userGuideFile as it does
+      }
+    }
+    electron.ipcRenderer.send(toggle && !other ? "toggleWin" : "showWin", "gt_guide");
   }
 }
 

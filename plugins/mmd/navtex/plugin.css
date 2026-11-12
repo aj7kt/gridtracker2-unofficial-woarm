@@ -1,0 +1,49 @@
+/* NAVTEX mode's messages: each a block, its header (station, subject, number; when, where, how cleanly) over its text as sent */
+#navtexList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 6px;
+  text-align: left;
+}
+.navtexBlock {
+  border-bottom: 1px solid #333;
+  padding: 4px 0;
+}
+.navtexBlockLive {
+  background-color: #111a22;
+}
+.navtexHead {
+  color: #aaa;
+  white-space: normal;
+}
+.navtexId {
+  color: #fff;
+  font-weight: bold;
+}
+.navtexSubject {
+  color: #8cf;
+}
+.navtexLive {
+  color: #fc6;
+}
+.navtexGood {
+  color: #8f8;
+}
+.navtexFair {
+  color: #ff0;
+}
+.navtexBad {
+  color: #f88;
+}
+.navtexText {
+  margin: 2px 0 0 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  color: #ddd;
+}
+#navtexEmpty {
+  color: #888;
+  text-align: center;
+  padding: 6px;
+}

@@ -576,15 +576,12 @@ function showStatBox(resize)
   }
 }
 
+// A mode's type, from its LoTW mode group in data/modes.json (GT.modeGroup): Digital, Phone, CW, Image (SSTV, FAX, ATV); a mode
+// not listed: Other
+const STAT_TYPE_OF_GROUP = { DATA: "Digital", PHONE: "Phone", CW: "CW", IMAGE: "Image" };
 function getTypeFromMode(mode)
 {
-  if (mode in GT.modes)
-  {
-    if (GT.modes[mode] == true) return "Digital";
-    else if (GT.modes_phone[mode] == true) return "Phone";
-    else if (mode == "CW") return "CW";
-  }
-  return "Other";
+  return (Object.hasOwn(GT.modeGroup, mode) && STAT_TYPE_OF_GROUP[GT.modeGroup[mode]]) || "Other";
 }
 
 function workObject(obj, count, band, mode, type, didConfirm) {
@@ -611,6 +608,8 @@ function workObject(obj, count, band, mode, type, didConfirm) {
 
     const wModeTypeVal = wTypes[type];
     wTypes[type] = wModeTypeVal === undefined ? 1 : wModeTypeVal + 1;
+    // Image QSOs count toward Phone too, as for DXCC
+    if (type === "Image") wTypes.Phone = ~~wTypes.Phone + 1;
   }
 
   // 6. Strict boolean pointer check (No ToBoolean casting)
@@ -635,6 +634,7 @@ function workObject(obj, count, band, mode, type, didConfirm) {
 
       const cTypeVal = cTypes[type];
       cTypes[type] = cTypeVal === undefined ? 1 : cTypeVal + 1;
+      if (type === "Image") cTypes.Phone = ~~cTypes.Phone + 1;
     }
   }
 
@@ -672,6 +672,7 @@ function renderStatsBox()
     modet.Digital = newStatCountObject();
     modet.Phone = newStatCountObject();
     modet.CW = newStatCountObject();
+    modet.Image = newStatCountObject();
     modet.Other = newStatCountObject();
 
     let details = {};
@@ -711,23 +712,9 @@ function renderStatsBox()
 
       workObject(modet.Mixed, true, band, mode, type, didConfirm);
 
-      if (mode in GT.modes)
-      {
-        if (GT.modes[mode] == true)
-        {
-          workObject(modet.Digital, true, band, mode, type, didConfirm);
-        }
-        else if (GT.modes_phone[mode] == true)
-        {
-          workObject(modet.Phone, true, band, mode, type, didConfirm);
-        }
-        else if (mode == "CW")
-        {
-          workObject(modet.CW, true, band, mode, type, didConfirm);
-        }
-        else workObject(modet.Other, true, band, mode, type, didConfirm);
-      }
-      else workObject(modet.Other, true, band, mode, type, didConfirm);
+      workObject(modet[type], true, band, mode, type, didConfirm);
+      // Image QSOs count toward Phone too, as for DXCC (SSTV is Phone there)
+      if (type === "Image") workObject(modet.Phone, true, band, mode, type, didConfirm);
 
       if (state != null && isKnownCallsignDXCC(finalDxcc))
       {
@@ -1043,6 +1030,7 @@ function renderStatsBox()
     output.DIGITAL = modet.Digital;
     output.PHONE = modet.Phone;
     output.CW = modet.CW;
+    output.IMAGE = modet.Image;
     output.Other = modet.Other;
 
     // V8-Friendly Array loop instead of for...in
@@ -1064,6 +1052,7 @@ function renderStatsBox()
       ["DIGITAL", I18N("gt.typeNames.Digital"), ""],
       ["PHONE", I18N("gt.typeNames.Phone"), ""],
       ["CW", I18N("gt.typeNames.CW"), ""],
+      ["IMAGE", I18N("gt.typeNames.Image"), ""],
       ["Other", I18N("gt.typeNames.Other"), ""]
     ];
 

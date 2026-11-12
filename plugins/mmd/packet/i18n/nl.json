@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "Packet",
+	"settings.packetDecoder.setMode.hover": "Een frequentie kiezen in het menu Frequentie zet de mode van de set: FM op VHF, LSB voor HF-packet",
+	"cwViewer.packet.header.from": "Van",
+	"cwViewer.packet.header.to": "Aan / Pad",
+	"cwViewer.packet.empty": "Nog geen pakketten gedecodeerd: AFSK 1200 (APRS), FSK 9600 en HF 300 baud worden allemaal beluisterd. Klik in de waterval om HF-packet op één plek vast te zetten",
+	"cwViewer.packet.status": "Packet: {count} gedecodeerd, {utc}",
+	"cwViewer.packet.via": "via {sat}",
+	"cwViewer.packet.kind.position": "Positie",
+	"cwViewer.packet.kind.object": "Object",
+	"cwViewer.packet.kind.item": "Item",
+	"cwViewer.packet.kind.status": "Status",
+	"cwViewer.packet.kind.message": "Bericht aan {to}",
+	"cwViewer.packet.kind.weather": "Weer",
+	"cwViewer.packet.kind.telemetry": "Telemetrie",
+	"cwViewer.packet.locked": "HF-packet vast: {hz} Hz",
+	"cwViewer.packet.heardAt": "Gehoord op {hz} Hz: klik om HF-packet daar vast te zetten"
+}

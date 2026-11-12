@@ -1,0 +1,11 @@
+{
+	"cwViewer.wspr.header.drift": "ドリフト",
+	"cwViewer.wspr.empty": "まだWSPRはデコードされていません：2分ごとの期間は終了後にデコードされます",
+	"cwViewer.wspr.status": "WSPR：{count} 件デコード、{utc}",
+	"cwViewer.wspr.decoding": "WSPR：{utc} からの期間をデコード中",
+	"cwViewer.wspr.waiting": "WSPR：受信中、最初にデコードする期間は {utc} から",
+	"cwViewer.wspr.header.call": "コール",
+	"cwViewer.wspr.header.grid": "グリッド",
+	"cwViewer.wspr.header.dbm": "dBm",
+	"cwViewer.wspr.header.distance": "距離"
+}

@@ -8,6 +8,7 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!tools{,/**/*}'
   - '!docs{,/**/*}'
+  - '!plugins{,/**/*}'
   - '!.cache{,/**/*}'
 asar: true
 afterPack: "./electron-builder-afterpack.js"

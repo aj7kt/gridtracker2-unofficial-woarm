@@ -6,7 +6,8 @@
 // are. General (the tab shown at first): the waterfall's speed and how it is drawn, Rig Control (whether the decoder may send the rig
 // anything at all), Follow BirdWatch, RSID, Common Input Device and Common VFO (each with its menu: on, each decoder's own is hidden and
 // kept). Decoders: each decoder's own settings, the same rows in each (its Input Device and VFO; what it may send the rig, shown with Rig
-// Control on: Set Frequency and Set Mode, each on its own; then its own: FT8's Depth, FT8's and FT4's Send Decodes To Call Roster; SSTV's Save Pictures and folder). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
+// Control on: Set Frequency and Set Mode, each on its own; then its own: SSTV's Save Pictures and folder; a plugin's in its own box,
+// FT8's Depth). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
 
 function mmdSettingsShow(show)
 {
@@ -58,31 +59,16 @@ function mmdSettingsRender()
   mmdVfosRender();
   mmdInputsRender();
   mmdOutputsRender();
-  ft8DepthSelect.value = S.ft8Depth;
-  ft8SendDecodesValue.checked = S.ft8SendDecodes === true;
-  ft4SendDecodesValue.checked = S.ft4SendDecodes === true;
-  mmdInstanceNoteRender();
-  ft8SetModeValue.checked = S.ft8SetMode;
-  ft4SetModeValue.checked = S.ft4SetMode === true;
   cwSetModeValue.checked = S.cwSetMode === true;
   sstvSetModeValue.checked = S.sstvSetMode === true;
-  packetSetModeValue.checked = S.packetSetMode === true;
-  psk31SetModeValue.checked = S.psk31SetMode === true;
-  rttySetModeValue.checked = S.rttySetMode === true;
-  mfskSetModeValue.checked = S.mfskSetMode === true;
-  thorSetModeValue.checked = S.thorSetMode === true;
-  navtexSetModeValue.checked = S.navtexSetMode === true;
-  hellSetModeValue.checked = S.hellSetMode === true;
-  wefaxSetModeValue.checked = S.wefaxSetMode === true;
-  wsprSetModeValue.checked = S.wsprSetMode === true;
-  oliviaSetModeValue.checked = S.oliviaSetMode === true;
+  wwvSetModeValue.checked = S.wwvSetMode === true;
+  // (Sat Data has no Set Mode; a plugin's mode's own: its Set Mode box, every mode's in MMD_MODES with one)
+  for (const mode of MMD_MODES) if (!["cw", "sstv", "wwv"].includes(mode) && window[mode + "SetModeValue"]) window[mode + "SetModeValue"].checked = S[mode + "SetMode"] === true;
   sstvSaveValue.checked = S.sstvSave === true;
-  navtexSaveValue.checked = S.navtexSave === true;
   sstvFolderTr.style.display = S.sstvSave === true ? "" : "none";
   mmdShortFolder(sstvFolderText, window.opener.mmDecoderSstvFolder(), "settings.sstvDecoder.folder.hover");
-  wefaxSaveValue.checked = S.wefaxSave === true;
-  wefaxFolderTr.style.display = S.wefaxSave === true ? "" : "none";
-  mmdShortFolder(wefaxFolderText, window.opener.mmDecoderWefaxFolder(), "settings.wefaxDecoder.folder.hover");
+  // The plugins' own boxes (their registrations' settingsRender: FT8's Depth, NAVTEX's Set Mode and Save Messages)
+  mmdPluginsEach("settingsRender", S);
 }
 
 // A save folder shown short, as … and its last two folders (its parent's and its own); the whole path in its tooltip, under what it is
@@ -105,6 +91,8 @@ function mmdVfosRender()
   for (const mode of MMD_MODES.concat("common"))
   {
     const select = window[mode + "VfoSelect"];
+    // (a plugin's mode without a box of its own)
+    if (!select) continue;
     const options = choices.map(([value, text]) => [value, value && value === followed ? opener.I18N("settings.mmDecoder.vfo.birdWatch.label").replace("{vfo}", text) : text]);
     const key = options.map(([value, text]) => value + "=" + text).join("|");
     if (select.dataset.key != key)
@@ -177,6 +165,7 @@ function mmdInputsRender()
   for (const mode of MMD_MODES.concat("common"))
   {
     const select = window[mode + "InputSelect"];
+    if (!select) continue;
     select.length = 0;
     for (const d of devices) select.add(new Option(mmdInputLabel(d), d.deviceId));
     const device = window.opener.mmDecoderInputFindOwn(mode, devices) || devices[0];
@@ -266,31 +255,6 @@ function mmdSetFallSpeed()
   mmdSettingsRender();
 }
 
-// The FT8 Decoder's Depth: read as each period is sent to decode
-function mmdSetFt8Depth()
-{
-  GT.settings.MMD.ft8Depth = ft8DepthSelect.value == "deep" ? "deep" : "normal";
-}
-
-// FT8's or FT4's Send Decodes To Call Roster (mode "ft8" or "ft4"): on, in that mode its decodes go into the Call Roster too, not only
-// the map (GridTracker's instance "MMD", services/mmDecoder.js)
-function mmdSetSendDecodes(mode)
-{
-  GT.settings.MMD[mode + "SendDecodes"] = window[mode + "SendDecodesValue"].checked;
-  mmdSettingsRender();
-}
-
-// Each one's note, while it is on but its decodes can't go yet: Rig Control isn't reading that mode's VFO's dial
-function mmdInstanceNoteRender()
-{
-  for (const mode of ["ft8", "ft4"])
-  {
-    const waiting = GT.settings.MMD[mode + "SendDecodes"] === true && !(window.opener.mmDecoderVfoRead(mode).up);
-    window[mode + "InstanceNoteTr"].style.display = waiting ? "" : "none";
-  }
-}
-
-
 // The SSTV Decoder's Save Pictures: each picture as it ends (mmdSstv.js); its Folder shown while it is on
 function mmdSetSstvSave()
 {
@@ -298,33 +262,19 @@ function mmdSetSstvSave()
   mmdSettingsRender();
 }
 
-// NAVTEX's Save Messages: each complete message saved as text as it comes (mmdNavtex.js)
-function mmdSetNavtexSave()
-{
-  GT.settings.MMD.navtexSave = navtexSaveValue.checked;
-  mmdSettingsRender();
-}
-
-// WEFAX's Save Charts: each chart as it ends (mmdSstv.js), into its own folder; its Folder shown while it is on
-function mmdSetWefaxSave()
-{
-  GT.settings.MMD.wefaxSave = wefaxSaveValue.checked;
-  mmdSettingsRender();
-}
-
-// A mode's saving folder ("sstv": Save Pictures', "wefax": Save Charts')
+// A kind of picture's saving folder (the picture view's kinds, mmdPictures.js: "sstv" Save Pictures', a plugin's: "wefax" Save Charts')
 function mmdPicturesFolder(kind)
 {
-  return kind == "wefax" ? window.opener.mmDecoderWefaxFolder() : window.opener.mmDecoderSstvFolder();
+  return PICS.kinds[kind] ? PICS.kinds[kind].folder() : "";
 }
 
-// Another folder picked for a mode's saving
+// Another folder picked for a kind's saving: MMD.<kind>Folder (sstvFolder, wefaxFolder)
 function mmdSetPicturesFolderChoose(kind)
 {
   const remote = window.require("@electron/remote");
   const folders = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), { defaultPath: mmdPicturesFolder(kind), properties: ["openDirectory", "createDirectory"] });
   if (!folders || !folders.length) return;
-  GT.settings.MMD[kind == "wefax" ? "wefaxFolder" : "sstvFolder"] = folders[0];
+  GT.settings.MMD[kind + "Folder"] = folders[0];
   mmdSettingsRender();
 }
 

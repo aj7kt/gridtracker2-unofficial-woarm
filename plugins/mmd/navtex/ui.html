@@ -1,0 +1,30 @@
+<!-- The NAVTEX plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- list: in the window's lists' place. Each message a block, the newest on top, a station mid-message in a Receiving block above them -->
+<template data-slot="list">
+  <div id="navtexList" style="display: none;">
+    <div id="navtexRows" data-i18n="cwViewer.navtex.list.hover" title="Right-click a message to copy it, save it or delete it"></div>
+    <div id="navtexEmpty" data-i18n="cwViewer.navtex.empty">No NAVTEX messages yet: each station sends in its own 10 minute slot every 4 hours</div>
+  </div>
+</template>
+<!-- settings: its box on Settings, Decoders (the same rows as every mode's, then its own) -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.navtexDecoder.label">NAVTEX</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="navtexInputSelect">Input Device</label></td>
+        <td><select id="navtexInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('navtex');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="navtexVfoSelect">VFO</label></td>
+        <td><select id="navtexVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('navtex');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="navtexSetFreqValue" onclick="mmdSetRigSend('navtex');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="navtexSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="navtexSetModeValue" onclick="mmdSetRigSend('navtex');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="navtexSetModeValue">Set Mode</label></td>
+      </tr>
+      <tr>
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="navtexSaveValue" data-i18n="settings.navtexDecoder.save.hover" title="Each complete message is saved as a text file in NAVTEX Messages, beside GridTracker's own folders, named by its UTC time, station, subject and number" onclick="mmdNavtexSetSave();" /> <label for="navtexSaveValue" data-i18n="settings.navtexDecoder.save.label">Save Messages</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

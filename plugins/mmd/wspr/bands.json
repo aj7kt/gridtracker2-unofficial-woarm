@@ -1,0 +1,21 @@
+{
+  "$comment": "WSPR's Frequency menu entries, added to the band plans (resources/data/bands.json, its schema)",
+  "frequencies": [
+        {"mode": "WSPR", "band": "630m", "freq": 0.4742, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "160m", "freq": 1.8366, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "80m", "freq": 3.5686, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "60m", "freq": 5.2872, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "40m", "freq": 7.0386, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "30m", "freq": 10.1387, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "20m", "freq": 14.0956, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "17m", "freq": 18.1046, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "15m", "freq": 21.0946, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "12m", "freq": 24.9246, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "10m", "freq": 28.1246, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "6m", "freq": 50.293, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "2m", "freq": 144.489, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "2200m", "freq": 0.136, "rigMode": "USB"},
+        {"mode": "WSPR", "band": "4m", "freq": 70.091, "rigMode": "USB", "note": "IARU R1"},
+        {"mode": "WSPR", "band": "70cm", "freq": 432.3, "rigMode": "USB"}
+  ]
+}

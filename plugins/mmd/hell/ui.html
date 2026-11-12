@@ -1,0 +1,30 @@
+<!-- The Feld-Hell plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- subBar: its submode and Trim, in the row under the second line -->
+<template data-slot="subBar">
+  <!-- Feld-Hell: its submode and Trim (mmdHell.js) -->
+  <span id="cwHellBox" class="cwPick" style="display: none;"><label for="cwHellSub" data-i18n="cwViewer.submode.label">Submode</label><select id="cwHellSub" data-i18n="cwViewer.hell.sub.hover" title="The Hellschreiber speed read: Feld-Hell, or its faster forms X5 and X9. Click a signal on the waterfall to read it; click inside its band to go back to finding the strongest" onchange="mmdHellPicked();"></select> <span data-i18n="cwViewer.hell.trim.label">Trim</span> <span class="cwButton" onclick="mmdHellTrimStep(-1);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">−</span><span id="cwHellTrimValue" class="cwHellTrim" onclick="mmdHellTrimStep(0);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">0</span><span class="cwButton" onclick="mmdHellTrimStep(1);" data-i18n="cwViewer.hell.trim.hover" title="Straightens a print that slants: raise it if the print runs downhill to the right, lower it if uphill. Click the value to set it back to 0">+</span></span>
+</template>
+<!-- list: in the window's lists' place -->
+<template data-slot="list">
+  <!-- Feld-Hell mode: the tape its columns are printed on, line after line, the newest at the bottom (mmdHell.js) -->
+  <div id="hellView" style="display: none;"><canvas id="hellTape" data-i18n="cwViewer.hell.tape.hover" title="The Hell signal printed as it is heard, each line twice: read whichever copy is straight"></canvas></div>
+</template>
+<!-- settings: its box on Settings, Decoders -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.hellDecoder.label">Feld-Hell</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="hellInputSelect">Input Device</label></td>
+        <td><select id="hellInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('hell');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="hellVfoSelect">VFO</label></td>
+        <td><select id="hellVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('hell');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="hellSetFreqValue" onclick="mmdSetRigSend('hell');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="hellSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="hellSetModeValue" onclick="mmdSetRigSend('hell');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="hellSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

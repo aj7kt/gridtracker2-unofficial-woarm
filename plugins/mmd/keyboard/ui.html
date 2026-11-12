@@ -1,0 +1,73 @@
+<!-- The keyboard modes' plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- subBar: the submode menu, in the row under the second line -->
+<template data-slot="subBar">
+  <!-- PSK, MFSK and DominoEX / THOR: the submode decoded (mmdKey.js); every signal of it in the passband is found -->
+  <span id="cwKeyBox" class="cwPick" style="display: none;"><label for="cwKeySub" data-i18n="cwViewer.submode.label">Submode</label><select id="cwKeySub" data-i18n="cwViewer.key.hover" title="The submode decoded: every signal of it in the passband is found and decoded. An RSID heard and clicked sets it" onchange="mmdKeyPicked();"></select></span>
+</template>
+<!-- settings: its boxes on Settings, Decoders (the same rows as every mode's) -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.thorDecoder.label">DominoEX / THOR</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="thorInputSelect">Input Device</label></td>
+        <td><select id="thorInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('thor');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="thorVfoSelect">VFO</label></td>
+        <td><select id="thorVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('thor');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="thorSetFreqValue" onclick="mmdSetRigSend('thor');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="thorSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="thorSetModeValue" onclick="mmdSetRigSend('thor');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="thorSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.mfskDecoder.label">MFSK</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="mfskInputSelect">Input Device</label></td>
+        <td><select id="mfskInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('mfsk');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="mfskVfoSelect">VFO</label></td>
+        <td><select id="mfskVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('mfsk');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="mfskSetFreqValue" onclick="mmdSetRigSend('mfsk');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="mfskSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="mfskSetModeValue" onclick="mmdSetRigSend('mfsk');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="mfskSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.psk31Decoder.label">PSK31</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="psk31InputSelect">Input Device</label></td>
+        <td><select id="psk31InputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('psk31');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="psk31VfoSelect">VFO</label></td>
+        <td><select id="psk31VfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('psk31');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="psk31SetFreqValue" onclick="mmdSetRigSend('psk31');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="psk31SetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="psk31SetModeValue" onclick="mmdSetRigSend('psk31');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="psk31SetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.rttyDecoder.label">RTTY</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="rttyInputSelect">Input Device</label></td>
+        <td><select id="rttyInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('rtty');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="rttyVfoSelect">VFO</label></td>
+        <td><select id="rttyVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('rtty');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="rttySetFreqValue" onclick="mmdSetRigSend('rtty');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="rttySetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="rttySetModeValue" onclick="mmdSetRigSend('rtty');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="rttySetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

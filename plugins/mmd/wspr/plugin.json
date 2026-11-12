@@ -1,0 +1,20 @@
+{
+  "id": "wspr",
+  "name": "WSPR",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "WSPR", "group": "ham" },
+  "input": "audio12",
+  "rig": { "inputFrom": "ft8", "instanceModes": ["WSPR"] },
+  "settings": { "wsprSetFreq": true, "wsprSetMode": true },
+  "scripts": ["mmdWspr.js"],
+  "workers": ["wsprWorker.js"],
+  "ui": "ui.html",
+  "css": "plugin.css",
+  "bands": { "file": "bands.json", "mode": "WSPR" },
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": {}
+}

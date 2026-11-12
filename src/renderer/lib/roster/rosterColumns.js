@@ -79,6 +79,8 @@ const ROSTER_COLUMNS = {
         name: "Callsign",
         align: "left",
         onClick: `initiateQso("${callObj.hash}")`,
+        // (the Feed Roster's: Log QSO, rosterCallDoubleClick)
+        onDblClick: `rosterCallDoubleClick("${callObj.hash}")`,
         rawAttrs: callObj.style.call,
         html: markWorkableFeed(callObj, formatCallsign((callObj.DEcallHTML || callObj.DEcall)))
       }

@@ -766,6 +766,8 @@ function cacheLookupObject(lookup, gridPass, cacheable = false, display = true)
   }
 
   if (display) displayLookupObject(lookup, gridPass, !cacheable);
+  // The Log QSO window's card, when this is the call on it: its fields still empty filled in (logQso.js)
+  logQsoLookupArrived(lookup);
 }
 
 function displayLookupObject(lookup, gridPass, fromCache = false)
@@ -846,13 +848,16 @@ function displayLookupObject(lookup, gridPass, fromCache = false)
 
   const flag = lookup.dxcc > 0 && lookup.dxcc in GT.dxccInfo ? `<img class='lookupFlag' src='img/flags/24/${GT.dxccInfo[lookup.dxcc].flag}'>` : "";
   const photo = image.length > 0 ? `<img class='lookupPhoto' src='${lookupHtml(image)}'>` : "";
+  // A station GridTracker acknowledges: its emoji before the call (its note on hover; the note itself in the line above the card)
+  const ack = (GT.acknowledgedCalls || {})[call];
+  const ackBadge = ack ? `<img class='lookupCallAck' src='img/emojis/${lookupHtml(ack.b)}.png' title='${lookupHtml(ack.m)}'>` : "";
 
   const card = `
     <div class='lookupHero'>
       ${photo}
       <div>
         <div class='lookupCard' title='Click to copy address to clipboard' onclick='setClipboardFromLookup();'>
-          <div class='lookupCallLine'><span class='lookupCall'>${lookupHtml(formatCallsign(call))}</span>${flag}</div>
+          <div class='lookupCallLine'>${ackBadge}<span class='lookupCall'>${lookupHtml(formatCallsign(call))}</span>${flag}</div>
           ${cardLines.join("")}
         </div>
         ${chips.length > 0 ? `<div class='lookupChips'>${chips.join("")}</div>` : ""}
@@ -1183,7 +1188,8 @@ function searchLogForCallsign(call)
 
   if (ack)
   {
-    setLookupDiv("lookupAckDiv", `<div class='lookupAck'>${I18N("gt.lookup.acks")} ${formatCallsign(call)} <img class="lookupAckBadge" src="img/emojis/${ack.b}.png"> ${ack.m}</div>`);
+    // (its emoji is before the call on the card: lookupCallAck)
+    setLookupDiv("lookupAckDiv", `<div class='lookupAck'>${I18N("gt.lookup.acks")} ${formatCallsign(call)}: ${ack.m}</div>`);
   }
   let work = {};
   let conf = {};

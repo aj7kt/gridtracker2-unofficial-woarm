@@ -1,0 +1,16 @@
+{
+  "$comment": "NAVTEX's Frequency menu entries, added to the band plans (resources/data/bands.json, its schema)",
+  "frequencies": [
+        {"mode": "NAVTEX", "band": "MF", "freq": 0.489, "rigMode": "USB", "note": "NAVTEX 490 kHz, national language"},
+        {"mode": "NAVTEX", "band": "MF", "freq": 0.517, "rigMode": "USB", "note": "NAVTEX 518 kHz, international (English)"},
+        {"mode": "NAVTEX", "band": "4 MHz", "freq": 4.2085, "rigMode": "USB", "note": "HF NAVTEX 4209.5 kHz"},
+        {"mode": "NAVTEX", "band": "4 MHz", "freq": 4.209, "rigMode": "USB", "note": "HF MSI 4210 kHz"},
+        {"mode": "NAVTEX", "band": "6 MHz", "freq": 6.313, "rigMode": "USB", "note": "HF MSI 6314 kHz"},
+        {"mode": "NAVTEX", "band": "8 MHz", "freq": 8.4155, "rigMode": "USB", "note": "HF MSI 8416.5 kHz"},
+        {"mode": "NAVTEX", "band": "12 MHz", "freq": 12.578, "rigMode": "USB", "note": "HF MSI 12579 kHz"},
+        {"mode": "NAVTEX", "band": "16 MHz", "freq": 16.8055, "rigMode": "USB", "note": "HF MSI 16806.5 kHz"},
+        {"mode": "NAVTEX", "band": "18 MHz", "freq": 19.6795, "rigMode": "USB", "note": "HF MSI 19680.5 kHz"},
+        {"mode": "NAVTEX", "band": "22 MHz", "freq": 22.375, "rigMode": "USB", "note": "HF MSI 22376 kHz"},
+        {"mode": "NAVTEX", "band": "25 MHz", "freq": 26.0995, "rigMode": "USB", "note": "HF MSI 26100.5 kHz"}
+  ]
+}

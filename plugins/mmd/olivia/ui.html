@@ -1,0 +1,25 @@
+<!-- The Olivia plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- subBar: the submode menu, in the row under the second line -->
+<template data-slot="subBar">
+  <!-- Olivia: the submode decoded (mmdOlivia.js); a click on the waterfall sets where its signal is, an RSID heard sets both -->
+  <span id="cwOliviaBox" class="cwPick" style="display: none;"><label for="cwOliviaSub" data-i18n="cwViewer.submode.label">Submode</label><select id="cwOliviaSub" data-i18n="cwViewer.olivia.hover" title="The Olivia or Contestia submode decoded (tones / bandwidth). Click the signal on the waterfall; an RSID heard sets both" onchange="mmdOliviaPicked();"></select></span>
+</template>
+<!-- settings: its box on Settings, Decoders -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span>Olivia</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="oliviaInputSelect">Input Device</label></td>
+        <td><select id="oliviaInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('olivia');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="oliviaVfoSelect">VFO</label></td>
+        <td><select id="oliviaVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('olivia');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="oliviaSetFreqValue" onclick="mmdSetRigSend('olivia');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="oliviaSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="oliviaSetModeValue" onclick="mmdSetRigSend('olivia');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="oliviaSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

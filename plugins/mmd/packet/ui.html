@@ -1,0 +1,34 @@
+<!-- The Packet plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- list: in the window's lists' place -->
+<template data-slot="list">
+  <!-- Packet mode: each frame decoded, the newest on top (mmdPacket.js) -->
+  <div id="packetList" style="display: none;">
+    <table id="packetTable">
+      <colgroup><col class="packetUtcCol" /><col class="packetBaudCol" /><col class="packetCallCol" /><col class="packetPathCol" /><col /></colgroup>
+      <thead id="packetHead">
+        <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.packet.header.baud">Baud</th><th data-i18n="cwViewer.packet.header.from">From</th><th data-i18n="cwViewer.packet.header.to">To / Path</th><th data-i18n="cwViewer.ft8.header.message">Message</th></tr>
+      </thead>
+      <tbody id="packetRows"></tbody>
+    </table>
+    <div id="packetEmpty" data-i18n="cwViewer.packet.empty">No packets decoded yet: AFSK 1200 (APRS), FSK 9600 and HF 300 baud are all listened for. Click the waterfall to lock HF packet on one place</div>
+  </div>
+</template>
+<!-- settings: its box on Settings, Decoders -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.packetDecoder.label">Packet</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="packetInputSelect">Input Device</label></td>
+        <td><select id="packetInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('packet');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="packetVfoSelect">VFO</label></td>
+        <td><select id="packetVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads (the frequency shown, and the signals' frequencies on the air) and, with Rig Control, tunes" onchange="mmdSetVfo('packet');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="packetSetFreqValue" onclick="mmdSetRigSend('packet');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="packetSetFreqValue">Set Frequency</label> <input data-i18n="settings.packetDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: FM for VHF, LSB for HF packet" type="checkbox" id="packetSetModeValue" onclick="mmdSetRigSend('packet');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="packetSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

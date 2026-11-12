@@ -1,0 +1,57 @@
+/* Packet mode's list: each frame, the newest on top, as the decoder's other lists are drawn (its columns the decoder's packet columns,
+   shared with Sat Data's: packetUtcCol, packetBaudCol, packetCallCol); the calls in yellow, the satellite heard through in cyan, a message
+   to you highlighted */
+#packetList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#packetTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.packetPathCol {
+  width: 30%;
+}
+#packetTable th {
+  position: sticky;
+  top: 0;
+  background-color: #111;
+  color: #aaa;
+  font-weight: normal;
+  text-align: left;
+  padding: 2px 6px;
+}
+#packetTable td {
+  padding: 1px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-family: monospace;
+  font-size: 13px;
+  color: #ddd;
+}
+#packetTable td.ft8Num {
+  color: #aaa;
+}
+#packetTable td.packetCall {
+  color: var(--gt-callsign);
+}
+#packetTable td.packetPath {
+  color: #bbb;
+}
+#packetTable .packetSat {
+  color: cyan;
+}
+#packetTable tr.packetMine td {
+  background-color: #3a2a00;
+}
+#packetTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+#packetEmpty {
+  color: #888;
+  padding: 6px;
+}

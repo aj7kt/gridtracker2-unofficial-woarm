@@ -62,7 +62,8 @@ function birdWatchIcs(lists)
     const name = tle ? tle.name : String(norad);
     for (const pass of passes)
     {
-      if (pass.maxEl < A.minElevation || pass.inProgress) continue;
+      // (one cut off by the 72 hours' end: its LOS isn't its own)
+      if (pass.maxEl < A.minElevation || pass.inProgress || pass.cut) continue;
       events.push({ name, norad, pass });
     }
   }

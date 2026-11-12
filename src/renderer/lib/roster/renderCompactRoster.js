@@ -17,7 +17,7 @@ function renderCompactRosterRow(callObj, showBand, rowClass = "", rowTitle = "")
   {
     bandView = "";
   }
-  let onClick = " onClick='initiateQso(\"" + callObj.hash + "\")' id='" + callObj.hash + "' title='" + title + "' ";
+  let onClick = " onClick='initiateQso(\"" + callObj.hash + "\")' onDblClick='rosterCallDoubleClick(\"" + callObj.hash + "\")' id='" + callObj.hash + "' title='" + title + "' ";
   let wholeClick = (CR.isCompactCounty ? "" : onClick);
   let callsignClick = (CR.isCompactCounty ? onClick : "");
   let html = ["<div class='compact" + (rowClass ? " " + rowClass : "") + "' " + wholeClick + " >"];

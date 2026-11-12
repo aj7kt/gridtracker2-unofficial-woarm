@@ -1,5 +1,5 @@
 // Static smoke test of the repo, no app needed: node tools/smoke_static.js   (repo root)
-// JS parses, JSON parses, locales match en.json, used i18n keys exist, no temporary/debug leftovers,
+// JS parses, JSON parses, locales match en.json, used i18n keys exist (the MMD plugins' in plugins/mmd too), no temporary/debug leftovers,
 // no BOMs or mixed line endings, version / CHANGELOG.md / HISTORY.md shape, requireJson data files exist, no element id that a
 // page's scripts also declare as a global (the declaration hides the element).
 // Pre-existing COMMENT_ keys that only some locales have are reported but not counted as failures.
@@ -47,9 +47,36 @@ for (const f of walk("src")) {
 const missingUsed = [...used].filter(k => !(k in en));
 ok(`${used.size} literal i18n keys used in src exist in en.json`, missingUsed.length === 0, missingUsed.join(", "));
 
+// 4b. The MMD plugins (plugins/mmd/<id>/): their JS and JSON parse, each of their locales has their en.json's keys (none of them the
+// app's own), and every key their files use (I18N, data-i18n, host.t / H.t) is theirs or the app's
+const plugDirs = fs.existsSync("plugins/mmd") ? fs.readdirSync("plugins/mmd", { withFileTypes: true }).filter(e => e.isDirectory()).map(e => path.join("plugins", "mmd", e.name)) : [];
+const plugProblems = [];
+for (const dir of plugDirs) {
+  const files = walk(dir);
+  for (const f of files.filter(f => f.endsWith(".js"))) { try { execFileSync(process.execPath, ["--check", f], { stdio: "pipe" }); } catch (e) { plugProblems.push(f + " doesn't parse"); } }
+  for (const f of files.filter(f => f.endsWith(".json"))) { try { JSON.parse(fs.readFileSync(f, "utf8")); } catch (e) { plugProblems.push(f + " doesn't parse"); } }
+  const i18nDir = path.join(dir, "i18n");
+  let pen = {};
+  if (fs.existsSync(i18nDir)) {
+    try { pen = JSON.parse(fs.readFileSync(path.join(i18nDir, "en.json"), "utf8")); } catch (e) { plugProblems.push(i18nDir + "/en.json missing or bad"); }
+    for (const l of locs) {
+      let j;
+      try { j = JSON.parse(fs.readFileSync(path.join(i18nDir, l), "utf8")); } catch (e) { plugProblems.push(path.join(i18nDir, l) + " missing or bad"); continue; }
+      const miss = Object.keys(pen).filter(k => !(k in j)), extra = Object.keys(j).filter(k => !(k in pen));
+      if (miss.length || extra.length) plugProblems.push(`${path.join(i18nDir, l)}: missing [${miss.slice(0, 5)}] extra [${extra.slice(0, 5)}]`);
+    }
+    for (const k of Object.keys(pen)) if (k in en) plugProblems.push(`${dir}: ${k} is the app's key too`);
+  }
+  for (const f of files.filter(f => /\.(js|html)$/.test(f))) {
+    const s = fs.readFileSync(f, "utf8");
+    for (const m of s.matchAll(/(?:I18N|\b(?:host|H)\.t)\(\s*"([^"]+)"\s*\)|data-i18n="([^"]+)"/g)) { const k = m[1] || m[2]; if (!(k in pen) && !(k in en)) plugProblems.push(`${f}: unknown key ${k}`); }
+  }
+}
+ok(`${plugDirs.length} MMD plugin(s): JS and JSON parse, locales match, i18n keys exist`, plugProblems.length === 0, plugProblems.join("; "));
+
 // 5. No leftover temporary / local-server / debugger code
 const leftovers = [];
-for (const f of walk("src").filter(f => f.endsWith(".js") || f.endsWith(".html"))) {
+for (const f of [...walk("src"), ...plugDirs.flatMap(d => walk(d))].filter(f => f.endsWith(".js") || f.endsWith(".html"))) {
   fs.readFileSync(f, "utf8").split(/\r?\n/).forEach((l, i) => {
     if (/TEMPORARY|localOamsServer|127\.0\.0\.1:\$\{|\bdebugger;|OAMS local/.test(l)) leftovers.push(`${f}:${i + 1}`);
   });
@@ -57,7 +84,7 @@ for (const f of walk("src").filter(f => f.endsWith(".js") || f.endsWith(".html")
 ok("no TEMPORARY / local OAMS server / debugger leftovers", leftovers.length === 0, leftovers.join(", "));
 
 // 6. Line endings and BOMs in src + i18n + data + tools + changelogs
-const textFiles = [...walk("src").filter(f => /\.(js|html|css)$/.test(f)), ...walk("resources/i18n"), ...walk("tools"), "CHANGELOG.md", "HISTORY.md", "resources/data/modes.json"];
+const textFiles = [...walk("src").filter(f => /\.(js|html|css)$/.test(f)), ...walk("resources/i18n"), ...walk("tools"), ...plugDirs.flatMap(d => walk(d)).filter(f => /\.(js|html|css|json)$/.test(f)), "CHANGELOG.md", "HISTORY.md", "resources/data/modes.json"];
 const eol = [], bom = [];
 for (const f of textFiles) {
   const b = fs.readFileSync(f); const s = b.toString("utf8");

@@ -21,34 +21,73 @@ function birdWatchAmateurTransmitter(t)
   return [t.downlink_low, t.uplink_low].some((hz) => hz > 0 && BIRD_WATCH_HAM_BANDS.some(([low, high]) => hz / 1e6 >= low && hz / 1e6 <= high));
 }
 
-// The active transmitters of a satellite: the amateur ones first, two-way ones before beacons
+const BIRD_WATCH_MIN_SIDE_HZ = 100000;
+function birdWatchSaneSides(t)
+{
+  const low = (side) => t[side + "_low"] > 0 && t[side + "_low"] < BIRD_WATCH_MIN_SIDE_HZ;
+  if (!low("downlink") && !low("uplink")) return t;
+  const out = Object.assign({}, t);
+  for (const side of ["downlink", "uplink"])
+  {
+    if (!low(side)) continue;
+    out[side + "_low"] = null;
+    out[side + "_high"] = null;
+  }
+  return out;
+}
+
+// The active transmitters of a satellite: the amateur ones first, two-way ones before beacons.
+// The file looked at again at most this often (it's asked for on every rig line drawn, many a second with a scope streaming); one
+// that doesn't parse is kept as its stamp, not read again until it changes (the transmitters read before kept meanwhile)
+const BIRD_WATCH_TX_CHECK_MS = 1000;
+let birdWatchTransmitterCheckedAt = 0;
 function birdWatchTransmitters(norad)
 {
+  const now = Date.now();
+  if (now - birdWatchTransmitterCheckedAt >= BIRD_WATCH_TX_CHECK_MS || now < birdWatchTransmitterCheckedAt) birdWatchTransmittersRead(now);
+  const rank = (t) => (birdWatchAmateurTransmitter(t) ? 0 : 10) + (t.uplink_low > 0 ? 0 : 1);
+  return (birdWatchTransmitterMap.get(Number(norad)) || []).slice().sort((a, b) => rank(a) - rank(b));
+}
+
+function birdWatchTransmittersRead(now)
+{
+  birdWatchTransmitterCheckedAt = now;
+  let stamp;
+  const file = path.join(satDir(), "transmitters.json");
   try
   {
-    const file = path.join(satDir(), "transmitters.json");
     const stat = fs.statSync(file);
-    const stamp = stat.mtimeMs + ":" + stat.size;
-    if (stamp != birdWatchTransmitterStamp)
-    {
-      const map = new Map();
-      for (const t of JSON.parse(fs.readFileSync(file, "utf8")))
-      {
-        if (t.status != "active" || !t.alive || !(t.downlink_low > 0 || t.uplink_low > 0)) continue;
-        const list = map.get(t.norad_cat_id) || [];
-        list.push(t);
-        map.set(t.norad_cat_id, list);
-      }
-      birdWatchTransmitterMap = map;
-      birdWatchTransmitterStamp = stamp;
-    }
+    stamp = stat.mtimeMs + ":" + stat.size;
   }
   catch (e)
   {
-    return [];
+    // None (not synced yet): none listed
+    birdWatchTransmitterMap = new Map();
+    birdWatchTransmitterStamp = "";
+    return;
   }
-  const rank = (t) => (birdWatchAmateurTransmitter(t) ? 0 : 10) + (t.uplink_low > 0 ? 0 : 1);
-  return (birdWatchTransmitterMap.get(Number(norad)) || []).slice().sort((a, b) => rank(a) - rank(b));
+  if (stamp == birdWatchTransmitterStamp) return;
+  // (stamped before it's read: one that doesn't parse isn't read again until it changes)
+  birdWatchTransmitterStamp = stamp;
+  try
+  {
+    const map = new Map();
+    for (const entry of JSON.parse(fs.readFileSync(file, "utf8")))
+    {
+      // A side under BIRD_WATCH_MIN_SIDE_HZ is a slip in the database (98533's uplink "13820 - 28820" Hz, meant as MHz): left out,
+      // never sent to a rig
+      const t = birdWatchSaneSides(entry);
+      if (t.status != "active" || !t.alive || !(t.downlink_low > 0 || t.uplink_low > 0)) continue;
+      const list = map.get(t.norad_cat_id) || [];
+      list.push(t);
+      map.set(t.norad_cat_id, list);
+    }
+    birdWatchTransmitterMap = map;
+  }
+  catch (e)
+  {
+    console.error("BirdWatch: transmitters.json not read", e);
+  }
 }
 
 // The CTCSS (PL) tone a transmitter's uplink needs, in Hz, as its description says it ("CTCSS 67.0 Hz", "PL 88.5Hz", "67.0 PL",
@@ -130,10 +169,19 @@ function birdWatchFrequency(low, high, factor)
 }
 
 // The rig's mode for a transmitter: FM for the FM voice and packet ones, USB for the PSK data ones, SSB / CW / AM as they are; null for a
-// mode the rig has no name for (none is set then)
+// mode the rig has no name for (none is set then). A linear transponder the database calls FM (Es'hail 2's SSB segments, as
+// birdWatchTransmitterKind reads them) is USB, or CW for a segment its description gives to CW alone
 function birdWatchRigMode(t)
 {
-  const mode = String(t.mode || "").toUpperCase();
+  const mode = birdWatchRigModeOf(t.mode);
+  if (mode == "FM" && birdWatchTransmitterKind(t) == "linear") return /\bcw\b/i.test(String(t.description || "")) && !/ssb|usb|lsb|mixed|digi|voice/i.test(String(t.description || "")) ? "CW" : "USB";
+  return mode;
+}
+
+// The rig's name for a database mode, else null
+function birdWatchRigModeOf(name)
+{
+  const mode = String(name || "").toUpperCase();
   if (/^(LSB|USB|CW|AM|FM)$/.test(mode)) return mode;
   if (/SSB/.test(mode)) return "USB";
   if (/FM|AFSK|FSK|SSTV|DUV|GMSK|APRS|GFSK|MSK/.test(mode)) return "FM";
@@ -142,10 +190,14 @@ function birdWatchRigMode(t)
   return null;
 }
 
-// The rig's mode for a transmitter's uplink (its own mode, else the downlink's); null for none or no uplink
+// The rig's mode for a transmitter's uplink (its own mode, else the downlink's), as birdWatchRigMode has it; null for none or no
+// uplink. An inverting transponder whose uplink the database gives the downlink's sideband: the other one (LSB under a USB downlink)
 function birdWatchRigUpMode(t)
 {
-  return t.uplink_low > 0 ? birdWatchRigMode({ mode: t.uplink_mode || t.mode }) : null;
+  if (!(t.uplink_low > 0)) return null;
+  const mode = birdWatchRigMode(Object.assign({}, t, { mode: t.uplink_mode || t.mode }));
+  if (t.invert === true && birdWatchTransponder(t) && (mode == "USB" || mode == "LSB") && mode == birdWatchRigMode(t)) return mode == "USB" ? "LSB" : "USB";
+  return mode;
 }
 
 // What to tune the rig to for a transmitter, where the satellite is now: the middle of a range, shifted (the uplink the other way)
@@ -173,7 +225,8 @@ function birdWatchTransmitterTableHtml(norad)
   // None yet: the frequencies are the satellite's own, and the shift is left blank
   const factor = sat && !sat.error ? sat.doppler : null;
   // A cell, its colors and alignment the App Theme's (its class: style.css .birdDopplerTable)
-  const cell = (text, kind, title, part) => "<td" + partAttrs(part, kind) + (title ? " title='" + title + "'" : "") + ">" + text + "</td>";
+  // (an apostrophe in a title, a SatNOGS description's or a translation's, would end the attribute: htmlEntities leaves it)
+  const cell = (text, kind, title, part) => "<td" + partAttrs(part, kind) + (title ? " title='" + String(title).replace(/'/g, "&#39;") + "'" : "") + ">" + text + "</td>";
   // With Rig Control connected the name, mode, downlink and uplink cells tune the rig (a click in the window), and the mode, downlink and uplink the rig was set to are marked
   const D = GT.rigDoppler && GT.rigDoppler.norad == Number(norad) ? GT.rigDoppler : null;
   // Each transmitter's own VFOs (rigRoles): clickable when one of them is connected; its downlink's and uplink's VFO letter after the
@@ -475,9 +528,10 @@ function birdWatchFollowEvent(D)
   if (!t) return;
   const tle = birdWatchTleGet(D.norad);
   const name = tle ? tle.name : String(D.norad);
-  const side = (on, low, high) => (on && low > 0 ? birdWatchFrequency(low, high, 1) + " MHz" : "-");
+  // Each side's mode after it, where it is set (the rig's name for it: USB, LSB, FM ...)
+  const side = (on, low, high, mode) => (on && low > 0 ? birdWatchFrequency(low, high, 1) + " MHz" + (D.mode && mode ? " " + mode : "") : "-");
   const text = I18N("birdWatch.event.following").replace("{sat}", () => name).replace("{tx}", () => t.description || "")
-    .replace("{down}", () => side(D.rx, t.downlink_low, t.downlink_high)).replace("{up}", () => side(D.tx, t.uplink_low, t.uplink_high));
+    .replace("{down}", () => side(D.rx, t.downlink_low, t.downlink_high, birdWatchRigMode(t))).replace("{up}", () => side(D.tx, t.uplink_low, t.uplink_high, birdWatchRigUpMode(t)));
   addEvent("birdwatch", "<font style='color:var(--gt-label)'>" + htmlEntities(text) + "</font>");
 }
 
@@ -537,6 +591,8 @@ function birdWatchStickyFollow(norad, previous, auto = false)
     wanted: { rx: t.downlink_low > 0, tx: t.uplink_low > 0 } };
   if (!(D.rx || D.tx || D.mode)) return;
   GT.rigDoppler = D;
+  // No uplink sent: no tone left on from the last one (rig.js)
+  if (!canTx) rigToneRelease();
   birdWatchStickyRemember(D);
   birdWatchFollowEvent(D);
   birdWatchDopplerFollow();
@@ -548,6 +604,9 @@ function birdWatchDopplerStopFollow()
 {
   if (!GT.rigDoppler) return;
   GT.rigDoppler = null;
+  // (split and the tone turned on for its uplink off again: rig.js)
+  rigSplitRelease();
+  rigToneRelease();
   birdWatchTransmitterWindowUpdate();
 }
 
@@ -559,6 +618,8 @@ function birdWatchFollowToggle()
   if (GT.rigDoppler)
   {
     GT.rigDoppler = null;
+    rigSplitRelease();
+    rigToneRelease();
     GT.birdWatchFollowTried = T ? T.selected : null;
     birdWatchTransmitterWindowUpdate();
   }
@@ -586,6 +647,8 @@ function birdWatchRecenter()
 // read that far from what was sent) it isn't fine tuning (the rig wouldn't take it, another band, the VFOs swapped) and the side is set
 // again as it was. A new transmitter followed (or a click in the transmitters window) starts with no offset
 const BIRD_WATCH_TUNE_DEADBAND_HZ = 25;
+// The least a rig's own rounding of what it's sent is taken to be (birdWatchSideTarget's first read after a setting)
+const BIRD_WATCH_ROUND_MIN_HZ = 100;
 const BIRD_WATCH_TUNE_LIMIT_HZ = 50000;
 // A side set waits for a read that reflects it, but no longer than this (a rig or server whose reads can't be told apart)
 const BIRD_WATCH_READ_WAIT_MS = 3000;
@@ -593,6 +656,13 @@ const BIRD_WATCH_READ_WAIT_MS = 3000;
 // the time it takes)
 const BIRD_WATCH_FAR_STOP = 3;
 const BIRD_WATCH_FAR_STOP_MS = 5000;
+// Keyed by hand in split (birdWatchTxLook): an Icom, and others, read the TX VFO's frequency as the dial while transmitting. A side read
+// within this of what the same rig's other VFO holds is taken as that: nothing sent to the rig, nothing counted against it, for up to
+// this long (an over; a rig with no separate VFO for the uplink reads so for good: after it, the clash is handled as before)
+const BIRD_WATCH_TX_LOOK_HZ = 3000;
+const BIRD_WATCH_TX_HOLD_MS = 90000;
+// Two clashes this far apart aren't one rig moving both sides: the first is forgotten
+const BIRD_WATCH_CLASH_FORGET_MS = 60000;
 
 // A side's rig (its VFO's, rigRoleVfo) and what its dial reads, as the satellite's frequency (less the VFO's converter offset); hz null
 // when it can't be read; null without a VFO in use
@@ -621,6 +691,8 @@ function birdWatchSideTarget(D, side, doppler)
   // A side that can't be read follows the Doppler frequency as it is
   if (!read || read.hz === null) return doppler + D.offset[side];
   const R = read.R;
+  // The rig looks keyed in split (the other side's read, birdWatchSideFar): this side left as it is meanwhile too
+  if (birdWatchTxHeld(D) && D.txHold.side != side) return null;
   const sentSeq = D.sentSeq[side] || 0;
   // Not read since it was set: waited for, but not without end (a rig whose reads can't be told apart)
   if (R.readSeq < sentSeq) return Date.now() - (D.sentAt[side] || 0) < BIRD_WATCH_READ_WAIT_MS ? null : doppler + D.offset[side];
@@ -630,8 +702,19 @@ function birdWatchSideTarget(D, side, doppler)
   {
     // The first read since it was set: what the rig made of it, which later reads are measured from. Not set again before the next
     if (Math.abs(read.hz - sent) > BIRD_WATCH_TUNE_LIMIT_HZ) return birdWatchSideFar(D, side, read, sent);
+    birdWatchSideGood(D, side, read);
     D.farCount[side] = 0;
     D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount, R: R };
+    // A rig that says its tuning step (CI-V, rigctld) rounds what it's sent to it: read further from it than a step (BIRD_WATCH_ROUND_MIN_HZ
+    // at least), the dial was turned between the setting and this read, and that's the user's tuning (sent again with it next time). A
+    // rig that doesn't say: the whole difference is its rounding, as before
+    const round = R.tuningStep > 0 ? Math.max(R.tuningStep, BIRD_WATCH_ROUND_MIN_HZ) : 0;
+    const turned = read.hz - sent;
+    if (round && Math.abs(turned) > round)
+    {
+      birdWatchUserTuned(D, side, turned);
+      return doppler + D.offset[side];
+    }
     return null;
   }
   // No newer read yet
@@ -639,13 +722,25 @@ function birdWatchSideTarget(D, side, doppler)
   const moved = read.hz - base.hz;
   // The rig moved off by itself (another band, the VFOs swapped): not the user's tuning
   if (Math.abs(moved) > BIRD_WATCH_TUNE_LIMIT_HZ) return birdWatchSideFar(D, side, read, sent);
-  if (Math.abs(moved) > BIRD_WATCH_TUNE_DEADBAND_HZ)
-  {
-    D.offset[side] += moved;
-    birdWatchLockFollow(D, side, moved);
-  }
+  birdWatchSideGood(D, side, read);
+  if (Math.abs(moved) > BIRD_WATCH_TUNE_DEADBAND_HZ) birdWatchUserTuned(D, side, moved);
   D.base[side] = { hz: read.hz, seq: R.readSeq, count: R.readCount, R: R };
   return doppler + D.offset[side];
+}
+
+// A side tuned by the user (moved Hz): added to its offset, and noted for Lock VFOs (given to the other side once both are read:
+// birdWatchDopplerFollow). Unless Lock VFOs gave this side the other's tuning a moment ago and the rig moved it by as much itself (a rig
+// tracking its own VFOs, the IC-9700's satellite mode): counted already
+function birdWatchUserTuned(D, side, moved)
+{
+  const expect = D.lockExpect;
+  if (expect && expect.side == side && Date.now() < expect.until && Math.abs(moved - expect.hz) <= BIRD_WATCH_LOCK_MATCH_HZ)
+  {
+    D.lockExpect = null;
+    return;
+  }
+  D.offset[side] += moved;
+  if (D.movedNow) D.movedNow[side] = moved;
 }
 
 // A linear transponder: a downlink and an uplink that are ranges (a passband), not single frequencies
@@ -657,7 +752,11 @@ function birdWatchTransponder(t)
 // Lock VFOs (BirdWatch settings, General, and the BirdWatch panel's rig box): the user's tuning of one side (moved Hz) is given to the other
 // side too, the same amount (a linear transponder's passband is as wide on its uplink as on its downlink, so the same spot of it moves by
 // as much on both), the other way for an inverting transponder; both keep following the Doppler. Only for a transponder followed on both
-// sides
+// sides. Given only when one side alone moved this poll: a rig that tracks its own VFOs moved the other itself, and that move is its
+// own tuning already (given to it again, the user's tuning would count twice). The other side's own move to match, read a poll later,
+// is taken as this (D.lockExpect, for BIRD_WATCH_LOCK_EXPECT_MS)
+const BIRD_WATCH_LOCK_EXPECT_MS = 3000;
+const BIRD_WATCH_LOCK_MATCH_HZ = 50;
 function birdWatchLockFollow(D, side, moved)
 {
   if (GT.settings.BirdWatch.lockVfos !== true || !D.rx || !D.tx) return;
@@ -665,7 +764,9 @@ function birdWatchLockFollow(D, side, moved)
   const tuning = D.tuning;
   if (!birdWatchTransponder(t) || !tuning || !(tuning.rx > 0 && tuning.tx > 0)) return;
   const other = side == "rx" ? "tx" : "rx";
-  D.offset[other] += (t.invert ? -1 : 1) * moved;
+  const hz = (t.invert ? -1 : 1) * moved;
+  D.offset[other] += hz;
+  D.lockExpect = { side: other, hz: hz, until: Date.now() + BIRD_WATCH_LOCK_EXPECT_MS };
 }
 
 // Lock VFOs turned on or off (from either checkbox)
@@ -676,10 +777,70 @@ function birdWatchLockVfosSet(on)
   rigLineRender();
 }
 
+// A side read as expected: the rig isn't keyed in split (any hold that side's read began ends), and what its other VFO holds noted (the
+// uplink set by hand when only the downlink is followed: birdWatchTxLook)
+function birdWatchSideGood(D, side, read)
+{
+  if (D.txHold && D.txHold.side == side) D.txHold = null;
+  const v = rigRoleVfo(side);
+  D.secondDial = D.secondDial || {};
+  if (v && !rigVfoIsSecond(v) && read.R.freqB > 0) D.secondDial[side] = { R: read.R, dial: read.R.freqB };
+  // The downlink read where it was sent after the uplink was set on the same rig (both at once, or the uplink last): the rig keeps them
+  // apart, a real split. Until then a downlink read on the uplink is that rig moving both with one dial (birdWatchSideFar's clash)
+  const sentSeq = D.sentSeq || {};
+  const txRead = side == "rx" && D.sentTx ? birdWatchSideRead("tx") : null;
+  if (txRead && txRead.R === read.R && (sentSeq.tx || 0) >= (sentSeq.rx || 0) && read.R.readSeq >= (sentSeq.tx || 0)) D.splitProven = true;
+}
+
+// Whether a rig's PTT is read with its poll (rig.js rigPttWanted): the downlink's, while a transmitter of the selected satellite is followed
+function birdWatchPttWanted(R)
+{
+  const D = GT.rigDoppler;
+  const T = GT.birdWatchTrack;
+  if (!D || !T || T.selected != D.norad || GT.settings.BirdWatch.autoRig === false) return false;
+  const read = birdWatchSideRead("rx");
+  return !!read && read.R === R;
+}
+
+// Whether the rig looks keyed in split, held for no longer than BIRD_WATCH_TX_HOLD_MS
+function birdWatchTxHeld(D)
+{
+  return !!D.txHold && Date.now() - D.txHold.since < BIRD_WATCH_TX_HOLD_MS;
+}
+
+// A side read far from what was sent, on a frequency the same rig's other VFO holds: the rig keyed by hand in split, its dial reading the
+// TX VFO meanwhile. "sent": what the other side was sent (taken as keyed only once the rig has shown a real split, D.splitProven; before
+// that it's one dial moved by both: the clash); "seen": what that VFO read while all was well (the uplink set by hand, BirdWatch not
+// sending one); else null
+function birdWatchTxLook(D, side, read)
+{
+  const dial = read.hz + rigOffset(rigRoleVfo(side));
+  const near = (hz) => hz > 0 && Math.abs(dial - hz) <= BIRD_WATCH_TX_LOOK_HZ;
+  const other = side == "rx" ? "tx" : "rx";
+  const otherSent = D[other == "rx" ? "sentRx" : "sentTx"];
+  const otherRead = birdWatchSideRead(other);
+  if (D[other] && otherSent && otherRead && otherRead.R === read.R && near(otherSent + rigOffset(rigRoleVfo(other)))) return "sent";
+  const seen = D.secondDial && D.secondDial[side];
+  return seen && seen.R === read.R && near(seen.dial) && !(D[other] && otherSent) ? "seen" : null;
+}
+
 // A side read far from what was sent: set again (said in the Event Viewer); a rig that stays there (it can't tune to the satellite's band)
-// is let be, that side no longer followed. Null: nothing sent this tick
+// is let be, that side no longer followed. Null: nothing sent this tick. One that looks keyed in split (birdWatchTxLook) is left as it is
+// meanwhile, nothing counted: nothing is sent to a transmitting rig
 function birdWatchSideFar(D, side, read, sent)
 {
+  const look = birdWatchTxLook(D, side, read);
+  if (look == "seen" || (look == "sent" && D.splitProven))
+  {
+    if (!D.txHold || D.txHold.side != side) D.txHold = { side: side, since: Date.now() };
+    if (birdWatchTxHeld(D)) return null;
+    // Still there after the hold: not an over. The one dial moved by both after all (the clash below, at once)
+    if (look == "sent")
+    {
+      D.clash = Math.max(D.clash || 0, 1);
+      D.clashAt = Date.now();
+    }
+  }
   // Both sides on one rig (the uplink on the downlink rig's second VFO), and this one reads what the other was sent: setting the uplink
   // moves the downlink (the rig, or what speaks for it, has no separate VFO for the uplink). Set again they would take turns without end:
   // the second time, the uplink is no longer followed and the downlink is set again
@@ -689,7 +850,9 @@ function birdWatchSideFar(D, side, read, sent)
   const dial = (hz, s) => hz + rigOffset(rigRoleVfo(s));
   if (D[other] && otherSent && otherRead && otherRead.R === read.R && Math.abs(dial(read.hz, side) - dial(otherSent, other)) <= BIRD_WATCH_TUNE_LIMIT_HZ)
   {
-    D.clash = (D.clash || 0) + 1;
+    const now = Date.now();
+    D.clash = now - (D.clashAt || 0) > BIRD_WATCH_CLASH_FORGET_MS ? 1 : (D.clash || 0) + 1;
+    D.clashAt = now;
     if (D.clash >= 2)
     {
       D.tx = false;
@@ -769,7 +932,13 @@ function birdWatchDopplerFollow(setModes = false)
     D.pendingMode = null;
   }
   if (!D.mode) D.modesDue = null;
+  // The downlink's rig keyed (it says so: rigKeyed, CI-V's 1C 00): nothing read as tuning, nothing sent until it's unkeyed (keyed in
+  // split, an Icom reads its TX frequency; a rig that can't say is left to birdWatchTxLook)
+  const rxRead = birdWatchSideRead("rx");
+  if (rxRead && rigKeyed(rxRead.R)) return;
   const spec = {};
+  // The user's tuning read on each side this poll (birdWatchSideTarget), for Lock VFOs
+  D.movedNow = {};
   for (const side of ["rx", "tx"])
   {
     if (!D[side] || !tuning[side] || (side == "tx" && !rigTuneCanTx())) continue;
@@ -777,6 +946,20 @@ function birdWatchDopplerFollow(setModes = false)
     const sent = D[side == "rx" ? "sentRx" : "sentTx"];
     if (target !== null && (sent === null || sent === undefined || Math.abs(target - sent) >= 5)) spec[side] = target;
   }
+  // Lock VFOs: one side tuned, the other given it (sent with it now if it's being sent anyway: then it's set, nothing to expect of it)
+  const movedSides = Object.keys(D.movedNow);
+  if (movedSides.length == 1)
+  {
+    birdWatchLockFollow(D, movedSides[0], D.movedNow[movedSides[0]]);
+    const other = movedSides[0] == "rx" ? "tx" : "rx";
+    if (spec[other] && D.lockExpect && D.lockExpect.side == other)
+    {
+      spec[other] = tuning[other] + D.offset[other];
+      D.lockExpect = null;
+    }
+  }
+  // Keyed in split by hand (birdWatchSideFar): nothing at all sent until it isn't (its modes neither)
+  if (birdWatchTxHeld(D)) return;
   const modes = birdWatchDopplerModes(D, t, tuning, spec);
   if (modes.rx) spec.mode = birdWatchRigMode(t);
   if (modes.tx) spec.txMode = birdWatchRigUpMode(t);
@@ -788,7 +971,8 @@ function birdWatchDopplerFollow(setModes = false)
     const polled = new Set();
     for (const side of ["rx", "tx"])
     {
-      if (!spec[side]) continue;
+      // (a side whose rig wasn't sent anything, dropped meanwhile or the uplink blocked: as it was, sent again next time)
+      if (!spec[side] || !(spec.sent && spec.sent[side])) continue;
       D[side == "rx" ? "sentRx" : "sentTx"] = spec[side];
       const read = birdWatchSideRead(side);
       D.sentSeq[side] = read ? read.R.tuneSeq : 0;
@@ -802,8 +986,8 @@ function birdWatchDopplerFollow(setModes = false)
     }
     if (D.modesDue)
     {
-      if (modes.rx) D.modesDue.rx = false;
-      if (modes.tx) D.modesDue.tx = false;
+      if (modes.rx && spec.sent && spec.sent.rx) D.modesDue.rx = false;
+      if (modes.tx && spec.sent && spec.sent.tx) D.modesDue.tx = false;
     }
     if (D.pendingTone !== undefined)
     {

@@ -1,0 +1,20 @@
+{
+  "id": "wefax",
+  "name": "WEFAX",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "WEFAX", "group": "utility" },
+  "input": "audio12",
+  "rig": { "inputFrom": "cw", "instanceModes": ["WEFAX", "FAX"] },
+  "settings": { "wefaxSetFreq": true, "wefaxSetMode": true, "wefaxLpm": "auto", "wefaxIoc": "auto", "wefaxTrim": 0, "wefaxSave": true, "wefaxFolder": "" },
+  "scripts": ["mmdWefax.js", "mmdWefaxAuto.js"],
+  "workers": ["wefaxWorker.js"],
+  "ui": "ui.html",
+  "bands": { "file": "bands.json", "mode": "WEFAX" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": { "freqGrouping": "place" }
+}

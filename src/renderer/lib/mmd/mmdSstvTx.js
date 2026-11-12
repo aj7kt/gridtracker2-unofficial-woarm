@@ -247,7 +247,7 @@ function mmdSstvTab(name)
   sstvTxTab.classList.toggle("sstvTabOn", send);
   if (!send)
   {
-    mmdSstvDraw();
+    mmdPicDraw();
     return;
   }
   mmdSstvTxForm();
@@ -973,7 +973,9 @@ async function mmdSstvTxStart(kind, make, ended)
     }
     else
     {
-      const options = { latencyHint: "playback" };
+      // "interactive", never "playback": a "playback" context misses a render callback now and then (measured 2026-11-11, the decoder's
+      // own context: about 20 ms every 10 to 20 s), which would leave holes in the picture sent
+      const options = { latencyHint: "interactive" };
       if (ready.device.deviceId && ready.device.deviceId != "default") options.sinkId = ready.device.deviceId;
       ctx = new AudioContext(options);
       out = ctx.destination;

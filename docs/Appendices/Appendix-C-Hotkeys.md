@@ -55,6 +55,7 @@ Letter hotkeys use the **Ctrl** key, so that typing in text fields can't set the
 | Ctrl+S | Open the Settings panel |
 | Esc | Close the Settings panel, the Event Viewer, BirdWatch's Pass Timeline or the hotkey list |
 | F1 | Show the hotkey list |
+| F2 | Open (or close) the Log QSO window, with Log QSOs By Hand on |
 | F11 | Full screen on or off |
 | F12 | Hide or show the side panel |
 

@@ -91,7 +91,7 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
 ### Service
 
 * **BirdWatch (Satellite Tracking):** passes, the satellites on the map, and Doppler-corrected tuning of your rig. Turning it on adds its buttons and its own Settings tabs. See [BirdWatch](../BirdWatch.md).
-* **Multi-Mode Decoder:** decodes CW, FT8, FT4, PSK, RTTY, SSTV and many other modes from your rig's or an SDR's audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See [The Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md).
+* **Multi-Mode Decoder:** decodes CW, SSTV, satellite data and WWV / WWVH from your rig's or an SDR's audio, in a window of its own. Turning it on adds the Toggle Multi-Mode Decoder button. See [The Multi-Mode Decoder](../Multi-Mode-Decoder/Multi-Mode-Decoder.md).
 * **Rotor Control:** turns your antenna rotator toward a station (the roster's **Aim Rotator**, or **Ctrl**+click on the map) or a BirdWatch satellite. The rotator can be on a serial port (Yaesu GS-232, Easycomm II, SPID), or reached through Hamlib's rotctld, CatRotator or PstRotator. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rotor-control).
 * **Rig Control:** GridTracker2's own connection to your rigs and SDRs (rigctld, flrig, Icom CI-V, Icom LAN, FlexRadio SmartSDR, Kenwood or Yaesu CAT, SPY Server, SDR++), set up as a list of VFOs. The Multi-Mode Decoder and BirdWatch use it. See [Rig and Rotor Control](../Rig-and-Rotor-Control.md#rig-control).
 * **Network Audio:** audio over your network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder. See [Network Audio](../Network-Audio.md).
@@ -142,7 +142,7 @@ For every service except CALLOOK, enter your **Username** and **Password** and c
 
 ### Lookups
 
-* **Add Lookup Data to QSO Log event:** when you log a QSO, details from the lookup (name, QTH and so on) are added to the QSO GridTracker2 logs.
+* **Add Lookup Data to QSO Log event:** when you log a QSO, details from the lookup (name, QTH and so on) are added to the QSO GridTracker2 logs. They only fill what the QSO has empty: what your logging program sent or you typed is kept. A grid the QSO already has (the one the station sent, or one you typed) is kept too; the lookup's grid only replaces one that isn't a real grid square.
   * **Add Lookup Grid if QSO Grid Missing:** if the QSO has no grid, the grid from the lookup is used.
 * **Open Lookup on Transmit:** opens the Lookup window for the station whenever you start transmitting to it.
 * **Close Lookup After Logging:** closes the Lookup window after the QSO is logged.
@@ -245,7 +245,7 @@ The color of each band. Band colors are used for map spots, pins and paths, in b
 
 ### Mode Colors
 
-The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab's mode list and in the Statistics window.
+The color of each mode (FT8, CW, SSB, …). Mode colors are used in both rosters, in the Feeds tab's mode list and in the Statistics window. Submodes that aren't listed (THOR16, OLIVIA 8/500, …) are shown in their mode's color.
 
 The Matrix, Amber CRT, Night Vision and OLED Minimal App Themes show bands and modes in the Statistics and Lookup windows in shades of their own color instead.
 
@@ -298,6 +298,26 @@ Logging programs on this or another computer, each with its **IP** address and *
 * **DXKeeper:** DXLab's logbook.
 * **HRD Logbook <= v6.8.x:** older versions of Ham Radio Deluxe's logbook. For version 6.9 and later use ADIF UDP / N1MM.
 
+### PSK-Reporter 24 Hour History
+
+Loads the stations that heard you on PSK-Reporter over the last 24 hours. These are reception reports, not QSOs.
+
+### Log QSO
+
+**Log QSOs By Hand** (off until you turn it on) adds the **Log QSO** button to the side panel (and **F2**), the Feed Roster's **Log QSO...** on a call, and the Multi-Mode Decoder's Log QSO buttons and menu items. They open the [Log QSO](../Making-GridTracker-Work-For-You/Other-Windows.md#log-qso) window, for logging a QSO you made by hand.
+
+### Send Later
+
+**Queue QSOs To Send Later** (off until you turn it on) is for sending your QSOs on in a batch, for example after a POTA trip or once a year, online or offline. With it on, each new QSO (from WSJT-X, JTDX, MSHV, a logging program's ADIF broadcast or the [Log QSO](../Making-GridTracker-Work-For-You/Other-Windows.md#log-qso) window) is still logged in GridTracker2 at once, so the map and the rosters show it worked, and in the GridTracker2 backup log when that's on. What would go to your logging programs and online logbooks waits in a queue instead, kept on your computer, so it survives a restart. A queued QSO isn't spotted to POTA, then or later.
+
+While it's on, or QSOs are queued, the line under it shows **Queued QSOs** and their number, and:
+
+* **Send All:** sends each queued QSO to your logging programs and online logbooks, as it would have gone when you logged it (not into GridTracker2's own log again). It waits while GridTracker2 is offline. If a QSO can't be handed on, it stops there and keeps that QSO and the ones after it.
+* **Export ADIF:** saves the queued QSOs to an ADIF file you pick. They stay queued.
+* **Send All After** (off until you tick it) and a number (25 at first): Send All starts by itself once that many QSOs are queued, unless GridTracker2 is offline; then it starts with the next QSO queued after you're back online.
+
+Queued QSOs can't be edited or deleted here; edit them in your logging program once they're sent, or export them first.
+
 ### Online Logbooks
 
 Enter your account details and click **Test** to check them.
@@ -309,10 +329,6 @@ Enter your account details and click **Test** to check them.
 * **HRDLOG.net:** callsign and upload code.
 * **Cloudlog/Wavelog:** the URL of your server, an API key, and the **Station Profile** (click **Test** to load the list).
 * **HamCQ.cn:** API key.
-
-### PSK-Reporter 24 Hour History
-
-Loads the stations that heard you on PSK-Reporter over the last 24 hours. These are reception reports, not QSOs.
 
 ## Audio Alerts Tab
 

@@ -264,8 +264,7 @@ GT.callRosterWindowInitialized = false;
 GT.conditionsWindowHandle = null;
 GT.conditionsWindowInitialized = false;
 
-// Basic regexp that identifies a callsign and any pre- and post-indicators.
-const CALLSIGN_REGEXP = /^([A-Z0-9]+\/){0,1}([0-9][A-Z]{1,2}[0-9]|[A-Z]{1,2}[0-9])([A-Z0-9]+)(\/[A-Z0-9/]+){0,1}$/
+// (CALLSIGN_REGEXP, a callsign with any pre- and post-indicators, is in first.js: every window's)
 
 GT.statsWindowHandle = null;
 GT.statsWindowInitialized = false;
@@ -278,6 +277,9 @@ GT.alertWindowInitialized = false;
 GT.userGuideWindowHandle = null;
 GT.userGuideWindowInitialized = false;
 GT.userGuideShowOnLoad = false;
+// The Log QSO window (logQso.js): made only with Log QSO on (Settings -> Logging)
+GT.logQsoWindowHandle = null;
+GT.logQsoWindowInitialized = false;
 
 GT.callRoster = {};
 GT.rosterUpdateTimer = null;
@@ -346,11 +348,17 @@ GT.modes = {};
 GT.modes_phone = {};
 // Mode -> roster color (RRGGBB), from data/modes.json
 GT.modeColors = {};
+// Submode -> its ADIF mode (parentMode in data/modes.json); submodes shown in their parent's color (no color of their own) -> true
+GT.modeParent = {};
+GT.modeParentColor = {};
+// Mode -> its LoTW mode group (DATA, PHONE, CW, IMAGE), from data/modes.json
+GT.modeGroup = {};
 GT.colorBands = [
   "OOB",
   "4000m",
   "2200m",
   "630m",
+  "560m",
   "160m",
   "80m",
   "60m",
@@ -364,6 +372,7 @@ GT.colorBands = [
   "10m",
   "8m",
   "6m",
+  "5m",
   "4m",
   "2m",
   "1.25m",
@@ -379,7 +388,8 @@ GT.colorBands = [
   "4mm",
   "2.5mm",
   "2mm",
-  "1mm"
+  "1mm",
+  "submm"
 ];
 
 GT.non_us_bands = [
@@ -506,6 +516,7 @@ GT.bandColors.OOB = "888888";
 GT.bandColors["4000m"] = "45E0FF";
 GT.bandColors["2200m"] = "FF4500";
 GT.bandColors["630m"] = "1E90FF";
+GT.bandColors["560m"] = "7B68EE";
 GT.bandColors["160m"] = "FF8C00";
 GT.bandColors["80m"] = "E550E5";
 GT.bandColors["60m"] = "99CCFF";
@@ -519,6 +530,7 @@ GT.bandColors["11m"] = "00FF00";
 GT.bandColors["10m"] = "FF69B4";
 GT.bandColors["8m"] = "8b00fb";
 GT.bandColors["6m"] = "C0C0C0";
+GT.bandColors["5m"] = "CD853F";
 GT.bandColors["4m"] = "93ff05";
 GT.bandColors["2m"] = "FF1493";
 GT.bandColors["1.25m"] = "beff00";
@@ -535,6 +547,7 @@ GT.bandColors["4mm"] = "4FA806";
 GT.bandColors["2.5mm"] = "8A8B4F";
 GT.bandColors["2mm"] = "8A80C1";
 GT.bandColors["1mm"] = "B97394";
+GT.bandColors["submm"] = "D4A5FF";
 
 GT.colorPins = {};
 GT.colorQPins = {};
@@ -892,6 +905,9 @@ function postInit()
     birdWatchTransmitterWindowOpen(false);
     section = "EventsWindow";
     eventsWindowOpen(false);
+    // Log QSO: its window (made hidden with it on) and the button panel's button
+    section = "LogQsoWindow";
+    logQsoRender();
     section = "ButtonPanelInit";
     buttonPanelInit();
     birdWatchButtonsInit();
@@ -905,6 +921,8 @@ function postInit()
     netAudioInit();
     section = "MmDecoderInit";
     mmDecoderInit();
+    section = "QsoQueueInit";
+    qsoQueueInit();
     section = "MapCastInit";
     mapCastInit();
     projectionImg.style.filter = GT.settings.map.projection == "AEQD" ? "" : "grayscale(1)";

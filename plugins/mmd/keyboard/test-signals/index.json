@@ -1,0 +1,83 @@
+{
+  "rate": 12000,
+  "signals": [
+    {
+      "file": "mfsk-3.wav",
+      "module": "mfsk",
+      "name": "MFSK16 / MFSK32",
+      "modes": [
+        "mfsk"
+      ],
+      "signals": 3,
+      "rsid": false,
+      "sync": null,
+      "description": "Three MFSK signals a moment apart: MFSK16 at 700 Hz, MFSK32 at 1500 Hz, MFSK16 at 2300 Hz",
+      "source": "generated"
+    },
+    {
+      "file": "psk31-5.wav",
+      "module": "psk31",
+      "name": "BPSK31",
+      "modes": [
+        "psk31"
+      ],
+      "signals": 5,
+      "rsid": true,
+      "sync": null,
+      "description": "Five BPSK31 signals at once (600, 900, 1250, 1650, 2100 Hz), those at 600 and 1650 Hz after their RSID",
+      "source": "generated"
+    },
+    {
+      "file": "psk-variants.wav",
+      "module": "psk31",
+      "name": "PSK63, PSK125, QPSK31",
+      "modes": [
+        "psk31"
+      ],
+      "signals": 6,
+      "rsid": false,
+      "sync": null,
+      "description": "PSK63 at 600 and 1750 Hz, PSK125 at 1300 and 2250 Hz and QPSK31 at 900 and 2700 Hz, all at once",
+      "source": "generated"
+    },
+    {
+      "file": "rtty-5.wav",
+      "module": "rtty",
+      "name": "RTTY 45/170",
+      "modes": [
+        "rtty"
+      ],
+      "signals": 5,
+      "rsid": true,
+      "sync": null,
+      "description": "Five RTTY signals at once, 45.45 baud 170 Hz shift, centred on 550, 1000, 1450, 1900, 2350 Hz; those at 550 and 1900 Hz after their RSID",
+      "source": "generated"
+    },
+    {
+      "file": "rtty-variants.wav",
+      "module": "rtty",
+      "name": "RTTY 50/75 Baud, 425/850 Hz",
+      "modes": [
+        "rtty"
+      ],
+      "signals": 4,
+      "rsid": false,
+      "sync": null,
+      "description": "Four RTTY signals at other bauds and shifts: 50 baud 170 Hz at 600 Hz, 45.45 baud 425 Hz at 1250 Hz, 50 baud 850 Hz at 2100 Hz, 75 baud 170 Hz at 2950 Hz",
+      "source": "generated"
+    },
+    {
+      "file": "dominoex-thor.wav",
+      "module": "thor",
+      "name": "DominoEX / THOR",
+      "modes": [
+        "thor"
+      ],
+      "signals": 6,
+      "rsid": false,
+      "sync": null,
+      "description": "DominoEX and THOR at several speeds, two or three at once: DominoEX 11 at 800 Hz, THOR 16 at 1500 Hz, DominoEX 22 at 2300 Hz, DominoEX 8 at 1150 Hz, THOR 11 at 2000 Hz, DominoEX 16 at 2700 Hz",
+      "source": "generated"
+    }
+  ]
+}

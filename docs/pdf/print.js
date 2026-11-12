@@ -1,5 +1,6 @@
 // Electron main script used by docs/pdf/build.js: loads the single-page HTML and prints it to PDF
-//   electron docs/pdf/print.js --input=<index.html> --output=<file.pdf> --version=<x>
+//   electron docs/pdf/print.js --input=<index.html> --output=<file.pdf> --version=<x> [--title=<footer title>] [--contents=no]
+//   (--contents=no: a plugin's one-page guide, no Contents page)
 const { app, BrowserWindow } = require("electron");
 const fs = require("fs");
 const os = require("os");
@@ -9,6 +10,8 @@ const arg = (name) => (process.argv.find((a) => a.startsWith("--" + name + "="))
 const input = arg("input");
 const output = arg("output");
 const version = arg("version");
+const title = arg("title") || "GridTracker2 User Guide";
+const contents = arg("contents") != "no";
 
 // Keep this run's profile out of the way of any other Electron app data
 app.setPath("userData", fs.mkdtempSync(path.join(os.tmpdir(), "gt-docs-pdf-")));
@@ -73,12 +76,12 @@ app.whenReady().then(async () =>
 {
   const win = new BrowserWindow({ show: false, width: 1000, height: 1400, webPreferences: { offscreen: false } });
   await win.loadFile(input);
-  await win.webContents.executeJavaScript(`(${buildContents.toString()})()`);
+  if (contents) await win.webContents.executeJavaScript(`(${buildContents.toString()})()`);
   // Let web fonts and late images settle
   await win.webContents.executeJavaScript("document.fonts.ready.then(() => true)");
   await new Promise((r) => setTimeout(r, 500));
   const footer = `<div style="font-family: Segoe UI, Helvetica, Arial, sans-serif; font-size: 8px; color: #666; width: 100%; padding: 0 12mm; display: flex; justify-content: space-between;">
-    <span>GridTracker2 User Guide &middot; v${version}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`;
+    <span>${title.replace(/&/g, "&amp;").replace(/</g, "&lt;")} &middot; v${version}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`;
   const pdf = await win.webContents.printToPDF({
     pageSize: "Letter",
     printBackground: true,

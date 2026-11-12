@@ -41,7 +41,7 @@ This is useful when you change which logs are loaded. For example, to see only y
 
 ## Where New QSOs Go
 
-When you log a QSO in WSJT-X or JTDX (or a program that broadcasts ADIF, or by hand from the Feed Roster), GridTracker2 adds it to your logbook and sends it to every log ticked **Log QSO**:
+When you log a QSO in WSJT-X or JTDX (or a program that broadcasts ADIF, or by hand in the [Log QSO](Other-Windows.md#log-qso) window), GridTracker2 adds it to your logbook and sends it to every log ticked **Log QSO**:
 
 * **GridTracker2**, its own backup log;
 * logging programs: **ADIF UDP / N1MM**, **Log4OM**, **N3FJP Loggers**, **DXKeeper**, **HRD Logbook**;
@@ -52,6 +52,7 @@ The [Event Viewer](../GridTracker-Overview/Control-Panel.md#event-viewer) shows 
 * **LoTW** uploads go through TQSL. Choose the TQSL program (**TQSL Path**, not needed on macOS), your certificate's **TQSL Password** if it has one, and your **Station Name** (the station location in TQSL). An upload that fails, for example while you are offline, is queued and sent with your next QSO.
 * With **Add Lookup Data to QSO Log event** on in Settings → Lookups, details from the callsign lookup (name, QTH, grid and so on) are added to the QSO before it is sent.
 * QSOs with a known POTA activator or SOTA summit get its `POTA_REF` or `SOTA_REF`.
+* With **Queue QSOs To Send Later** on (Settings → Logging, [Send Later](../GridTracker-Overview/Settings-Sub-Menus.md#send-later)), new QSOs are added to your logbook and the backup log at once, and what goes to the logging programs and online logbooks waits until you click **Send All**.
 
 ```{note}
 GridTracker2 receives the QSO from WSJT-X's "Log QSO" window, so WSJT-X must have **Prompt me to log QSO** turned on. See [Appendix B](../Appendices/Appendix-B-Configuring-WSJT-X-and-JTDX-for-GridTracker.md).

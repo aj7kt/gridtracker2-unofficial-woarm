@@ -1,0 +1,78 @@
+<!-- The FT8 / FT4 plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- list: in the window's lists' place. Each period's messages, the newest period on top (mmdFtx.js, mmdFtxRows) -->
+<template data-slot="list">
+  <div id="ftxList" style="display: none;">
+    <table id="ftxTable">
+      <colgroup><col class="ftxUtcCol" /><col class="ftxDbCol" /><col class="ftxDtCol" /><col class="ftxFreqCol" /><col /></colgroup>
+      <thead id="ftxHead">
+        <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.ft8.header.db.label" title="The signal over the noise in 2500 Hz, as WSJT-X gives it (usually within 2 dB of WSJT-X's)">dB</th><th data-i18n="cwViewer.ft8.header.dt">DT</th><th data-i18n="cwViewer.ft8.header.freq">Freq</th><th data-i18n="cwViewer.ft8.header.message">Message</th></tr>
+      </thead>
+      <tbody id="ftxRows"></tbody>
+    </table>
+    <div id="ftxEmpty" data-i18n="cwViewer.ft8.empty">No FT8 decoded yet: each period is decoded once it has ended</div>
+  </div>
+</template>
+<!-- barItem: on the second line. Slot Finder, each mode's own (mmdFtxSlots), in the UTC menu's place -->
+<template data-slot="barItem">
+  <span id="ftxSlotBox" class="cwPick" style="display: none;"><input type="checkbox" id="ftxSlot" data-i18n="settings.ft8Decoder.slotFinder.hover" title="Marks the clearest frequency to transmit on in the even and odd periods" onclick="mmdFtxSetSlotFinder();" /><label for="ftxSlot" data-i18n="settings.ft8Decoder.slotFinder.label">Slot Finder</label></span>
+</template>
+<!-- settings: its boxes on Settings, Decoders (the same rows as every mode's; Set Mode's USB or Data is the VFO's) -->
+<template data-slot="settings">
+  <!-- FT4: the FT8 decoder's (7.5 s periods, decoded the Normal way) -->
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.ft4Decoder.label">FT4</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="ft4InputSelect">Input Device</label></td>
+        <td><select id="ft4InputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('ft4');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="ft4VfoSelect">VFO</label></td>
+        <td><select id="ft4VfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('ft4');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="ft4SetFreqValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="ft4SetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="ft4SetModeValue" onclick="mmdSetRigSend('ft4');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="ft4SetModeValue">Set Mode</label></td>
+      </tr>
+      <!-- Its decodes to GridTracker through the instance MMD, as FT8's -->
+      <tr>
+        <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft4SendDecodesValue" data-i18n="settings.ft4Decoder.sendDecodes.hover" title="FT4 decodes go to the Call Roster as well as the map" onclick="mmdFtxSetSendDecodes('ft4');" /> <label for="ft4SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
+      </tr>
+      <tr id="ft4InstanceNoteTr">
+        <td colspan="2" style="color: var(--gt-status-busy); font-size: 11px; padding-left: 22px;" data-i18n="settings.ft4Decoder.instance.note.label">Waiting for Rig Control to read the FT4 VFO's dial</td>
+      </tr>
+    </table>
+  </div>
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.ft8Decoder.label">FT8</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="ft8InputSelect">Input Device</label></td>
+        <td><select id="ft8InputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('ft8');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="ft8VfoSelect">VFO</label></td>
+        <td><select id="ft8VfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads (the frequency shown, and the signals' frequencies on the air) and, with Rig Control, tunes" onchange="mmdSetVfo('ft8');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="ft8SetFreqValue" onclick="mmdSetRigSend('ft8');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="ft8SetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="ft8SetModeValue" onclick="mmdSetRigSend('ft8');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="ft8SetModeValue">Set Mode</label></td>
+      </tr>
+      <tr>
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.ft8Decoder.depth.label" for="ft8DepthSelect">Depth</label></td>
+        <td>
+          <select id="ft8DepthSelect" data-i18n="settings.ft8Decoder.depth.hover" title="Normal: ft8_lib as it comes, each period decoded once when it ends. Deep: also takes out what was decoded and searches again, reads weak signals more finely, tries a priori guesses and adds repeats together, decodes early and searches harder in the focus (a click on the waterfall); more decodes, more processor time" onchange="mmdFtxSetDepth();">
+            <option value="normal" data-i18n="settings.ft8Decoder.depth.normal.label">Normal</option>
+            <option value="deep" data-i18n="settings.ft8Decoder.depth.deep.label">Deep</option>
+          </select>
+        </td>
+      </tr>
+      <!-- Its decodes into the Call Roster too, not only the map (the instance MMD, services/mmDecoder.js); the note while it can't (Rig
+           Control isn't reading the FT8 VFO's dial, so a decode's band isn't known) -->
+      <tr>
+        <td class="mapRowLabel mapRowLabelLeft" colspan="2"><input type="checkbox" id="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.hover" title="FT8 decodes go to the Call Roster as well as the map" onclick="mmdFtxSetSendDecodes('ft8');" /> <label for="ft8SendDecodesValue" data-i18n="settings.ft8Decoder.sendDecodes.label">Send Decodes To Call Roster</label></td>
+      </tr>
+      <tr id="ft8InstanceNoteTr">
+        <td colspan="2" style="color: var(--gt-status-busy); font-size: 11px; padding-left: 22px;" data-i18n="settings.ft8Decoder.instance.note.label">Waiting for Rig Control to read the FT8 VFO's dial</td>
+      </tr>
+    </table>
+  </div>
+</template>

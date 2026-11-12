@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "À l'écoute d'un signal Hell : cliquez-en un sur la cascade pour le lire",
+	"cwViewer.hell.found": "Trouvé",
+	"cwViewer.hell.sub.hover": "La vitesse Hellschreiber lue : Feld-Hell, ou ses formes rapides X5 et X9. Cliquez un signal sur la cascade pour le lire ; cliquez dans sa bande pour revenir à la recherche du plus fort",
+	"cwViewer.hell.trim.hover": "Redresse une impression qui penche : augmentez-le si elle descend vers la droite, diminuez-le si elle monte. Cliquez la valeur pour la remettre à 0",
+	"cwViewer.hell.tape.hover": "Le signal Hell imprimé tel qu'il est entendu, chaque ligne deux fois : lisez la copie qui est droite"
+}

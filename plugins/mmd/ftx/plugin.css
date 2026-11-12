@@ -1,0 +1,74 @@
+/* FT8's and FT4's list: each period's messages, the newest period on top, as the decoder's other lists are drawn */
+#ftxList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#ftxTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.ftxUtcCol {
+  width: 62px;
+}
+.ftxDbCol {
+  width: 36px;
+}
+.ftxDtCol {
+  width: 40px;
+}
+.ftxFreqCol {
+  width: 48px;
+}
+#ftxTable th {
+  position: sticky;
+  top: 0;
+  background-color: #111;
+  color: #aaa;
+  font-weight: normal;
+  text-align: left;
+  padding: 2px 6px;
+}
+#ftxTable td {
+  padding: 1px 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+  font-family: monospace;
+  font-size: 13px;
+  color: #ddd;
+}
+#ftxTable td.ftxNum {
+  color: #aaa;
+}
+/* A line decoded on an off-time station's timing: its DT (from the usual timing) */
+#ftxTable td.ftxNum.ftxOffTime {
+  color: orange;
+}
+/* How a message was decoded when not the plain way, as WSJT-X marks its own: o (OSD), a1 (a CQ guessed), a2 (a call to you guessed) */
+span.ftxHow {
+  color: #888;
+}
+/* The first row of each period: a line above it */
+#ftxTable tr.ftxFirst td {
+  border-top: 1px solid #888;
+}
+#ftxTable tr:hover td {
+  box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
+}
+/* The spacer rows standing in for the lines out of view (virtual scrolling, as the rosters'): not shaded */
+#ftxTable tr.virtualSpacer td {
+  padding: 0;
+}
+#ftxTable tr.virtualSpacer:hover td {
+  box-shadow: none;
+}
+#ftxEmpty {
+  color: #888;
+  padding: 6px;
+}
+/* Slot Finder's box, centered on its label by the row (no margin of its own) */
+#ftxSlot {
+  margin: 0;
+}

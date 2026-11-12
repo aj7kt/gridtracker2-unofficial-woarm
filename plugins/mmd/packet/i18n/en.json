@@ -1,0 +1,18 @@
+{
+	"settings.packetDecoder.label": "Packet",
+	"settings.packetDecoder.setMode.hover": "Picking a frequency in the Frequency menu sets the rig's mode: FM for VHF, LSB for HF packet",
+	"cwViewer.packet.header.from": "From",
+	"cwViewer.packet.header.to": "To / Path",
+	"cwViewer.packet.empty": "No packets decoded yet: AFSK 1200 (APRS), FSK 9600 and HF 300 baud are all listened for. Click the waterfall to lock HF packet on one place",
+	"cwViewer.packet.status": "Packet: {count} decoded, {utc}",
+	"cwViewer.packet.via": "via {sat}",
+	"cwViewer.packet.kind.position": "Position",
+	"cwViewer.packet.kind.object": "Object",
+	"cwViewer.packet.kind.item": "Item",
+	"cwViewer.packet.kind.status": "Status",
+	"cwViewer.packet.kind.message": "Message to {to}",
+	"cwViewer.packet.kind.weather": "Weather",
+	"cwViewer.packet.kind.telemetry": "Telemetry",
+	"cwViewer.packet.locked": "HF packet locked: {hz} Hz",
+	"cwViewer.packet.heardAt": "Heard at {hz} Hz: click to lock HF packet there"
+}

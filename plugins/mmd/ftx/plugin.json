@@ -1,0 +1,22 @@
+{
+  "id": "ftx",
+  "name": "FT8 / FT4",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "modes": [
+    { "id": "ft8", "menu": { "label": "FT8", "group": "ham" }, "rig": { "instanceModes": ["FT8"] }, "bands": "FT8", "features": { "fallScale": 3 } },
+    { "id": "ft4", "menu": { "label": "FT4", "group": "ham" }, "rig": { "inputFrom": "ft8", "instanceModes": ["FT4"] }, "bands": "FT4", "features": { "fallScale": 3 } }
+  ],
+  "input": "audio12",
+  "settings": { "ft8Depth": "normal", "ft8SetFreq": true, "ft8SetMode": true, "ft8SendDecodes": false, "ft8SlotFinder": true, "ft4SetFreq": true, "ft4SetMode": true, "ft4SendDecodes": false, "ft4SlotFinder": true },
+  "scripts": ["mmdFtx.js"],
+  "workers": ["ft8Worker.js"],
+  "ui": "ui.html",
+  "css": "plugin.css",
+  "bands": { "file": "bands.json" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf"
+}

@@ -1,0 +1,35 @@
+<!-- The WEFAX plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot). Its charts are shown in the
+     decoder's picture view (mmdPictures.js, through host.pictures) -->
+<!-- bar: its line rate, index of cooperation, Trim, Start Now, Stop and Auto-Tune, on a row of their own (shown in its mode) -->
+<template data-slot="bar">
+  <div id="cwWefaxBar" class="cwBarRow" style="display: none;">
+    <span id="cwWefaxBox" class="cwPick"><label for="cwWefaxLpm" data-i18n="cwViewer.wefax.lpm.label">LPM</label><select id="cwWefaxLpm" data-i18n="cwViewer.wefax.lpm.hover" title="Lines a minute: Auto finds it from the chart's phasing lines; most stations send 120" onchange="mmdWefaxPicked();"></select> <label for="cwWefaxIoc" data-i18n="cwViewer.wefax.ioc.label">IOC</label><select id="cwWefaxIoc" data-i18n="cwViewer.wefax.ioc.hover" title="Index of cooperation, the chart's width: Auto finds it from the start tone; most stations send 576" onchange="mmdWefaxPicked();"></select> <span data-i18n="cwViewer.hell.trim.label">Trim</span> <span class="cwButton" onclick="mmdWefaxTrimStep(-1);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">−</span><span id="cwWefaxTrimValue" class="cwHellTrim" onclick="mmdWefaxTrimStep(0);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">0</span><span class="cwButton" onclick="mmdWefaxTrimStep(1);" data-i18n="cwViewer.wefax.trim.hover" title="Straightens a chart that slants: step it either way until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0">+</span> <span class="cwButton" onclick="mmdWefaxStartNow();" data-i18n="cwViewer.wefax.startNow.hover" title="Starts a chart now, without waiting for its start tone: for a chart already being sent"><span data-i18n="cwViewer.wefax.startNow.label">Start Now</span></span> <span class="cwButton" onclick="mmdWefaxStop();" data-i18n="cwViewer.wefax.stop.hover" title="Ends the chart being received here"><span data-i18n="cwViewer.wefax.stop.label">Stop</span></span> <input type="checkbox" id="cwWefaxAuto" onclick="mmdWefaxAutoToggle();" data-i18n="cwViewer.wefax.auto.hover" title="Tunes the rig to each station's next chart by the published schedules, one chart after another. Tuning the rig by hand turns it off" /><label for="cwWefaxAuto" data-i18n="cwViewer.wefax.auto.label">Auto-Tune</label> <span id="cwWefaxAutoText"></span></span>
+  </div>
+</template>
+<!-- settings: its box on Settings, Decoders (the same rows as every mode's, then Save Charts and its folder) -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span data-i18n="settings.wefaxDecoder.label">WEFAX</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="wefaxInputSelect">Input Device</label></td>
+        <td><select id="wefaxInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('wefax');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="wefaxVfoSelect">VFO</label></td>
+        <td><select id="wefaxVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('wefax');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="wefaxSetFreqValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="wefaxSetFreqValue">Set Frequency</label> <input data-i18n="settings.keyDecoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig to USB" type="checkbox" id="wefaxSetModeValue" onclick="mmdSetRigSend('wefax');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="wefaxSetModeValue">Set Mode</label></td>
+      </tr>
+      <tr>
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="wefaxSaveValue" data-i18n="settings.wefaxDecoder.save.hover" title="Each chart is saved as a PNG in the folder below when it ends, however much of it came" onclick="mmdWefaxSetSave();" /> <label for="wefaxSaveValue" data-i18n="settings.wefaxDecoder.save.label">Save Charts</label></td>
+      </tr>
+      <!-- Shown while Save Charts is on (its settingsRender) -->
+      <tr id="wefaxFolderTr">
+        <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.sstvDecoder.folder.label">Folder</span></td>
+        <td><span id="wefaxFolderText" class="mapValue" style="cursor: pointer; white-space: normal; word-break: break-all;" data-i18n="settings.wefaxDecoder.folder.hover" title="Where charts are saved: click to open it" onclick="mmdSetPicturesFolderOpen('wefax');"></span> <div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="settings.sstvDecoder.choose.hover" title="Pick another folder" onclick="mmdSetPicturesFolderChoose('wefax');"><span data-i18n="settings.sstvDecoder.choose.label">Choose</span></div></td>
+      </tr>
+    </table>
+  </div>
+</template>

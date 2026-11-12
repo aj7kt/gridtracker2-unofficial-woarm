@@ -24,16 +24,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 #### Multi-Mode Decoder
 
 - New Multi-Mode Decoder (Settings, Features): decode signals right inside GridTracker2, without another program, from your rig's audio or an SDR, with a waterfall of the whole passband
-  - Modes: CW, FT8, FT4, WSPR, PSK, RTTY, MFSK, DominoEX and THOR, Olivia and Contestia, Feld-Hell, SSTV, WEFAX, NAVTEX, Packet and APRS, and satellite data (FUNcube, AX.100, GENESIS)
+  - Modes: CW, SSTV, satellite data (FUNcube, AX.100, GENESIS) and WWV / WWVH
+  - Get More..., the Mode menu's last entry: download more decoders, and update or remove them
   - In most modes every signal in the passband is decoded at once
-  - FT8, FT4 and WSPR decodes go to the map and alerts as WSJT-X's do (and FT8 and FT4 to the Call Roster if you like), through a new instance named MMD
   - It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening
-  - With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency (FT8 to 14.074 on 20 meters)
-  - SSTV pictures, weather fax charts and NAVTEX messages are kept and can be saved; WEFAX can tune the rig to each chart from the stations' schedules
+  - With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency
+  - SSTV pictures are kept and can be saved
+  - WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first
   - An Icom's own band scope (IC-7300 and others) can show above the waterfall
   - Detect Modes names every signal it hears, and Test Signals play recordings so you can try each mode
+  - Log QSO: a decoded CW or SSTV QSO, or a phone QSO on your rig, opens the new Log QSO window filled in (with Log QSOs By Hand on)
   - Listens to any sound card, SDR++, SPY Server, or Network Audio (below)
-  - FT8 is built on ft8_lib by Kārlis Goba, YL3JG, with WSJT-X's methods for more decodes, with thanks to Joe Taylor, K1JT, and the WSJT development team; the other modes are written from their published specifications
+  - The modes are written from their published specifications
   - The User Guide's Multi-Mode Decoder chapters describe every mode and setting
 
 #### BirdWatch
@@ -62,6 +64,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - New N3FJP Contest Log (Settings, Logging): chase stations from the Feed Roster during a contest with any of N3FJP's contest logs (CQ WW, WPX, Field Day, NAQP, the State QSO Parties and more), alongside AC Log
   - A spot you click goes to the contest log (with Enable Rig Control, your rig is tuned there too), and each QSO you log there shows as worked in GridTracker2 at once
   - Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to
+- New Log QSO window (Settings, Logging, Log QSOs By Hand; off unless ticked): log a QSO you made by hand, from its new button in the side panel (or F2), a Feed Roster spot's right-click, or the Multi-Mode Decoder, into GridTracker2 and every logging program and online logbook you log to
+  - A card in your App Theme's colors: the call large on top with its band, mode, grid, bearing and distance (in your Distance Units) and UTC, each field a tile, filled in from your rig, the spot (its park and summit too) and your callsign lookup
+  - Unlock it to drag the fields where you want them; right-click to add any other ADIF field a QSO can have (parks and summits, location, contest, QSL, the contacted station, propagation ...), which stays on the card; each field is labeled by name, such as Station Callsign or Propagation Mode
+  - Unlock Widths (right-click) makes each field one or two columns wide and sets how wide a column is; kept for each field, even one taken off and added again
+  - A Retain switch on Power, Comment, Propagation Mode, Satellite, Satellite Mode and Rx Freq keeps what you type there for the next QSO, also after a restart (Power on to start with)
+  - The lock is the card's master lock: while it's shut, the card can't be rearranged, no field can be taken off, and its window can't be resized; the card always opens with it shut
+  - Double-click a call in the Feed Roster to log it
+  - Two tabs: QSO and My Station (your callsign, grid, zones, state and county, DXCC and rig filled in from what GridTracker2 knows, and every other field of your own station to add); what you type on My Station is kept for every card from then on
+  - Clearing the call, or typing one on a card that came without one, clears the other fields for the next QSO and sets the time to now, keeping the mode and your rig's frequency
+  - It follows your rig's frequency and voice mode while open, and starts in the last mode you used this session when nothing else gives it one
+  - Each field's tooltip names its ADIF field and says what ADIF puts in it; fields with a set list (band, propagation mode, continent, ARRL section, QSL codes, contest names, DXCC, the states of the QSO's DXCC entity ...) offer its values, and a county box offers the counties of the state filled in
+  - The POTA and SOTA boxes search POTA's parks (with POTA Hunting on) and SOTA's summits (with SOTA Chasing on) by reference or name as you type
+  - Each field is checked as you type against the ADIF rules for it, such as a 4, 6, 8 or 10 character grid, the CQ and ITU zones, IOTA and WWFF references, dates, latitude and longitude (decimal degrees are changed to ADIF's form)
+  - The Feed Roster's POTA and SOTA columns now log through it too
+- Add Lookup Data to QSO Log Event: lookup details only fill what the QSO has empty (name, state, county, zones ...), what your logging program sent or you typed is kept; a grid the QSO already has (the one the station sent, or one typed in) is kept, the lookup's grid only replaces one that isn't a real grid square
+- A QSO's power keeps its fraction (0.5 W is logged as 0.5, no longer 0)
+- Bands follow ADIF's band edges: 8m is 40 to 45 MHz and 4m 70 to 71 MHz, 141 to 143 MHz is no longer counted as 2m nor 219 to 221 MHz as 1.25m, 2200m ends at 137.8 kHz, 2.5mm starts at 119.98 GHz and 2mm reaches 149 GHz
+  - New bands from ADIF: 560m, 5m (55 to 69 MHz) and submm, each with its own color and in the map's Band filter
+- New Queue QSOs To Send Later (Settings, Logging, Send Later; off unless ticked): QSOs show as worked in GridTracker2 at once, and wait to go to your logging programs and online logbooks until you click Send All, online or offline, for example after a POTA trip; Export ADIF saves them to a file, and Send All After sends them on its own once that many are waiting
 - Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
 - Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency
@@ -70,6 +91,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown
 - Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors
 - At startup the map goes back to the instance it was showing when you closed GridTracker2
+- Every mode and submode in the ADIF standard is now known: QSOs and spots in them count as Digital or Phone, and each submode shows in its mode's color (THOR16 as THOR, USB as SSB)
+  - New in Mode Colors and the map's Mode filter: CONTESTI, DMR, FREEDV, FSK, FSQCALL, JT44, JTMS, M17, MFSK11, MFSK64L, MFSK128L and MTONE
+  - Statistics, Scores: a new Image type for SSTV, FAX and ATV QSOs, which counted as Other before; they now count toward Phone as well, as for DXCC, there and in the Call Roster's award tracking
+- Fixed: a Feed Roster QSO logged by hand with a Park now keeps its park, in your logs and in its POTA spot
 
 ### HTML List
 
@@ -98,16 +123,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 <ul>
   <li>New Multi-Mode Decoder (Settings, Features): decode signals right inside GridTracker2, without another program, from your rig's audio or an SDR, with a waterfall of the whole passband
     <ul>
-      <li>Modes: CW, FT8, FT4, WSPR, PSK, RTTY, MFSK, DominoEX and THOR, Olivia and Contestia, Feld-Hell, SSTV, WEFAX, NAVTEX, Packet and APRS, and satellite data (FUNcube, AX.100, GENESIS)</li>
+      <li>Modes: CW, SSTV, satellite data (FUNcube, AX.100, GENESIS) and WWV / WWVH</li>
+      <li>Get More..., the Mode menu's last entry: download more decoders, and update or remove them</li>
       <li>In most modes every signal in the passband is decoded at once</li>
-      <li>FT8, FT4 and WSPR decodes go to the map and alerts as WSJT-X's do (and FT8 and FT4 to the Call Roster if you like), through a new instance named MMD</li>
       <li>It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening</li>
-      <li>With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency (FT8 to 14.074 on 20 meters)</li>
-      <li>SSTV pictures, weather fax charts and NAVTEX messages are kept and can be saved; WEFAX can tune the rig to each chart from the stations' schedules</li>
+      <li>With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency</li>
+      <li>SSTV pictures are kept and can be saved</li>
+      <li>WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first</li>
       <li>An Icom's own band scope (IC-7300 and others) can show above the waterfall</li>
       <li>Detect Modes names every signal it hears, and Test Signals play recordings so you can try each mode</li>
+      <li>Log QSO: a decoded CW or SSTV QSO, or a phone QSO on your rig, opens the new Log QSO window filled in (with Log QSOs By Hand on)</li>
       <li>Listens to any sound card, SDR++, SPY Server, or Network Audio (below)</li>
-      <li>FT8 is built on ft8_lib by Kārlis Goba, YL3JG, with WSJT-X's methods for more decodes, with thanks to Joe Taylor, K1JT, and the WSJT development team; the other modes are written from their published specifications</li>
+      <li>The modes are written from their published specifications</li>
       <li>The User Guide's Multi-Mode Decoder chapters describe every mode and setting</li>
     </ul>
   </li>
@@ -144,6 +171,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>Also Log To My Other Logs (off unless ticked) sends those QSOs on to AC Log and the other logs and services GridTracker2 logs to</li>
     </ul>
   </li>
+  <li>New Log QSO window (Settings, Logging, Log QSOs By Hand; off unless ticked): log a QSO you made by hand, from its new button in the side panel (or F2), a Feed Roster spot's right-click, or the Multi-Mode Decoder, into GridTracker2 and every logging program and online logbook you log to
+    <ul>
+      <li>A card in your App Theme's colors: the call large on top with its band, mode, grid, bearing and distance (in your Distance Units) and UTC, each field a tile, filled in from your rig, the spot (its park and summit too) and your callsign lookup</li>
+      <li>Unlock it to drag the fields where you want them; right-click to add any other ADIF field a QSO can have (parks and summits, location, contest, QSL, the contacted station, propagation ...), which stays on the card; each field is labeled by name, such as Station Callsign or Propagation Mode</li>
+      <li>Unlock Widths (right-click) makes each field one or two columns wide and sets how wide a column is; kept for each field, even one taken off and added again</li>
+      <li>A Retain switch on Power, Comment, Propagation Mode, Satellite, Satellite Mode and Rx Freq keeps what you type there for the next QSO, also after a restart (Power on to start with)</li>
+      <li>The lock is the card's master lock: while it's shut, the card can't be rearranged, no field can be taken off, and its window can't be resized; the card always opens with it shut</li>
+      <li>Double-click a call in the Feed Roster to log it</li>
+      <li>Two tabs: QSO and My Station (your callsign, grid, zones, state and county, DXCC and rig filled in from what GridTracker2 knows, and every other field of your own station to add); what you type on My Station is kept for every card from then on</li>
+      <li>Clearing the call, or typing one on a card that came without one, clears the other fields for the next QSO and sets the time to now, keeping the mode and your rig's frequency</li>
+      <li>It follows your rig's frequency and voice mode while open, and starts in the last mode you used this session when nothing else gives it one</li>
+      <li>Each field's tooltip names its ADIF field and says what ADIF puts in it; fields with a set list (band, propagation mode, continent, ARRL section, QSL codes, contest names, DXCC, the states of the QSO's DXCC entity ...) offer its values, and a county box offers the counties of the state filled in</li>
+      <li>The POTA and SOTA boxes search POTA's parks (with POTA Hunting on) and SOTA's summits (with SOTA Chasing on) by reference or name as you type</li>
+      <li>Each field is checked as you type against the ADIF rules for it, such as a 4, 6, 8 or 10 character grid, the CQ and ITU zones, IOTA and WWFF references, dates, latitude and longitude (decimal degrees are changed to ADIF's form)</li>
+      <li>The Feed Roster's POTA and SOTA columns now log through it too</li>
+    </ul>
+  </li>
+  <li>Add Lookup Data to QSO Log Event: lookup details only fill what the QSO has empty (name, state, county, zones ...), what your logging program sent or you typed is kept; a grid the QSO already has (the one the station sent, or one typed in) is kept, the lookup's grid only replaces one that isn't a real grid square</li>
+  <li>A QSO's power keeps its fraction (0.5 W is logged as 0.5, no longer 0)</li>
+  <li>Bands follow ADIF's band edges: 8m is 40 to 45 MHz and 4m 70 to 71 MHz, 141 to 143 MHz is no longer counted as 2m nor 219 to 221 MHz as 1.25m, 2200m ends at 137.8 kHz, 2.5mm starts at 119.98 GHz and 2mm reaches 149 GHz
+    <ul>
+      <li>New bands from ADIF: 560m, 5m (55 to 69 MHz) and submm, each with its own color and in the map's Band filter</li>
+    </ul>
+  </li>
+  <li>New Queue QSOs To Send Later (Settings, Logging, Send Later; off unless ticked): QSOs show as worked in GridTracker2 at once, and wait to go to your logging programs and online logbooks until you click Send All, online or offline, for example after a POTA trip; Export ADIF saves them to a file, and Send All After sends them on its own once that many are waiting</li>
   <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it</li>
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
   <li>Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency</li>
@@ -152,5 +204,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown</li>
   <li>Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors</li>
   <li>At startup the map goes back to the instance it was showing when you closed GridTracker2</li>
+  <li>Every mode and submode in the ADIF standard is now known: QSOs and spots in them count as Digital or Phone, and each submode shows in its mode's color (THOR16 as THOR, USB as SSB)
+    <ul>
+      <li>New in Mode Colors and the map's Mode filter: CONTESTI, DMR, FREEDV, FSK, FSQCALL, JT44, JTMS, M17, MFSK11, MFSK64L, MFSK128L and MTONE</li>
+      <li>Statistics, Scores: a new Image type for SSTV, FAX and ATV QSOs, which counted as Other before; they now count toward Phone as well, as for DXCC, there and in the Call Roster's award tracking</li>
+    </ul>
+  </li>
+  <li>Fixed: a Feed Roster QSO logged by hand with a Park now keeps its park, in your logs and in its POTA spot</li>
 </ul>
 ```

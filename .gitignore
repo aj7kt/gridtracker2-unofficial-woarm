@@ -14,3 +14,4 @@ _build
 resources/media/desktop.ini
 src/main/map_keys.json
 temp
+plugins/out

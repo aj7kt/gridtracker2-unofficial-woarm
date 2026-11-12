@@ -1,0 +1,11 @@
+{
+	"cwViewer.wspr.header.drift": "Drift",
+	"cwViewer.wspr.empty": "Nog geen WSPR gedecodeerd: elke periode van 2 minuten wordt gedecodeerd zodra die is afgelopen",
+	"cwViewer.wspr.status": "WSPR: {count} gedecodeerd, {utc}",
+	"cwViewer.wspr.decoding": "WSPR: periode van {utc} wordt gedecodeerd",
+	"cwViewer.wspr.waiting": "WSPR: luistert, de eerste gedecodeerde periode begint om {utc}",
+	"cwViewer.wspr.header.call": "Roepnaam",
+	"cwViewer.wspr.header.grid": "Locator",
+	"cwViewer.wspr.header.dbm": "dBm",
+	"cwViewer.wspr.header.distance": "Afstand"
+}

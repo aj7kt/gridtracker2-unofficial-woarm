@@ -1,0 +1,33 @@
+<!-- The WSPR plugin's parts of the decoder window (mmdPluginHost.js puts each template's contents in its slot) -->
+<!-- list: in the window's lists' place. Each 2 minute period's stations, the newest first -->
+<template data-slot="list">
+  <div id="wsprList" style="display: none;">
+    <table id="wsprTable">
+      <colgroup><col class="wsprUtcCol" /><col class="wsprDbCol" /><col class="wsprDtCol" /><col class="wsprFreqCol" /><col class="wsprDtCol" /><col class="wsprCallCol" /><col class="wsprGridCol" /><col class="wsprDtCol" /><col /></colgroup>
+      <thead id="wsprHead">
+        <tr><th data-i18n="cwViewer.ft8.header.utc">UTC</th><th data-i18n="cwViewer.ft8.header.db.label">dB</th><th data-i18n="cwViewer.ft8.header.dt">DT</th><th data-i18n="cwViewer.header.freq">Frequency</th><th data-i18n="cwViewer.wspr.header.drift">Drift</th><th data-i18n="cwViewer.wspr.header.call">Call</th><th data-i18n="cwViewer.wspr.header.grid">Grid</th><th data-i18n="cwViewer.wspr.header.dbm">dBm</th><th><span data-i18n="cwViewer.wspr.header.distance">Distance</span> <span id="wsprDistUnit"></span></th></tr>
+      </thead>
+      <tbody id="wsprRows"></tbody>
+    </table>
+    <div id="wsprEmpty" data-i18n="cwViewer.wspr.empty">No WSPR decoded yet: each 2 minute period is decoded once it has ended</div>
+  </div>
+</template>
+<!-- settings: its box on Settings, Decoders (the same rows as every mode's; its Set Mode's USB or Data is the VFO's, as FT8's) -->
+<template data-slot="settings">
+  <div class="rigVfoBox">
+    <div class="rigVfoTitle"><span>WSPR</span></div>
+    <table>
+      <tr class="mmdInputRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.audio.row.inputDevice.label" for="wsprInputSelect">Input Device</label></td>
+        <td><select id="wsprInputSelect" class="mmdInputSelect" data-i18n="cwViewer.input.hover" title="The rig's audio this mode listens to: each mode keeps its own" onchange="mmdSetInput('wspr');"></select></td>
+      </tr>
+      <tr class="mmdRigRow mmdVfoRow">
+        <td class="mapRowLabel mapRowLabelLeft"><label data-i18n="settings.mmDecoder.vfo.label" for="wsprVfoSelect">VFO</label></td>
+        <td><select id="wsprVfoSelect" data-i18n="settings.mmDecoder.vfo.hover" title="The Rig Control VFO this mode reads and, with Rig Control, tunes" onchange="mmdSetVfo('wspr');"></select></td>
+      </tr>
+      <tr class="mmdRigRow">
+        <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.mmDecoder.setFreq.hover" title="Picking a frequency in the Frequency menu tunes the rig there" type="checkbox" id="wsprSetFreqValue" onclick="mmdSetRigSend('wspr');" /> <label data-i18n="settings.mmDecoder.setFreq.label" for="wsprSetFreqValue">Set Frequency</label> <input data-i18n="settings.ft8Decoder.setMode.hover" title="Picking a frequency in the Frequency menu sets the rig's mode: USB, or USB's data mode" type="checkbox" id="wsprSetModeValue" onclick="mmdSetRigSend('wspr');" /> <label data-i18n="settings.ft8Decoder.setMode.label" for="wsprSetModeValue">Set Mode</label></td>
+      </tr>
+    </table>
+  </div>
+</template>

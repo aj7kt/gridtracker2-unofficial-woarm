@@ -43,6 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/third-party/third-party.js" type="text/javascript"></script>
   <script src="./lib/third-party/grid-math.js" type="text/javascript"></script>
   <script src="./lib/qso/adif.js" type="text/javascript"></script>
+  <script src="./lib/qso/qsoQueue.js" type="text/javascript"></script>
+  <script src="./lib/qso/logQso.js" type="text/javascript"></script>
   <script src="./lib/third-party/proj4.js" type="text/javascript"></script>
   <script src="./lib/third-party/ol.js" type="text/javascript"></script>
   <script src="./lib/third-party/arc.js" type="text/javascript"></script>
@@ -82,6 +84,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <script src="./lib/services/netAudioRtp.js" type="text/javascript"></script>
   <script src="./lib/services/netAudioPulse.js" type="text/javascript"></script>
   <script src="./lib/services/mmDecoder.js" type="text/javascript"></script>
+  <script src="./lib/services/mmdPlugins.js" type="text/javascript"></script>
   <script src="./lib/services/mapCast.js" type="text/javascript"></script>
   <script src="./lib/qso/acLog.js" type="text/javascript"></script>
   <script src="./lib/qso/log4om.js" type="text/javascript"></script>
@@ -603,6 +606,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <option data-i18n="mapFilter.band.4000m" value="4000m">4000m</option>
                 <option data-i18n="mapFilter.band.2200m" value="2200m">2200m</option>
                 <option data-i18n="mapFilter.band.630m" value="630m">630m</option>
+                <option data-i18n="mapFilter.band.560m" value="560m">560m</option>
                 <option data-i18n="mapFilter.band.160m" value="160m">160m</option>
                 <option data-i18n="mapFilter.band.80m" value="80m">80m</option>
                 <option data-i18n="mapFilter.band.60m" value="60m">60m</option>
@@ -616,6 +620,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <option data-i18n="mapFilter.band.10m" value="10m">10m</option>
                 <option data-i18n="mapFilter.band.8m" value="8m">8m</option>
                 <option data-i18n="mapFilter.band.6m" value="6m">6m</option>
+                <option data-i18n="mapFilter.band.5m" value="5m">5m</option>
                 <option data-i18n="mapFilter.band.4m" value="4m">4m</option>
                 <option data-i18n="mapFilter.band.2m" value="2m">2m</option>
                 <option data-i18n="mapFilter.band.1_25m" value="1.25m">1.25m</option>
@@ -632,6 +637,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <option data-i18n="mapFilter.band.2_5mm" value="2.5mm">2.5mm</option>
                 <option data-i18n="mapFilter.band.2mm" value="2mm">2mm</option>
                 <option data-i18n="mapFilter.band.1mm" value="1mm">1mm</option>
+                <option data-i18n="mapFilter.band.submm" value="submm">submm</option>
                 <option data-i18n="mapFilter.band.OOB" value="oob">OOB</option>
               </select>
             </td>
@@ -742,6 +748,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
         <div id="buttonAdifCheckBoxDiv" onclick="startupAdifLoadFunction()" class="iconButton" data-i18n="gt.button.adifReload.hover" title="Reload Local ADIF Files">
           <img src="img/Log_Button_Local.png" class="buttonImg" />
+        </div>
+        <!-- Log QSO (logQso.js): shown with it on (Settings -> Logging); a click opens the form from the rig or hides it, a right-click opens it afresh -->
+        <div id="logQsoButtonDiv" onclick="logQsoButton()" oncontextmenu="logQsoButton(false)" class="iconButton" style="display: none;" data-i18n="gt.button.logQso.hover" title="Log a QSO">
+          <img src="img/log-qso.png" class="buttonImg" />
         </div>
         <div id="timezoneButton" onclick="toggleTimezones()" class="iconButton" data-i18n="gt.button.timezone.hover" title="Toggle Timezone Layer">
           <img id="timezoneImg" src="img/timezone-button.png" class="buttonImg" />
@@ -2274,6 +2284,47 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </table>
         </div>
         </div>
+        <!-- The second row: PSK Reporter, Log QSO and Send Later side by side (wrapping on a narrow window), before Online Logbooks -->
+        <div class="mapLoggingRow">
+          <!-- PSK Reporter: reception reports of your signal (its 24 hour history), not QSOs -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle"><span data-i18n="settings.logging.PSKReporter.source">PSK-Reporter</span> <span data-i18n="settings.logging.PSKReporter.details" id="pskDaysDiv">24 Hour History</span></div>
+            <!-- One line: its two ticks with their words (the title says what it loads) -->
+            <table class="mapChecks">
+              <tr id="pskTr">
+                <td>
+                  <span class="mapFieldLine"><input type="checkbox" id="buttonPsk24CheckBox" onclick="adifMenuCheckBoxChanged(this);" /> <label data-i18n="settings.logging.tableheader.menu" for="buttonPsk24CheckBox">Menu Button</label></span>
+                  <span class="mapFieldLine"><input type="checkbox" id="loadPsk24CheckBox" data-i18n="settings.logging.tableheader.startup.hover" title="Load at Startup" onclick="adifStartupCheckBoxChanged(this);" /> <label data-i18n="settings.logging.tableheader.startup" for="loadPsk24CheckBox">Load&nbsp;At Startup</label></span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Log QSO (logQso.js): its window, the button panel's button, the Feed Roster's and the decoder's Log QSO menu items and buttons -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="sotaLog.logButton">Log QSO</div>
+            <table class="mapChecks">
+              <tr>
+                <td><input type="checkbox" id="logQsoCheckBox" data-i18n="settings.logging.logQso.hover" title="Shows the Log QSO button and menu items, for logging a QSO by hand" onclick="logQsoEnableChanged(this);" /> <label data-i18n="settings.logging.logQso.label" for="logQsoCheckBox">Log QSOs By Hand</label></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Send Later (qsoQueue.js): Queue QSOs To Send Later, and while it's on (or QSOs are queued) their count, Send All and Export
+               ADIF; while it's on, Send All After (Send All on its own once that many QSOs are queued) -->
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="settings.logging.queue.group.label">Send Later</div>
+            <table class="mapChecks">
+              <tr>
+                <td><input type="checkbox" id="qsoQueueCheckBox" data-i18n="settings.logging.queue.hover" title="QSOs are logged here at once; what goes to your logging programs and online logbooks waits until you send it" onclick="qsoQueueEnableChanged(this);" /> <label data-i18n="settings.logging.queue.label" for="qsoQueueCheckBox">Queue QSOs To Send Later</label></td>
+              </tr>
+              <tr id="qsoQueueTr" style="display: none">
+                <td><span id="qsoQueueCountText"></span> <div id="qsoQueueSendButton" class="button" onclick="qsoQueueSendAll();" data-i18n="settings.logging.queue.send.label">Send All</div> <div id="qsoQueueExportButton" class="button" onclick="qsoQueueExport();" data-i18n="settings.logging.queue.export.hover" title="Saves the queued QSOs to an ADIF file"><span data-i18n="settings.logging.queue.export.label">Export ADIF</span></div></td>
+              </tr>
+              <tr id="qsoQueueAutoTr" style="display: none">
+                <td><input type="checkbox" id="qsoQueueAutoCheckBox" data-i18n="settings.logging.queue.auto.hover" title="Sends the queued QSOs by itself once this many are waiting (when online)" onclick="qsoQueueAutoChanged();" /> <label data-i18n="settings.logging.queue.auto.label" for="qsoQueueAutoCheckBox">Send All After</label> <input type="number" id="qsoQueueAutoValue" class="inputTextValue" min="1" max="9999" step="1" style="width: 5em" onchange="qsoQueueAutoChanged();" /> <span data-i18n="settings.logging.queue.auto.unit">QSOs</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
         <div class="mapGroup mapFull">
           <div class="mapGroupTitle" data-i18n="settings.logging.group.online.label">Online Logbooks</div>
           <table>
@@ -2398,19 +2449,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <input id="HamCQApiKey" type="password" class="inputTextValue" size="21" oninput=" ValidateText(this); adifTextValueChange(this);" /></span>
               </td>
               <td class="mapCenter"><div data-i18n="settings.logging.HamCQ.test.button" class="button" onclick="if ( ValidateText(HamCQApiKey) ) HamCQTest(true);">Test</div><div class="mapResult" id="HamCQTestResult"></div></td>
-            </tr>
-          </table>
-        </div>
-        <!-- PSK Reporter: reception reports of your signal (its 24 hour history), not QSOs -->
-        <div class="mapGroup">
-          <div class="mapGroupTitle"><span data-i18n="settings.logging.PSKReporter.source">PSK-Reporter</span> <span data-i18n="settings.logging.PSKReporter.details" id="pskDaysDiv">24 Hour History</span></div>
-          <!-- One line: its two ticks with their words (the title says what it loads) -->
-          <table class="mapChecks">
-            <tr id="pskTr">
-              <td>
-                <span class="mapFieldLine"><input type="checkbox" id="buttonPsk24CheckBox" onclick="adifMenuCheckBoxChanged(this);" /> <label data-i18n="settings.logging.tableheader.menu" for="buttonPsk24CheckBox">Menu Button</label></span>
-                <span class="mapFieldLine"><input type="checkbox" id="loadPsk24CheckBox" data-i18n="settings.logging.tableheader.startup.hover" title="Load at Startup" onclick="adifStartupCheckBoxChanged(this);" /> <label data-i18n="settings.logging.tableheader.startup" for="loadPsk24CheckBox">Load&nbsp;At Startup</label></span>
-              </td>
             </tr>
           </table>
         </div>

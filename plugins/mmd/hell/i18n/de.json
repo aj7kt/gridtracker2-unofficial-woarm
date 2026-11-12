@@ -1,0 +1,8 @@
+{
+	"settings.hellDecoder.label": "Feld-Hell",
+	"cwViewer.hell.idle": "Warte auf ein Hell-Signal: Zum Lesen eines im Wasserfall anklicken",
+	"cwViewer.hell.found": "Gefunden",
+	"cwViewer.hell.sub.hover": "Die gelesene Hellschreiber-Geschwindigkeit: Feld-Hell oder die schnelleren Formen X5 und X9. Ein Signal im Wasserfall anklicken, um es zu lesen; in sein Band klicken, um wieder das stärkste zu suchen",
+	"cwViewer.hell.trim.hover": "Richtet einen schrägen Ausdruck gerade: erhöhen, wenn er nach rechts abfällt, verringern, wenn er ansteigt. Auf den Wert klicken, um ihn auf 0 zurückzusetzen",
+	"cwViewer.hell.tape.hover": "Das Hell-Signal wie gehört ausgedruckt, jede Zeile zweimal: die gerade Kopie lesen"
+}

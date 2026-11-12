@@ -496,6 +496,7 @@ const RIG_PROTOCOLS = {
     // The split (TX) VFO's own mode (X): an inverting transponder's uplink is LSB under a USB downlink
     setTxMode: (mode, R) => (R.vfoMode ? "+M " + rigNetVfo(R, "b") + " " : "+X ") + mode + " 0\n",
     splitOn: (R) => (R.vfoMode ? null : "+S 1 VFOB\n"),
+    splitOff: (R) => (R.vfoMode ? null : "+S 0 VFOA\n"),
     // The CTCSS tone in tenths of a hertz (C), and the tone turned on or off (U TONE), on the uplink's VFO: in VFO mode the rig's first
     // (side "a") or, the uplink on its second VFO, that one ("b")
     setTone: (hz, R, side) =>
@@ -560,6 +561,7 @@ const RIG_PROTOCOLS = {
     setTx: (hz) => ["rig.set_vfoB", "<double>" + Math.round(hz) + "</double>"],
     setTxMode: (mode) => ["rig.set_modeB", "<string>" + mode + "</string>"],
     splitOn: () => ["rig.set_split", "<int>1</int>"],
+    splitOff: () => ["rig.set_split", "<int>0</int>"],
     setPtt: (on) => ["rig.set_ptt", "<int>" + (on ? 1 : 0) + "</int>"]
   },
   civ: {
@@ -572,12 +574,15 @@ const RIG_PROTOCOLS = {
     // without switching to it, with 25 01 (the IC-7300, 7610, 9700 and 705 have it; a rig that answers NG hasn't, and isn't asked again)
     // With VFO-B on this rig, the other VFO's mode too (26 01), unless the rig answered NG to it
     // Data mode too (1A 06: the IC-7300, 705, 9700, 7610 ...; an older Icom answers NG, and isn't asked again), so USB-D shows as such
-    poll: (R) => rigCivProbe(R).concat([rigCivFrame(rigCivAddress(R), 0x03), rigCivFrame(rigCivAddress(R), 0x04)]).concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(R), 0x25, [0x01])])
+    // 1C 00 (PTT) too while BirdWatch follows on this rig (rigPttWanted), asked before the frequency: keyed in split, an Icom reads its
+    // TX frequency, and BirdWatch leaves the rig alone meanwhile
+    poll: (R) => rigCivProbe(R).concat(rigPttWanted(R) ? [rigCivFrame(rigCivAddress(R), 0x1c, [0x00])] : []).concat([rigCivFrame(rigCivAddress(R), 0x03), rigCivFrame(rigCivAddress(R), 0x04)]).concat(R.dual === false ? [] : [rigCivFrame(rigCivAddress(R), 0x25, [0x01])])
       .concat(R.dual === true && R.modeBAsk && rigModeBWanted(R) ? [rigCivFrame(rigCivAddress(R), 0x26, [0x01])] : [])
       .concat(R.dataAsk && R.civFound ? [rigCivFrame(rigCivAddress(R), 0x1a, [0x06])] : []),
     setFreq: (hz, R) => rigCivFrame(rigCivAddress(R), 0x05, rigCivHzToBcd(hz)),
     setTx: (hz, R) => rigCivFrame(rigCivAddress(R), 0x25, [0x01, ...rigCivHzToBcd(hz)]),
     splitOn: (R) => rigCivFrame(rigCivAddress(R), 0x0f, [0x01]),
+    splitOff: (R) => rigCivFrame(rigCivAddress(R), 0x0f, [0x00]),
     // 26 01: the unselected (TX) VFO's mode, data mode off, its filter kept (as last read; FIL1 before one is) (the IC-7300, 7610, 9700,
     // 705 have it; an older Icom answers NG)
     setTxMode: (mode, R) =>
@@ -634,6 +639,12 @@ const RIG_PROTOCOLS = {
         rigCivModeShow(R);
       }
       else if (command == 0x19 && data.length >= 2 && data[0] == 0x00) R.civFound = data[1];
+      // PTT (1C 00): 01 keyed, 00 not (rigKeyed)
+      else if (command == 0x1c && data.length >= 2 && data[0] == 0x00)
+      {
+        R.ptt = data[1] == 0x01;
+        R.pttAt = Date.now();
+      }
       else if (command == 0x25 && data.length >= 6 && data[0] == 0x01)
       {
         R.freqB = rigCivBcdToHz(data.slice(1, 6));
@@ -657,6 +668,12 @@ const RIG_PROTOCOLS = {
       {
         // NG to 26 01, or to 1A 06: the rig hasn't it, and isn't asked again (nor taken as having no second VFO)
         if (R.lastSent && R.lastSent[4] == 0x26) R.modeBAsk = false;
+        // NG to the PTT asked (1C 00 alone, seven bytes: not a keying's 1C 00 01): not asked again
+        if (R.lastSent && R.lastSent[4] == 0x1c && R.lastSent.length == 7)
+        {
+          R.pttAsk = false;
+          return "NG";
+        }
         if (R.lastSent && R.lastSent[4] == 0x1a && R.lastSent[5] == 0x06)
         {
           R.dataAsk = false;
@@ -678,6 +695,7 @@ const RIG_PROTOCOLS = {
     modes: { 1: "LSB", 2: "USB", 3: "CW", 4: "FM", 5: "AM", 6: "RTTY", 7: "CW-R", 9: "RTTY-R" },
     modeSet: (code) => "MD" + code + ";",
     splitOn: () => "FR0;FT1;",
+    splitOff: () => "FR0;FT0;",
     // TX; keys the rig (its PTT), RX; unkeys it
     ptt: { on: "TX;", off: "RX;" },
     // ID; answers ID019; for a TS-2000 (an Elecraft, or an SDR program's "TS-2000" port, says what it emulates). As Hamlib has them
@@ -707,6 +725,8 @@ const RIG_PROTOCOLS = {
     // Split as Hamlib sets it (rigs/yaesu/newcat.c): ST1 on the rigs that have ST; FT3 (TX on VFO B: these count A and B as 2 and 3) on
     // those that don't; the FT-891 has neither, so its second VFO can't take the uplink. A rig not known yet: ST1
     splitOn: (id) => (["0310", "0570", "0670", "0251", "0252", "0583", "0362", "0462"].includes(id) ? "FT3;" : "ST1;"),
+    // Off: TX on VFO A again (FT2) or ST0, the same way round
+    splitOff: (id) => (["0310", "0570", "0670", "0251", "0252", "0583", "0362", "0462"].includes(id) ? "FT2;" : "ST0;"),
     noSplit: ["0135"],
     // ID; answers four digits (Hamlib's nc_rigid_t, its leading zero kept)
     models: { "0241": "FT-450", "0244": "FT-450D", "0310": "FT-950", "0135": "FT-891", "0570": "FT-991", "0670": "FT-991A", "0251": "FT-2000", "0252": "FT-2000D", "0583": "FTDX1200", "0761": "FTDX10", "0362": "FTDX5000", "0462": "FTDX3000", "0681": "FTDX101D", "0682": "FTDX101MP", "0800": "FT-710", "0840": "FTX-1" }
@@ -733,6 +753,7 @@ const RIG_PROTOCOLS = {
     },
     setTx: () => null,
     splitOn: () => null,
+    splitOff: () => null,
     setMode: (mode) =>
     {
       const code = { LSB: 0x00, USB: 0x01, CW: 0x02, "CW-R": 0x03, AM: 0x04, FM: 0x08 }[String(mode).toUpperCase()];
@@ -837,6 +858,7 @@ function rigCatProtocol(cat)
         }
       : undefined,
     splitOn: (R) => cat.splitOn(R.catId),
+    splitOff: (R) => (cat.splitOff ? cat.splitOff(R.catId) : null),
     // PTT, where the CAT has it (ptt: its on and off commands)
     setPtt: cat.ptt ? (on) => (on ? cat.ptt.on : cat.ptt.off) : undefined,
     // Data: the rig's packet mode where it has one (a Yaesu's PKT-U, PKT-L), else the mode plain
@@ -872,10 +894,11 @@ function rigCatProtocol(cat)
       }
       else if (text == "?")
       {
-        // Refused: the second VFO's question, before it was ever answered, means the rig hasn't one; its mode's (asked or set), that the
-        // CAT has no second VFO's mode (not asked or set again on this connection)
+        // Refused: the second VFO's question, before it was ever answered, means the rig hasn't one; its mode's (asked or set), before it
+        // was ever answered, that the CAT has no second VFO's mode (not asked or set again on this connection). Once answered, a "?" is
+        // never taken as that: a setting isn't answered, so its refusal (an FB while keyed) can come just after the MD1 asked next
         if (R.lastSent == "FB;" && R.dual === null) R.dual = false;
-        if (cat.modeBAsk && typeof R.lastSent == "string" && R.lastSent.startsWith(cat.modeBAsk.slice(0, 3))) R.modeBAsk = false;
+        if (cat.modeBAsk && R.modeB === null && typeof R.lastSent == "string" && R.lastSent.startsWith(cat.modeBAsk.slice(0, 3))) R.modeBAsk = false;
         return "?";
       }
       return null;
@@ -2322,6 +2345,8 @@ function rigReceive(R, data)
 function rigTune(spec)
 {
   if (typeof spec != "object" || spec === null) return false;
+  // Which sides were sent something (their rig connected, the uplink not blocked): BirdWatch marks only those as set
+  spec.sent = { rx: false, tx: false };
   // Each rig's steps, in order
   const steps = new Map();
   // (A step of several frames, CI-V's, each its own: queued one after another, each sent once the one before is answered. flrig's
@@ -2345,21 +2370,31 @@ function rigTune(spec)
     {
       if (dial > 0) add(rxR, rxR.protocol.setFreq(dial, rxR));
       if (spec.mode) add(rxR, rxR.protocol.setMode(spec.mode, rxR, spec.data));
+      spec.sent.rx = dial > 0 || !!spec.mode;
     }
     else if (rxR.dual === true)
     {
       if (dial > 0 && rxR.protocol.setTx) add(rxR, rxR.protocol.setTx(dial, rxR));
       if (spec.mode && rxR.protocol.setTxMode) add(rxR, rxR.protocol.setTxMode(spec.mode, rxR));
+      spec.sent.rx = (dial > 0 && !!rxR.protocol.setTx) || (!!spec.mode && !!rxR.protocol.setTxMode);
     }
   }
   const tx = rigRoleVfo("tx");
-  if ((spec.tx > 0 || spec.txMode) && rigTuneCanTx())
+  // (the downlink on a rig's second VFO and the uplink on its first can't be worked: rigTuneTxBlocked says so, the uplink not sent)
+  if ((spec.tx > 0 || spec.txMode) && rigTuneCanTx() && !rigTuneTxBlocked(rx, tx))
   {
     const R = rigVfoLink(tx);
     const dial = spec.tx > 0 ? spec.tx + rigOffset(tx) : 0;
     if (dial > 0) verify.push([tx, dial]);
+    spec.sent.tx = true;
     if (!rigVfoIsSecond(tx))
     {
+      // Split turned on here for an uplink on the second VFO before: off again, the rig transmitting where it's set now (on its first)
+      if (R.split)
+      {
+        add(R, R.protocol.splitOff ? R.protocol.splitOff(R) : null);
+        R.split = false;
+      }
       if (dial > 0) add(R, R.protocol.setFreq(dial, R));
       if (spec.txMode) add(R, R.protocol.setMode(spec.txMode, R));
     }
@@ -2377,12 +2412,13 @@ function rigTune(spec)
   if (spec.tone !== undefined && spec.tone !== null && rigTuneCanTone())
   {
     const U = rigVfoLink(tx);
-    if (spec.tone > 0 || U.toneOn)
-    {
-      const tone = U.protocol.setTone(spec.tone, U, rigVfoIsSecond(tx) ? "b" : "a");
-      for (const step of Array.isArray(tone) ? tone : [tone]) add(U, step);
-      U.toneOn = spec.tone > 0;
-    }
+    // Off on another rig it was turned on on here (the uplink is this rig's now)
+    rigToneRelease(U, add);
+    // Off sent even when it wasn't turned on here: a rig reconnected keeps its tone, and nothing here knows it
+    U.toneSide = rigVfoIsSecond(tx) ? "b" : "a";
+    const tone = U.protocol.setTone(spec.tone, U, U.toneSide);
+    for (const step of Array.isArray(tone) ? tone : [tone]) add(U, step);
+    U.toneOn = spec.tone > 0;
   }
   let sent = false;
   for (const [R, list] of steps) if (rigSend(R, list)) sent = true;
@@ -2429,6 +2465,66 @@ function rigTuneCanTone(t)
   if (!rigTuneCanTx(t)) return false;
   const U = rigVfoLink(rigRoleVfo("tx", t));
   return typeof U.protocol.setTone == "function" && U.protocol.canTone(U);
+}
+
+// The rig's PTT read with its poll (CI-V's 1C 00): while BirdWatch follows a satellite on it (birdWatchPttWanted), unless the rig
+// refused it (pttAsk false). Keyed: the last answer said so, and it's recent
+const RIG_PTT_FRESH_MS = 2500;
+function rigPttWanted(R)
+{
+  return R.pttAsk !== false && typeof birdWatchPttWanted == "function" && birdWatchPttWanted(R);
+}
+
+function rigKeyed(R)
+{
+  return !!R && R.ptt === true && Date.now() - (R.pttAt || 0) < RIG_PTT_FRESH_MS;
+}
+
+// The downlink (rx) on a rig's second VFO and the uplink (tx) on its first: a rig in split receives on its first VFO and transmits on
+// its second, so that can't be worked (it would receive on the uplink and transmit on the downlink). True then: the uplink isn't sent,
+// and the Event Viewer says why (at most once a minute). rigctld in VFO mode sets and reads each VFO as itself: not so there
+const RIG_TX_BLOCKED_EVENT_MS = 60000;
+function rigTuneTxBlocked(rx, tx)
+{
+  if (!rx || !tx || !rigVfoIsSecond(rx) || rigVfoIsSecond(tx)) return false;
+  const R = rigVfoLink(tx);
+  if (!R || rigVfoLink(rx) !== R || (R.protocol === RIG_PROTOCOLS.rigctld && R.vfoMode === true)) return false;
+  const now = Date.now();
+  if (now - (R.txBlockedAt || 0) >= RIG_TX_BLOCKED_EVENT_MS)
+  {
+    R.txBlockedAt = now;
+    const text = I18N("rig.event.txBlocked").replace("{rx}", rigVfoLabel(rx)).replace("{tx}", rigVfoLabel(tx));
+    addEvent("app", "<font style='color:var(--gt-warning)'>" + htmlEntities(text) + "</font>");
+  }
+  return true;
+}
+
+// The CTCSS tone turned on here (rigTune) turned off on every rig but keep: through add (rigTune's steps), else sent now. BirdWatch
+// following a transmitter with no uplink, or no longer following, leaves no tone on
+function rigToneRelease(keep = null, add = null)
+{
+  for (const R of Object.values(GT.rigs))
+  {
+    if (R === keep || !R.toneOn) continue;
+    R.toneOn = false;
+    if (R.status != "connected" || !R.protocol || typeof R.protocol.setTone != "function") continue;
+    const off = R.protocol.setTone(0, R, R.toneSide || "a");
+    const steps = Array.isArray(off) ? off : [off];
+    if (add) for (const step of steps) add(R, step);
+    else rigSend(R, steps);
+  }
+}
+
+// Split turned on here (rigTune: an uplink on a rig's second VFO) turned off again on every rig, as BirdWatch stops following: the
+// rig left transmitting where it receives, as it was (for the Multi-Mode Decoder, and HF use after)
+function rigSplitRelease()
+{
+  for (const R of Object.values(GT.rigs))
+  {
+    if (!R.split) continue;
+    R.split = false;
+    if (R.status == "connected" && R.protocol && R.protocol.splitOff) rigSend(R, [R.protocol.splitOff(R)]);
+  }
 }
 
 // ---- The band scope (Use Scope If Present, a CI-V rig's box): an Icom's own spectrum scope (the IC-7300, 705, 9700, 7610 ...), shown in

@@ -12,12 +12,13 @@ const naturalCollator = new Intl.Collator('en', {
 function generatePrintTable()
 {
   let rows = [];
-  let keys = Object.keys(GT.hotKeys).sort((a, b) => naturalCollator.compare(a, b));
+  // (each hotkey by its key, in order of the key: one needing a modifier is kept as "ctrlKey+F12", hotKeyId)
+  let keys = Object.keys(GT.hotKeys).sort((a, b) => naturalCollator.compare(GT.hotKeys[a].key || a, GT.hotKeys[b].key || b));
   for (const index in keys)
   {
     let key = keys[index];
     let row = {};
-    let keyName = key.replace("Key", "");
+    let keyName = (GT.hotKeys[key].key || key).replace("Key", "");
     let prefix = "";
     if (GT.hotKeys[key].extKey != null)
     {

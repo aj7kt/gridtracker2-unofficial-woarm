@@ -30,6 +30,10 @@
 
 importScripts("../../third-party/satellite.js");
 
+// Node's timers (the windows' nodeIntegrationInWorker), as every window uses: never Chromium's, which can be slowed while a window is
+// hidden. (Without Node, as in a plain browser test, the worker's own)
+const nodeTimers = typeof require == "function" ? require("timers") : self;
+
 const W = {
   observer: null,
   observerEcf: null,
@@ -171,13 +175,13 @@ function schedule()
   const want = W.tracked.size > 0 && W.observer;
   if (W.timer && !want)
   {
-    clearInterval(W.timer);
+    nodeTimers.clearInterval(W.timer);
     W.timer = null;
   }
   else if (want)
   {
-    if (W.timer) clearInterval(W.timer);
-    W.timer = setInterval(tick, W.interval);
+    if (W.timer) nodeTimers.clearInterval(W.timer);
+    W.timer = nodeTimers.setInterval(tick, W.interval);
   }
 }
 

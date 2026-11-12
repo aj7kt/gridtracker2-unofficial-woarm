@@ -56,7 +56,7 @@ When your log has SOTA QSOs, an **Export SOTA Chaser Log…** button appears nex
 * **Score Card:** your best band and mode, with worked and confirmed counts, for callsigns, grids, DXCC entities, CQ and ITU zones, continents, US states, US counties, prefixes and Canadian provinces, plus your longest and shortest distances.
 * **DX Marathon:** the DXCC entities and CQ zones you worked in each of the last five years.
 * **Award Types:** worked and confirmed counts for each award, by band, mode and type of mode.
-* **Mode Types:** your QSOs by Mixed, Digital, Phone, CW and Other.
+* **Mode Types:** your QSOs by Mixed, Digital, Phone, CW, Image (SSTV, FAX and ATV) and Other. Image QSOs count toward Phone as well, as they do for DXCC.
 * **Distances:** your longest and shortest QSOs by band, mode and type. Click a callsign to look it up.
 
 ## DXCCs

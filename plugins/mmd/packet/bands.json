@@ -1,0 +1,26 @@
+{
+  "$comment": "Packet's Frequency menu entries, added to the band plans (resources/data/bands.json, its schema)",
+  "frequencies": [
+        {"mode": "Packet", "band": "40m", "freq": 7.0486, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "30m", "freq": 10.1476, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "20m", "freq": 14.103, "rigMode": "LSB", "note": "HF APRS, 300 baud"},
+        {"mode": "Packet", "band": "10m", "freq": 28.14, "rigMode": "USB", "note": "HF APRS, 300 baud", "primary": true},
+        {"mode": "Packet", "band": "10m", "freq": 29.25, "rigMode": "FM", "note": "APRS, 1200 baud"},
+        {"mode": "Packet", "band": "2m", "freq": 144.39, "rigMode": "FM", "note": "APRS: North America", "primary": true},
+        {"mode": "Packet", "band": "2m", "freq": 144.575, "rigMode": "FM", "note": "APRS: New Zealand"},
+        {"mode": "Packet", "band": "2m", "freq": 144.64, "rigMode": "FM", "note": "APRS: China, Taiwan"},
+        {"mode": "Packet", "band": "2m", "freq": 144.8, "rigMode": "FM", "note": "APRS: Europe"},
+        {"mode": "Packet", "band": "2m", "freq": 145.175, "rigMode": "FM", "note": "APRS: Australia"},
+        {"mode": "Packet", "band": "2m", "freq": 145.825, "rigMode": "FM", "note": "ISS digipeater"},
+        {"mode": "Packet", "band": "2m", "freq": 144.66, "rigMode": "FM", "note": "APRS: Japan"},
+        {"mode": "Packet", "band": "2m", "freq": 144.93, "rigMode": "FM", "note": "APRS: Uruguay, Panama"},
+        {"mode": "Packet", "band": "2m", "freq": 145.57, "rigMode": "FM", "note": "APRS: Brazil"},
+        {"mode": "Packet", "band": "70cm", "freq": 432.5, "rigMode": "FM", "note": "APRS: Europe (IARU R1)", "primary": true},
+        {"mode": "Packet", "band": "70cm", "freq": 437.825, "rigMode": "FM", "note": "ISS digipeater (UHF)"},
+        {"mode": "Packet", "band": "80m", "freq": 3.596, "rigMode": "LSB", "note": "NET80, 300 baud"},
+        {"mode": "Packet", "band": "17m", "freq": 18.106, "rigMode": "LSB", "note": "300 baud"},
+        {"mode": "Packet", "band": "15m", "freq": 21.092, "rigMode": "LSB", "note": "300 baud"},
+        {"mode": "Packet", "band": "12m", "freq": 24.926, "rigMode": "LSB", "note": "300 baud"},
+        {"mode": "Packet", "band": "6m", "freq": 50.62, "rigMode": "FM", "note": "1200 baud, packet calling"}
+  ]
+}

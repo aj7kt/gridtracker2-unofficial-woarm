@@ -25,6 +25,7 @@ const { join } = require('path');
 const log = require('electron-log');
 const { inputLevel, inputLevelQuit, inputLevelFolder } = require('./inputLevel');
 const { serialInit, serialCloseAll } = require('./serial');
+const { clockAdjust } = require('./clockAdjust');
 const isMac = process.platform === 'darwin';
 const disableAutoUpdate = app.commandLine.hasSwitch("disable-auto-updates");
 
@@ -211,6 +212,13 @@ const allowedWindows = {
     options: { x: 80, y: 80, width: 720, height: 420, show: false, zoom: 0 },
     static: { minWidth: 300, minHeight: 200, icon: join(__dirname, '../renderer/img/mm-decoder.png') },
   },
+  // Log QSO (Settings -> Logging, Log QSO): one QSO typed in, or filled in from the rig, a Feed Roster spot or the decoder
+  gt_logqso: {
+    window: null,
+    honorVisibility: true,
+    options: { x: 90, y: 90, width: 690, height: 431, show: false, zoom: 0 },
+    static: { minWidth: 360, minHeight: 300, icon: join(__dirname, '../renderer/img/log-qso.png') },
+  },
   // Its size and position are kept, but not whether it was showing
   gt_guide: {
     window: null,
@@ -334,6 +342,11 @@ ipcMain.on('getPath', (event, what) => {
 
 ipcMain.on('getAppName', (event) => {
   event.returnValue = gtName;
+});
+
+// Whether this is an installed copy (false: a dev run from the repo, where the MMD plugins load from plugins/mmd/ too)
+ipcMain.on('isPackaged', (event) => {
+  event.returnValue = app.isPackaged;
 });
 
 ipcMain.on('appVersion', (event) => {
@@ -538,6 +551,12 @@ ipcMain.on('setAlwaysOnTop', (event, what, value) => {
   }
 });
 
+// A window's size fixed or not (the Log QSO card: fixed while its lock is shut)
+ipcMain.on('setResizable', (event, what, value) => {
+  const win = allowedWindows[what]?.window;
+  if (win && !win.isDestroyed()) win.setResizable(!!value);
+});
+
 ipcMain.on('openFileFolder', (event, what, value) => {
   if (allowedWindows[what]?.window) {
     shell.openPath(value);
@@ -694,6 +713,10 @@ ipcMain.on('serialPortWanted', (event, purpose, wanted) => {
 
 // An audio input's recording level, as the system sets it (inputLevel.js): the Multi-Mode Decoder's Input Device level
 ipcMain.handle('inputLevel', (event, op, label, isDefault, level) => inputLevel(op, label, isDefault, level));
+
+// The PC clock moved by this many seconds (clockAdjust.js), through the system's own administrator prompt: only when the Multi-Mode
+// Decoder's WWV mode's Set PC Clock is clicked (and confirmed), never by itself
+ipcMain.handle('clockAdjust', (event, seconds) => clockAdjust(seconds));
 
 ipcMain.handle('serialPortGrantOnly', (event, purpose) => {
   serialPortGrantOnly = purpose;

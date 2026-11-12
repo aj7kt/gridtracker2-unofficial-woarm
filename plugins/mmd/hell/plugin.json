@@ -1,0 +1,21 @@
+{
+  "id": "hell",
+  "name": "Feld-Hell",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "Feld-Hell", "group": "ham" },
+  "input": "raw",
+  "rig": { "inputFrom": "cw", "instanceModes": ["HELL{hellSubmode}", "HELL"] },
+  "settings": { "hellSetFreq": true, "hellSetMode": true, "hellSubmode": "feld", "hellTrim": 0 },
+  "scripts": ["mmdHell.js"],
+  "workers": ["hellWorker.js"],
+  "ui": "ui.html",
+  "css": "plugin.css",
+  "bands": { "file": "bands.json", "mode": "Feld-Hell" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": { "fallScale": 1 }
+}

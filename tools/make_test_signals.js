@@ -3,16 +3,19 @@
 // (each exports build(common) giving a list of { file, modes, signals, rsid, sync, description, samples }); files downloaded (sources and
 // licenses in resources/test-signals/README.md) are listed by tools/test_signals/downloaded.js and kept as they are.
 // Dry run (lists what it would write, with sizes) unless "write". Usage (repo root): node tools/make_test_signals.js [write] [module ...]
-// (only the modules named are built again; the others' entries are kept from index.json)
+// (only the modules named are built again; the others' entries are kept from index.json). A mode that is a plugin (PLUGIN_MODULES) has
+// its signals in its own folder instead: plugins/mmd/<id>/test-signals/, with an index.json of its own
 const fs = require("fs");
 const path = require("path");
 const common = require("./test_signals/common.js");
 
 const write = process.argv.includes("write");
 const only = process.argv.slice(2).filter((a) => a != "write");
-const dir = path.join(__dirname, "..", "resources", "test-signals");
-const indexFile = path.join(dir, "index.json");
+const appDir = path.join(__dirname, "..", "resources", "test-signals");
 const modulesDir = path.join(__dirname, "test_signals");
+// The modules whose mode is a plugin: its id (plugins/mmd/<id>)
+const PLUGIN_MODULES = { navtex: "navtex", wefax: "wefax", ft8: "ftx", psk31: "keyboard", rtty: "keyboard", mfsk: "keyboard", thor: "keyboard", hell: "hell", olivia: "olivia", packet: "packet" };
+const dirOf = (name) => (PLUGIN_MODULES[name] ? path.join(__dirname, "..", "plugins", "mmd", PLUGIN_MODULES[name], "test-signals") : appDir);
 const modules = fs.readdirSync(modulesDir).filter((f) => f.endsWith(".js") && f != "common.js").map((f) => f.slice(0, -3)).sort();
 
 // Each file's name in the Test Signals menu (modes and submodes, the same in every language), before its signal count
@@ -43,26 +46,43 @@ const OLIVIA = {
   "olivia-32-1000-wikimedia.wav": { submode: "olivia 32/1000", center: 1000 }
 };
 
-const old = fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, "utf8")).signals : [];
-const entries = [];
+// Each folder's entries (index.json's, by folder), and its old ones (kept for the modules not built again)
+const indexes = {};
+const indexOf = (dir) =>
+{
+  if (!indexes[dir])
+  {
+    const file = path.join(dir, "index.json");
+    indexes[dir] = { file, old: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")).signals : [], entries: [] };
+  }
+  return indexes[dir];
+};
+indexOf(appDir);
 let total = 0;
 for (const name of modules)
 {
+  const dir = dirOf(name);
+  const index = indexOf(dir);
+  const entries = index.entries;
   if (only.length && !only.includes(name))
   {
-    for (const e of old.filter((e) => e.module == name)) entries.push(e);
+    for (const e of index.old.filter((e) => e.module == name)) entries.push(e);
     continue;
   }
   const built = require(path.join(modulesDir, name + ".js")).build(common);
   for (const b of built)
   {
     if (!/^[a-z0-9-]+\.wav$/.test(b.file)) throw new Error(name + ": bad file name " + b.file);
-    if (entries.some((e) => e.file == b.file)) throw new Error(name + ": " + b.file + " twice");
+    if (Object.values(indexes).some((i) => i.entries.some((e) => e.file == b.file))) throw new Error(name + ": " + b.file + " twice");
     let bytes;
     if (b.samples)
     {
       bytes = common.wav(b.samples);
-      if (write) fs.writeFileSync(path.join(dir, b.file), bytes);
+      if (write)
+      {
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, b.file), bytes);
+      }
     }
     else bytes = fs.readFileSync(path.join(dir, b.file));
     total += bytes.length;
@@ -72,9 +92,13 @@ for (const name of modules)
     entries.push(entry);
   }
 }
-console.log("total " + (total / 1024 / 1024).toFixed(2) + " MB in " + entries.length + " files" + (write ? "" : " (dry run: nothing written)"));
+const count = Object.values(indexes).reduce((n, i) => n + i.entries.length, 0);
+console.log("total " + (total / 1024 / 1024).toFixed(2) + " MB in " + count + " files" + (write ? "" : " (dry run: nothing written)"));
 if (write)
 {
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(indexFile, JSON.stringify({ rate: common.RATE, signals: entries }, null, 2).replace(/\n/g, "\r\n") + "\r\n");
+  for (const dir in indexes)
+  {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(indexes[dir].file, JSON.stringify({ rate: common.RATE, signals: indexes[dir].entries }, null, 2).replace(/\n/g, "\r\n") + "\r\n");
+  }
 }

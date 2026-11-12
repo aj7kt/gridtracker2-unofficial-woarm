@@ -480,12 +480,12 @@ function createFlagTipTable(feature)
   let dist = parseInt(MyCircle.distance(GT.myLat, GT.myLon, LL.a, LL.o) * MyCircle.validateRadius(distanceUnit.value));
 
   myFlagtip.innerHTML = `
-    <div style='background-color:${workColor};color:#000;font-weight:bold;font-size:18px;border:2px solid gray;margin:0px' class='roundBorder'>${pin.fCall}</div>
+    <div style='background-color:${workColor};color:#000;font-weight:bold;font-size:18px;border:2px solid gray;margin:0px' class='roundBorder'>${htmlEntities(pin.fCall)}</div>
     <table id='tooltipTable' class='darkTable'>
       <tr><td>DXCC</td><td style='color:var(--gt-country);'>${dxccName} <span style='color:var(--gt-prefix)'>(${GT.dxccInfo[dxcc].pp})</span></td>
-      <tr><td>Grid</td><td style='color:var(--gt-grid);'>${pin.grid}</td></tr>
-      <tr><td>Band</td><td style='color:var(--gt-band)'>${pin.band}</td></tr>
-      <tr><td>Mode</td><td style='color:var(--gt-mode)'>${pin.mode}</td></tr>
+      <tr><td>Grid</td><td style='color:var(--gt-grid);'>${htmlEntities(pin.grid)}</td></tr>
+      <tr><td>Band</td><td style='color:var(--gt-band)'>${htmlEntities(pin.band)}</td></tr>
+      <tr><td>Mode</td><td style='color:var(--gt-mode)'>${htmlEntities(pin.mode)}</td></tr>
       <tr><td>Dist</td><td style='color:var(--gt-distance)'>${dist}${distanceUnit.value.toLowerCase()}</td></tr>
       <tr><td>Azim</td><td style='color:var(--gt-azimuth)'>${bearing}&deg;</td></tr>
     </table>`;

@@ -409,7 +409,7 @@ With Rotor Control on, tick **Follow Satellite** in its box in Settings → Radi
 
 ### Multi-Mode Decoder
 
-The Multi-Mode Decoder's **Follow BirdWatch** switches the decoder to the mode of the transmitter your radio follows (CW, SSTV, Packet, Sat Data, FT8 or FT4), and listens on BirdWatch's downlink VFO. See [The Multi-Mode Decoder](Multi-Mode-Decoder/Multi-Mode-Decoder.md).
+The Multi-Mode Decoder's **Follow BirdWatch** switches the decoder to the mode of the transmitter your radio follows (CW, SSTV or Sat Data), and listens on BirdWatch's downlink VFO. See [The Multi-Mode Decoder](Multi-Mode-Decoder/Multi-Mode-Decoder.md).
 
 ## Data Credits
 

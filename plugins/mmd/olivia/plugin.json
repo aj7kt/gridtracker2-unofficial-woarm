@@ -1,0 +1,20 @@
+{
+  "id": "olivia",
+  "name": "Olivia",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "menu": { "label": "Olivia", "group": "ham" },
+  "input": "raw",
+  "rig": { "inputFrom": "cw", "instanceModes": ["{oliviaSubmode}", "{oliviaSubmode:first}"] },
+  "settings": { "oliviaSetFreq": true, "oliviaSetMode": true, "oliviaSubmode": "olivia 8/500", "oliviaCenter": 1500 },
+  "scripts": ["mmdOlivia.js"],
+  "workers": ["oliviaWorker.js"],
+  "ui": "ui.html",
+  "bands": { "file": "bands.json", "mode": "Olivia" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf",
+  "features": {}
+}

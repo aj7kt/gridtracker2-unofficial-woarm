@@ -1,0 +1,26 @@
+{
+  "id": "keyboard",
+  "name": "PSK / RTTY / MFSK / DominoEX / THOR",
+  "version": "1.0.0",
+  "api": 1,
+  "kind": "free",
+  "minAppVersion": "2.261110.1",
+  "modes": [
+    { "id": "psk31", "menu": { "label": "PSK", "group": "ham" }, "rig": { "inputFrom": "cw", "instanceModes": ["{pskSubmode}", "PSK"] }, "bands": "PSK31", "features": { "fallScale": 1 } },
+    { "id": "rtty", "menu": { "label": "RTTY", "group": "ham" }, "rig": { "inputFrom": "cw", "instanceModes": ["RTTY"] }, "bands": "RTTY", "features": { "fallScale": 1 } },
+    { "id": "mfsk", "menu": { "label": "MFSK", "group": "ham" }, "rig": { "inputFrom": "cw", "instanceModes": ["{mfskSubmode}", "MFSK"] }, "bands": "MFSK", "features": { "fallScale": 1 } },
+    { "id": "thor", "menu": { "label": "DominoEX / THOR", "group": "ham" }, "rig": { "inputFrom": "cw", "instanceModes": ["{thorSubmode:join}", "{thorSubmode:first}"] }, "bands": "DominoEX", "features": { "fallScale": 1 } }
+  ],
+  "input": "raw",
+  "settings": {
+    "psk31SetFreq": true, "psk31SetMode": true, "rttySetFreq": true, "rttySetMode": true, "mfskSetFreq": true, "mfskSetMode": true,
+    "thorSetFreq": true, "thorSetMode": true, "pskSubmode": "psk31", "mfskSubmode": "mfsk16", "thorSubmode": "dominoex 11"
+  },
+  "scripts": ["mmdKey.js"],
+  "workers": ["keyWorker.js", "mfskWorker.js", "thorWorker.js"],
+  "ui": "ui.html",
+  "bands": { "file": "bands.json" },
+  "testSignals": "test-signals/index.json",
+  "i18n": "i18n",
+  "guide": "guide-en.pdf"
+}
