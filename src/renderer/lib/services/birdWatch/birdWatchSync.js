@@ -102,9 +102,11 @@ function birdWatchSyncUpdate()
   const version = String(satDataVersion());
   const shipped = version.length == 8 ? Date.UTC(version.slice(0, 4), version.slice(4, 6) - 1, version.slice(6, 8)) : 0;
   const wait = Math.max(state.lastSync, shipped) + SAT_SYNC_INTERVAL - Date.now();
+  // A list wanted that has never been fetched (one added in an update, as SatNOGS's element sets were, or ticked on): due now, not a day on
+  const missing = satSyncNames().some((name) => !fs.existsSync(path.join(satDir(), name + (SAT_LISTS[name].text ? ".txt" : ".json"))));
   let delay;
   if (state.lastSync == 0 && shipped == 0) delay = 10 * 1000;
-  else if (wait > 0) delay = wait + Math.random() * 30 * 60 * 1000;
+  else if (wait > 0 && !missing) delay = wait + Math.random() * 30 * 60 * 1000;
   else delay = 60 * 1000 + Math.random() * 4 * 60 * 1000;
   S.timer = nodeTimers.setTimeout(satSyncRun, delay);
 }
@@ -190,6 +192,13 @@ const SAT_LISTS = {
   // a temporary number's real one). Not in tools/sat_update.js: Space-Track's data isn't shipped with the release, each copy fetches it
   "satnogs-tle": { url: SATNOGS_API + "tle/?format=json", minimum: 500, check: (item) => typeof item.tle1 == "string" && typeof item.tle2 == "string" && typeof item.sat_id == "string" && Number(item.norad_cat_id) > 0 }
 };
+
+// The lists a pass fetches: all of them, AMSAT's and SatNOGS's element sets only when the Telemetry tab says to use them
+function satSyncNames()
+{
+  const tle = GT.settings.BirdWatch.tle;
+  return Object.keys(SAT_LISTS).filter((name) => (name != "dailytle" || tle.amsat) && (name != "satnogs-tle" || tle.satnogs !== false));
+}
 
 // Element sets (TLE) in a text: how many are complete and correct (two lines of 69 characters, the same catalog number
 // on both, and the checksum at the end of each), and how many "1 " lines are not
@@ -404,8 +413,7 @@ async function satSyncRun()
     await fs.promises.mkdir(satDir(), { recursive: true });
     const state = satSyncState();
 
-    // AMSAT's and SatNOGS's element sets only when the Telemetry tab says to use them
-    const names = Object.keys(SAT_LISTS).filter((name) => (name != "dailytle" || GT.settings.BirdWatch.tle.amsat) && (name != "satnogs-tle" || GT.settings.BirdWatch.tle.satnogs !== false));
+    const names = satSyncNames();
     for (let i = 0; i < names.length; i++)
     {
       if (i > 0) await satPause(SAT_REQUEST_GAP);
