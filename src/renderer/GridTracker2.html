@@ -1321,9 +1321,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <td><input id="castAnnounceName" type="text" class="inputTextValue" maxlength="64" size="24" oninput="mapCastAnnounceNameChanged();" onchange="mapCastAnnounceNameShow();" /></td>
               </tr>
               <!-- Only with a hardware encoder (mapCast.js mapCastRender): the window made for a 1080p video while casting, and not resizable then, from the next cast on -->
-              <tr id="castHardware1080Row" data-i18n="settings.map.cast.hardware1080.hover" title="While casting, the main window is sized so the map is captured at exactly 1920x1080, as sharp as a 1080p TV shows it, and can't be resized until the cast stops; off, it keeps about its size, snapped to the TV's shape. Takes effect the next time you cast" style="display: none">
-                <td class="mapRowLabel"><label data-i18n="settings.map.cast.hardware1080.label" for="castHardware1080">Lock Window Size To 1080p</label></td>
-                <td><input type="checkbox" id="castHardware1080" onchange="mapCastHardware1080Changed();" /></td>
+              <tr id="castLockRow" data-i18n="settings.map.cast.lock.hover" title="While casting, the main window is sized so the map is captured at exactly that size, and can't be resized until the cast stops. 1080p is the sharpest; at 720p everything on the TV is bigger, easier to read from across a room. Off, the window keeps about its size, snapped to the TV's shape" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.lock.label" for="castLockSize">Lock Window Size</label></td>
+                <td>
+                  <select id="castLockSize" onchange="mapCastLockChanged();">
+                    <option value="0" data-i18n="cwViewer.utc.off">Off</option>
+                    <option value="720">720p</option>
+                    <option value="1080">1080p</option>
+                  </select>
+                </td>
               </tr>
               <!-- Only without a hardware encoder (mapCast.js mapCastRender): the software encoder's frame rate and resolution, from the next video made on -->
               <tr id="castSoftwareFpsRow" data-i18n="settings.map.cast.softwareFps.hover" title="Without a hardware video encoder: the frames a second of the map's video. More is smoother and uses more CPU; it takes effect the next time the video starts" style="display: none">
@@ -1355,14 +1361,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <tr id="castWatchRow" style="display: none">
                 <td colspan="2" class="mapRowLabel mapRowLabelLeft castWatchTitle"><span data-i18n="settings.map.cast.watch.label">Watch On Your Network</span></td>
               </tr>
-              <tr id="castLinkHlsRow" style="display: none">
-                <td class="mapRowLabel">HLS</td>
-                <td><span class="castLink" data-i18n="settings.map.cast.link.hover" title="The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink('map.m3u8');" oncontextmenu="mapCastLinkMenu(event, 'map.m3u8');"><span id="castLinkHlsText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
-              </tr>
-              <!-- The same video as one endless stream (map.ts): no browser plays it, so no Open In Default Browser -->
+              <!-- The video as one endless stream (map.ts): no browser plays it, so no Open In Default Browser -->
               <tr id="castLinkStreamRow" style="display: none">
                 <td class="mapRowLabel">MPEG-TS</td>
                 <td><span class="castLink" data-i18n="settings.map.cast.stream.hover" title="The map's video as one stream, for VLC and other players on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink('map.ts');"><span id="castLinkStreamText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
+              </tr>
+              <!-- The same video as HLS (map.m3u8) -->
+              <tr id="castLinkHlsRow" style="display: none">
+                <td class="mapRowLabel">HLS</td>
+                <td><span class="castLink" data-i18n="settings.map.cast.link.hover" title="The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink('map.m3u8');" oncontextmenu="mapCastLinkMenu(event, 'map.m3u8');"><span id="castLinkHlsText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
               </tr>
             </table>
           </div>

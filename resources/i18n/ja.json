@@ -2265,8 +2265,8 @@
 	"cwViewer.wwv.setClock.doneAt": "PC の時計を {seconds} 秒動かしました（{time} UTC）",
 	"cwViewer.wwv.setClock.event": "WWV / WWVH PC の時計を合わせる：{text}",
 	"cwViewer.wwv.setClock.windows": "次に Windows が Windows PowerShell にデバイスへの変更を許可するか尋ねます。これは GridTracker2 が時計を合わせるためのものです。「詳細を表示」に調整量が表示されます。",
-	"settings.map.cast.hardware1080.label": "ウィンドウを 1080p に固定",
-	"settings.map.cast.hardware1080.hover": "キャスト中、地図がちょうど 1920x1080 で取り込まれるサイズにメインウィンドウを合わせ（1080p のテレビで最も鮮明に映ります）、キャストが終わるまでサイズを変えられなくします。オフのときは、テレビの形に合わせてほぼ今のサイズのままです。次にキャストしたときから有効です",
 	"settings.map.cast.windowSize.hover": "メインウィンドウの今のサイズ（画面のピクセル）：地図の映像のサイズです",
-	"cast.event.resized": "メインウィンドウのサイズが変わりました：{0} に {1} でキャストし直します"
+	"cast.event.resized": "メインウィンドウのサイズが変わりました：{0} に {1} でキャストし直します",
+	"settings.map.cast.lock.label": "ウィンドウサイズを固定",
+	"settings.map.cast.lock.hover": "キャスト中、地図がちょうどそのサイズで取り込まれるようにメインウィンドウを合わせ、キャストが終わるまでサイズを変えられなくします。1080p が最も鮮明で、720p ではテレビの表示がすべて大きくなり、離れていても読みやすくなります。オフのときは、テレビの形に合わせてほぼ今のサイズのままです"
 }

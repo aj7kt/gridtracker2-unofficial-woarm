@@ -40,10 +40,12 @@ const CAST_SEGMENTS_FULL = 6;
 const CAST_PREPARE_WAIT_MS = 45000;
 // A device whose app is ready but has had no video to play this long: the cast stopped, said in the Event Viewer
 const CAST_LOAD_WAIT_MS = 20000;
-// The video's largest size (a smaller map is sent at its own size: the device scales it); on a hardware encoder with Resize Window To
-// 1080p (map.castHardware1080), the size the window is made for, so the map is captured at it
+// The video's largest size (a smaller map is sent at its own size: the device scales it)
 const CAST_MAX_WIDTH = 1920;
 const CAST_MAX_HEIGHT = 1080;
+// On a hardware encoder, Lock Window Size's sizes (map.castLockHeight: 0 Off, 720, 1080): the size the window is made while casting, so
+// the map is captured at it (720p: everything on the TV half as big again as at 1080p, easier to read from across a room)
+const CAST_LOCK_SIZES = { 720: { width: 1280, height: 720 }, 1080: { width: 1920, height: 1080 } };
 // H.264 High, level 4.0 (1920x1080 at up to 30 fps), on a hardware encoder
 const CAST_CODEC = "avc1.640028";
 const CAST_FPS = 30;
@@ -147,7 +149,7 @@ const CAST = {
   track: null,
   mainStyle: null,
   snapped: false,
-  // The main window's size locked while casting (Lock Window Size To 1080p: it can't be resized until the last cast stops); the casts
+  // The main window's size locked while casting (Lock Window Size: it can't be resized until the last cast stops); the casts
   // being stopped to be cast to again at a new size (mapCastRecast)
   locked: false,
   recasting: false,
@@ -297,11 +299,11 @@ async function mapCastVideoSize(software)
 }
 
 // The size the window is made for while casting (in the screen's pixels), so the map is captured at it: in software the Software
-// Resolution's; on a hardware encoder 1920x1080 with Resize Window To 1080p on; else none (the window snapped to 16:9 at about its size)
+// Resolution's; on a hardware encoder Lock Window Size's (720p or 1080p); else none (the window snapped to 16:9 at about its size)
 function mapCastTarget(software)
 {
   if (software) return mapCastSoftwareSize();
-  return GT.settings.map.castHardware1080 === true ? { width: CAST_MAX_WIDTH, height: CAST_MAX_HEIGHT } : null;
+  return mapCastLockSize();
 }
 
 // The Software Resolution's size and H.264 level (720p if the one kept isn't one of them)
@@ -383,7 +385,7 @@ async function mapCastStart(host, name = "", id = "", remember = false, control 
   {
     const start = ++CAST.starts;
     // In software the window sized to the Software Resolution, so the map is captured at it (not scaled up from a smaller window); on a
-    // hardware encoder to 1080p the same way, with Resize Window To 1080p
+    // hardware encoder to Lock Window Size's 720p or 1080p the same way
     const software = mapCastUseSoftware();
     const target = mapCastTarget(software);
     const snapped = await electron.ipcRenderer.invoke("mapCastSnap", true, target && { width: target.width, height: target.height });
@@ -394,7 +396,7 @@ async function mapCastStart(host, name = "", id = "", remember = false, control 
       return "stopped";
     }
     CAST.snapped = snapped;
-    // A window made for the video's size (the Software Resolution; on a hardware encoder 1080p with Lock Window Size To 1080p) can't be
+    // A window made for the video's size (the Software Resolution; on a hardware encoder Lock Window Size's 720p or 1080p) can't be
     // resized while casting (as the Log QSO card's while its lock is shut): the video would no longer match it
     if (snapped && target) mapCastLockWindow(true);
     const size = await mapCastVideoSize(software);
@@ -759,12 +761,15 @@ function mapCastStopOne(S, byDevice = false)
   mapCastRender();
 }
 
-// The main window resized while casting (it isn't locked: a hardware encoder's without Lock Window Size To 1080p), once it has settled
-// for CAST_RESIZE_SETTLE_MS: when that changes the video's size, every device cast to is stopped and cast to again at the new one (the
-// video is made again at it; the size the window goes back to when the casts stop is kept)
+// The main window resized while casting (it isn't locked: a hardware encoder's with Lock Window Size Off), once it has settled
+// for CAST_RESIZE_SETTLE_MS: snapped to the TV's shape again (the nearest 16:9 at about its size, as a cast's start does), then when that
+// changes the video's size, every device cast to is stopped and cast to again at the new one (the video is made again at it; the size
+// the window goes back to when the casts stop is kept). (The snap's own resize comes while the casts are prepared: not taken again)
 async function mapCastResized()
 {
   if (!mapCastActive() || CAST.locked || CAST.recasting || !CAST.encoding || mapCastPreparing()) return;
+  await electron.ipcRenderer.invoke("mapCastSnap", true, null, true).catch(() => false);
+  if (!mapCastActive() || CAST.locked || CAST.recasting) return;
   const size = await mapCastVideoSize(CAST.software);
   if (!size || (size.width == CAST.width && size.height == CAST.height) || !mapCastActive() || CAST.recasting) return;
   mapCastLog("window resized: casting again at " + size.width + "x" + size.height);
@@ -1511,32 +1516,41 @@ function mapCastPortChanged()
   mapCastRender();
 }
 
-// Settings -> Features -> Casting -> Software Frame Rate and Software Resolution (without a hardware encoder): from the next video made on
-// Settings -> Features -> Casting -> Lock Window Size To 1080p (a hardware encoder's): from the next cast on; and while casting, at once:
-// turned off, the window can be resized again (a resize then casts again at its size, mapCastResized); turned on, it's made 1080p again
-// and locked, and when the video isn't 1080p, every device is cast to again at it
-function mapCastHardware1080Changed()
+// Settings -> Features -> Casting -> Lock Window Size (a hardware encoder's: Off, 720p or 1080p): from the next cast on; and while casting,
+// at once: Off, the window can be resized again (a resize then casts again at its size, mapCastResized); a size, the window is made that
+// size and locked, and when the video isn't that size, every device is cast to again at it
+function mapCastLockChanged()
 {
-  GT.settings.map.castHardware1080 = castHardware1080.checked;
+  GT.settings.map.castLockHeight = Number(castLockSize.value) || 0;
   if (CAST.software) return;
-  if (!GT.settings.map.castHardware1080)
+  const target = mapCastLockSize();
+  if (!target)
   {
     mapCastLockWindow(false);
     return;
   }
   if (!mapCastActive() || !CAST.snapped) return;
-  electron.ipcRenderer.invoke("mapCastSnap", true, mapCastTarget(false)).then((snapped) =>
+  electron.ipcRenderer.invoke("mapCastSnap", true, target).then((snapped) =>
   {
-    // (still on, and still casting, once the window has been sized)
-    if (!snapped || GT.settings.map.castHardware1080 !== true || !mapCastActive() || !CAST.snapped) return;
+    // (still that size, and still casting, once the window has been sized)
+    const now = mapCastLockSize();
+    if (!snapped || !now || now.height != target.height || !mapCastActive() || !CAST.snapped) return;
     mapCastLockWindow(true);
-    if (CAST.encoding && !CAST.recasting && (CAST.width != CAST_MAX_WIDTH || CAST.height != CAST_MAX_HEIGHT))
+    if (CAST.encoding && !CAST.recasting && (CAST.width != target.width || CAST.height != target.height))
     {
-      mapCastEvent("cast.event.resized", false, CAST_MAX_WIDTH + "x" + CAST_MAX_HEIGHT, false, mapCastNames(mapCastSessions()));
+      mapCastEvent("cast.event.resized", false, target.width + "x" + target.height, false, mapCastNames(mapCastSessions()));
       mapCastRecast();
     }
   });
 }
+
+// Lock Window Size's size: { width, height } (720p or 1080p), null when Off
+function mapCastLockSize()
+{
+  return CAST_LOCK_SIZES[GT.settings.map.castLockHeight] || null;
+}
+
+// Settings -> Features -> Casting -> Software Frame Rate and Software Resolution (without a hardware encoder): from the next video made on
 
 // The main window resizable or not (the main process's setResizable, as the Log QSO card's), told only when it changes
 function mapCastLockWindow(locked)
@@ -1592,15 +1606,15 @@ function mapCastRender()
   // The software encoder's frame rate and resolution: only without a hardware encoder
   const software = linked && !CAST.hardware;
   for (const row of [castSoftwareFpsRow, castSoftwareSizeRow]) row.style.display = software ? "" : "none";
-  // Resize Window To 1080p: only with a hardware encoder (the software one has its Software Resolution)
-  castHardware1080Row.style.display = linked && CAST.hardware ? "" : "none";
-  castHardware1080.checked = GT.settings.map.castHardware1080 === true;
+  // Lock Window Size: only with a hardware encoder (the software one has its Software Resolution)
+  castLockRow.style.display = linked && CAST.hardware ? "" : "none";
+  castLockSize.value = String(mapCastLockSize() ? GT.settings.map.castLockHeight : 0);
   // Announce On Network, and its Name only while it's on (not rewritten while being typed in)
   castAnnounceRow.style.display = linked ? "" : "none";
   castAnnounce.checked = GT.settings.map.castAnnounce === true;
   castAnnounceNameRow.style.display = linked && GT.settings.map.castAnnounce === true ? "" : "none";
   if (document.activeElement != castAnnounceName) castAnnounceName.value = mapCastAnnounceName();
-  // The devices, and the two addresses (HLS, then the plain stream)
+  // The devices, and the two addresses (the plain stream, then HLS)
   castDevicesRow.style.display = linked ? "" : "none";
   if (linked) mapCastRenderDevices();
   castLinkHlsText.textContent = linked ? mapCastLink("map.m3u8") : "";

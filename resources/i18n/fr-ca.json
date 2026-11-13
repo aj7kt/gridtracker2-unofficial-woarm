@@ -2265,8 +2265,8 @@
 	"cwViewer.wwv.setClock.doneAt": "Horloge du PC déplacée de {seconds} s à {time} UTC",
 	"cwViewer.wwv.setClock.event": "WWV / WWVH Régler l'horloge du PC : {text}",
 	"cwViewer.wwv.setClock.windows": "Windows demande ensuite s'il faut autoriser Windows PowerShell à apporter des modifications à votre appareil : c'est GridTracker2 qui règle l'horloge. Afficher plus de détails indique le décalage.",
-	"settings.map.cast.hardware1080.label": "Verrouiller La Fenêtre En 1080p",
-	"settings.map.cast.hardware1080.hover": "Pendant la diffusion, la fenêtre principale est dimensionnée pour que la carte soit capturée à exactement 1920x1080, aussi nette qu'une télé 1080p l'affiche, et ne peut pas être redimensionnée avant la fin de la diffusion ; désactivé, elle garde à peu près sa taille, ajustée à la forme de la télé. S'applique à la prochaine diffusion",
 	"settings.map.cast.windowSize.hover": "La taille actuelle de la fenêtre principale, en pixels de votre écran : la taille de la vidéo de la carte",
-	"cast.event.resized": "La fenêtre principale a été redimensionnée : diffusion de nouveau vers {0} en {1}"
+	"cast.event.resized": "La fenêtre principale a été redimensionnée : diffusion de nouveau vers {0} en {1}",
+	"settings.map.cast.lock.label": "Verrouiller La Taille De La Fenêtre",
+	"settings.map.cast.lock.hover": "Pendant la diffusion, la fenêtre principale est dimensionnée pour que la carte soit capturée exactement à cette taille, et ne peut pas être redimensionnée avant la fin de la diffusion. 1080p est le plus net ; en 720p, tout est plus grand sur la télé, plus facile à lire de loin. Désactivé, la fenêtre garde à peu près sa taille, ajustée à la forme de la télé"
 }

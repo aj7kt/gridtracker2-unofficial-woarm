@@ -2265,8 +2265,8 @@
   "cwViewer.wwv.setClock.doneAt": "Pc-klok {seconds} s verzet om {time} UTC",
   "cwViewer.wwv.setClock.event": "WWV / WWVH Pc-klok instellen: {text}",
   "cwViewer.wwv.setClock.windows": "Windows vraagt daarna of Windows PowerShell wijzigingen mag aanbrengen op je apparaat: dat is GridTracker2 dat de klok zet. Meer details weergeven toont de verschuiving.",
-  "settings.map.cast.hardware1080.label": "Venstergrootte Vastzetten Op 1080p",
-  "settings.map.cast.hardware1080.hover": "Tijdens het casten krijgt het hoofdvenster de grootte waarmee de kaart op precies 1920x1080 wordt vastgelegd, zo scherp als een 1080p-tv hem toont, en kan het pas weer van grootte veranderen als het casten stopt; uit, houdt het ongeveer zijn grootte, aangepast aan de vorm van de tv. Geldt vanaf de volgende keer casten",
   "settings.map.cast.windowSize.hover": "De huidige grootte van het hoofdvenster, in pixels van je scherm: de grootte van de kaartvideo",
-  "cast.event.resized": "Het hoofdvenster is van grootte veranderd: opnieuw casten naar {0} op {1}"
+  "cast.event.resized": "Het hoofdvenster is van grootte veranderd: opnieuw casten naar {0} op {1}",
+  "settings.map.cast.lock.label": "Venstergrootte Vastzetten",
+  "settings.map.cast.lock.hover": "Tijdens het casten krijgt het hoofdvenster de grootte waarmee de kaart precies op die grootte wordt vastgelegd, en kan het pas weer van grootte veranderen als het casten stopt. 1080p is het scherpst; bij 720p is alles op de tv groter, beter leesbaar van een afstand. Uit, houdt het venster ongeveer zijn grootte, aangepast aan de vorm van de tv"
 }

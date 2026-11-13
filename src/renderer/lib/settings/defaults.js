@@ -333,8 +333,9 @@ const def_settings = {
     castAnnounce: false,
     // The name it's listed under; empty: the default, "GridTracker2 by N0TTL" (mapCastAnnounceName)
     castAnnounceName: "",
-    // With a hardware encoder: the window made for a 1920x1080 video while casting (mapCastTarget), else snapped to 16:9 at about its size
-    castHardware1080: false,
+    // With a hardware encoder, Lock Window Size: the window made for a video this tall while casting and locked (0 Off: snapped to 16:9 at
+    // about its size; 720 or 1080: mapCastTarget)
+    castLockHeight: 0,
     castSoftwareFps: 10,
     castSoftwareHeight: 720,
     haltAllOnTx: true,

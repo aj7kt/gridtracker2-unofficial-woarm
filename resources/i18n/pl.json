@@ -2265,8 +2265,8 @@
   "cwViewer.wwv.setClock.doneAt": "Zegar PC przesunięty o {seconds} s o {time} UTC",
   "cwViewer.wwv.setClock.event": "WWV / WWVH Ustaw zegar PC: {text}",
   "cwViewer.wwv.setClock.windows": "Windows zapyta następnie, czy pozwolić Windows PowerShell na wprowadzenie zmian w urządzeniu: to GridTracker2 ustawia zegar. Pokaż więcej szczegółów podaje przesunięcie.",
-  "settings.map.cast.hardware1080.label": "Zablokuj Rozmiar Okna Na 1080p",
-  "settings.map.cast.hardware1080.hover": "Podczas przesyłania główne okno ma rozmiar, przy którym mapa jest przechwytywana dokładnie w 1920x1080, tak ostra, jak pokazuje ją telewizor 1080p, i nie można zmienić jego rozmiaru do końca przesyłania; wyłączone, zachowuje mniej więcej swój rozmiar, dopasowany do kształtu telewizora. Działa od następnego przesyłania",
   "settings.map.cast.windowSize.hover": "Obecny rozmiar głównego okna w pikselach ekranu: rozmiar wideo mapy",
-  "cast.event.resized": "Zmieniono rozmiar głównego okna: ponowne przesyłanie do {0} w {1}"
+  "cast.event.resized": "Zmieniono rozmiar głównego okna: ponowne przesyłanie do {0} w {1}",
+  "settings.map.cast.lock.label": "Zablokuj Rozmiar Okna",
+  "settings.map.cast.lock.hover": "Podczas przesyłania główne okno ma rozmiar, przy którym mapa jest przechwytywana dokładnie w tym rozmiarze, i nie można zmienić jego rozmiaru do końca przesyłania. 1080p jest najostrzejsze; przy 720p wszystko na telewizorze jest większe, łatwiejsze do odczytania z daleka. Wyłączone, okno zachowuje mniej więcej swój rozmiar, dopasowany do kształtu telewizora"
 }

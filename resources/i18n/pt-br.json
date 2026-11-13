@@ -2265,8 +2265,8 @@
   "cwViewer.wwv.setClock.doneAt": "Relógio do PC ajustado em {seconds} s às {time} UTC",
   "cwViewer.wwv.setClock.event": "WWV / WWVH Ajustar relógio do PC: {text}",
   "cwViewer.wwv.setClock.windows": "O Windows perguntará então se deseja permitir que o Windows PowerShell faça alterações no dispositivo: é o GridTracker2 ajustando o relógio. Mostrar mais detalhes indica o ajuste.",
-  "settings.map.cast.hardware1080.label": "Travar Janela Em 1080p",
-  "settings.map.cast.hardware1080.hover": "Durante a transmissão, a janela principal é dimensionada para capturar o mapa em exatamente 1920x1080, tão nítido quanto uma TV 1080p mostra, e não pode ser redimensionada até a transmissão parar; desativado, ela mantém mais ou menos seu tamanho, ajustada ao formato da TV. Vale a partir da próxima transmissão",
   "settings.map.cast.windowSize.hover": "O tamanho atual da janela principal, em pixels da sua tela: o tamanho do vídeo do mapa",
-  "cast.event.resized": "A janela principal foi redimensionada: transmitindo de novo para {0} em {1}"
+  "cast.event.resized": "A janela principal foi redimensionada: transmitindo de novo para {0} em {1}",
+  "settings.map.cast.lock.label": "Travar Tamanho Da Janela",
+  "settings.map.cast.lock.hover": "Durante a transmissão, a janela principal é dimensionada para capturar o mapa exatamente nesse tamanho, e não pode ser redimensionada até a transmissão parar. 1080p é o mais nítido; em 720p tudo na TV fica maior, mais fácil de ler de longe. Desativado, a janela mantém mais ou menos seu tamanho, ajustada ao formato da TV"
 }

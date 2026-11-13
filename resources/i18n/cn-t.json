@@ -2267,8 +2267,8 @@
   "cwViewer.wwv.setClock.doneAt": "電腦時鐘已調整 {seconds} 秒（{time} UTC）",
   "cwViewer.wwv.setClock.event": "WWV / WWVH 設定電腦時鐘：{text}",
   "cwViewer.wwv.setClock.windows": "隨後 Windows 會詢問是否允許 Windows PowerShell 對裝置進行變更：這是 GridTracker2 在設定時鐘。「顯示更多詳細資料」中列出調整量。",
-  "settings.map.cast.hardware1080.label": "將視窗鎖定為 1080p",
-  "settings.map.cast.hardware1080.hover": "投放時將主視窗調整為使地圖恰好以 1920x1080 擷取的大小，與 1080p 電視顯示的一樣清晰，並在投放結束前無法調整大小；關閉時，視窗大致保持原大小，依電視的比例調整。下次投放時生效",
   "settings.map.cast.windowSize.hover": "主視窗目前的大小（螢幕像素）：即地圖影片的大小",
-  "cast.event.resized": "主視窗大小已改變：以 {1} 重新投放到 {0}"
+  "cast.event.resized": "主視窗大小已改變：以 {1} 重新投放到 {0}",
+  "settings.map.cast.lock.label": "鎖定視窗大小",
+  "settings.map.cast.lock.hover": "投放時將主視窗調整為使地圖恰好以該尺寸擷取，並在投放結束前無法調整大小。1080p 最清晰；720p 時電視上的一切都更大，遠處也更容易看清。關閉時，視窗大致保持原大小，依電視的比例調整"
 }

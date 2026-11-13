@@ -2265,8 +2265,8 @@
 	"cwViewer.wwv.setClock.doneAt": "Orologio del PC spostato di {seconds} s alle {time} UTC",
 	"cwViewer.wwv.setClock.event": "WWV / WWVH Imposta orologio del PC: {text}",
 	"cwViewer.wwv.setClock.windows": "Windows chiede poi se consentire a Windows PowerShell di apportare modifiche al dispositivo: è GridTracker2 che imposta l'orologio. Mostra altri dettagli indica lo spostamento.",
-	"settings.map.cast.hardware1080.label": "Blocca Finestra A 1080p",
-	"settings.map.cast.hardware1080.hover": "Durante la trasmissione, la finestra principale è dimensionata perché la mappa sia catturata a esattamente 1920x1080, nitida come la mostra un televisore 1080p, e non può essere ridimensionata finché la trasmissione non termina; disattivato, mantiene circa la sua dimensione, adattata alla forma del televisore. Vale dalla prossima trasmissione",
 	"settings.map.cast.windowSize.hover": "La dimensione attuale della finestra principale, in pixel dello schermo: la dimensione del video della mappa",
-	"cast.event.resized": "La finestra principale è stata ridimensionata: trasmissione di nuovo a {0} a {1}"
+	"cast.event.resized": "La finestra principale è stata ridimensionata: trasmissione di nuovo a {0} a {1}",
+	"settings.map.cast.lock.label": "Blocca Dimensione Finestra",
+	"settings.map.cast.lock.hover": "Durante la trasmissione, la finestra principale è dimensionata perché la mappa sia catturata esattamente a quella dimensione, e non può essere ridimensionata finché la trasmissione non termina. 1080p è il più nitido; a 720p tutto sul televisore è più grande, più facile da leggere da lontano. Disattivato, la finestra mantiene circa la sua dimensione, adattata alla forma del televisore"
 }

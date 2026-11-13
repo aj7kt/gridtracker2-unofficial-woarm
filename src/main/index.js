@@ -492,10 +492,11 @@ ipcMain.on('mapCastCaptureAllowed', () => {
 // The main window's content size as casting makes it: the nearest 16:9 (the TV's shape) that fits its screen, or with target (the
 // video's size picked, in the screen's pixels: the software encoder's Software Resolution) that size, so the map is captured at it
 // (the biggest 16:9 that fits the screen when it's bigger). As it is while maximized, full screen or snapped already (but for a target:
-// Lock Window Size To 1080p ticked again while casting makes the window that size again)
-function mapCastSnapSize(win, target = null) {
+// Lock Window Size To 1080p ticked again while casting makes the window that size again; and reshape: resized by hand while casting, it
+// goes to the nearest 16:9 again)
+function mapCastSnapSize(win, target = null, reshape = false) {
   const [width, height] = win.getContentSize();
-  if ((mapCast.restoreSize && !target) || win.isMaximized() || win.isFullScreen()) return { width: width, height: height };
+  if ((mapCast.restoreSize && !target && !reshape) || win.isMaximized() || win.isFullScreen()) return { width: width, height: height };
   const bounds = win.getBounds();
   const display = screen.getDisplayMatching(bounds);
   const area = display.workArea;
@@ -532,9 +533,9 @@ ipcMain.handle('mapCastWindowSize', () => {
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 });
 
-// While casting the main window's content is snapped to that size (target: mapCastSnapSize's), and the size it had after (not while
-// maximized or full screen)
-ipcMain.handle('mapCastSnap', (event, on, target = null) => {
+// While casting the main window's content is snapped to that size (target, reshape: mapCastSnapSize's), and the size it had after (not
+// while maximized or full screen)
+ipcMain.handle('mapCastSnap', (event, on, target = null, reshape = false) => {
   const win = allowedWindows['GridTracker2']?.window;
   if (!win || win.isMaximized() || win.isFullScreen()) return false;
   if (!on) {
@@ -543,7 +544,7 @@ ipcMain.handle('mapCastSnap', (event, on, target = null) => {
     return true;
   }
   const [width, height] = win.getContentSize();
-  const size = mapCastSnapSize(win, target);
+  const size = mapCastSnapSize(win, target, reshape === true);
   const area = screen.getDisplayMatching(win.getBounds()).workArea;
   if (!mapCast.restoreSize) mapCast.restoreSize = [width, height];
   win.setContentSize(size.width, size.height);
