@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "自動同調オフ: リグが手で同調されました",
 	"cwViewer.wefax.auto.none": "予定された天気図はありません",
 	"cwViewer.wefax.auto.in": "{minutes} 分後",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "地表波",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

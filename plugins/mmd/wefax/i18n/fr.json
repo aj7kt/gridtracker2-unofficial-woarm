@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Accord Automatique désactivé : la radio a été accordée à la main",
 	"cwViewer.wefax.auto.none": "Aucune carte prévue",
 	"cwViewer.wefax.auto.in": "dans {minutes} min",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "onde de sol",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

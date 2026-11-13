@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Auto-Tune off: the rig was tuned by hand",
 	"cwViewer.wefax.auto.none": "No chart scheduled",
 	"cwViewer.wefax.auto.in": "in {minutes} min",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "ground wave",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

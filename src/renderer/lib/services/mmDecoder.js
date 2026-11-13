@@ -569,6 +569,17 @@ function mmDecoderGridDistance(grid)
   return { distance: Math.round(MyCircle.distance(GT.myLat, GT.myLon, LL.a, LL.o) * MyCircle.validateRadius(unit)), unit: unit.toLowerCase() };
 }
 
+// How far a place is from you, in km (for a model) and in the distance unit of Settings (rounded) to show: { km, distance, unit };
+// null without a locator or a place. The Multi-Mode Decoder's plugins (the WEFAX Auto-Tune's path)
+function mmDecoderDistance(lat, lon)
+{
+  const a = Number(lat), o = Number(lon);
+  if (!Number.isFinite(a) || !Number.isFinite(o) || !Number.isFinite(GT.myLat) || !Number.isFinite(GT.myLon)) return null;
+  const unit = String(distanceUnit.value || "KM");
+  const angle = MyCircle.distance(GT.myLat, GT.myLon, a, o);
+  return { km: angle * MyCircle.validateRadius("KM"), distance: Math.round(angle * MyCircle.validateRadius(unit)), unit: unit.toLowerCase() };
+}
+
 // From the window: a WSPR period's stations (start: the period's start, ms UTC; each { snr, dt, freq (audio Hz), air (Hz on the air, or
 // null), drift, call, grid, power }), as WSJT-X's WSPR decodes (the map; wsjtx.js, handleWsjtxWSPR). A hashed call (<...>) isn't known:
 // not sent. Only in the instance's mode

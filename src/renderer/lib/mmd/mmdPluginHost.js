@@ -187,7 +187,7 @@ function mmdPluginDetectSpec(mode)
 // The host: what a mode may use of GridTracker2 (a mode once it's a plugin uses nothing else). Versioned with the manifest's api
 // (MMD_HOST_API, the one the main window checks plugins against: MMD_PLUGIN_API in services/mmdPlugins.js); the built-in modes don't
 // need it yet, as they still reach the core's globals. More (the map, geography) comes with the plugins that need it
-const MMD_HOST_API = 1;
+const MMD_HOST_API = 2;
 function mmdHostFor(def)
 {
   // (its own settings: those starting with its id or one of its modes': FT8 / FT4's ft8Depth, ft4SendDecodes; and those its plugin.json
@@ -296,6 +296,8 @@ function mmdHostFor(def)
     bandOf: (hz) => (hz > 0 ? mmdBandOf(hz) || "" : ""),
     // How far a grid is from you ({ distance, unit } in Settings' distance unit; distance null for no grid)
     gridDistance: (grid) => window.opener.mmDecoderGridDistance(grid),
+    // How far a place is from you ({ km, distance, unit } in Settings' distance unit), or null without a locator
+    distance: (lat, lon) => window.opener.mmDecoderDistance(lat, lon),
     // A WSPR period's stations on to GridTracker2 (its instance MMD: the map, as WSJT-X's WSPR decodes; services/mmDecoder.js)
     sendWspr: (start, list) => window.opener.mmDecoderInstanceWspr(start, list),
     // The rig's dial set (Hz on the air) and its mode, through Rig Control as the decoder sends it (data: USB's data variant); false if

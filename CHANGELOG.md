@@ -39,7 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Listens to any sound card, SDR++, SPY Server, or Network Audio (below)
   - The modes are written from their published specifications
   - The User Guide's Multi-Mode Decoder chapters describe every mode and setting
-- WEFAX Auto-Tune chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave, then the first F2 hop (avoiding the skip zone), and only as a last resort a sporadic-E or two-hop path
+- WEFAX Auto-Tune now chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave before the first F2 hop before a sporadic-E or two-hop path, falling back to the soonest chart when no modelled path reaches you
 - WEFAX charts show the UTC date as well as the time in their caption
 
 #### BirdWatch
@@ -146,7 +146,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>The User Guide's Multi-Mode Decoder chapters describe every mode and setting</li>
     </ul>
   </li>
-  <li>WEFAX Auto-Tune chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave, then the first F2 hop (avoiding the skip zone), and only as a last resort a sporadic-E or two-hop path</li>
+  <li>WEFAX Auto-Tune now chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave before the first F2 hop before a sporadic-E or two-hop path, falling back to the soonest chart when no modelled path reaches you</li>
   <li>WEFAX charts show the UTC date as well as the time in their caption</li>
 </ul>
 <h4>BirdWatch</h4>

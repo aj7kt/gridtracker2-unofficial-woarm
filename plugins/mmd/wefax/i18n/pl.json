@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Auto-Strojenie wyłączone: radio zostało nastrojone ręcznie",
 	"cwViewer.wefax.auto.none": "Brak zaplanowanej mapy",
 	"cwViewer.wefax.auto.in": "za {minutes} min",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "fala przyziemna",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

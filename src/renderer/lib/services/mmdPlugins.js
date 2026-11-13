@@ -19,7 +19,7 @@
 // Input Device modes (starting on another mode's input, its rig.inputFrom) and its names for GridTracker's instance (rig.instanceModes)
 
 // The decoder's host api versions a plugin may be written for (lib/mmd/mmdPluginHost.js, MMD_HOST_API)
-const MMD_PLUGIN_API = { min: 1, max: 1 };
+const MMD_PLUGIN_API = { min: 1, max: 2 };
 // The free-plugin key: the public half of the key CI signs the free plugins with (its private half is the GitLab variable
 // MMD_FREE_SIGNING_KEY)
 const MMD_PLUGIN_FREE_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAZRrWLnaNIEvMys2cT3ndbQHL5fM+unYNkWsAnepx9pI=\n-----END PUBLIC KEY-----\n";

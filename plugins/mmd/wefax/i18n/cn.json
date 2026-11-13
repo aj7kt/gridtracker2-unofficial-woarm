@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "自动调谐已关闭：电台被手动调谐",
 	"cwViewer.wefax.auto.none": "没有计划的图表",
 	"cwViewer.wefax.auto.in": "{minutes} 分钟后",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "地波",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Auto-Abstimmung aus: das Funkgerät wurde von Hand abgestimmt",
 	"cwViewer.wefax.auto.none": "Keine Karte geplant",
 	"cwViewer.wefax.auto.in": "in {minutes} Min.",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "Bodenwelle",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

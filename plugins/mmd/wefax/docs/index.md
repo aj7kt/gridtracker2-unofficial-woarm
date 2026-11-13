@@ -32,7 +32,7 @@ The chart is chosen by how its transmitter reaches the locator set in **Settings
 * **One F2 hop:** outside the skip zone (the dead ring between the ground wave and where the first hop returns) and within about 4,000 km. The skip zone depends on the band and the time: it is small on 80 and 40 meters and can be about 2,000 km on 20 meters at night or 10 meters by day.
 * **Marginal paths:** when no ground-wave or one-hop chart is available, a sporadic-E path or a two-hop F2 path may be taken. Higher-band two-hop paths only work near the solar maximum and fade away as it declines.
 
-The solar cycle is estimated from the date, and low frequencies are penalized or rejected in daylight (D-layer absorption). With no locator set, Auto-Tune falls back to choosing the soonest chart as before.
+The solar cycle is estimated from the date, and low frequencies are penalized or rejected in daylight (D-layer absorption). Within the next hour a ground-wave chart is preferred to a one F2 hop one, and both to a marginal one; among those of the same kind the sooner chart is taken (a marginal chart only when it starts well before the next reliable one). With no locator set, or when no modelled path reaches you (every station out of range, or every frequency dead or in the skip zone), Auto-Tune falls back to choosing the soonest chart as before.
 
 * For a station on several frequencies, the one that reaches you best is used, then the one that copied last time, then one suited to the hour (lower at night, higher by day).
 * A frequency whose chart never starts is passed over for a while.

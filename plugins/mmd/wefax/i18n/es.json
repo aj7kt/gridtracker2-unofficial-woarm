@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Sintonía Automática desactivada: el equipo se sintonizó a mano",
 	"cwViewer.wefax.auto.none": "Ninguna carta programada",
 	"cwViewer.wefax.auto.in": "en {minutes} min",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "onda terrestre",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",

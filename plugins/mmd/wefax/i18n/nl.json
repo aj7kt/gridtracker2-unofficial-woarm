@@ -19,7 +19,6 @@
 	"cwViewer.wefax.auto.byHand": "Automatisch Afstemmen uit: de radio is met de hand afgestemd",
 	"cwViewer.wefax.auto.none": "Geen kaart gepland",
 	"cwViewer.wefax.auto.in": "over {minutes} min",
-	"cwViewer.wefax.auto.km": "{km} km",
 	"cwViewer.wefax.auto.path.ground": "grondgolf",
 	"cwViewer.wefax.auto.path.onehop": "1F2",
 	"cwViewer.wefax.auto.path.es": "Es",
