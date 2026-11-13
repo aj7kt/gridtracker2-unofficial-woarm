@@ -2268,5 +2268,7 @@
 	"settings.map.cast.windowSize.hover": "La dimensione attuale della finestra principale, in pixel dello schermo: la dimensione del video della mappa",
 	"cast.event.resized": "La finestra principale è stata ridimensionata: trasmissione di nuovo a {0} a {1}",
 	"settings.map.cast.lock.label": "Blocca Dimensione Finestra",
-	"settings.map.cast.lock.hover": "Durante la trasmissione, la finestra principale è dimensionata perché la mappa sia catturata esattamente a quella dimensione, e non può essere ridimensionata finché la trasmissione non termina. 1080p è il più nitido; a 720p tutto sul televisore è più grande, più facile da leggere da lontano. Disattivato, la finestra mantiene circa la sua dimensione, adattata alla forma del televisore"
+	"settings.map.cast.lock.hover": "Durante la trasmissione, la finestra principale è dimensionata perché la mappa sia catturata esattamente a quella dimensione, e non può essere ridimensionata finché la trasmissione non termina. 1080p è il più nitido; a 720p tutto sul televisore è più grande, più facile da leggere da lontano. Disattivato, la finestra mantiene circa la sua dimensione, adattata alla forma del televisore",
+	"events.menu.panel.label": "Mostra A Cascata",
+	"events.panel.rule.hover": "Trascina questa linea sulla mappa per mostrare lì il visualizzatore eventi"
 }

@@ -5981,16 +5981,79 @@ button:focus {
   font-size: 13.3333px;
 }
 
-/* The panel is dragged by its title bar (eventViewerDragInit); once dragged it is placed where it was left (eventViewerPlace) */
-#eventViewerDiv .settingstab {
+/* The panel has no title bar: it is dragged by its list's header (eventViewerDragInit); once dragged it is placed where it was left
+   (eventViewerPlace) */
+#eventsListMain .eventHead {
   cursor: move;
   -webkit-user-select: none;
   user-select: none;
 }
 
-#eventViewerDiv .settingstab button,
-#eventViewerDiv .settingstab .button {
+#eventsListMain .eventHead button,
+#eventsListMain .eventHead .button {
   cursor: pointer;
+}
+
+/* The header's X (the panel's), right of Clear */
+.eventHeadClose {
+  margin-left: 6px;
+  height: 18px;
+  line-height: 14px;
+  font-weight: normal;
+}
+
+/* The Event Viewer in the control panel (View In Panel): no frame, a line across the panel above it (the secondary line: the buttons'
+   and inputs' neutral border color; dragged out over the map, the viewer goes back there), then each event's text, centered; its
+   list's height set to the rest of the panel (eventsPanelFit), scrolling for the rest */
+.eventsPanelBox {
+  margin: 0;
+  padding: 0;
+}
+
+/* (a few pixels tall to grab, the line in its middle) */
+.eventsPanelRule {
+  height: 7px;
+  margin: 2px 0 1px 0;
+  cursor: grab;
+  background: linear-gradient(var(--gt-button-border), var(--gt-button-border)) center / 100% 1px no-repeat;
+}
+
+.eventsPanelRule:active {
+  cursor: grabbing;
+}
+
+.eventsPanelList {
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 12px;
+  color: #ddd;
+}
+
+.eventsPanelRow {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 15px;
+  padding: 0 2px;
+}
+
+/* Between rows, a dimmer line of the same gray, 80% of the row's width and centered (in the pixel it stands on, above the text) */
+.eventsPanelRow + .eventsPanelRow {
+  padding-top: 1px;
+  background: linear-gradient(color-mix(in srgb, var(--gt-button-border) 40%, black), color-mix(in srgb, var(--gt-button-border) 40%, black)) top center / 80% 1px no-repeat;
+}
+
+/* The right panel while the Event Viewer's panel is dragged over it: dropped there, the viewer goes into it as a box */
+.eventsDropTarget {
+  outline: 2px dashed var(--gt-title);
+  outline-offset: -2px;
+}
+
+/* How many events there are, after the header's Event, dim as a device's kind */
+.eventCount {
+  margin-left: 6px;
+  color: color-mix(in srgb, var(--gt-label) 60%, black);
+  font-weight: normal;
 }
 
 #eventViewerDiv.eventViewerMoved {
@@ -6038,7 +6101,9 @@ button:focus {
   box-shadow: inset 0px 11px 6px -8px #888, inset 0px -11px 6px -8px #888;
 }
 
+/* (its cells centered on the row: Clear and the X make it taller than a row of text) */
 .eventHead {
+  align-items: center;
   position: sticky;
   top: 0;
   z-index: 1;

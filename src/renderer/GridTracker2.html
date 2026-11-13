@@ -845,6 +845,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
       </div>
       </div>
+      <!-- The Event Viewer in this panel (ui/events.js, View As Waterfall, or its panel dropped here): under the boxes, always last, a line above
+           it (dragged out over the map, it goes back there), then each event's text only, the newest on top, centered; it takes the rest of
+           the panel's height, at least a tenth of the window's -->
+      <div id="eventsPanelBox" class="eventsPanelBox" style="display: none">
+        <div id="eventsPanelRule" class="eventsPanelRule" data-i18n="events.panel.rule.hover" title="Drag this line out over the map to show the Event Viewer there"></div>
+        <div id="eventsPanelList" class="eventsPanelList" oncontextmenu="eventViewerMenu(event);"></div>
+      </div>
     </div>
     <div id="myFlagtip" class="myFlagtipEnd"></div>
     <div id="myTimezoneTip" class="myFlagtipEnd"></div>
@@ -963,8 +970,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </div>
     </div>
 
-    <!-- The Event Viewer in the main window (ui/events.js): a panel like Settings; X and Esc close it. The list's header has Clear and
-         To Window (which moves it to a window of its own) -->
+    <!-- The Event Viewer in the main window (ui/events.js): a panel like Settings, with no title bar: its list's header (dragged to move
+         it) has the events' count, Clear and X; X and Esc close it -->
     <div id="eventViewerDiv" style="
           margin: 0;
           top: 1px;
@@ -976,12 +983,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           position: relative;
           z-index: 600;
         " class="roundBorder">
-      <div class="settingstab">
-        <div style="float: right">
-          <button class="Xbutton" onclick="closeEventViewer();">X</button>
-        </div>
-        <span class="eventViewerTitle" data-i18n="events.title.label">Events</span>
-      </div>
       <div id="eventsListMain" class="eventsList"></div>
     </div>
 

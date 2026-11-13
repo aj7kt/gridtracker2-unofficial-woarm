@@ -2270,5 +2270,7 @@
   "settings.map.cast.windowSize.hover": "主視窗目前的大小（螢幕像素）：即地圖影片的大小",
   "cast.event.resized": "主視窗大小已改變：以 {1} 重新投放到 {0}",
   "settings.map.cast.lock.label": "鎖定視窗大小",
-  "settings.map.cast.lock.hover": "投放時將主視窗調整為使地圖恰好以該尺寸擷取，並在投放結束前無法調整大小。1080p 最清晰；720p 時電視上的一切都更大，遠處也更容易看清。關閉時，視窗大致保持原大小，依電視的比例調整"
+  "settings.map.cast.lock.hover": "投放時將主視窗調整為使地圖恰好以該尺寸擷取，並在投放結束前無法調整大小。1080p 最清晰；720p 時電視上的一切都更大，遠處也更容易看清。關閉時，視窗大致保持原大小，依電視的比例調整",
+  "events.menu.panel.label": "以瀑布方式顯示",
+  "events.panel.rule.hover": "將這條線拖到地圖上，即可在那裡顯示事件檢視器"
 }

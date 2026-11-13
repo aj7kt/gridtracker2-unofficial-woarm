@@ -2269,5 +2269,7 @@
 	"settings.map.cast.windowSize.hover": "Die aktuelle Größe des Hauptfensters in Bildschirmpixeln: die Größe des Kartenvideos",
 	"cast.event.resized": "Das Hauptfenster wurde in der Größe geändert: Casten an {0} erneut mit {1}",
 	"settings.map.cast.lock.label": "Fenstergröße Sperren",
-	"settings.map.cast.lock.hover": "Beim Casten wird das Hauptfenster so eingestellt, dass die Karte genau in dieser Größe aufgenommen wird, und kann bis zum Ende des Castens nicht in der Größe geändert werden. 1080p ist am schärfsten; bei 720p ist auf dem Fernseher alles größer und aus der Ferne leichter zu lesen. Aus, behält das Fenster etwa seine Größe, an die Form des Fernsehers angepasst"
+	"settings.map.cast.lock.hover": "Beim Casten wird das Hauptfenster so eingestellt, dass die Karte genau in dieser Größe aufgenommen wird, und kann bis zum Ende des Castens nicht in der Größe geändert werden. 1080p ist am schärfsten; bei 720p ist auf dem Fernseher alles größer und aus der Ferne leichter zu lesen. Aus, behält das Fenster etwa seine Größe, an die Form des Fernsehers angepasst",
+	"events.menu.panel.label": "Als Wasserfall Anzeigen",
+	"events.panel.rule.hover": "Ziehen Sie diese Linie auf die Karte, um die Ereignisanzeige dort zu zeigen"
 }

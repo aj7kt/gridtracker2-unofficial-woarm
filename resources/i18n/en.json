@@ -2268,5 +2268,7 @@
 	"settings.map.cast.windowSize.hover": "The main window's size now, in your screen's pixels: the size of the map's video",
 	"cast.event.resized": "The main window was resized: casting to {0} again at {1}",
 	"settings.map.cast.lock.label": "Lock Window Size",
-	"settings.map.cast.lock.hover": "While casting, the main window is sized so the map is captured at exactly that size, and can't be resized until the cast stops. 1080p is the sharpest; at 720p everything on the TV is bigger, easier to read from across a room. Off, the window keeps about its size, snapped to the TV's shape"
+	"settings.map.cast.lock.hover": "While casting, the main window is sized so the map is captured at exactly that size, and can't be resized until the cast stops. 1080p is the sharpest; at 720p everything on the TV is bigger, easier to read from across a room. Off, the window keeps about its size, snapped to the TV's shape",
+	"events.menu.panel.label": "View As Waterfall",
+	"events.panel.rule.hover": "Drag this line out over the map to show the Event Viewer there"
 }

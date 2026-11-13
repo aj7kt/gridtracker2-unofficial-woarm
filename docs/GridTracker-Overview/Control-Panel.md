@@ -188,10 +188,10 @@ Click the **Event Viewer** button in the button panel to see what has happened, 
 
 ![The Event Viewer](../img/GT2_Event_Viewer.png){width=440px}
 
-Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. **Clear**, in the list's header, empties the list.
+Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. The list's header shows how many there are after **Event**, and **Clear** empties the list.
 
-The Event Viewer opens over the map, like the Settings panel; click its red **X** or press **Esc** to close it. Drag it by its title bar to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.
+The Event Viewer opens over the map, like the Settings panel; click the red **X** at the right of its header or press **Esc** to close it. Drag it by its header to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.
 
-Right-click the Event Viewer button to choose where it shows: **View In Main** (the panel over the map) or **View As Window** (a window of its own, which you can put anywhere on your screen).
+Right-click the Event Viewer button to choose where it shows: **View In Main** (the panel over the map), **View As Window** (a window of its own, which you can put anywhere on your screen) or **View As Waterfall** (in the control panel, under the buttons). You can also drag the Event Viewer by its header onto the control panel: the control panel is outlined while you're over it, and when you let go the events move into it. The control panel then runs the full height of the window, with the map beside it rather than under it (on either side). Under a line below the buttons it shows each event's text only, centered, the newest on top; hover over a line for its time and source. The events take the rest of the panel's height (at least a tenth of the window's) and scroll. To put the Event Viewer back over the map, drag that line out of the control panel and let go over the map. In this view the events are always shown and the Event Viewer button is hidden; right-click the events for the same menu the button has.
 
 With **Open Event Viewer On Error** on in [Settings → Features → Operational](Settings-Sub-Menus.md#operational), an error, such as a log upload that failed, opens the Event Viewer by itself.

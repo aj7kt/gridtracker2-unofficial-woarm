@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261113.0]
+## [v2.261113.1]
 
 ### MD Markup Format
 #### Map / UI
@@ -90,6 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
 - Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency
 - Settings: Open Event Viewer On Error is now in Features, Operational
+- Event Viewer: View As Waterfall (right-click its button, or drag it onto the control panel) shows the events in the control panel, under the buttons, with the panel running the full height of the window beside the map; drag the line above them out over the map to put it back. Over the map, its header now shows how many events there are, with Clear and the X beside it
 - Settings, Audio: Device is now called Output Device
 - Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown
 - Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors
@@ -206,6 +207,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
   <li>Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency</li>
   <li>Settings: Open Event Viewer On Error is now in Features, Operational</li>
+  <li>Event Viewer: View As Waterfall (right-click its button, or drag it onto the control panel) shows the events in the control panel, under the buttons, with the panel running the full height of the window beside the map; drag the line above them out over the map to put it back. Over the map, its header now shows how many events there are, with Clear and the X beside it</li>
   <li>Settings, Audio: Device is now called Output Device</li>
   <li>Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown</li>
   <li>Statistics: the tables in every tab have a new look in your App Theme's colors, with every other row shaded and the row under the mouse highlighted, and bands and modes in their colors</li>

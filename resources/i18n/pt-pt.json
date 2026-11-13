@@ -2268,5 +2268,7 @@
   "settings.map.cast.windowSize.hover": "O tamanho atual da janela principal, em píxeis do seu ecrã: o tamanho do vídeo do mapa",
   "cast.event.resized": "A janela principal foi redimensionada: a transmitir de novo para {0} em {1}",
   "settings.map.cast.lock.label": "Bloquear Tamanho Da Janela",
-  "settings.map.cast.lock.hover": "Durante a transmissão, a janela principal é dimensionada para capturar o mapa exatamente nesse tamanho, e não pode ser redimensionada até a transmissão parar. 1080p é o mais nítido; em 720p tudo na televisão fica maior, mais fácil de ler ao longe. Desativado, a janela mantém mais ou menos o seu tamanho, ajustada ao formato da televisão"
+  "settings.map.cast.lock.hover": "Durante a transmissão, a janela principal é dimensionada para capturar o mapa exatamente nesse tamanho, e não pode ser redimensionada até a transmissão parar. 1080p é o mais nítido; em 720p tudo na televisão fica maior, mais fácil de ler ao longe. Desativado, a janela mantém mais ou menos o seu tamanho, ajustada ao formato da televisão",
+  "events.menu.panel.label": "Ver Como Cascata",
+  "events.panel.rule.hover": "Arraste esta linha para cima do mapa para mostrar ali o visualizador de eventos"
 }

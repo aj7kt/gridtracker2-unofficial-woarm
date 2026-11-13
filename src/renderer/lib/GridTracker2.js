@@ -910,6 +910,9 @@ function postInit()
     logQsoRender();
     section = "ButtonPanelInit";
     buttonPanelInit();
+    // The Event Viewer's box in the right panel, when it's set to show there (ui/events.js)
+    section = "EventsPanel";
+    eventsPanelInit();
     birdWatchButtonsInit();
     section = "SerialPortsInit";
     serialPortsInit();

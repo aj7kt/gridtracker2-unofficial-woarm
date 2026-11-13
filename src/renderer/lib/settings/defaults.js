@@ -292,7 +292,8 @@ const def_settings = {
     // The control panel's boxes (Band Activity, the counts, Map View Filters, the button grid) in the order dragged to by their top
     // borders (panelBoxes.js); empty: the page's order
     panelBoxOrder: [],
-    // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own
+    // The Event Viewer button (ui/events.js): "main" shows the events in a panel in the main window, "window" in a window of their own,
+    // "panel" in the control panel under its boxes (View As Waterfall: the button hidden then)
     eventViewer: "main",
     // Where the user dragged the main window's Event Viewer panel to ({ x, y } in the window), null while it is where it comes up
     eventViewerPos: null,

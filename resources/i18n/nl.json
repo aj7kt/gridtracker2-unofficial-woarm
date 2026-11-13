@@ -2268,5 +2268,7 @@
   "settings.map.cast.windowSize.hover": "De huidige grootte van het hoofdvenster, in pixels van je scherm: de grootte van de kaartvideo",
   "cast.event.resized": "Het hoofdvenster is van grootte veranderd: opnieuw casten naar {0} op {1}",
   "settings.map.cast.lock.label": "Venstergrootte Vastzetten",
-  "settings.map.cast.lock.hover": "Tijdens het casten krijgt het hoofdvenster de grootte waarmee de kaart precies op die grootte wordt vastgelegd, en kan het pas weer van grootte veranderen als het casten stopt. 1080p is het scherpst; bij 720p is alles op de tv groter, beter leesbaar van een afstand. Uit, houdt het venster ongeveer zijn grootte, aangepast aan de vorm van de tv"
+  "settings.map.cast.lock.hover": "Tijdens het casten krijgt het hoofdvenster de grootte waarmee de kaart precies op die grootte wordt vastgelegd, en kan het pas weer van grootte veranderen als het casten stopt. 1080p is het scherpst; bij 720p is alles op de tv groter, beter leesbaar van een afstand. Uit, houdt het venster ongeveer zijn grootte, aangepast aan de vorm van de tv",
+  "events.menu.panel.label": "Tonen Als Waterval",
+  "events.panel.rule.hover": "Sleep deze lijn naar de kaart om de gebeurtenissenviewer daar te tonen"
 }

@@ -308,8 +308,10 @@ function updateLayout(shouldCollapseMenu)
 
   GT.menuShowing = !shouldCollapseMenu;
 
-  // The control panel is only as tall as it needs to be and the map runs under it
-  const menuOverlay = !shouldCollapseMenu;
+  // The control panel is only as tall as it needs to be and the map runs under it; with the Event Viewer in it (View As Waterfall,
+  // ui/events.js) it takes the window's full height and the map stops beside it (the layout's own sizes), on either side
+  const docked = !shouldCollapseMenu && typeof eventsPanelDocked == "function" && eventsPanelDocked();
+  const menuOverlay = !shouldCollapseMenu && !docked;
   menuDiv.style.height = menuOverlay ? "auto" : "";
   menuDiv.style.maxHeight = menuOverlay ? "100%" : "";
   if (menuOverlay)

@@ -2269,5 +2269,7 @@
   "settings.map.cast.windowSize.hover": "主窗口当前的大小（屏幕像素）：即地图视频的大小",
   "cast.event.resized": "主窗口大小已改变：以 {1} 重新投屏到 {0}",
   "settings.map.cast.lock.label": "锁定窗口大小",
-  "settings.map.cast.lock.hover": "投屏时将主窗口调整为使地图恰好以该尺寸采集，并在投屏结束前无法调整大小。1080p 最清晰；720p 时电视上的一切都更大，远处也更容易看清。关闭时，窗口大致保持原大小，按电视的比例调整"
+  "settings.map.cast.lock.hover": "投屏时将主窗口调整为使地图恰好以该尺寸采集，并在投屏结束前无法调整大小。1080p 最清晰；720p 时电视上的一切都更大，远处也更容易看清。关闭时，窗口大致保持原大小，按电视的比例调整",
+  "events.menu.panel.label": "以瀑布方式显示",
+  "events.panel.rule.hover": "将这条线拖到地图上，即可在那里显示事件查看器"
 }

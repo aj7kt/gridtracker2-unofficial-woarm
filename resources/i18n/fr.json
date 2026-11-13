@@ -2268,5 +2268,7 @@
 	"settings.map.cast.windowSize.hover": "La taille actuelle de la fenêtre principale, en pixels de votre écran : la taille de la vidéo de la carte",
 	"cast.event.resized": "La fenêtre principale a été redimensionnée : diffusion de nouveau vers {0} en {1}",
 	"settings.map.cast.lock.label": "Verrouiller La Taille De La Fenêtre",
-	"settings.map.cast.lock.hover": "Pendant la diffusion, la fenêtre principale est dimensionnée pour que la carte soit capturée exactement à cette taille, et ne peut pas être redimensionnée avant la fin de la diffusion. 1080p est le plus net ; en 720p, tout est plus grand sur le téléviseur, plus facile à lire de loin. Désactivé, la fenêtre garde à peu près sa taille, ajustée à la forme du téléviseur"
+	"settings.map.cast.lock.hover": "Pendant la diffusion, la fenêtre principale est dimensionnée pour que la carte soit capturée exactement à cette taille, et ne peut pas être redimensionnée avant la fin de la diffusion. 1080p est le plus net ; en 720p, tout est plus grand sur le téléviseur, plus facile à lire de loin. Désactivé, la fenêtre garde à peu près sa taille, ajustée à la forme du téléviseur",
+	"events.menu.panel.label": "Afficher En Cascade",
+	"events.panel.rule.hover": "Faites glisser cette ligne sur la carte pour y afficher la visionneuse d'événements"
 }

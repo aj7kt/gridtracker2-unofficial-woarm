@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=15def995"></script>
+    <script src="_static/documentation_options.js?v=059bc15b"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +30,7 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261113.0</p>
+<p class="gt-cover-version">Version 2.261113.1</p>
 <p class="gt-cover-date">November 13, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
@@ -157,7 +157,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261113.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261113.1. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -953,9 +953,9 @@
 <li><p>screenshots, Call Roster script changes, callsign database updates and new versions of GridTracker2. When a new version has downloaded, an <strong>Install and Restart</strong> button in its event installs it and restarts.</p></li>
 </ul>
 <p><a class="reference internal" href="_images/GT2_Event_Viewer.png"><img alt="The Event Viewer" src="_images/GT2_Event_Viewer.png" style="width: 440px;" /></a></p>
-<p>Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. <strong>Clear</strong>, in the list’s header, empties the list.</p>
-<p>The Event Viewer opens over the map, like the Settings panel; click its red <strong>X</strong> or press <strong>Esc</strong> to close it. Drag it by its title bar to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.</p>
-<p>Right-click the Event Viewer button to choose where it shows: <strong>View In Main</strong> (the panel over the map) or <strong>View As Window</strong> (a window of its own, which you can put anywhere on your screen).</p>
+<p>Your own callsign is shown in yellow, and the station you are working in cyan. Events are kept for this session only, and never longer than a day. The list’s header shows how many there are after <strong>Event</strong>, and <strong>Clear</strong> empties the list.</p>
+<p>The Event Viewer opens over the map, like the Settings panel; click the red <strong>X</strong> at the right of its header or press <strong>Esc</strong> to close it. Drag it by its header to move it, and drag its bottom right corner to make it bigger or smaller. It comes back where you left it.</p>
+<p>Right-click the Event Viewer button to choose where it shows: <strong>View In Main</strong> (the panel over the map), <strong>View As Window</strong> (a window of its own, which you can put anywhere on your screen) or <strong>View As Waterfall</strong> (in the control panel, under the buttons). You can also drag the Event Viewer by its header onto the control panel: the control panel is outlined while you’re over it, and when you let go the events move into it. The control panel then runs the full height of the window, with the map beside it rather than under it (on either side). Under a line below the buttons it shows each event’s text only, centered, the newest on top; hover over a line for its time and source. The events take the rest of the panel’s height (at least a tenth of the window’s) and scroll. To put the Event Viewer back over the map, drag that line out of the control panel and let go over the map. In this view the events are always shown and the Event Viewer button is hidden; right-click the events for the same menu the button has.</p>
 <p>With <strong>Open Event Viewer On Error</strong> on in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#operational"><span class="std std-ref">Settings → Features → Operational</span></a>, an error, such as a log upload that failed, opens the Event Viewer by itself.</p>
 </section>
 </section>
@@ -3213,9 +3213,13 @@
 </li>
 <li><p><strong>Set PC Clock:</strong> shown once the offset has held steady for 3 minutes or more with the time code read, and is more than 0.1 s (twice its ±0.05 s, so the clock ends up nearer than it was), with a sound card’s audio. Click it and confirm (the question says how accurate it is), and your system asks for an administrator’s permission (Windows’ UAC prompt, your Linux desktop’s password prompt, or macOS’s). The clock is moved by the offset shown, counted from when you answer the prompt. GridTracker2 never sets the clock by itself.</p>
 <ul>
-<li><p>On Windows, the prompt names <strong>Windows PowerShell</strong>, which is what sets the clock: Windows doesn’t let a program show its own reason there. Its <strong>Show more details</strong> says what it’s for, for example <strong>GridTracker2 (WWV / WWVH): moving the PC clock by -0.5120 s</strong>.</p></li>
+<li><p><strong>You’re asked every time.</strong> Every system needs an administrator to change the clock, and GridTracker2 asks for that only for the one change you clicked. So each Set PC Clock brings the prompt again: GridTracker2 never runs with an administrator’s rights, and never changes the clock in the background.</p></li>
+<li><p><strong>Windows:</strong> the UAC prompt names <strong>Windows PowerShell</strong>, which is what sets the clock. Windows doesn’t let a program show its own reason there. Its <strong>Show more details</strong> says what it’s for, for example <strong>GridTracker2 (WWV / WWVH): moving the PC clock by -0.5120 s</strong>.</p></li>
+<li><p><strong>Linux:</strong> your desktop’s password prompt (polkit) asks to run <code class="docutils literal notranslate"><span class="pre">/bin/sh</span></code> as the super user: that’s GridTracker2 setting the clock. It needs the desktop’s authentication agent, which full desktops such as GNOME, KDE and Xfce run. Without one (some minimal window managers, or over SSH), the clock isn’t set, and the view says why.</p></li>
+<li><p><strong>macOS:</strong> the usual administrator password dialog, for <strong>osascript</strong>: that’s GridTracker2 setting the clock. macOS sets the clock in whole seconds only, so GridTracker2 waits for the moment the corrected time falls on a whole second and sets that one, keeping the fraction.</p></li>
 <li><p>Once set, the view notes it with the time, for example <strong>PC clock moved by -0.512 s at 12:59:40 UTC</strong>, and so does the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>. If the clock couldn’t be set, both say why.</p></li>
-<li><p>A clock that keeps its time from the internet is more accurate than this, and will set itself back at its next sync. Set PC Clock is for a computer with no internet time, such as one in the field.</p></li>
+<li><p>A clock that keeps its time from the internet is more accurate than this, and will set itself back at its next sync: Windows Time on Windows; chrony, ntpd or systemd-timesyncd on Linux; <strong>Set time and date automatically</strong> on macOS. Set PC Clock is for a computer with no internet time, such as one in the field.</p></li>
+<li><p>Time programs that keep correcting the clock all day, such as Meinberg NTP or Dimension 4, are set up once to run as a system service or as administrator, which is why they don’t ask each time. GridTracker2 makes one correction, when you ask for it.</p></li>
 </ul>
 </li>
 <li><p><strong>The list:</strong> each minute timed, the newest on top: <strong>UTC</strong>, <strong>Station</strong>, <strong>Time Code</strong> (<strong>Read</strong>, <strong>Counted</strong> on from the last minute read when a minute was too weak to read, <strong>Not Confirmed</strong> for a first reading that the next minute hasn’t confirmed yet, or <strong>Nearest Second</strong>), <strong>Pulses</strong> (the second pulses timed that minute), <strong>Offset (s)</strong> (that minute’s, the path taken off), <strong>Path (ms)</strong> (with its number of hops) and <strong>dB</strong>.</p></li>

@@ -2261,5 +2261,7 @@
   "settings.map.cast.windowSize.hover": "El tamaño actual de la ventana principal, en píxeles de su pantalla: el tamaño del video del mapa",
   "cast.event.resized": "Se cambió el tamaño de la ventana principal: transmitiendo de nuevo a {0} en {1}",
   "settings.map.cast.lock.label": "Bloquear Tamaño De Ventana",
-  "settings.map.cast.lock.hover": "Al transmitir, la ventana principal se ajusta para capturar el mapa exactamente a ese tamaño, y no se puede cambiar de tamaño hasta que termine la transmisión. 1080p es lo más nítido; a 720p todo en el televisor se ve más grande, más fácil de leer desde lejos. Desactivado, la ventana conserva más o menos su tamaño, ajustado a la forma del televisor"
+  "settings.map.cast.lock.hover": "Al transmitir, la ventana principal se ajusta para capturar el mapa exactamente a ese tamaño, y no se puede cambiar de tamaño hasta que termine la transmisión. 1080p es lo más nítido; a 720p todo en el televisor se ve más grande, más fácil de leer desde lejos. Desactivado, la ventana conserva más o menos su tamaño, ajustado a la forma del televisor",
+  "events.menu.panel.label": "Ver Como Cascada",
+  "events.panel.rule.hover": "Arrastre esta línea sobre el mapa para mostrar allí el visor de eventos"
 }
