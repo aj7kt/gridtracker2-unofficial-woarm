@@ -52,6 +52,7 @@ function rigNewState(key)
     generation: 0,      // a connect under way is the newest one; an older one that finishes is ignored
     pending: "",        // text received that isn't a whole line yet
     bytes: [],          // CI-V bytes that aren't a whole frame yet
+    acks: 0,            // FT-817/818/857/897: acknowledgements still to come, one byte for each setting sent (they come before its answer)
     busy: false,        // flrig: a request is out
     queue: [],          // serial: the frames to send, one at a time (an Icom answers only the last of a burst)
     lastSent: null,     // serial: the frame out last (a Kenwood or Yaesu "?;" refuses it)
@@ -733,7 +734,8 @@ const RIG_PROTOCOLS = {
   }),
   // The FT-817, FT-818, FT-857 and FT-897's own CAT, as Hamlib has it (rigs/yaesu/ft817.c): every command five bytes, four of data and
   // the command's. 03 asks the frequency and the mode, answered with five bytes (the frequency as eight BCD digits in tens of hertz, the
-  // highest first, then the mode); a setting gets one byte back or none. VFO B is only reached by swapping the VFOs, so the rig is taken
+  // highest first, then the mode); a setting is answered with one byte, its acknowledgement (00 normally, F0 to one already on), as Hamlib
+  // reads after each setting (ft817_read_ack). VFO B is only reached by swapping the VFOs, so the rig is taken
   // as having one VFO: two of them, VFO-A's rig and a second one, are the way to work a satellite. No ID: the protocol names the rig
   yaesu817: {
     name: "Yaesu CAT (FT-817/818/857/897)",
@@ -741,10 +743,17 @@ const RIG_PROTOCOLS = {
     binary: true,
     model: "FT-817/818/857/897",
     poll: () => [new Uint8Array([0, 0, 0, 0, 0x03])],
-    replies: (data) => data instanceof Uint8Array && data[4] == 0x03,
-    // A setting's acknowledgement (or a stray byte) doesn't stay to shift the next answer
-    beforeSend: (data, R) => { R.bytes = []; },
-    gapMs: 60,
+    // Every command is answered: 03 with five bytes, a setting with one
+    replies: () => true,
+    // A setting's acknowledgement can come after the command that follows it was sent (a setting not answered within its time has the next
+    // sent anyway). The rig answers in order, so its acknowledgement is the first byte in, before the answer that command gets: counted here,
+    // and taken off in receive, or it would shift the five bytes of an answer to 03 and read its frequency ten times too high (435 MHz as
+    // 4.35 GHz). Any bytes left from a setting's answer before the next command go too
+    beforeSend: (data, R) =>
+    {
+      R.bytes = [];
+      if (data instanceof Uint8Array && data[4] != 0x03) R.acks++;
+    },
     setFreq: (hz) =>
     {
       const digits = String(Math.max(0, Math.floor(Math.round(hz) / 10))).padStart(8, "0").slice(-8);
@@ -771,20 +780,33 @@ const RIG_PROTOCOLS = {
     canTone: () => true,
     // 08 keys the rig (its PTT), 88 unkeys it
     setPtt: (on) => new Uint8Array([0, 0, 0, 0, on ? 0x08 : 0x88]),
-    // The answer to 03 once its five bytes are in (anything else, a setting's acknowledgement, is let go)
+    // The answer to 03 once its five bytes are in. A setting's acknowledgement is one byte, and comes before the answer to whatever was
+    // asked after it: taken off first (R.acks), so it can't shift those five. A byte nobody is waiting for is let go
     receive: (data, R) =>
     {
-      for (const b of data) R.bytes.push(b);
       const asked = R.lastSent instanceof Uint8Array && R.lastSent[4] == 0x03;
+      let acked = false;
+      for (const b of data)
+      {
+        if (R.acks > 0)
+        {
+          R.acks--;
+          acked = true;
+          continue;
+        }
+        if (asked) R.bytes.push(b);
+      }
       if (!asked)
       {
         R.bytes = [];
-        rigReplied(R);
+        // The setting answered: the next command can go (not while another acknowledgement is still to come)
+        if ((acked || data.length > 0) && R.acks == 0) rigReplied(R);
         return;
       }
-      if (R.bytes.length < 5) return;
+      // The answer's five bytes are still to come (only acknowledgements so far)
+      if (R.acks > 0 || R.bytes.length < 5) return;
       const reply = R.bytes.slice(0, 5);
-      R.bytes = [];
+      R.bytes = R.bytes.slice(5);
       const nibbles = reply.slice(0, 4).flatMap((x) => [x >> 4, x & 0x0f]);
       if (nibbles.every((n) => n <= 9))
       {
@@ -1748,6 +1770,7 @@ function rigDisconnect(R, lost = false)
   R.link = R.writer = R.reader = null;
   R.pending = "";
   R.bytes = [];
+  R.acks = 0;
   R.busy = false;
   R.queue = [];
   R.lastSent = null;
