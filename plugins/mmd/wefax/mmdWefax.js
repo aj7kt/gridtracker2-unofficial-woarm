@@ -39,6 +39,7 @@ function mmdWefaxInit(host)
     saveKey: "wefaxSave",
     idleKey: "cwViewer.wefax.idle",
     grows: true,
+    datestamp: true,
     background: "white",
     planes: 1,
     tabs: false,

@@ -13,7 +13,7 @@ Once the plugin is installed, pick **WEFAX** in the decoder's **Mode** menu. How
 * Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. Many stations place a chart partway across the line, so its right side would show on the left: the decoder finds the strip of blank paper between the chart's edges and starts each line after it, as the chart comes in.
   * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
 * Dashed lines on the waterfall show where a chart's black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest chart was found.
-* The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC time, frequency and band, and **saved** once it is.
+* The header above the chart shows its line rate and width (for example **WEFAX 120/576**), its UTC date and time, frequency and band, and **saved** once it is.
 * Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**, as for SSTV's pictures. A rotated or filtered chart is saved and copied as shown. **Filter** (once the chart has ended) cleans up a noisy chart: the filters are described in the User Guide, under SSTV.
 * Each time the window opens, the newest 12 charts in the save folder are back in the strip.
 * **Test Signals** plays a WEFAX chart into the decoder, to see what it decodes. What it decodes stays in the window and is never saved.

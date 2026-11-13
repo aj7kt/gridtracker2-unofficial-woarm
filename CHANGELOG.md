@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - The modes are written from their published specifications
   - The User Guide's Multi-Mode Decoder chapters describe every mode and setting
 - WEFAX Auto-Tune chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave, then the first F2 hop (avoiding the skip zone), and only as a last resort a sporadic-E or two-hop path
+- WEFAX charts show the UTC date as well as the time in their caption
 
 #### BirdWatch
 
@@ -146,6 +147,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     </ul>
   </li>
   <li>WEFAX Auto-Tune chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave, then the first F2 hop (avoiding the skip zone), and only as a last resort a sporadic-E or two-hop path</li>
+  <li>WEFAX charts show the UTC date as well as the time in their caption</li>
 </ul>
 <h4>BirdWatch</h4>
 <ul>

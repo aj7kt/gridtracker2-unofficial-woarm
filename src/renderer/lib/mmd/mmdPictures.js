@@ -9,7 +9,8 @@
 // WEFAX's) has its canvas made longer as their lines come.
 // A kind (mmdPicturesKind): { kind, modes (the Mode menu's), folder() (where its pictures are saved), saveKey (its Save setting in
 // GT.settings.MMD), idleKey (the header's text with nothing coming in), grows, background ("black" or "white": a picture's canvas before
-// its rows come), planes (3, or 1 for grey: Filter's Undo kept smaller), tabs (SSTV's Receive and Send tabs shown), describe(pic, live)
+// its rows come), planes (3, or 1 for grey: Filter's Undo kept smaller), tabs (SSTV's Receive and Send tabs shown), datestamp (its caption
+// shows the UTC date before the time, WEFAX's), describe(pic, live)
 // (its own words for how much of a picture came, else SSTV's line counts), fromFile(name) (a saved file's name part, as mmdPicFileName
 // wrote it, claimed as its kind's: its shown name, else null), catchAll (claims any name the others don't: SSTV's) }
 
@@ -17,8 +18,8 @@
 const PICS_KEEP = 12;
 // A growing picture's canvas is made this many lines longer each time its lines run past its end
 const PICS_GROW_ROWS = 600;
-// The caption over the picture shown: its font this many times the header's, its colors (the mode, the UTC time, the frequency, the
-// band, Saved)
+// The caption over the picture shown: its font this many times the header's, its colors (the mode, the UTC date and time, the frequency,
+// the band, Saved)
 const PICS_CAPTION_SCALE = 2;
 const PICS_CAPTION_COLORS = { name: "#8cf", time: "#fff", freq: "#8f8", band: "#ff0", saved: "#bbb" };
 // Filter's choices, in its submenu's order (each PICS_FILTER's, its label cwViewer.picture.filter<Name>.label), and the Undo steps kept
@@ -311,12 +312,19 @@ function mmdPicDraw()
   });
 }
 
-// The caption over the picture shown, centered: its mode (light blue), UTC time (white), frequency on the air (light green) with its band
+// A picture's UTC start: its time, and its date before it for a kind that shows one (datestamp): "2026-11-13 12:34:56 UTC"
+function mmdPicWhen(pic)
+{
+  const t = new Date(pic.at).toISOString();
+  return (PICS.kinds[pic.kind] && PICS.kinds[pic.kind].datestamp ? t.slice(0, 10) + " " : "") + t.slice(11, 19) + " UTC";
+}
+
+// The caption over the picture shown, centered: its mode (light blue), UTC date and time (white), frequency on the air (light green) with its band
 // (yellow), and Saved once it is; smaller where the line is too narrow for it. Its height (device pixels)
 function mmdPicCaption(ctx, pic, w, ratio)
 {
   const C = PICS_CAPTION_COLORS;
-  const parts = [[pic.name, C.name], [new Date(pic.at).toISOString().slice(11, 19) + " UTC", C.time]];
+  const parts = [[pic.name, C.name], [mmdPicWhen(pic), C.time]];
   if (pic.dial)
   {
     parts.push([(pic.dial / 1e6).toFixed(3) + " MHz", C.freq]);
@@ -373,11 +381,11 @@ function mmdPicStrip()
   }
 }
 
-// A picture told in a line: its mode, UTC time, frequency on the air (the strip's tooltips; not with caption false, the header's: the
+// A picture told in a line: its mode, UTC date and time, frequency on the air (the strip's tooltips; not with caption false, the header's: the
 // caption over the picture has them), and how much of it came (its kind's own words, else its lines of all of them)
 function mmdPicDescribe(pic, caption = true)
 {
-  const parts = caption ? [pic.name, new Date(pic.at).toISOString().slice(11, 19) + " UTC"] : [];
+  const parts = caption ? [pic.name, mmdPicWhen(pic)] : [];
   if (caption && pic.dial) parts.push((pic.dial / 1e6).toFixed(3) + " MHz");
   // Its sender's tones this far from where they belong (it was found and read there)
   if (Math.abs(pic.shift) >= 25) parts.push((pic.shift > 0 ? "+" : "") + pic.shift + " Hz");
