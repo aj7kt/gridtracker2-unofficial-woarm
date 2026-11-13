@@ -1,5 +1,5 @@
 {
-  "$comment": "Assigned kHz (dial USB = kHz - 1.9), UTC. Sources: NOAA hfhi/hfak/hfreyes/hfmarsh/hfgulf.txt (info Dec 12 2024; NWS PNS 26-48 proposes ending US stations); JMA JMH-ENG.pdf (eff 19 Jan 2022); BoM radio-fax-schedule (updated 1 Jul 2017); DWD broadcast_fax_102020.pdf (Oct 2020); NOAA rfax.pdf (Mar 7 2025) for HLL2 (info 2009) and GYA (info Jan 2022); Canadian Coast Guard Radio Aids to Marine Navigation 2026 for VFA/VFF/VFR; Weatherfax.com VCO schedule (2023). lat/lon are approximate transmitter or city positions; powerKw is the published transmitter power (5 kW assumed for VCO/VFA/VFF/VFR). note/monthDays/months/khz/call/shiftHz are extra fields.",
+  "$comment": "Assigned kHz (dial USB = kHz - 1.9), UTC. Sources: NOAA hfhi/hfak/hfreyes/hfmarsh/hfgulf.txt (info Dec 12 2024; NWS PNS 26-48 proposes ending US stations); JMA JMH-ENG.pdf (eff 19 Jan 2022); BoM radio-fax-schedule (updated 1 Jul 2017); DWD broadcast_fax_102020.pdf (Oct 2020); NOAA rfax.pdf (Mar 7 2025) for HLL2 (info 2009) and GYA (info Jan 2022); Canadian Coast Guard Radio Aids to Marine Navigation 2026 for VFA/VFF/VFR; Weatherfax.com VCO schedule (2023). lat/lon are approximate transmitter or city positions; powerKw is the published transmitter power (5 kW assumed for VCO/VFA/VFF/VFR). note/monthDays/months/season (a range of MM-DD dates, inclusive)/khz/call/shiftHz are extra fields.",
   "updated": "2026-11-11",
   "stations": [
     {
@@ -1006,7 +1006,7 @@
       "lat": 68.36,
       "lon": -133.72,
       "powerKw": 5,
-      "months": [7, 8, 9, 10],
+      "season": ["07-15", "10-15"],
       "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
       "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 15 Jul - 15 Oct",
       "frequencies": [
@@ -1025,7 +1025,7 @@
       "lat": 63.75,
       "lon": -68.52,
       "powerKw": 5,
-      "months": [6, 7, 8, 9, 10, 11],
+      "season": ["06-25", "11-30"],
       "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
       "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 25 Jun - 30 Nov",
       "frequencies": [
@@ -1055,7 +1055,7 @@
       "lat": 74.754,
       "lon": -94.969,
       "powerKw": 5,
-      "months": [6, 7, 8, 9, 10, 11],
+      "season": ["06-25", "11-30"],
       "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
       "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 25 Jun - 30 Nov",
       "frequencies": [
