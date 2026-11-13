@@ -5973,13 +5973,6 @@ button:focus {
   max-width: none;
   max-height: none;
 }
-.eventViewerTitle {
-  display: inline-block;
-  padding: 4px 12px 2px 12px;
-  color: var(--gt-title);
-  font-weight: bold;
-  font-size: 13.3333px;
-}
 
 /* The panel has no title bar: it is dragged by its list's header (eventViewerDragInit); once dragged it is placed where it was left
    (eventViewerPlace) */
@@ -6022,9 +6015,9 @@ button:focus {
   cursor: grabbing;
 }
 
+/* (never scrolls: the newest on top, the oldest run off the bottom) */
 .eventsPanelList {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   font-size: 12px;
   color: #ddd;
 }

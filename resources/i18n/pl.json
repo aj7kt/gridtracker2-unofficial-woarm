@@ -1259,7 +1259,6 @@
   "birdWatch.alerts.soonText.hover": "Własny tekst: {N} nazwa satelity, {T} minuty do AOS, {D} maksymalne wzniesienie w stopniach. Puste: komunikat pokazany na szaro",
   "birdWatch.alerts.risingText.hover": "Własny tekst: {N} nazwa satelity, {D} azymut wschodu w stopniach. Puste: komunikat pokazany na szaro",
   "gt.button.events.hover": "Podgląd zdarzeń",
-  "events.title.label": "Zdarzenia",
   "events.menu.main.label": "Pokaż w oknie głównym",
   "events.menu.window.label": "Pokaż jako okno",
   "events.time.label": "Czas",

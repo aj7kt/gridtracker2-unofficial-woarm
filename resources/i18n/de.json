@@ -1260,7 +1260,6 @@
 	"birdWatch.alerts.soonText.hover": "Eigener Wortlaut: {N} der Name des Satelliten, {T} die Minuten bis AOS, {D} seine maximale Elevation in Grad. Leer: die grau gezeigte Meldung",
 	"birdWatch.alerts.risingText.hover": "Eigener Wortlaut: {N} der Name des Satelliten, {D} der Azimut des Aufgangs in Grad. Leer: die grau gezeigte Meldung",
 	"gt.button.events.hover": "Ereignisanzeige",
-	"events.title.label": "Ereignisse",
 	"events.menu.main.label": "Im Hauptfenster anzeigen",
 	"events.menu.window.label": "Als Fenster anzeigen",
 	"events.time.label": "Zeit",

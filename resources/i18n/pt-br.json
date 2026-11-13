@@ -1259,7 +1259,6 @@
   "birdWatch.alerts.soonText.hover": "Seu próprio texto: {N} o nome do satélite, {T} os minutos até o AOS, {D} sua elevação máxima em graus. Vazio: a mensagem em cinza",
   "birdWatch.alerts.risingText.hover": "Seu próprio texto: {N} o nome do satélite, {D} o azimute em que nasce em graus. Vazio: a mensagem em cinza",
   "gt.button.events.hover": "Visualizador de eventos",
-  "events.title.label": "Eventos",
   "events.menu.main.label": "Ver na janela principal",
   "events.menu.window.label": "Ver como janela",
   "events.time.label": "Hora",

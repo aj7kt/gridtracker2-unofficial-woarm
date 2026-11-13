@@ -818,12 +818,9 @@ function mapCastClose()
 {
   const controls = mapCastDlnaWatching();
   if (controls.length) electron.ipcRenderer.sendSync("mapCastStopDevices", controls);
-  // The devices cast to kept for the next start (each stop takes its device off the list, and the settings may be saved again after
-  // this: the window's own beforeunload saves them a second time)
-  const resume = GT.settings.map.castDevices.slice();
+  // (the devices cast to stay on the list for the next start: mapCastRemember leaves it alone while closing)
   mapCastStop();
   mapCastUnserve();
-  GT.settings.map.castDevices = resume;
 }
 
 // Every device no longer cast to

@@ -1261,7 +1261,6 @@
   "birdWatch.alerts.soonText.hover": "自訂文字：{N} 衛星名稱，{T} 距 AOS 的分鐘數，{D} 最大仰角（度）。留空：使用灰色顯示的訊息",
   "birdWatch.alerts.risingText.hover": "自訂文字：{N} 衛星名稱，{D} 升起的方位角（度）。留空：使用灰色顯示的訊息",
   "gt.button.events.hover": "事件檢視器",
-  "events.title.label": "事件",
   "events.menu.main.label": "在主視窗中檢視",
   "events.menu.window.label": "作為視窗檢視",
   "events.time.label": "時間",

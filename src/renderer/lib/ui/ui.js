@@ -314,6 +314,9 @@ function updateLayout(shouldCollapseMenu)
   const menuOverlay = !shouldCollapseMenu && !docked;
   menuDiv.style.height = menuOverlay ? "auto" : "";
   menuDiv.style.maxHeight = menuOverlay ? "100%" : "";
+  // (docked, it never scrolls: what doesn't fit under the boxes is cut off at the bottom, events.js eventsPanelFit)
+  menuDiv.style.overflowY = docked ? "hidden" : "";
+  menuDiv.style.overflowX = docked ? "hidden" : "";
   if (menuOverlay)
   {
     mapDiv.style[GT.settings.app.mapRight ? "left" : "right"] = "0";

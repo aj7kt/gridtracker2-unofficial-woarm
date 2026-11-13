@@ -31,17 +31,18 @@ function addEvent(source, html, error = /color:\s*red\b|color=["']red["']|var\(-
   GT.events.unshift(event);
   eventsPrune(now);
   eventsMeasure(event);
-  eventsRedraw(true);
+  eventsRedraw(true, event);
   if (error && GT.settings.app.openEventViewerOnError) eventViewerOpen();
 }
 
-// The Event Viewer shown where it is set to be (the main window's panel, its window, or the right panel's box), if it isn't already
+// The Event Viewer shown where it is set to be (the main window's panel, or its window), if it isn't already (Open Event Viewer On
+// Error). In View As Waterfall nothing: the events are in the control panel already, and a control panel the user collapsed stays so
 function eventViewerOpen()
 {
   try
   {
-    if (GT.settings.app.eventViewer == "panel") eventsPanelShow(true);
-    else if (GT.settings.app.eventViewer == "window") eventsWindowOpen(true);
+    if (GT.settings.app.eventViewer == "panel") return;
+    if (GT.settings.app.eventViewer == "window") eventsWindowOpen(true);
     else if (typeof eventViewerDiv != "undefined" && eventViewerDiv.style.display != "inline-flex")
     {
       eventsWindowOpen(false);
@@ -84,8 +85,10 @@ function eventsMeasure(event, force = false)
   {
     W.time = width(I18N("events.time.label"));
     W.source = width(I18N("events.source.label"));
-    // The Event column's header holds Clear too (its text and padding)
-    W.text = width(I18N("events.text.label")) + 10 + width(I18N("events.clear.label")) + 16;
+    // The Event column's header holds the events' count (its margin and up to five digits) and Clear (its text and padding) too; the
+    // main window's panel's also its X (eventsApplyWidths)
+    W.head = width(I18N("events.text.label")) + 6 + width("00000") + 10 + width(I18N("events.clear.label")) + 16;
+    W.text = W.head;
   }
   context.font = "12px Sans-Serif";
   for (const e of force ? GT.events : [event])
@@ -105,7 +108,9 @@ function eventsApplyWidths(list)
   // A little over what the text needs, for the scaling of text on some screens
   list.style.setProperty("--evTime", W.time + 8 + "px");
   list.style.setProperty("--evSource", W.source + 8 + "px");
-  list.style.setProperty("--evText", W.text + 8 + "px");
+  // (the main window's panel's header holds its X too: its width and margin)
+  const text = typeof eventsListMain != "undefined" && list === eventsListMain ? Math.max(W.text, (W.head || 0) + 28) : W.text;
+  list.style.setProperty("--evText", text + 8 + "px");
 }
 
 // An event's text as shown: your call in yellow and the DX call in cyan, as the traffic list had them
@@ -140,11 +145,13 @@ function eventsLists()
   return lists;
 }
 
-// Every list again: forced (an event came) or only where the rows no longer cover the view (a scroll); and the right panel's box
-function eventsRedraw(force)
+// Every list again: forced (an event came, added: that one) or only where the rows no longer cover the view (a scroll); and the control
+// panel's events (View As Waterfall): a new one added on top, else drawn again when forced
+function eventsRedraw(force, added = null)
 {
   for (const list of eventsLists()) eventsDraw(list, force);
-  if (force) eventsPanelDraw();
+  if (added) eventsPanelAdd(added);
+  else if (force) eventsPanelDraw();
 }
 
 // A list's scroll redraws it (once per frame), and so does its window's resize (the Event column wraps to the new width)
@@ -375,46 +382,47 @@ function eventViewerDragInit()
   GT.eventViewerDragHooked = true;
   const bar = eventsListMain;
   let drag = null;
-  const overPanel = (event) =>
-  {
-    if (menuDiv.style.display == "none") return false;
-    const r = eventsPanelColumn().getBoundingClientRect();
-    return event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom;
-  };
   bar.addEventListener("pointerdown", (event) =>
   {
     // Only on the header, and not from Clear or the X
     if (event.button != 0 || !event.target.closest(".eventHead") || event.target.closest("button, .button")) return;
     const rect = eventViewerDiv.getBoundingClientRect();
-    // (where it was, kept for it if it's dropped on the right panel)
-    drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top, was: GT.settings.app.eventViewerPos };
-    // Taken out of the flow where it is, so it doesn't jump as the drag starts
-    GT.settings.app.eventViewerPos = { x: rect.left, y: rect.top };
-    eventViewerPlace();
+    // (where it was, kept for it if it's dropped on the right panel; where the press was, so a click without a drag changes nothing)
+    drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top, was: GT.settings.app.eventViewerPos, x: event.clientX, y: event.clientY, rect: rect, moved: false };
     try { bar.setPointerCapture(event.pointerId); } catch (e) { /* a synthetic event */ }
     event.preventDefault();
   });
   bar.addEventListener("pointermove", (event) =>
   {
     if (!drag) return;
+    if (!drag.moved)
+    {
+      if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < EVENTS_DRAG_MIN_PX) return;
+      drag.moved = true;
+      // Taken out of the flow where it is, as the drag starts, so it doesn't jump
+      GT.settings.app.eventViewerPos = { x: drag.rect.left, y: drag.rect.top };
+      eventViewerPlace();
+    }
     GT.settings.app.eventViewerPos = { x: event.clientX - drag.dx, y: event.clientY - drag.dy };
     eventViewerPlace();
-    eventsPanelColumn().classList.toggle("eventsDropTarget", overPanel(event));
+    menuDiv.classList.toggle("eventsDropTarget", eventsOverControlPanel(event));
   });
   const done = (event) =>
   {
     if (!drag) return;
-    const was = drag.was;
+    const was = drag.was, moved = drag.moved;
     drag = null;
     try { bar.releasePointerCapture(event.pointerId); } catch (e) { /* not captured */ }
-    eventsPanelColumn().classList.remove("eventsDropTarget");
-    // Dropped on the right panel: a box there from now on (the panel's place where it was before this drag)
-    if (event.type == "pointerup" && overPanel(event))
+    menuDiv.classList.remove("eventsDropTarget");
+    // Dropped on the right panel, after a real drag: in it from now on (the panel's place where it was before this drag)
+    if (event.type == "pointerup" && moved && eventsOverControlPanel(event))
     {
       GT.settings.app.eventViewerPos = was;
       eventViewerSetMode("panel", true);
       return;
     }
+    // (a click: nothing moved, nothing kept)
+    if (!moved) return;
     // Kept as placed (clamped)
     GT.settings.app.eventViewerPos = { x: parseInt(eventViewerDiv.style.left) || 0, y: parseInt(eventViewerDiv.style.top) || 0 };
   };
@@ -548,6 +556,12 @@ function eventViewerMenu(event)
   // (open now where it is: the main window's panel, or the right panel's box)
   const shown = eventViewerDiv.style.display == "inline-flex" || eventsPanelBox.style.display != "none";
   const menu = new Menu();
+  // On the events in the control panel (View As Waterfall), which have no header with Clear: Clear first, a divider under it
+  if (event.target && event.target.closest && event.target.closest("#eventsPanelList"))
+  {
+    menu.append(new MenuItem({ label: I18N("events.clear.label"), click: () => eventsClear() }));
+    menu.append(new MenuItem({ type: "separator" }));
+  }
   for (const [mode, key] of [["main", "events.menu.main.label"], ["window", "events.menu.window.label"], ["panel", "events.menu.panel.label"]])
   {
     menu.append(new MenuItem({
@@ -593,14 +607,19 @@ function eventViewerSetMode(mode, shown)
 // it's dropped; nowhere else in the panel. Always shown in this view: the Event Viewer button is hidden meanwhile (a right click on the
 // events has its menu)
 
-// The most events drawn in it (the newest; the Event Viewer's panel and window list them all), and its least height (of the window's)
+// The most events drawn in it (the newest; the Event Viewer's panel and window list them all), and its least height (of the window's:
+// with less room than that under the boxes, its bottom is cut off)
 const EVENTS_PANEL_ROWS = 200;
 const EVENTS_PANEL_MIN = 0.1;
+// How far (px) the pointer must move before a press on the viewer's header or the line is a drag (a click never moves the viewer)
+const EVENTS_DRAG_MIN_PX = 5;
 
-// The control panel (the status lines, the boxes, and this)
-function eventsPanelColumn()
+// Whether the pointer of a drag is over the control panel (shown): where the Event Viewer docks, and what its line is dragged out of
+function eventsOverControlPanel(event)
 {
-  return menuDiv;
+  if (menuDiv.style.display == "none") return false;
+  const r = menuDiv.getBoundingClientRect();
+  return event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom;
 }
 
 // Whether the events are in the control panel and shown (the panel then full height, the map beside it: updateLayout)
@@ -614,76 +633,108 @@ function eventsPanelInit()
 {
   if (GT.settings.app.eventViewer == "panel") eventsPanelShow(true);
   window.addEventListener("resize", () => eventsPanelFit());
-  // (the boxes above it changing height: BirdWatch's, the filters folded ...)
-  new ResizeObserver(() => eventsPanelFit()).observe(mainPanelBoxes);
+  // (anything above it in the control panel changing height: the status lines, the rig's line as it connects, the boxes, BirdWatch's)
+  const observer = new ResizeObserver(() => eventsPanelFit());
+  for (const el of menuDiv.children) if (el !== eventsPanelBox) observer.observe(el);
+  // (and the control panel's own height: full height docked, as tall as it needs otherwise)
+  observer.observe(menuDiv);
   eventsPanelRuleInit();
 }
 
-// Shown (in this view) or not; the Event Viewer button hidden while it is (nothing for it to do: the events are always there)
+// Shown (in this view) or not, when that changes; the Event Viewer button hidden while it is (nothing for it to do: the events are
+// always there)
 function eventsPanelShow(show)
 {
-  eventsPanelBox.style.display = show ? "" : "none";
+  // (the button set every time, so it can't stay hidden by mistake)
   eventsButton.style.display = show ? "none" : "";
+  if ((eventsPanelBox.style.display != "none") == show) return;
+  eventsPanelBox.style.display = show ? "" : "none";
   // (the panel full height and the map beside it, or back over the map)
   if (GT.map) updateLayout(GT.menuShowing == false);
   if (show) eventsPanelDraw();
 }
 
-// The rows again (an event came, Clear, shown), each centered (its time and source on hover)
+// One event's row, centered (its time and source on hover)
+function eventsPanelRow(e)
+{
+  const row = document.createElement("div");
+  row.className = "eventsPanelRow";
+  row.title = eventsTimeString(e.time) + " · " + eventsSourceName(e.source);
+  row.innerHTML = eventsRowHtml(e);
+  return row;
+}
+
+// The calls highlighted in the rows (eventsRowHtml: your call, the DX call), as the rows drawn last had them
+function eventsPanelCalls()
+{
+  return (GT.localDXcall || "") + "|" + (GT.settings.app.myRawCall || "");
+}
+
+// Every row again (shown, Clear, the time's form changed, the calls highlighted changed)
 function eventsPanelDraw()
 {
   if (typeof eventsPanelBox == "undefined" || eventsPanelBox.style.display == "none") return;
-  const rows = GT.events.slice(0, EVENTS_PANEL_ROWS).map((e) =>
-  {
-    const row = document.createElement("div");
-    row.className = "eventsPanelRow";
-    row.title = eventsTimeString(e.time) + " · " + eventsSourceName(e.source);
-    row.innerHTML = eventsRowHtml(e);
-    return row;
-  });
-  eventsPanelList.replaceChildren(...rows);
+  eventsPanelList.replaceChildren(...GT.events.slice(0, EVENTS_PANEL_ROWS).map(eventsPanelRow));
+  eventsPanelList.dataset.calls = eventsPanelCalls();
   eventsPanelFit();
 }
 
-// Its list from under the line to the window's bottom, at least EVENTS_PANEL_MIN of the window's height
+// An event come: its row on top, those past EVENTS_PANEL_ROWS (or older than a day: eventsPrune let them go) taken off the bottom. The
+// DX call or your call changed since: every row drawn again, so their highlights follow
+function eventsPanelAdd(e)
+{
+  if (typeof eventsPanelBox == "undefined" || eventsPanelBox.style.display == "none") return;
+  if (eventsPanelList.dataset.calls != eventsPanelCalls())
+  {
+    eventsPanelDraw();
+    return;
+  }
+  eventsPanelList.prepend(eventsPanelRow(e));
+  const keep = Math.min(EVENTS_PANEL_ROWS, GT.events.length);
+  while (eventsPanelList.children.length > keep) eventsPanelList.lastElementChild.remove();
+}
+
+// Its list from under the line to the control panel's bottom, at least EVENTS_PANEL_MIN of the window's height: with less room, its
+// bottom is cut off (neither it nor the control panel scrolls: updateLayout, style.css)
 function eventsPanelFit()
 {
   if (typeof eventsPanelBox == "undefined" || eventsPanelBox.style.display == "none") return;
-  const top = eventsPanelList.getBoundingClientRect().top;
-  const value = Math.floor(Math.max(window.innerHeight * EVENTS_PANEL_MIN, window.innerHeight - top - 2)) + "px";
+  // (a scroll left from before docking, or from focus, put back)
+  if (menuDiv.scrollTop) menuDiv.scrollTop = 0;
+  if (eventsPanelList.scrollTop) eventsPanelList.scrollTop = 0;
+  const top = eventsPanelList.getBoundingClientRect().top - menuDiv.getBoundingClientRect().top;
+  const value = Math.floor(Math.max(window.innerHeight * EVENTS_PANEL_MIN, menuDiv.clientHeight - top - 2)) + "px";
   if (eventsPanelList.style.height != value) eventsPanelList.style.height = value;
 }
 
 // The line above the events: dragged out of the control panel (over the map), the Event Viewer goes back over the map where it's let go
-// (View In Main); let go in the panel, nothing changes. The panel outlined while the line is over it
+// (View In Main); let go in the panel, or a click without a drag, nothing changes. The panel outlined while the line is over it
 function eventsPanelRuleInit()
 {
   const rule = eventsPanelRule;
-  let drag = false;
-  const inPanel = (e) =>
-  {
-    const r = menuDiv.getBoundingClientRect();
-    return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-  };
+  let drag = null;
   rule.addEventListener("pointerdown", (e) =>
   {
     if (e.button != 0) return;
-    drag = true;
+    drag = { x: e.clientX, y: e.clientY, moved: false };
     try { rule.setPointerCapture(e.pointerId); } catch (x) { /* a synthetic event */ }
-    menuDiv.classList.add("eventsDropTarget");
     e.preventDefault();
   });
   rule.addEventListener("pointermove", (e) =>
   {
-    if (drag) menuDiv.classList.toggle("eventsDropTarget", inPanel(e));
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < EVENTS_DRAG_MIN_PX) return;
+    drag.moved = true;
+    menuDiv.classList.toggle("eventsDropTarget", eventsOverControlPanel(e));
   });
   const done = (e) =>
   {
     if (!drag) return;
-    drag = false;
+    const moved = drag.moved;
+    drag = null;
     try { rule.releasePointerCapture(e.pointerId); } catch (x) { /* not captured */ }
     menuDiv.classList.remove("eventsDropTarget");
-    if (e.type != "pointerup" || inPanel(e)) return;
+    if (e.type != "pointerup" || !moved || eventsOverControlPanel(e)) return;
     // (its header where it was let go)
     GT.settings.app.eventViewerPos = { x: Math.max(0, e.clientX - 40), y: Math.max(0, e.clientY - 10) };
     eventViewerSetMode("main", true);
