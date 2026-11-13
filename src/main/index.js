@@ -491,10 +491,11 @@ ipcMain.on('mapCastCaptureAllowed', () => {
 
 // The main window's content size as casting makes it: the nearest 16:9 (the TV's shape) that fits its screen, or with target (the
 // video's size picked, in the screen's pixels: the software encoder's Software Resolution) that size, so the map is captured at it
-// (the biggest 16:9 that fits the screen when it's bigger). As it is while maximized, full screen or snapped already
+// (the biggest 16:9 that fits the screen when it's bigger). As it is while maximized, full screen or snapped already (but for a target:
+// Lock Window Size To 1080p ticked again while casting makes the window that size again)
 function mapCastSnapSize(win, target = null) {
   const [width, height] = win.getContentSize();
-  if (mapCast.restoreSize || win.isMaximized() || win.isFullScreen()) return { width: width, height: height };
+  if ((mapCast.restoreSize && !target) || win.isMaximized() || win.isFullScreen()) return { width: width, height: height };
   const bounds = win.getBounds();
   const display = screen.getDisplayMatching(bounds);
   const area = display.workArea;
@@ -520,6 +521,15 @@ ipcMain.handle('mapCastSize', () => {
   const size = mapCastSnapSize(win);
   const scale = screen.getDisplayMatching(win.getBounds()).scaleFactor;
   return { width: Math.round(size.width * scale), height: Math.round(size.height * scale) };
+});
+
+// The main window's content size now in the screen's pixels (Settings -> Features -> Casting, beside Enable Casting), null without it
+ipcMain.handle('mapCastWindowSize', () => {
+  const win = allowedWindows['GridTracker2']?.window;
+  if (!win || win.isDestroyed()) return null;
+  const [width, height] = win.getContentSize();
+  const scale = screen.getDisplayMatching(win.getBounds()).scaleFactor;
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
 });
 
 // While casting the main window's content is snapped to that size (target: mapCastSnapSize's), and the size it had after (not while
@@ -652,6 +662,58 @@ function rigPttHoldClose(event, window) {
   return true;
 }
 
+// Map Cast: the DLNA players watching the map (Kodi, a smart TV) told to stop as GridTracker2 closes or restarts (mapCast.js mapCastClose),
+// sent from here so they go out: the main window is gone before its own requests could. The exit waits for their answers, never longer
+// than CAST_STOP_WAIT_MS. None watching: nothing waits
+const CAST_STOP_WAIT_MS = 1500;
+let castStopping = null;
+
+ipcMain.on('mapCastStopDevices', (event, controls) => {
+  event.returnValue = true;
+  if (!Array.isArray(controls)) return;
+  const sends = controls.filter((control) => typeof control == 'string' && /^http:\/\//i.test(control)).map(castStopSend);
+  if (sends.length) castStopping = Promise.all(sends);
+});
+
+// A player's AVTransport (control: its address) told Stop; resolves when it answers, fails or takes too long
+function castStopSend(control) {
+  return new Promise((resolve) => {
+    try {
+      const url = new URL(control);
+      const body = Buffer.from('<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:Stop xmlns:u="urn:schemas-upnp-org:service:AVTransport:1"><InstanceID>0</InstanceID></u:Stop></s:Body></s:Envelope>', 'utf8');
+      const request = require('http').request({ host: url.hostname, port: url.port || 80, path: url.pathname + url.search, method: 'POST', timeout: CAST_STOP_WAIT_MS, headers: { 'Content-Type': 'text/xml; charset="utf-8"', SOAPACTION: '"urn:schemas-upnp-org:service:AVTransport:1#Stop"', 'Content-Length': body.length } }, (response) => {
+        response.resume();
+        response.on('end', resolve);
+        response.on('error', resolve);
+      });
+      request.on('timeout', () => request.destroy());
+      request.on('error', resolve);
+      request.end(body);
+    }
+    catch (e) {
+      resolve();
+    }
+  });
+}
+
+// then() once the players told to stop have answered (or CAST_STOP_WAIT_MS has passed); at once when none were
+function castStopThen(then) {
+  const pending = castStopping;
+  castStopping = null;
+  if (!pending) {
+    then();
+    return;
+  }
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    then();
+  };
+  timers.setTimeout(finish, CAST_STOP_WAIT_MS);
+  pending.then(finish, finish);
+}
+
 ipcMain.on('installAndRestart', (event, what) => {
     if (isShuttingDown) {
         event.returnValue = true;
@@ -667,7 +729,7 @@ ipcMain.on('installAndRestart', (event, what) => {
     event.returnValue = true;
     
     timers.setTimeout(() => {
-        rigPttUnkeyThen(() => autoUpdater.quitAndInstall(true, true));
+        castStopThen(() => rigPttUnkeyThen(() => autoUpdater.quitAndInstall(true, true)));
     }, 100);
 });
 
@@ -689,10 +751,10 @@ ipcMain.on('restartGridTracker2', (event, resetWindowPositions = false) => {
     event.returnValue = true; 
   
     timers.setTimeout(() => {
-        rigPttUnkeyThen(() => {
+        castStopThen(() => rigPttUnkeyThen(() => {
             app.relaunch();
             app.exit();
-        });
+        }));
     }, 100);
 });
 
@@ -1112,7 +1174,8 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   saveWindowPositions();
-  app.quit();
+  // (the DLNA players told to stop as the main window closed answered first: at once when there were none)
+  castStopThen(() => app.quit());
 });
 
 app.on('will-quit', () => {

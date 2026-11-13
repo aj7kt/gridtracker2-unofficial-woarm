@@ -321,7 +321,7 @@ const def_settings = {
     gridAlpha: 136,
     // POTA, SOTA and DX Feeds markers that would overlap are drawn as one (groupOverlappingFeatures)
     groupSpots: true,
-    // Settings -> General -> Display -> Enable Casting (the button panel's Cast button), the device cast to last, the port its video is
+    // Settings -> Features -> Casting -> Enable Casting (the button panel's Cast button), the device cast to last, the port its video is
     // served on, and without a hardware encoder the software encoder's frame rate and resolution (its height: 480 to 2160) (mapCast.js)
     castEnable: false,
     castDevice: { id: "", name: "", host: "" },
@@ -329,6 +329,12 @@ const def_settings = {
     // cast stops while the app runs)
     castDevices: [],
     castPort: 21575,
+    // Settings -> Features -> Casting -> Announce On Network: the video listed as a UPnP / DLNA media server (mapCastAnnounceWorker.js)
+    castAnnounce: false,
+    // The name it's listed under; empty: the default, "GridTracker2 by N0TTL" (mapCastAnnounceName)
+    castAnnounceName: "",
+    // With a hardware encoder: the window made for a 1920x1080 video while casting (mapCastTarget), else snapped to 16:9 at about its size
+    castHardware1080: false,
     castSoftwareFps: 10,
     castSoftwareHeight: 720,
     haltAllOnTx: true,

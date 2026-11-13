@@ -418,6 +418,8 @@ async function satSyncRun()
     {
       if (i > 0) await satPause(SAT_REQUEST_GAP);
       await satSyncList(names[i], state);
+      // The Telemetry tab's AMSAT and SatNOGS lines show what was just fetched, even while that tab is open
+      if (typeof birdWatchTleRender == "function") birdWatchTleRender();
     }
 
     // The user's remote element sets that are to be refreshed every 24 hours. One that fails doesn't fail the pass

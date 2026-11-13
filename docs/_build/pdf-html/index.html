@@ -8,7 +8,7 @@
     <title>GridTracker2 User Guide</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=29da98fa" />
-    <script src="_static/documentation_options.js?v=586ae2dc"></script>
+    <script src="_static/documentation_options.js?v=15def995"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,8 +30,8 @@
 <div class="gt-cover">
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
-<p class="gt-cover-version">Version 2.261112.3</p>
-<p class="gt-cover-date">November 12, 2026</p>
+<p class="gt-cover-version">Version 2.261113.0</p>
+<p class="gt-cover-date">November 13, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
             
@@ -157,7 +157,7 @@
 </section>
 <span id="document-Introduction/Whats-New"></span><section id="what-s-new-in-gridtracker2">
 <h2>What’s New in GridTracker2<a class="headerlink" href="#what-s-new-in-gridtracker2" title="Link to this heading">¶</a></h2>
-<p>This guide was last revised for version 2.261112.3. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
+<p>This guide was last revised for version 2.261113.0. If you used GridTracker2 before 2025, these are the biggest changes since the previous edition of this guide. Each one is covered in detail in its own chapter.</p>
 <section id="new-features">
 <h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -905,7 +905,7 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_images/castButton.png"><img alt="" src="_images/castButton.png" style="width: 32px;" /></a></p></td>
 <td><p>Cast</p></td>
-<td><p>Shows the map on a TV through a Google TV Streamer or Chromecast; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on, and can be clicked once a Cast device has been found. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
+<td><p>Shows the map on a TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi; click again to stop. Right-click to pick the device. Shown while <strong>Enable Casting</strong> is on, and can be clicked once a device has been found. See <a class="reference internal" href="#casting-the-map">Casting the Map</a>.</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -917,20 +917,23 @@
 </section>
 <section id="casting-the-map">
 <h4>Casting the Map<a class="headerlink" href="#casting-the-map" title="Link to this heading">¶</a></h4>
-<p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#display"><span class="std std-ref">Settings → General → Display</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV through a Google TV Streamer or Chromecast on your network, or to several of them at once.</p>
+<p>Turn on <strong>Enable Casting</strong> in <a class="reference internal" href="#document-GridTracker-Overview/Settings-Sub-Menus#casting"><span class="std std-ref">Settings → Features → Casting</span></a> to add the <strong>Cast</strong> button. It sends the map, as the main window shows it, live to a TV on your network, or to several at once: through a Chromecast or Google TV Streamer, or a DLNA player, such as Kodi or a smart TV that plays videos from the network (one that plays only music, like many AV receivers, isn’t listed).</p>
 <ul class="simple">
-<li><p>The button is dimmed until GridTracker2 has found a Cast device on your network; it keeps looking every half minute until one answers. Right-click the button to look again.</p></li>
-<li><p>With one Cast device found, <strong>click</strong> the button to cast to it, and click again to stop.</p></li>
-<li><p>With more than one, a click lists them, as a <strong>right-click</strong> does. Each device has a checkbox, ticked while you cast to it: tick a device to cast to it as well, untick it to stop casting to it. All of them show the same map. While casting, the list also has <strong>Stop Casting</strong>, which stops them all.</p></li>
+<li><p>The button is dimmed until GridTracker2 has found a device on your network; it keeps looking every half minute until one answers. Right-click the button to look again.</p></li>
+<li><p>With one device found, <strong>click</strong> the button to cast to it, and click again to stop.</p></li>
+<li><p>With more than one, a click lists them, as a <strong>right-click</strong> does. Each device has a checkbox, ticked while you cast to it: tick a device to cast to it as well, untick it to stop casting to it. All of them show the same map. While casting, the list also has <strong>Stop Casting</strong>, which stops them all. The same list, with each device’s kind, is under <strong>Devices</strong> in the Casting box.</p></li>
+<li><p>Stopping the video on a DLNA player, or playing something else on it, stops casting to it.</p></li>
+<li><p>When GridTracker2 closes or restarts, or <strong>Enable Casting</strong> is turned off, the DLNA players showing the map are told to stop, so they don’t sit waiting on a video that has gone. That includes a Kodi playing it from its own list of media servers (<strong>Announce On Network</strong>), as long as Kodi’s UPnP player is on.</p></li>
 <li><p>If you were casting when you closed GridTracker2, it casts to the same devices again about 10 seconds after the next start, each one that is on and answers. Stop casting before you close it to start without a cast.</p></li>
 <li><p>After the first device is picked, GridTracker2 makes about 12 seconds of the map’s video before it tells the TV to play it, so the TV has enough to start smoothly. Meanwhile the button is in color and its tooltip says the video is being prepared. A device added while casting starts at once. The TVs show the map about 10 seconds behind.</p></li>
 <li><p>A number in the button’s top right corner shows how many are watching the map now: each device you cast to and each one on your network watching its video (below), counted once each.</p></li>
 <li><p>While casting, the button is in color and its tooltip names the devices. The main window is sized to the TV’s 16:9 shape, and goes back to its size when the last cast stops. A maximized or full screen window is left as it is.</p></li>
 <li><p>Starting and stopping each device, and a device that can’t be reached, are shown in the <a class="reference internal" href="#event-viewer">Event Viewer</a>.</p></li>
 <li><p>The video is served from this computer on the <strong>Port</strong> under <strong>Enable Casting</strong> (21575 unless you change it). If your firewall asks, allow GridTracker2 on your home network. The port can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; those watching the video then open its address again.</p></li>
-<li><p>The video’s address, such as <code class="docutils literal notranslate"><span class="pre">http://192.168.1.20:21575/map.m3u8</span></code>, is shown beside <strong>Enable Casting</strong>. Click it to copy it, or right-click it for <strong>Open In Default Browser</strong>. The video isn’t only for a Chromecast: it’s standard HLS video, which most players can show. While <strong>Enable Casting</strong> is on, anyone on your network can open it to watch the map on another screen, with or without a cast: in VLC (Media → Open Network Stream, also on a Fire TV, an Android TV box or a phone), QuickTime Player (File → Open Location), Safari on a Mac, iPhone or iPad, Kodi, mpv, or a web page using a player such as Shaka Player or hls.js, among many others. The video starts a few seconds after it’s opened, and stops being made when nobody has watched it for 30 seconds (a cast counts as watching; cast again within those 30 seconds and the TV starts at once).</p></li>
+<li><p>The video’s two addresses are shown under <strong>Watch On Your Network</strong> in the Casting box: <strong>HLS</strong> (<code class="docutils literal notranslate"><span class="pre">map.m3u8</span></code>, such as <code class="docutils literal notranslate"><span class="pre">http://192.168.1.20:21575/map.m3u8</span></code>), which a cast plays and nearly every player can show, and <strong>MPEG-TS</strong> (<code class="docutils literal notranslate"><span class="pre">map.ts</span></code>), the same video as one plain stream, for players that don’t take HLS. Click an address to copy it, or right-click the HLS one for <strong>Open In Default Browser</strong>. The video isn’t only for a Chromecast: it’s standard video, which most players can show.</p></li>
+<li><p>With <strong>Announce On Network</strong> on, you don’t need the addresses: GridTracker2 shows up as a media server, under the <strong>Name</strong> below it (“GridTracker2 by N0TTL” unless you change it), with one video in it, <strong>Live Map</strong>. Look for it where a player lists the media servers on your network: in Kodi under Videos → Files → Add Videos → Browse → UPnP Devices, in VLC under Local Network → Universal Plug’n’Play, in the Roku Media Player app, and in a smart TV’s media or “network” app. While <strong>Enable Casting</strong> is on, anyone on your network can open it to watch the map on another screen, with or without a cast: in VLC (Media → Open Network Stream, also on a Fire TV, an Android TV box or a phone), QuickTime Player (File → Open Location), Safari on a Mac, iPhone or iPad, Kodi, mpv, or a web page using a player such as Shaka Player or hls.js, among many others. The video starts a few seconds after it’s opened, and stops being made when nobody has watched it for 30 seconds (a cast counts as watching; cast again within those 30 seconds and the TV starts at once).</p></li>
 </ul>
-<p>GridTracker2 uses the computer’s hardware video encoder. On a computer without one (Linux with an NVIDIA graphics card, for example), the video is made in software, which uses more CPU; the <a class="reference internal" href="#event-viewer">Event Viewer</a> says so when it starts. Then <strong>Software Frame Rate</strong> (1 to 30 frames a second, 10 unless you change it) and <strong>Software Resolution</strong> (480p, 720p, 1080p, 1440p or 4K; 720p unless you change it) appear under <strong>Enable Casting</strong>: more frames are smoother and a bigger picture is sharper, and both use more of your CPU. While casting, the main window is sized to the Software Resolution (as far as your screen allows), so the map is captured at that size. A change takes effect the next time the video starts. An older Chromecast shows at most 1080p.</p>
+<p>GridTracker2 uses the computer’s hardware video encoder. With one, the video is the size of the main window (snapped to 16:9), up to 1080p; turn on <strong>Lock Window Size To 1080p</strong> to have the window sized while casting so the map is captured at exactly 1920x1080, and locked at that size. Without the lock, resizing the window while casting changes the video’s size: a second after you stop resizing, GridTracker2 casts to your TVs again at the new size, which takes about as long as starting a cast (the Event Viewer says so). On a computer without one (Linux with an NVIDIA graphics card, for example), the video is made in software, which uses more CPU; the <a class="reference internal" href="#event-viewer">Event Viewer</a> says so when it starts. Then <strong>Software Frame Rate</strong> (1 to 30 frames a second, 10 unless you change it) and <strong>Software Resolution</strong> (480p, 720p, 1080p, 1440p or 4K; 720p unless you change it) appear under <strong>Enable Casting</strong>: more frames are smoother and a bigger picture is sharper, and both use more of your CPU. While casting, the main window is sized to the Software Resolution (as far as your screen allows), so the map is captured at that size, and it can’t be resized until the last cast stops. A change takes effect the next time the video starts. An older Chromecast shows at most 1080p.</p>
 </section>
 </section>
 <section id="rearranging-the-panel">
@@ -1018,9 +1021,6 @@
 <li><p><strong>Window Theme:</strong> Dark, Light or System.</p></li>
 <li><p><strong>Distance Units:</strong> Kilometers, Statute Miles, Nautical Miles or Degrees.</p></li>
 <li><p><strong>Control Panel On Left Side:</strong> puts the side panel on the left of the window and the map on the right.</p></li>
-<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>. While it’s on, the video’s address is shown beside it; click it to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), as it’s standard HLS video.</p></li>
-<li><p><strong>Port:</strong> the port the map’s video is served on (21575 unless changed). It can be changed while <strong>Enable Casting</strong> is on and nothing is being cast; with <strong>Enable Casting</strong> off it’s grayed out.</p></li>
-<li><p><strong>Software Frame Rate</strong> and <strong>Software Resolution:</strong> shown only on a computer without a hardware video encoder, where the map’s video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
 </ul>
 </section>
 <section id="settings">
@@ -1055,6 +1055,19 @@
 </li>
 <li><p><strong>Clear WSJT-X / JTDX On CQ:</strong> when you start calling CQ, the DX Call and DX Grid left over from your last QSO are cleared in WSJT-X or JTDX.</p></li>
 <li><p><strong>Open Event Viewer On Error:</strong> an error, such as a log upload that failed, opens the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>.</p></li>
+</ul>
+</section>
+<section id="casting">
+<h4>Casting<a class="headerlink" href="#casting" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Enable Casting:</strong> adds the Cast button to the button panel, to show the map on a TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi. Beside it, the main window’s size now, in your screen’s pixels (for example <strong>1920x1080</strong>): the size of the map’s video. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
+<li><p><strong>Port:</strong> the port the map’s video is served on (21575 unless changed). It can be changed while nothing is being cast. It and everything below it in the box are shown only while <strong>Enable Casting</strong> is on.</p></li>
+<li><p><strong>Announce On Network:</strong> off unless you turn it on. GridTracker2 shows up on your network as a media server (UPnP / DLNA), with one video in it, <strong>Live Map</strong>, so Kodi, VLC, the Roku Media Player app and smart TVs find the map themselves, without an address typed in. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
+<li><p><strong>Name:</strong> the name players list it under, “GridTracker2 by N0TTL” unless you change it (clear it to go back to that). Shown while <strong>Announce On Network</strong> is on.</p></li>
+<li><p><strong>Lock Window Size To 1080p:</strong> shown on a computer with a hardware video encoder; off unless you turn it on. While casting, the main window is sized so the map is captured at exactly 1920x1080, as sharp as a 1080p TV can show it, and it can’t be resized until the last cast stops; then it goes back to its own size. Off, the window keeps about its size, snapped to the TV’s 16:9 shape. It takes effect the next time you cast. See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
+<li><p><strong>Software Frame Rate</strong> and <strong>Software Resolution:</strong> shown only on a computer without a hardware video encoder, where the map’s video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#casting-the-map"><span class="std std-ref">Casting the Map</span></a>.</p></li>
+<li><p><strong>Devices:</strong> the Chromecasts, Google TVs and DLNA players found on your network, each with its kind after its name. Tick one to cast to it as well, untick it to stop. Opening the Features tab looks for them again, and so does <strong>Search</strong>.</p></li>
+<li><p><strong>Watch On Your Network:</strong> the video’s two addresses, <strong>HLS</strong> (<code class="docutils literal notranslate"><span class="pre">map.m3u8</span></code>) and <strong>MPEG-TS</strong> (<code class="docutils literal notranslate"><span class="pre">map.ts</span></code>, the same video as one plain stream, for players that don’t take HLS). Click one to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), or right-click the HLS one for <strong>Open In Default Browser</strong>.</p></li>
 </ul>
 </section>
 <section id="service">
@@ -3186,6 +3199,7 @@
 <h3>WWV and WWVH<a class="headerlink" href="#wwv-and-wwvh" title="Link to this heading">¶</a></h3>
 <p><strong>WWV / WWVH</strong> in the Mode menu reads NIST’s time stations, WWV in Fort Collins, Colorado, and WWVH on Kauai, Hawaii: their time code and their second pulses, and how far your computer’s clock is from them. Both stations share 2.5, 5, 10 and 15 MHz; WWV is also on 20 and 25 MHz. (Canada’s CHU went off the air on June 22, 2026.)</p>
 <ul class="simple">
+<li><p><strong>Please give it a few minutes.</strong> WWV sends only one pulse a second, and its time code takes a full minute to send, so the decoder needs about 4 to 5 minutes of listening before the time it shows is accurate. Until then you’ll see it counting and reading, and an offset to the nearest second only. Thank you for your patience: it’s worth the wait.</p></li>
 <li><p><strong>Tuning:</strong> USB with the dial 1 kHz under the carrier, for example 9.999 MHz for 10 MHz. The carrier then sits at 1000 Hz on the waterfall, with the time code’s 100 Hz either side of it, which a rig’s SSB filter would cut with the dial on the carrier. AM works too. The decoder finds the carrier by itself, so the dial doesn’t have to be exact.</p></li>
 <li><p><strong>The view:</strong> the time as the stations send it (UTC, to the second), the date and the day of the year, DUT1 (UT1 less UTC), the leap second warning and U.S. daylight saving time, as the time code gives them. These change rarely, so a change is shown only once two minutes running read it (one misread minute doesn’t show). Under it, each station and how strongly its second pulses come in, or <strong>not heard</strong>: WWV’s pulses are 1000 Hz, WWVH’s 1200 Hz, so both are timed on their own when both are heard.</p></li>
 <li><p><strong>PC clock:</strong> for example <strong>PC clock is 0.183 s ahead (± 0.050 s, 5 min)</strong>, from the last 5 minutes. Each minute’s pulses are timed against your computer’s clock, less the radio path from your location (your grid square in GridTracker2’s settings) to each station: a sky wave off the ionosphere at about 300 km, in one hop up to 3500 km and more beyond. Hover over it for how it is worked out.</p>
@@ -3197,13 +3211,21 @@
 <li><p>A first reading of the time code that the next minute hasn’t confirmed yet is marked <strong>Not Confirmed</strong>, and its date is shown only when it is within an hour of your computer’s clock; its pulses are timed to the nearest second.</p></li>
 </ul>
 </li>
-<li><p><strong>Set PC Clock:</strong> shown once the offset has held steady for 3 minutes or more with the time code read, and is at least 0.25 s (five times its ±0.05 s, so the clock ends up much nearer than it was), with a sound card’s audio. Click it and confirm (the question says how accurate it is), and your system asks for an administrator’s permission (Windows’ UAC prompt, your Linux desktop’s password prompt, or macOS’s). The clock is moved by the offset shown, counted from when you answer the prompt. GridTracker2 never sets the clock by itself.</p>
+<li><p><strong>Set PC Clock:</strong> shown once the offset has held steady for 3 minutes or more with the time code read, and is more than 0.1 s (twice its ±0.05 s, so the clock ends up nearer than it was), with a sound card’s audio. Click it and confirm (the question says how accurate it is), and your system asks for an administrator’s permission (Windows’ UAC prompt, your Linux desktop’s password prompt, or macOS’s). The clock is moved by the offset shown, counted from when you answer the prompt. GridTracker2 never sets the clock by itself.</p>
 <ul>
+<li><p>On Windows, the prompt names <strong>Windows PowerShell</strong>, which is what sets the clock: Windows doesn’t let a program show its own reason there. Its <strong>Show more details</strong> says what it’s for, for example <strong>GridTracker2 (WWV / WWVH): moving the PC clock by -0.5120 s</strong>.</p></li>
+<li><p>Once set, the view notes it with the time, for example <strong>PC clock moved by -0.512 s at 12:59:40 UTC</strong>, and so does the <a class="reference internal" href="#document-GridTracker-Overview/Control-Panel#event-viewer"><span class="std std-ref">Event Viewer</span></a>. If the clock couldn’t be set, both say why.</p></li>
 <li><p>A clock that keeps its time from the internet is more accurate than this, and will set itself back at its next sync. Set PC Clock is for a computer with no internet time, such as one in the field.</p></li>
 </ul>
 </li>
 <li><p><strong>The list:</strong> each minute timed, the newest on top: <strong>UTC</strong>, <strong>Station</strong>, <strong>Time Code</strong> (<strong>Read</strong>, <strong>Counted</strong> on from the last minute read when a minute was too weak to read, <strong>Not Confirmed</strong> for a first reading that the next minute hasn’t confirmed yet, or <strong>Nearest Second</strong>), <strong>Pulses</strong> (the second pulses timed that minute), <strong>Offset (s)</strong> (that minute’s, the path taken off), <strong>Path (ms)</strong> (with its number of hops) and <strong>dB</strong>.</p></li>
 <li><p><strong>Frequency menu:</strong> 2.5, 5, 10, 15, 20 and 25 MHz, each 1 kHz under the carrier. <strong>Set Mode</strong> sets the rig to USB.</p></li>
+<li><p><strong>Best Signal Search:</strong> a button under the Mode menu, there while the decoder’s <strong>Rig Control</strong> and WWV’s <strong>Set Frequency</strong> (Settings, Decoders) are on and the rig is connected. Click it and the decoder tunes to each of WWV’s frequencies in turn (those in the Frequency menu, so your own from Band Plans too), listens about 10 seconds on each and then tunes the rig to the one whose second pulses came in clearest. The whole search takes about a minute. The view shows the frequency it’s listening to, then each one’s result: the station heard best there, or <strong>not heard</strong>, with the best in green. If no station is heard anywhere, the rig goes back where it was.</p>
+<ul>
+<li><p>While it runs the button says <strong>Stop Search</strong>: click it to stop, and the rig goes back where it was. Tuning the rig yourself, changing the mode or stopping the decoder stops it too.</p></li>
+<li><p>Which frequency is best changes through the day: the lower ones at night, the higher ones by day.</p></li>
+</ul>
+</li>
 </ul>
 <p>Written from NIST Special Publication 432, <em>NIST Time and Frequency Radio Stations: WWV, WWVH, and WWVB</em>.</p>
 </section>
@@ -4581,7 +4603,7 @@ Linux users, please include the output of: uname -r)
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2026, GridTracker.org.
-      Last updated on Nov 12, 2026.
+      Last updated on Nov 13, 2026.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>

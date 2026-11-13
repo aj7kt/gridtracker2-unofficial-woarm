@@ -1164,7 +1164,7 @@
   <rect x="360" y="384" width="96" height="40" rx="8" fill="#FFE600"/>
 </svg>
 
-<!-- cast.png (512x512): the button panel's Cast button (Settings -> General -> Display -> Enable Casting): a screen open at its lower left corner, the signal going out from there; grayed while not casting -->
+<!-- cast.png (512x512): the button panel's Cast button (Settings -> Features -> Casting -> Enable Casting): a screen open at its lower left corner, the signal going out from there; grayed while not casting -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <!-- Background Container, as the Event Viewer's -->
   <rect x="6" y="6" width="500" height="500" rx="40" fill="#101418" stroke="#1A2229" stroke-width="12"/>

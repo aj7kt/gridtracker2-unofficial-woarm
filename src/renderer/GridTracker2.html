@@ -837,7 +837,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div id="radiosButton" onclick="radiosButtonClick();" class="iconButton" style="display:none;" title="Open Settings on the Radios tab" data-i18n="gt.button.radios.hover">
           <img src="img/radios.png" class="buttonImg" />
         </div>
-        <!-- Shown while Settings -> General -> Display -> Enable Casting is on (services/mapCast.js): a right click lists the devices -->
+        <!-- Shown while Settings -> Features -> Casting -> Enable Casting is on (services/mapCast.js): a right click lists the devices -->
         <div id="castButton" onclick="mapCastButtonClick();" oncontextmenu="mapCastButtonMenu(event);" class="iconButton" style="display:none;" title="Cast the map to a TV (right-click: pick the device)" data-i18n="gt.button.cast.hover">
           <img id="castImg" src="img/cast.png" class="buttonImg" style="filter: grayscale(1);" />
           <!-- How many watch the map now: the devices cast to and anyone on the network watching its video (mapCastRender) -->
@@ -1223,33 +1223,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               <td class="mapRowLabel"><label data-i18n="settings.general.MapOnRightSide.label" for="mapRightValue">Control Panel On Left Side</label></td>
               <td><input type="checkbox" id="mapRightValue" onchange="changeMapRight(this);" /></td>
             </tr>
-            <!-- The tooltip on the row, so it shows over the label too (mapCast.js mapCastRender: why it can't be turned on, without a hardware encoder) -->
-            <tr id="castEnableRow" data-i18n="settings.map.cast.hover" title="Adds a Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast">
-              <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting</label></td>
-              <td><input type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /><span id="castLink" class="castLink" data-i18n="settings.map.cast.link.hover" title="The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink();" oncontextmenu="mapCastLinkMenu(event);"><span id="castLinkText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
-            </tr>
-            <!-- The port the video is served on (mapCast.js), changed only while Enable Casting is on and nothing is cast -->
-            <tr id="castPortRow" data-i18n="settings.map.cast.port.hover" title="The port the map's video is served on; it can be changed while Enable Casting is on and nothing is being cast">
-              <td class="mapRowLabel"><label data-i18n="settings.map.cast.port.label" for="castPort">Port</label></td>
-              <td><input id="castPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress="return validNumberKeys(event.charCode);" oninput="mapCastPortChanged();" /></td>
-            </tr>
-            <!-- Only without a hardware encoder (mapCast.js mapCastRender): the software encoder's frame rate and resolution, from the next video made on -->
-            <tr id="castSoftwareFpsRow" data-i18n="settings.map.cast.softwareFps.hover" title="Without a hardware video encoder: the frames a second of the map's video. More is smoother and uses more CPU; it takes effect the next time the video starts" style="display: none">
-              <td class="mapRowLabel"><label data-i18n="settings.map.cast.softwareFps.label" for="castSoftwareFps">Software Frame Rate</label></td>
-              <td><input type="range" min="1" max="30" value="10" step="1" class="slider" id="castSoftwareFps" oninput="mapCastSoftwareChanged();" /><span id="castSoftwareFpsTd" class="mapValue">10 fps</span></td>
-            </tr>
-            <tr id="castSoftwareSizeRow" data-i18n="settings.map.cast.softwareSize.hover" title="Without a hardware video encoder: the size of the map's video. Bigger is sharper and uses more CPU; it takes effect the next time the video starts" style="display: none">
-              <td class="mapRowLabel"><label data-i18n="settings.map.cast.softwareSize.label" for="castSoftwareSize">Software Resolution</label></td>
-              <td>
-                <select id="castSoftwareSize" onchange="mapCastSoftwareChanged();">
-                  <option value="480">480p</option>
-                  <option value="720">720p</option>
-                  <option value="1080">1080p</option>
-                  <option value="1440">1440p</option>
-                  <option value="2160">2160p (4K)</option>
-                </select>
-              </td>
-            </tr>
           </table>
         </div>
         <div class="mapGroup">
@@ -1284,38 +1257,112 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <div id="featuresSettingsDiv" class="settingsTabcontent">
       <div id="featureControlDiv" class="mapGroups">
         <div class="mapColumn">
-          <div class="mapGroup">
-            <div class="mapGroupTitle" data-i18n="settings.features.group.operational.label">Operational</div>
-            <table class="mapChecks">
-              <tr><td><input type="checkbox" id="wantedByBandMode" onclick="changeWantedByBandMode()" /> <label data-i18n="settings.Features.BandMemory" for="wantedByBandMode">CR Wanted+Audio Alerts Band+Mode Memory</label></td></tr>
-              <!-- Shown while Band Memory is on (handlers.js) -->
-              <tr id="includeExceptionsRow"><td class="mapIndent"><input type="checkbox" id="includeExceptions" onclick="changeIncludeExceptions()" /> <label data-i18n="settings.Features.IncludeExceptions" for="includeExceptions">... Include Exceptions</label></td></tr>
-              <tr id="includeCustomAlertsRow"><td class="mapIndent"><input type="checkbox" id="includeCustomAlerts" onclick="changeIncludeCustomAlerts()" /> <label data-i18n="settings.Features.IncludeCustomAlerts" for="includeCustomAlerts">... Include Custom Alerts</label></td></tr>
-              <tr><td><input type="checkbox" id="clearOnCQ" onclick="changeClearOnCQ();" /> <label data-i18n="settings.features.ClearOnCQ.label" for="clearOnCQ">Clear on CQ</label></td></tr>
-              <tr><td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /> <label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td></tr>
-            </table>
+          <!-- Operational and Service side by side, the same height; Casting under both -->
+          <div class="mapRow">
+            <div class="mapGroup">
+              <div class="mapGroupTitle" data-i18n="settings.features.group.operational.label">Operational</div>
+              <table class="mapChecks">
+                <tr><td><input type="checkbox" id="wantedByBandMode" onclick="changeWantedByBandMode()" /> <label data-i18n="settings.Features.BandMemory" for="wantedByBandMode">CR Wanted+Audio Alerts Band+Mode Memory</label></td></tr>
+                <!-- Shown while Band Memory is on (handlers.js) -->
+                <tr id="includeExceptionsRow"><td class="mapIndent"><input type="checkbox" id="includeExceptions" onclick="changeIncludeExceptions()" /> <label data-i18n="settings.Features.IncludeExceptions" for="includeExceptions">... Include Exceptions</label></td></tr>
+                <tr id="includeCustomAlertsRow"><td class="mapIndent"><input type="checkbox" id="includeCustomAlerts" onclick="changeIncludeCustomAlerts()" /> <label data-i18n="settings.Features.IncludeCustomAlerts" for="includeCustomAlerts">... Include Custom Alerts</label></td></tr>
+                <tr><td><input type="checkbox" id="clearOnCQ" onclick="changeClearOnCQ();" /> <label data-i18n="settings.features.ClearOnCQ.label" for="clearOnCQ">Clear on CQ</label></td></tr>
+                <tr><td><input data-i18n="settings.general.openEventViewerOnError.hover" title="An error (a log upload that failed, ...) opens the Event Viewer where it is set to show" type="checkbox" id="openEventViewerOnErrorValue" onchange="changeOpenEventViewerOnError();" /> <label data-i18n="settings.general.openEventViewerOnError.label" for="openEventViewerOnErrorValue">Open Event Viewer On Error</label></td></tr>
+              </table>
+            </div>
+            <div class="mapGroup">
+              <div class="mapGroupTitle" data-i18n="settings.logging.otherheader.service">Service</div>
+              <table>
+                <!-- A service's box in front of its name, as in the Online group; the rows under one are tabbed in -->
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.enable.label" for="birdWatchEnable">BirdWatch (Satellite Tracking)</label></td>
+                </tr>
+                <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from each mode's Input Device (picked there) -->
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.hover" title="Decodes the CW, FT8 or SSTV signals in the receiver's passband, heard on each mode's Input Device (picked in its window), and shows them in the Multi-Mode Decoder window" type="checkbox" id="mmDecoderEnable" onclick="mmDecoderEnableChanged();" /> <label data-i18n="cwViewer.title" for="mmDecoderEnable">Multi-Mode Decoder</label></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rotor.hover" title="Points an antenna rotator from GridTracker: a controller on a serial port, or Hamlib's rotctld" type="checkbox" id="rotorEnable" onclick="rotorEnableChanged();" /> <label data-i18n="settings.rotor.label" for="rotorEnable">Rotor Control</label></td>
+                </tr>
+                <!-- Rig Control (rig.js), its rows shown while it is on -->
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rig.hover" title="Talks to the rig: Hamlib's rigctld, flrig, or on a serial port an Icom (CI-V), a Kenwood or a Yaesu (CAT)" type="checkbox" id="rigEnable" onclick="rigEnableChanged();" /> <label data-i18n="settings.rig.label" for="rigEnable">Rig Control</label></td>
+                </tr>
+                <!-- Network Audio (netAudio.js): its streams in the Radios tab -->
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.netAudio.hover" title="Audio over the network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder" type="checkbox" id="netAudioEnable" onclick="netAudioEnableChanged();" /> <label data-i18n="settings.netAudio.label" for="netAudioEnable">Network Audio</label></td>
+                </tr>
+              </table>
+            </div>
           </div>
+          <!-- Casting (mapCast.js) -->
           <div class="mapGroup">
-            <div class="mapGroupTitle" data-i18n="settings.logging.otherheader.service">Service</div>
+            <div class="mapGroupTitle" data-i18n="settings.features.group.casting.label">Casting</div>
             <table>
-              <!-- A service's box in front of its name, as in the Online group; the rows under one are tabbed in -->
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.birdWatch.hover" title="Satellite Tracking" type="checkbox" id="birdWatchEnable" onclick="changeBirdWatchEnable();" /> <label data-i18n="settings.birdWatch.enable.label" for="birdWatchEnable">BirdWatch (Satellite Tracking)</label></td>
+              <!-- The tooltip on the row, so it shows over the label too (mapCast.js mapCastRender: why it can't be turned on, without a hardware encoder) -->
+              <tr id="castEnableRow" data-i18n="settings.map.cast.enable.hover" title="Adds a Cast button to the button panel, to show the map on a TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.label" for="castEnable">Enable Casting</label></td>
+                <td><input type="checkbox" id="castEnable" onchange="mapCastEnableChanged();" /><span id="castWindowSize" class="castWindowSize" data-i18n="settings.map.cast.windowSize.hover" title="The main window's size now, in your screen's pixels: the size of the map's video"></span></td>
               </tr>
-              <!-- Multi-Mode Decoder (services/mmDecoder.js): decodes in its window, from each mode's Input Device (picked there) -->
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.cwDecoder.hover" title="Decodes the CW, FT8 or SSTV signals in the receiver's passband, heard on each mode's Input Device (picked in its window), and shows them in the Multi-Mode Decoder window" type="checkbox" id="mmDecoderEnable" onclick="mmDecoderEnableChanged();" /> <label data-i18n="cwViewer.title" for="mmDecoderEnable">Multi-Mode Decoder</label></td>
+              <!-- The port the video is served on (mapCast.js), changed only while Enable Casting is on and nothing is cast -->
+              <!-- The rows below shown only while Enable Casting is on (mapCast.js mapCastRender) -->
+              <tr id="castPortRow" data-i18n="settings.map.cast.port.hover" title="The port the map's video is served on; it can be changed while Enable Casting is on and nothing is being cast" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.port.label" for="castPort">Port</label></td>
+                <td><input id="castPort" type="text" class="inputTextValue" maxlength="5" size="5" onkeypress="return validNumberKeys(event.charCode);" oninput="mapCastPortChanged();" /></td>
               </tr>
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rotor.hover" title="Points an antenna rotator from GridTracker: a controller on a serial port, or Hamlib's rotctld" type="checkbox" id="rotorEnable" onclick="rotorEnableChanged();" /> <label data-i18n="settings.rotor.label" for="rotorEnable">Rotor Control</label></td>
+              <!-- The video listed as a UPnP / DLNA media server (mapCast.js, mapCastAnnounceWorker.js) -->
+              <tr id="castAnnounceRow" data-i18n="settings.map.cast.announce.hover" title="Lists the map as a media server on your network, so Kodi, VLC, Roku and smart TVs can find and play it" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.announce.label" for="castAnnounce">Announce On Network</label></td>
+                <td><input type="checkbox" id="castAnnounce" onchange="mapCastAnnounceChanged();" /></td>
               </tr>
-              <!-- Rig Control (rig.js), its rows shown while it is on -->
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.rig.hover" title="Talks to the rig: Hamlib's rigctld, flrig, or on a serial port an Icom (CI-V), a Kenwood or a Yaesu (CAT)" type="checkbox" id="rigEnable" onclick="rigEnableChanged();" /> <label data-i18n="settings.rig.label" for="rigEnable">Rig Control</label></td>
+              <!-- The name it's listed under (mapCast.js), shown only while Announce On Network is on; emptied: the default again -->
+              <tr id="castAnnounceNameRow" data-i18n="settings.map.cast.announceName.hover" title="The name the map is listed under on your network; clear it to go back to the default" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.announceName.label" for="castAnnounceName">Name</label></td>
+                <td><input id="castAnnounceName" type="text" class="inputTextValue" maxlength="64" size="24" oninput="mapCastAnnounceNameChanged();" onchange="mapCastAnnounceNameShow();" /></td>
               </tr>
-              <!-- Network Audio (netAudio.js): its streams in the Radios tab -->
-              <tr>
-                <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input data-i18n="settings.netAudio.hover" title="Audio over the network (VBAN, RTP, PipeWire / PulseAudio) as Input and Output Devices of the Multi-Mode Decoder" type="checkbox" id="netAudioEnable" onclick="netAudioEnableChanged();" /> <label data-i18n="settings.netAudio.label" for="netAudioEnable">Network Audio</label></td>
+              <!-- Only with a hardware encoder (mapCast.js mapCastRender): the window made for a 1080p video while casting, and not resizable then, from the next cast on -->
+              <tr id="castHardware1080Row" data-i18n="settings.map.cast.hardware1080.hover" title="While casting, the main window is sized so the map is captured at exactly 1920x1080, as sharp as a 1080p TV shows it, and can't be resized until the cast stops; off, it keeps about its size, snapped to the TV's shape. Takes effect the next time you cast" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.hardware1080.label" for="castHardware1080">Lock Window Size To 1080p</label></td>
+                <td><input type="checkbox" id="castHardware1080" onchange="mapCastHardware1080Changed();" /></td>
+              </tr>
+              <!-- Only without a hardware encoder (mapCast.js mapCastRender): the software encoder's frame rate and resolution, from the next video made on -->
+              <tr id="castSoftwareFpsRow" data-i18n="settings.map.cast.softwareFps.hover" title="Without a hardware video encoder: the frames a second of the map's video. More is smoother and uses more CPU; it takes effect the next time the video starts" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.softwareFps.label" for="castSoftwareFps">Software Frame Rate</label></td>
+                <td><input type="range" min="1" max="30" value="10" step="1" class="slider" id="castSoftwareFps" oninput="mapCastSoftwareChanged();" /><span id="castSoftwareFpsTd" class="mapValue">10 fps</span></td>
+              </tr>
+              <tr id="castSoftwareSizeRow" data-i18n="settings.map.cast.softwareSize.hover" title="Without a hardware video encoder: the size of the map's video. Bigger is sharper and uses more CPU; it takes effect the next time the video starts" style="display: none">
+                <td class="mapRowLabel"><label data-i18n="settings.map.cast.softwareSize.label" for="castSoftwareSize">Software Resolution</label></td>
+                <td>
+                  <select id="castSoftwareSize" onchange="mapCastSoftwareChanged();">
+                    <option value="480">480p</option>
+                    <option value="720">720p</option>
+                    <option value="1080">1080p</option>
+                    <option value="1440">1440p</option>
+                    <option value="2160">2160p (4K)</option>
+                  </select>
+                </td>
+              </tr>
+              <!-- While Enable Casting is on (mapCast.js mapCastRender): the Chromecasts, Google TVs and DLNA players found (mapCastRenderDevices),
+                   each ticked while cast to, and Search -->
+              <tr id="castDevicesRow" style="display: none">
+                <td class="mapRowLabel castTopLabel"><span data-i18n="settings.map.cast.devices.label">Devices</span></td>
+                <td>
+                  <div id="castDeviceList" class="castDeviceList" data-i18n="settings.map.cast.devices.hover" title="The Chromecasts, Google TVs and DLNA players found on your network: tick one to cast to it, untick it to stop"></div>
+                  <div id="castSearchButton" data-i18n="settings.map.cast.search.hover" title="Look for devices on your network again" class="button mapInlineButton" onclick="mapCastSearchClick();">Search</div>
+                </td>
+              </tr>
+              <!-- The video's two addresses, to watch it on the network (each copied by a click; right click: Open In Default Browser) -->
+              <tr id="castWatchRow" style="display: none">
+                <td colspan="2" class="mapRowLabel mapRowLabelLeft castWatchTitle"><span data-i18n="settings.map.cast.watch.label">Watch On Your Network</span></td>
+              </tr>
+              <tr id="castLinkHlsRow" style="display: none">
+                <td class="mapRowLabel">HLS</td>
+                <td><span class="castLink" data-i18n="settings.map.cast.link.hover" title="The map's video, to watch in VLC or a browser on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink('map.m3u8');" oncontextmenu="mapCastLinkMenu(event, 'map.m3u8');"><span id="castLinkHlsText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
+              </tr>
+              <!-- The same video as one endless stream (map.ts): no browser plays it, so no Open In Default Browser -->
+              <tr id="castLinkStreamRow" style="display: none">
+                <td class="mapRowLabel">MPEG-TS</td>
+                <td><span class="castLink" data-i18n="settings.map.cast.stream.hover" title="The map's video as one stream, for VLC and other players on your network (it starts after a few seconds). Click to copy" onclick="mapCastCopyLink('map.ts');"><span id="castLinkStreamText"></span><svg class="castLinkCopy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" /></svg></span></td>
               </tr>
             </table>
           </div>

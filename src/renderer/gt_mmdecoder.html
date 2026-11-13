@@ -1170,6 +1170,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </div>
     <!-- The submode menus, on a row of their own under the second line (shown while one is: mmdModeSet) -->
     <div id="cwSubBar" class="cwBarRow" style="display: none;">
+      <!-- WWV's Best Signal Search (mmdWwv.js): in WWV mode, while the decoder may tune the rig to WWV's frequencies (Rig Control, WWV's Set Frequency) -->
+      <span id="wwvSearchBox" class="cwPick" style="display: none;"><span class="cwButton" onclick="mmdWwvSearchClick();" data-i18n="cwViewer.wwv.search.hover" title="Listens on each WWV frequency in turn, about 10 seconds each, then tunes the rig to the one heard best"><span id="wwvSearchText">Best Signal Search</span></span></span>
     </div>
     <!-- Manage Decoders... (the Mode menu's last entry, mmdGetMore.js): the decoders to download for this version, each one's Install,
          Update or Remove, and each installed one's Enabled, done at the next start (Restart Now) -->

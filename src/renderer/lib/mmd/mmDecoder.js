@@ -2274,6 +2274,13 @@ function mmdTuneDial(dial, mode, data)
 // ---- The mode: each one's list, view or pictures in the CW lines' place (its registration's shown), the waterfall going on as in CW
 // mode
 
+// The row under the Mode menu (the plugins' subBar items: PSK's, Olivia's, Feld-Hell's submode menus; WWV's Best Signal Search), shown
+// while one of its items is
+function mmdSubBarShow()
+{
+  cwSubBar.style.display = [...cwSubBar.children].some((box) => box.style.display != "none") ? "" : "none";
+}
+
 function mmdModeSet(mode)
 {
   // Another mode: the time skew off (FT8's and FT4's periods differ), and nothing focused, pinned, hovered or dragged in the last carried
@@ -2315,8 +2322,7 @@ function mmdModeSet(mode)
   mmdPicShowView();
   // (the lines of a mode decoded in periods, FT8's, FT4's and WSPR's, are its periods': no UTC menu)
   cwUtcBox.style.display = mmdPluginPeriodMs() > 0 ? "none" : "";
-  // The submode menus' row (the plugins' subBar items: PSK's, Olivia's, Feld-Hell's), while one of them is shown
-  cwSubBar.style.display = [...cwSubBar.children].some((box) => box.style.display != "none") ? "" : "none";
+  mmdSubBarShow();
   mmdFreqsShow(mmdDial() != null);
   // This mode's Input Device (the decoder started again on it, if it was listening to another)
   mmdInputs();

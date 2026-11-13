@@ -5228,12 +5228,61 @@ table.birdDopplerTable {
   text-decoration: underline;
 }
 
-/* Settings -> General -> Display: the cast video's address beside Enable Casting, copied by a click */
+/* Settings -> Features -> Casting: the cast video's two addresses (HLS, MPEG-TS stream), each on its row, copied by a click */
 .castLink {
-  margin-left: 8px;
   cursor: pointer;
   color: var(--gt-label);
+}
+
+/* Its Devices: one per line, a checkbox, the name, then its kind (Chromecast, Google TV Streamer, DLNA) dimmer; Search under them */
+.castDeviceList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+
+.castDevice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.castDevice input[type="checkbox"] {
+  margin: 0;
+}
+
+.castDeviceKind {
+  color: color-mix(in srgb, var(--gt-label) 60%, black);
+  font-weight: normal;
+}
+
+/* Settings -> Features -> Casting: the main window's size beside Enable Casting, dim as a device's kind */
+.castWindowSize {
+  margin-left: 8px;
+  color: color-mix(in srgb, var(--gt-label) 60%, black);
+  font-weight: normal;
   vertical-align: middle;
+}
+
+.castDeviceNone {
+  color: color-mix(in srgb, var(--gt-label) 60%, black);
+  font-size: 12px;
+}
+
+/* The Devices label level with the first device, not the list's middle */
+.mapGroup td.mapRowLabel.castTopLabel {
+  vertical-align: top;
+  padding-top: 3px;
+}
+
+/* "Watch On Your Network": a heading over the two addresses */
+.mapGroup td.castWatchTitle {
+  padding-top: 6px;
 }
 
 .castLink:hover {
@@ -6360,6 +6409,19 @@ button:focus {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* Boxes side by side in a column, the same height, a box under them as wide as both (Settings -> Features: Operational and Service,
+   Casting under them) */
+.mapRow {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+/* (the boxes widened to the box under them when it's the wider) */
+.mapRow > .mapGroup {
+  flex: 1 1 auto;
 }
 
 /* An option that depends on the one above it, and one that depends on that */

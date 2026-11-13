@@ -3,7 +3,8 @@
 // set again by the elevated command itself, after the prompt has been answered, so however long the prompt waits doesn't matter.
 //   Windows: PowerShell's Set-Date -Adjust in a PowerShell started elevated (Start-Process -Verb RunAs: the UAC prompt). Setting the
 //            time needs the SeSystemtimePrivilege an elevated administrator has. Windows Time (w32time), where it runs, sets the clock
-//            again at its next sync.
+//            again at its next sync. UAC can't show a program's own reason, only "Windows PowerShell": its command line, under the
+//            prompt's Show more details, starts with a sentence saying what it's for (a string, set aside: it does nothing)
 //   Linux:   pkexec (polkit's prompt) running sh, which reads the clock to the nanosecond (date +%s%N) and sets it (date -s @seconds.ns:
 //            root, CAP_SYS_TIME). systemd-timesyncd, chrony or ntpd, where they run, bring it back to their time.
 //   macOS:   osascript's "with administrator privileges" (the password prompt) running perl (Time::HiRes, part of perl): the moment the
@@ -27,7 +28,9 @@ function clockAdjustCommand(platform, seconds)
   {
     // In 100 ns ticks, a whole number (no decimal point for the locale to read otherwise)
     const ticks = Math.round(s * 1e7);
-    const inner = "-NoProfile -NonInteractive -Command Set-Date -Adjust ([TimeSpan]::FromTicks(" + ticks + ")) | Out-Null";
+    // (its quotes doubled: this goes inside the outer command's single-quoted string)
+    const reason = "''GridTracker2 (WWV / WWVH): moving the PC clock by " + (s > 0 ? "+" : "") + s.toFixed(4) + " s''";
+    const inner = "-NoProfile -NonInteractive -Command $null = " + reason + "; Set-Date -Adjust ([TimeSpan]::FromTicks(" + ticks + ")) | Out-Null";
     const outer = "$p = Start-Process -FilePath powershell.exe -Verb RunAs -WindowStyle Hidden -Wait -PassThru -ArgumentList '" + inner + "'; exit $p.ExitCode";
     return { file: "powershell.exe", args: ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", outer] };
   }

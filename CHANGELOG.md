@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261112.4]
+## [v2.261113.0]
 
 ### MD Markup Format
 #### Map / UI
@@ -12,10 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - New App Themes (Settings, General, Display): GridTracker2's own colors, now with one meaning each everywhere (frequency, band, mode, callsign, grid and the rest), plus Opus' Choice and 27 more themes
   - Retro computers (EGA, CGA, VGA, Amber CRT, Apple ][e, VIC-20, C-64), nature and seasons, just for fun, and easy on the eyes (High Contrast, Colorblind Safe, Night Vision, OLED Minimal and more)
   - A theme colors every window and control at once; the Call Roster and Feed Roster keep the colors you set in their Settings
-- New Casting (Settings, General, Display, Enable Casting): show the map live on your TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
+- New Casting (Settings, Features, Casting): show the map live on your TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi, with a new Cast button in the button panel
   - Cast to one TV or to several at once; GridTracker2 remembers them and casts to them again at the next start
   - A number on the Cast button shows how many are watching
   - The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too
+  - Turn on Announce On Network and the map shows up as a media server on your network, so Kodi, VLC, the Roku Media Player app and smart TVs find it themselves
 - DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)
 - Band Activity, the counts and the Map View Filters can be rearranged in the control panel: drag a box by its top border (Settings, General, Reset Panels puts them back)
 - The Kp button now grows smoothly under the mouse, like the other buttons
@@ -30,7 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening
   - With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency
   - SSTV pictures are kept and can be saved
-  - WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first
+  - WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first (and notes the change in the Event Viewer)
+  - WWV / WWVH's Best Signal Search: with Rig Control, listens on each WWV frequency in turn and tunes your rig to the one heard best
   - An Icom's own band scope (IC-7300 and others) can show above the waterfall
   - Detect Modes names every signal it hears, and Test Signals play recordings so you can try each mode
   - Log QSO: a decoded CW or SSTV QSO, or a phone QSO on your rig, opens the new Log QSO window filled in (with Log QSOs By Hand on)
@@ -108,11 +110,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>A theme colors every window and control at once; the Call Roster and Feed Roster keep the colors you set in their Settings</li>
     </ul>
   </li>
-  <li>New Casting (Settings, General, Display, Enable Casting): show the map live on your TV through a Google TV Streamer or Chromecast, with a new Cast button in the button panel
+  <li>New Casting (Settings, Features, Casting): show the map live on your TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi, with a new Cast button in the button panel
     <ul>
       <li>Cast to one TV or to several at once; GridTracker2 remembers them and casts to them again at the next start</li>
       <li>A number on the Cast button shows how many are watching</li>
       <li>The video is standard HLS, so VLC, Safari, Kodi and most other players on your network can show the map too</li>
+      <li>Turn on Announce On Network and the map shows up as a media server on your network, so Kodi, VLC, the Roku Media Player app and smart TVs find it themselves</li>
     </ul>
   </li>
   <li>DX Feeds and SOTA markers now show when you've worked them, as POTA's parks do: with a radio on the spot's band and mode, a check mark replaces the target once you've worked that call, as the Feed Roster counts it (DX Feeds), or worked that summit today (SOTA)</li>
@@ -130,7 +133,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening</li>
       <li>With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency</li>
       <li>SSTV pictures are kept and can be saved</li>
-      <li>WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first</li>
+      <li>WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first (and notes the change in the Event Viewer)</li>
+      <li>WWV / WWVH's Best Signal Search: with Rig Control, listens on each WWV frequency in turn and tunes your rig to the one heard best</li>
       <li>An Icom's own band scope (IC-7300 and others) can show above the waterfall</li>
       <li>Detect Modes names every signal it hears, and Test Signals play recordings so you can try each mode</li>
       <li>Log QSO: a decoded CW or SSTV QSO, or a phone QSO on your rig, opens the new Log QSO window filled in (with Log QSOs By Hand on)</li>

@@ -20,6 +20,8 @@ function showSettingsBox()
     if (aboutDiv.style.display != "none") startAboutFx();
     // Reopened on one of BirdWatch's tabs: its values filled in again
     if (document.querySelector(".settingstab .birdWatchTab.active")) birdWatchSettingsTabShown();
+    // Reopened on Features: the Casting box's devices looked for again
+    if (featuresSettingsDiv.style.display != "none" && typeof mapCastSearchClick == "function") mapCastSearchClick();
     // The tabs fitted to the window as it is now
     settingsTabsFit();
   }
@@ -208,6 +210,8 @@ function openSettingsTab(evt, tabName)
   if (tabName == "aboutDiv") startAboutFx();
   // One of BirdWatch's tabs: its values filled in
   if (/^birdWatch/.test(tabName)) birdWatchSettingsTabShown();
+  // Features: the Casting box's devices looked for again
+  if (tabName == "featuresSettingsDiv" && typeof mapCastSearchClick == "function") mapCastSearchClick();
   // The tabs fitted once the panel shows (the ways in that open it on a tab show it after this)
   nodeTimers.setTimeout(settingsTabsFit, 0);
 }

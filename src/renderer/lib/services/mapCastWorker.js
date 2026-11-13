@@ -4,14 +4,14 @@
 
 // Map Cast's video (mapCast.js), off the main window's thread: the main window's capture of its map (Element Capture, at the video's
 // size) encoded as H.264 (WebCodecs; the config comes from mapCast.js: a hardware encoder's, else the software one's at a lower frame
-// rate) while it's wanted (a cast, or someone on the network watching), and kept as HLS: CAST_SEGMENT_SECONDS segments (fragmented MP4),
-// each from a key frame, the last CAST_SEGMENTS_LISTED of them listed. A small HTTP server (Node's http: the main window has
-// nodeIntegrationInWorker), on the Port while Enable Casting is on, serves them: map.m3u8 (the master playlist: the video's codec, size,
-// frame rate and bandwidth, which a media playlist can't tell), video.m3u8 (the live playlist), init.mp4 (ftyp, moov) and seg<n>.m4s;
-// a device starts near the oldest listed, so it has most of what is kept at once. A request while there's no video yet asks for it
-// ("wanted") and is answered once CAST_SEGMENTS_READY segments are done; nobody asking for anything for CAST_IDLE_MS is said ("idle").
-//   The MP4: one video track, no samples in the moov (mvex/trex: all in fragments), then a segment is one fragment: moof (mfhd, traf:
-//   tfhd, tfdt with its first frame's time, trun with all its frames) and mdat. Times in 90 kHz; each frame lasts until the next.
+// rate) while it's wanted (a cast, or someone on the network watching), and kept as HLS: CAST_SEGMENT_SECONDS MPEG-TS segments, each
+// from a key frame, the last CAST_SEGMENTS_LISTED of them listed. A small HTTP server (Node's http: the main window has
+// nodeIntegrationInWorker), on the Port while Enable Casting is on, serves them: map.m3u8 (the master playlist: the video's codec,
+// size, frame rate and bandwidth, which a media playlist can't tell), video.m3u8 (the live playlist) and seg<n>.ts; a device starts
+// near the oldest listed, so it has most of what is kept at once. map.ts is the same segments as one endless stream (for players that
+// take a plain HTTP stream, not HLS: many DLNA ones; mapCastAnnounceWorker.js lists it): the last CAST_STREAM_BURST segments at once,
+// then each as it's done. A request while there's no video yet asks for it ("wanted") and is answered once CAST_SEGMENTS_READY segments
+// are done; nobody asking for anything for CAST_IDLE_MS is said ("idle"). Times in 90 kHz; each frame lasts until the next.
 // The video's frames are a fixed rate's: one in each 1/fps of a second (its time that slot's start), the capture's latest picture. The
 // capture sends one only when the picture changes (and none while the window is minimized), so mostly it is the same picture again,
 // which costs next to nothing. A picture not at the video's size (the window not 16:9 before casting snaps it) is fitted into it.
@@ -50,11 +50,13 @@ const CAST_WATCHING_MS = 10000;
 const CAST_BANDWIDTH_MIN = 1000000;
 // Frames waiting to be encoded past this are skipped
 const CAST_ENCODE_QUEUE = 2;
-const MP4_TIMESCALE = 90000;
-const MP4_MATRIX = mp4U32(0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000);
-// A key frame's sample flags (depends on nothing) and the others' (depends on others, not a sync sample)
-const MP4_FLAGS_KEY = 0x02000000;
-const MP4_FLAGS_DELTA = 0x01010000;
+const CAST_TIMESCALE = 90000;
+// map.ts: the segments sent at once to a player that opens it (so it can start), and the most waiting to go to one that doesn't keep up
+// (it's cut off past this)
+const CAST_STREAM_BURST = 2;
+const CAST_STREAM_BACKLOG = 16 * 1024 * 1024;
+// map.ts's DLNA headers: a stream (no seeking, no byte ranges)
+const CAST_STREAM_HEADERS = { "Content-Type": "video/mp2t", "transferMode.dlna.org": "Streaming", "contentFeatures.dlna.org": "DLNA.ORG_OP=00;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000" };
 
 const W = {
   server: null,
@@ -81,8 +83,10 @@ const W = {
   description: null,
   // The segment being filled: [{ time, key, data }], a key frame first
   pending: [],
-  // Those done: [{ sequence, duration (seconds), data }], oldest first
+  // Those done: [{ sequence, duration (seconds), ts }], oldest first
   segments: [],
+  // Those playing map.ts: [{ response, address }], each sent every segment as it's done
+  streams: [],
   sequence: 0,
   // The slot whose frame is the next key frame
   nextKeySlot: 0,
@@ -114,82 +118,156 @@ function workerLog(text)
   self.postMessage({ type: "log", text: text });
 }
 
-function mp4U32(...values)
+// ---- The frames as MPEG-TS segments
+// Each segment: PAT, PMT, then one PES per frame (an access unit delimiter, the SPS and PPS before a key frame, its NAL units with start
+// codes), its PTS the frame's time (90 kHz) plus TS_PTS_OFFSET, a PCR in its first packet. Continuity counters run on
+// across segments, so one after another is one stream
+
+const TS_PID_PMT = 0x1000;
+const TS_PID_VIDEO = 0x100;
+// The PCR is the frame's time, its PTS this much later (the time a player has to get it decoded)
+const TS_PTS_OFFSET = 63000;
+const TS_AUD = Buffer.from([0, 0, 0, 1, 0x09, 0xf0]);
+const TS_CC = { pat: 0, pmt: 0, video: 0 };
+const TS_CRC = (() =>
 {
-  const bytes = Buffer.alloc(values.length * 4);
-  values.forEach((value, i) => bytes.writeUInt32BE(value >>> 0, i * 4));
-  return bytes;
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++)
+  {
+    let c = i << 24;
+    for (let bit = 0; bit < 8; bit++) c = c & 0x80000000 ? (c << 1) ^ 0x04c11db7 : c << 1;
+    table[i] = c >>> 0;
+  }
+  return table;
+})();
+
+// CRC-32/MPEG-2 of a PSI section
+function tsCrc(bytes)
+{
+  let crc = 0xffffffff;
+  for (const byte of bytes) crc = ((crc << 8) ^ TS_CRC[((crc >>> 24) ^ byte) & 0xff]) >>> 0;
+  return crc;
 }
 
-function mp4U16(...values)
+// A PSI section (no CRC yet) in one packet: pointer field, the section and its CRC, 0xFF after
+function tsPsi(pid, cc, section)
 {
-  const bytes = Buffer.alloc(values.length * 2);
-  values.forEach((value, i) => bytes.writeUInt16BE(value & 0xffff, i * 2));
-  return bytes;
+  const packet = Buffer.alloc(188, 0xff);
+  packet.writeUInt8(0x47, 0);
+  packet.writeUInt16BE(0x4000 | pid, 1);
+  packet.writeUInt8(0x10 | cc, 3);
+  packet.writeUInt8(0, 4);
+  section.copy(packet, 5);
+  packet.writeUInt32BE(tsCrc(section), 5 + section.length);
+  return packet;
 }
 
-function mp4Box(type, ...parts)
+// The video's SPS and PPS (from the avcC), each with a start code
+function tsParameterSets()
 {
-  const body = Buffer.concat(parts);
-  const head = Buffer.alloc(8);
-  head.writeUInt32BE(8 + body.length, 0);
-  head.write(type, 4, "ascii");
-  return Buffer.concat([head, body]);
+  const avcc = W.description;
+  const parts = [];
+  let at = 5;
+  for (const count of ["sps", "pps"])
+  {
+    const n = count == "sps" ? avcc[at++] & 0x1f : avcc[at++];
+    for (let i = 0; i < n; i++)
+    {
+      const length = avcc.readUInt16BE(at);
+      parts.push(Buffer.from([0, 0, 0, 1]), avcc.subarray(at + 2, at + 2 + length));
+      at += 2 + length;
+    }
+  }
+  return Buffer.concat(parts);
 }
 
-function mp4FullBox(type, version, flags, ...parts)
+// A frame's access unit in Annex B: AUD, SPS and PPS before a key frame (unless it has its own), its NAL units with start codes
+function tsAccessUnit(frame, parameterSets)
 {
-  return mp4Box(type, mp4U32(((version << 24) | flags) >>> 0), ...parts);
+  const lengthSize = (W.description[4] & 3) + 1;
+  const parts = [TS_AUD];
+  const nals = [];
+  let hasSps = false;
+  for (let at = 0; at + lengthSize <= frame.data.length;)
+  {
+    const length = frame.data.readUIntBE(at, lengthSize);
+    const nal = frame.data.subarray(at + lengthSize, at + lengthSize + length);
+    at += lengthSize + length;
+    if (!nal.length) continue;
+    const type = nal[0] & 0x1f;
+    // (the encoder's own delimiters left out: there's one already)
+    if (type == 9) continue;
+    if (type == 7) hasSps = true;
+    nals.push(Buffer.from([0, 0, 0, 1]), nal);
+  }
+  if (frame.key && !hasSps) parts.push(parameterSets);
+  return Buffer.concat(parts.concat(nals));
 }
 
-// ftyp and moov: the track (its avcC the encoder's description), no samples of its own
-function mp4Init()
+// 33 bits of a 90 kHz time as a PES header's PTS (prefix 0010: PTS only)
+function tsPts(time)
 {
-  const ftyp = mp4Box("ftyp", Buffer.from("isom", "ascii"), mp4U32(0x200), Buffer.from("isomiso6avc1mp41", "ascii"));
-  const mvhd = mp4FullBox("mvhd", 0, 0, mp4U32(0, 0, MP4_TIMESCALE, 0, 0x00010000), mp4U16(0x0100), Buffer.alloc(10), MP4_MATRIX, Buffer.alloc(24), mp4U32(2));
-  const tkhd = mp4FullBox("tkhd", 0, 3, mp4U32(0, 0, 1, 0, 0), Buffer.alloc(8), mp4U16(0, 0, 0, 0), MP4_MATRIX, mp4U32(W.width * 65536, W.height * 65536));
-  // Language "und"
-  const mdhd = mp4FullBox("mdhd", 0, 0, mp4U32(0, 0, MP4_TIMESCALE, 0), mp4U16(0x55c4, 0));
-  const hdlr = mp4FullBox("hdlr", 0, 0, mp4U32(0), Buffer.from("vide", "ascii"), Buffer.alloc(12), Buffer.from("VideoHandler\0", "ascii"));
-  const vmhd = mp4FullBox("vmhd", 0, 1, Buffer.alloc(8));
-  const dinf = mp4Box("dinf", mp4FullBox("dref", 0, 0, mp4U32(1), mp4FullBox("url ", 0, 1)));
-  // The sample entry: its size, 72 dpi, a frame per sample, 24-bit color
-  const avc1 = mp4Box("avc1", Buffer.alloc(6), mp4U16(1), Buffer.alloc(16), mp4U16(W.width, W.height), mp4U32(0x00480000, 0x00480000, 0), mp4U16(1), Buffer.alloc(32), mp4U16(0x0018, 0xffff), mp4Box("avcC", W.description));
-  const stbl = mp4Box("stbl", mp4FullBox("stsd", 0, 0, mp4U32(1), avc1), mp4FullBox("stts", 0, 0, mp4U32(0)), mp4FullBox("stsc", 0, 0, mp4U32(0)), mp4FullBox("stsz", 0, 0, mp4U32(0, 0)), mp4FullBox("stco", 0, 0, mp4U32(0)));
-  const trak = mp4Box("trak", tkhd, mp4Box("mdia", mdhd, hdlr, mp4Box("minf", vmhd, dinf, stbl)));
-  const mvex = mp4Box("mvex", mp4FullBox("trex", 0, 0, mp4U32(1, 1, 0, 0, 0)));
-  return Buffer.concat([ftyp, mp4Box("moov", mvhd, trak, mvex)]);
+  const t = time % 2 ** 33;
+  return Buffer.from([0x21 | ((Math.floor(t / 2 ** 30) & 7) << 1), Math.floor(t / 2 ** 22) & 0xff, ((Math.floor(t / 2 ** 15) & 0x7f) << 1) | 1, Math.floor(t / 2 ** 7) & 0xff, ((t & 0x7f) << 1) | 1]);
 }
 
-// A segment: one moof for its frames (each lasting until the next, the last until end), then their mdat
-function mp4Segment(sequence, frames, end)
+// A frame's PES in TS packets: the first with the PCR (and random access on a key frame), the last filled out with adaptation stuffing
+function tsPes(frame, parameterSets, packets)
 {
-  // Offsets from the moof's start (default-base-is-moof)
-  const tfhd = mp4FullBox("tfhd", 0, 0x020000, mp4U32(1));
-  const first = frames[0].time;
-  const tfdt = mp4FullBox("tfdt", 1, 0, mp4U32(Math.floor(first / 2 ** 32), first % 2 ** 32));
-  // Each sample: its duration, size and flags; after the count, the data offset (filled in below)
-  const samples = frames.map((frame, i) => mp4U32((i + 1 < frames.length ? frames[i + 1].time : end) - frame.time, frame.data.length, frame.key ? MP4_FLAGS_KEY : MP4_FLAGS_DELTA));
-  const trun = mp4FullBox("trun", 0, 0x000701, mp4U32(frames.length, 0), ...samples);
-  const moof = mp4Box("moof", mp4FullBox("mfhd", 0, 0, mp4U32(sequence)), mp4Box("traf", tfhd, tfdt, trun));
-  moof.writeUInt32BE(moof.length + 8, moof.length - trun.length + 16);
-  const data = frames.map((frame) => frame.data);
-  const size = data.reduce((total, bytes) => total + bytes.length, 0);
-  const mdat = Buffer.alloc(8);
-  mdat.writeUInt32BE(8 + size, 0);
-  mdat.write("mdat", 4, "ascii");
-  return Buffer.concat([moof, mdat, ...data]);
+  const unit = tsAccessUnit(frame, parameterSets);
+  // Video: no PES length (0, unbounded); PTS only, no B-frames
+  const pes = Buffer.concat([Buffer.from([0, 0, 1, 0xe0, 0, 0, 0x80, 0x80, 5]), tsPts(frame.time + TS_PTS_OFFSET), unit]);
+  const base = frame.time % 2 ** 33;
+  const pcr = Buffer.from([Math.floor(base / 2 ** 25) & 0xff, Math.floor(base / 2 ** 17) & 0xff, Math.floor(base / 2 ** 9) & 0xff, Math.floor(base / 2) & 0xff, ((base & 1) << 7) | 0x7e, 0]);
+  let offset = 0;
+  for (let first = true; first || offset < pes.length; first = false)
+  {
+    const packet = Buffer.alloc(188, 0xff);
+    // The adaptation field's bytes after its length byte: flags (PCR, random access), the PCR
+    const fields = first ? Buffer.concat([Buffer.from([0x10 | (frame.key ? 0x40 : 0)]), pcr]) : null;
+    let adaptation = fields ? 1 + fields.length : 0;
+    const left = pes.length - offset;
+    if (left < 184 - adaptation) adaptation = 184 - left;
+    packet.writeUInt8(0x47, 0);
+    packet.writeUInt16BE((first ? 0x4000 : 0) | TS_PID_VIDEO, 1);
+    packet.writeUInt8((adaptation ? 0x30 : 0x10) | TS_CC.video, 3);
+    TS_CC.video = (TS_CC.video + 1) & 0x0f;
+    if (adaptation)
+    {
+      packet.writeUInt8(adaptation - 1, 4);
+      if (adaptation > 1)
+      {
+        if (fields) fields.copy(packet, 5);
+        else packet.writeUInt8(0, 5);
+      }
+    }
+    offset += pes.copy(packet, 4 + adaptation, offset, offset + 184 - adaptation);
+    packets.push(packet);
+  }
+}
+
+// A segment's frames as MPEG-TS
+function tsSegment(frames)
+{
+  const pat = Buffer.from([0x00, 0xb0, 0x0d, 0x00, 0x01, 0xc1, 0x00, 0x00, 0x00, 0x01, 0xe0 | (TS_PID_PMT >> 8), TS_PID_PMT & 0xff]);
+  const pmt = Buffer.from([0x02, 0xb0, 0x12, 0x00, 0x01, 0xc1, 0x00, 0x00, 0xe0 | (TS_PID_VIDEO >> 8), TS_PID_VIDEO & 0xff, 0xf0, 0x00, 0x1b, 0xe0 | (TS_PID_VIDEO >> 8), TS_PID_VIDEO & 0xff, 0xf0, 0x00]);
+  const packets = [tsPsi(0, TS_CC.pat, pat), tsPsi(TS_PID_PMT, TS_CC.pmt, pmt)];
+  TS_CC.pat = (TS_CC.pat + 1) & 0x0f;
+  TS_CC.pmt = (TS_CC.pmt + 1) & 0x0f;
+  const parameterSets = tsParameterSets();
+  for (const frame of frames) tsPes(frame, parameterSets, packets);
+  return Buffer.concat(packets);
 }
 
 // The master playlist: the one video, so the device's player is set up for its codec and size (without CODECS the Cast player
 // assumes H.264 Main 3.0)
 function workerMasterPlaylist()
 {
-  const peak = Math.max(CAST_BANDWIDTH_MIN, ...W.segments.map((segment) => Math.ceil((segment.data.length * 8) / segment.duration)));
+  const peak = Math.max(CAST_BANDWIDTH_MIN, ...W.segments.map((segment) => Math.ceil((segment.ts.length * 8) / segment.duration)));
   // The codec as the stream's avcC has it (profile, constraints, level: an encoder may not give what its config asked for)
   const codec = W.description ? "avc1." + [1, 2, 3].map((i) => W.description[i].toString(16).padStart(2, "0")).join("") : W.codecString;
   const info = "BANDWIDTH=" + peak + ",CODECS=\"" + codec + "\",RESOLUTION=" + W.width + "x" + W.height + ",FRAME-RATE=" + W.fps.toFixed(3);
-  return ["#EXTM3U", "#EXT-X-VERSION:7", "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-STREAM-INF:" + info, "video.m3u8"].join("\n") + "\n";
+  return ["#EXTM3U", "#EXT-X-VERSION:3", "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-STREAM-INF:" + info, "video.m3u8"].join("\n") + "\n";
 }
 
 // The live playlist: the last CAST_SEGMENTS_LISTED segments (none until the first is done). The player asked to start all but one
@@ -199,8 +277,8 @@ function workerPlaylist()
   const listed = W.segments.slice(-CAST_SEGMENTS_LISTED);
   const target = Math.max(CAST_SEGMENT_SECONDS, ...listed.map((segment) => Math.round(segment.duration)));
   const back = (CAST_SEGMENTS_LISTED - 1) * CAST_SEGMENT_SECONDS;
-  const lines = ["#EXTM3U", "#EXT-X-VERSION:7", "#EXT-X-TARGETDURATION:" + target, "#EXT-X-MEDIA-SEQUENCE:" + (listed.length ? listed[0].sequence : W.sequence + 1), "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-START:TIME-OFFSET=-" + back, "#EXT-X-MAP:URI=\"init.mp4\""];
-  for (const segment of listed) lines.push("#EXTINF:" + segment.duration.toFixed(3) + ",", "seg" + segment.sequence + ".m4s");
+  const lines = ["#EXTM3U", "#EXT-X-VERSION:3", "#EXT-X-TARGETDURATION:" + target, "#EXT-X-MEDIA-SEQUENCE:" + (listed.length ? listed[0].sequence : W.sequence + 1), "#EXT-X-INDEPENDENT-SEGMENTS", "#EXT-X-START:TIME-OFFSET=-" + back];
+  for (const segment of listed) lines.push("#EXTINF:" + segment.duration.toFixed(3) + ",", "seg" + segment.sequence + ".ts");
   return lines.join("\n") + "\n";
 }
 
@@ -229,7 +307,7 @@ function workerStart(msg)
   workerTick();
 }
 
-// Serving the video on port (Settings -> General -> Display -> Port), to any computer or device on the network
+// Serving the video on port (Settings -> Features -> Casting -> Port), to any computer or device on the network
 function workerListen(msg)
 {
   const server = http.createServer(workerRequest);
@@ -284,20 +362,22 @@ function workerReady()
 function workerAnswer(request, response, path)
 {
   const headers = CAST_HEADERS;
-  let body = null;
-  let type = "video/mp4";
-  if (path == "/map.m3u8" || path == "/video.m3u8")
+  if (path == "/map.ts")
   {
-    body = Buffer.from(path == "/map.m3u8" ? workerMasterPlaylist() : workerPlaylist(), "utf8");
-    type = "application/vnd.apple.mpegurl";
+    workerStream(request, response);
+    return;
   }
-  else if (path == "/init.mp4" && W.description) body = mp4Init();
+  let body = null;
+  let type = "video/mp2t";
+  if (path == "/map.m3u8") body = Buffer.from(workerMasterPlaylist(), "utf8");
+  else if (path == "/video.m3u8") body = Buffer.from(workerPlaylist(), "utf8");
   else
   {
-    const match = path.match(/^\/seg(\d+)\.m4s$/);
+    const match = path.match(/^\/seg(\d+)\.ts$/);
     const segment = match && W.segments.find((kept) => kept.sequence == Number(match[1]));
-    if (segment) body = segment.data;
+    if (segment) body = segment.ts;
   }
+  if (path.endsWith(".m3u8")) type = "application/vnd.apple.mpegurl";
   if (!body)
   {
     response.writeHead(404, headers);
@@ -311,6 +391,43 @@ function workerAnswer(request, response, path)
     response.end(body);
     W.sent += body.length;
   }
+}
+
+// map.ts: the last CAST_STREAM_BURST segments now, then each as it's done (workerSegment), until the player closes it or the video stops
+function workerStream(request, response)
+{
+  response.writeHead(200, { ...CAST_HEADERS, ...CAST_STREAM_HEADERS });
+  if (request.method == "HEAD")
+  {
+    response.end();
+    return;
+  }
+  const stream = { response: response, address: String(request.socket.remoteAddress || "").replace(/^::ffff:/, "") };
+  W.streams.push(stream);
+  response.on("close", () => (W.streams = W.streams.filter((other) => other != stream)));
+  for (const segment of W.segments.slice(-CAST_STREAM_BURST)) workerStreamWrite(stream, segment);
+}
+
+// A segment to one playing map.ts (it counts as watching while it's sent to); one too far behind is cut off
+function workerStreamWrite(stream, segment)
+{
+  if (stream.response.writableLength > CAST_STREAM_BACKLOG)
+  {
+    workerLog("map.ts to " + stream.address + " cut off: not keeping up");
+    stream.response.destroy();
+    return;
+  }
+  stream.response.write(segment.ts);
+  W.sent += segment.ts.length;
+  W.clients[stream.address] = W.seen[stream.address] = Date.now();
+}
+
+// Every map.ts ended (the video stopped: the next starts from 0, a new stream)
+function workerStreamsEnd()
+{
+  const streams = W.streams;
+  W.streams = [];
+  for (const stream of streams) stream.response.end();
 }
 
 function workerOutput(chunk, metadata)
@@ -329,7 +446,7 @@ function workerOutput(chunk, metadata)
     W.keyBytes += data.length;
   }
   else W.deltaBytes += data.length;
-  const time = Math.round((chunk.timestamp * MP4_TIMESCALE) / 1000000);
+  const time = Math.round((chunk.timestamp * CAST_TIMESCALE) / 1000000);
   // A key frame ends the segment before it and starts the next
   if (key && W.pending.length) workerSegment(time);
   if (key || W.pending.length) W.pending.push({ time: time, key: key, data: data });
@@ -341,8 +458,11 @@ function workerSegment(end)
   const frames = W.pending;
   W.pending = [];
   const sequence = ++W.sequence;
-  W.segments.push({ sequence: sequence, duration: (end - frames[0].time) / MP4_TIMESCALE, data: mp4Segment(sequence, frames, end) });
+  const segment = { sequence: sequence, duration: (end - frames[0].time) / CAST_TIMESCALE, ts: tsSegment(frames) };
+  W.segments.push(segment);
   while (W.segments.length > CAST_SEGMENTS_KEPT) W.segments.shift();
+  // (those already playing map.ts first: one held until now is sent this one with its first)
+  for (const stream of W.streams.slice()) workerStreamWrite(stream, segment);
   if (workerReady())
   {
     const held = W.held;
@@ -456,6 +576,7 @@ function workerEncodeStop()
 {
   nodeTimers.clearTimeout(W.tick);
   W.tick = null;
+  workerStreamsEnd();
   workerUntrack();
   if (W.encoder && W.encoder.state != "closed") W.encoder.close();
   W.encoder = null;

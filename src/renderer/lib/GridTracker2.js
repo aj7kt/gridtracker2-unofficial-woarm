@@ -1048,9 +1048,8 @@ function saveAndCloseApp(shouldRestart = false)
   if (GT.activeInstance && (!expected || GT.instancePicked || GT.expectedInstanceSeen)) GT.settings.app.expectedInstance = GT.activeInstance;
   saveAllSettings();
   saveReceptionReports();
-  // The TV told to stop (and the window's size from before casting put back), and the video no longer served
-  mapCastStop();
-  mapCastUnserve();
+  // The TVs told to stop (and the window's size from before casting put back), and the video no longer served
+  mapCastClose();
 
   closeOpenSockets();
 

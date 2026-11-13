@@ -36,9 +36,9 @@ const WWV_STABLE_MINUTES = 3;
 // timed): the offset shown with 76 was 52 ms short of time.nist.gov's, so on the interactive path it is 24
 const WWV_LATENCY_MS = 24;
 const WWV_SYSTEM_MS = 50;
-// Set PC Clock: offered when the offset is at least this (ms: five times WWV_SYSTEM_MS, so the clock set ends up far nearer than it was),
-// its own uncertainty under this (ms), and its minutes within this of each other (ms)
-const WWV_SET_MIN_MS = 250;
+// Set PC Clock: offered when the offset is more than this (ms: twice WWV_SYSTEM_MS, so the clock set ends up nearer than it was; the
+// user's pick, 2026-11-13), its own uncertainty under this (ms), and its minutes within this of each other (ms)
+const WWV_SET_MIN_MS = 100;
 const WWV_SET_SIGMA_MS = 20;
 const WWV_SET_SPREAD_MS = 50;
 // The worker's last statuses kept (their diag: what the count did, for a recording made alongside to be checked against offline)
@@ -52,6 +52,14 @@ const WWV_STEP_SHOWN_MS = 300000;
 const WWV_JUMP_MS = 100;
 // Minutes listed
 const WWV_HISTORY = 120;
+// Best Signal Search: on each WWV frequency (Band Plans), the rig given this long to get there (ms), then listened to this long (ms); a
+// frequency's score is how clearly its stronger station's pulses stand out (the worker's fold, its ratio) over its last few seconds,
+// heard from the worker's own lock on (WWV_LOCK_ON there). The fold gives no ratio before 4 seconds of it (WWV_FOLD_MIN there); 10 s
+// (the user's pick, 2026-11-13: 5 s missed a weaker 2.5 MHz the 15 s search heard) lets a weaker one build up
+const WWV_SEARCH_SETTLE_MS = 1000;
+const WWV_SEARCH_LISTEN_MS = 10000;
+const WWV_SEARCH_LAST = 3;
+const WWV_SEARCH_HEARD = 7;
 
 const WWV = {
   worker: null,
@@ -67,7 +75,12 @@ const WWV = {
   lastEnd: null,  // the context time of the last chunk's last sample
   gaps: { count: 0, ms: 0 }, // stretches the stream skipped, given to the worker as silence
   delayStep: null, // the audio's delay last seen changing: { ms, at }
-  listKey: null
+  listKey: null,
+  // Best Signal Search under way: { list: [[hz, mode]], i (the one listened to), start (the dial before it), listening, samples (this
+  // frequency's statuses: [{ ratio, name, snr, locked }]), results, timer }; and the last one's outcome: { results, best (index or -1),
+  // stopped ("" done, "stopped", "moved") }
+  search: null,
+  searchDone: null
 };
 
 function mmdWwvMode(mode = DEC.mode)
@@ -127,6 +140,7 @@ function mmdWwvClear()
   WWV.since = 0;
   WWV.note = null;
   WWV.delayStep = null;
+  WWV.searchDone = null;
   mmdWwvRender();
 }
 
@@ -137,6 +151,7 @@ function mmdWwvMessage(m)
     // (The carrier found, lost or moved: the waterfall's marks drawn again)
     const was = WWV.status ? WWV.status.path + Math.round(WWV.status.carrier || 0) : "";
     WWV.status = m;
+    if (WWV.search && WWV.search.listening) mmdWwvSearchSample(m);
     WWV.log.push({ at: Date.now(), utc: m.utc, lost: m.lost, diag: m.diag, gaps: Object.assign({}, WWV.gaps) });
     if (WWV.log.length > WWV_LOG) WWV.log.shift();
     if (mmdWwvMode() && was != m.path + Math.round(m.carrier || 0)) mmdOverlay();
@@ -222,7 +237,7 @@ function mmdWwvOffset()
 // for, from a sound card's audio, and nothing being set already
 function mmdWwvSettable(o)
 {
-  return !!o && !WWV.setting && o.read && o.local && o.minutes >= WWV_STABLE_MINUTES && o.sigma < WWV_SET_SIGMA_MS && o.spread < WWV_SET_SPREAD_MS && Math.abs(o.ms) >= WWV_SET_MIN_MS;
+  return !!o && !WWV.setting && o.read && o.local && o.minutes >= WWV_STABLE_MINUTES && o.sigma < WWV_SET_SIGMA_MS && o.spread < WWV_SET_SPREAD_MS && Math.abs(o.ms) > WWV_SET_MIN_MS;
 }
 
 // Set PC Clock: asked first, then the main process moves the clock by the offset (back when it's ahead) through the system's own prompt;
@@ -240,7 +255,8 @@ async function mmdWwvSetClock()
     defaultId: 1,
     cancelId: 1,
     message: ask,
-    detail: I18N("cwViewer.wwv.setClock.accuracy").replace("{system}", (WWV_SYSTEM_MS / 1000).toFixed(2))
+    // (On Windows, what its UAC prompt will name: it can't show GridTracker2's reason, clockAdjust.js)
+    detail: I18N("cwViewer.wwv.setClock.accuracy").replace("{system}", (WWV_SYSTEM_MS / 1000).toFixed(2)) + (process.platform == "win32" ? "\n\n" + I18N("cwViewer.wwv.setClock.windows") : "")
   });
   if (answer != 0) return;
   WWV.setting = true;
@@ -259,10 +275,156 @@ async function mmdWwvSetClock()
   if (result && result.ok)
   {
     WWV.since = Date.now() + 60000;
-    WWV.note = { text: I18N("cwViewer.wwv.setClock.done").replace("{seconds}", (seconds > 0 ? "+" : "") + seconds.toFixed(3)), error: false };
+    // (the time it was set, by the clock as set)
+    const moved = (seconds > 0 ? "+" : "") + seconds.toFixed(3);
+    WWV.note = { text: I18N("cwViewer.wwv.setClock.doneAt").replace("{seconds}", moved).replace("{time}", new Date().toISOString().slice(11, 19)), error: false };
   }
   else WWV.note = { text: I18N("cwViewer.wwv.setClock.failed") + " " + ((result && result.error) || ""), error: true };
+  // In the Event Viewer too: the clock set and by how much, or why it wasn't (an error)
+  const opener = window.opener;
+  opener.addEvent("mmd", "<font style='color:var(" + (WWV.note.error ? "--gt-error" : "--gt-label") + ")'>" + opener.htmlEntities(I18N("cwViewer.wwv.setClock.event").replace("{text}", WWV.note.text)) + "</font>", WWV.note.error);
   mmdWwvRender();
+}
+
+// ---- Best Signal Search (the button under the Mode menu): each WWV frequency listened to in turn, the rig then tuned to the best
+
+// Shown in WWV mode while the decoder may tune the rig to WWV's frequencies: its Rig Control (Settings, General) and WWV's Set Frequency
+// (Decoders) on, the rig read, and BirdWatch not following a satellite with it
+function mmdWwvSearchAllowed()
+{
+  const S = GT.settings.MMD;
+  return mmdWwvMode() && S.rigControl === true && S.wwvSetFreq === true && mmdDial() != null && !window.opener.mmDecoderRigLocked() && !!mmdBandFreqs("wwv");
+}
+
+// The button shown or hidden (and its row under the Mode menu with it), Stop Search while one is under way; one that's no longer allowed
+// (the mode changed, Rig Control turned off, the rig gone) stopped, the rig left where it is
+function mmdWwvSearchShow()
+{
+  const allowed = mmdWwvSearchAllowed();
+  if (!allowed && WWV.search) mmdWwvSearchEnd("stopped", false);
+  const display = allowed ? "" : "none";
+  if (wwvSearchBox.style.display != display)
+  {
+    wwvSearchBox.style.display = display;
+    mmdSubBarShow();
+  }
+  const text = I18N(WWV.search ? "cwViewer.wwv.search.stop.label" : "cwViewer.wwv.search.label");
+  if (wwvSearchText.textContent != text) wwvSearchText.textContent = text;
+}
+
+// A frequency as the search names it: the station's (the dial is 1 kHz under it, Band Plans), in MHz: "10 MHz"
+function mmdWwvSearchFreq(hz)
+{
+  return parseFloat(((hz + 1000) / 1e6).toFixed(3)) + " MHz";
+}
+
+// Best Signal Search clicked: started (the decoder too, if it isn't listening), or stopped (the rig back where it was)
+function mmdWwvSearchClick()
+{
+  if (WWV.search)
+  {
+    mmdWwvSearchEnd("stopped", true);
+    return;
+  }
+  if (!mmdWwvSearchAllowed()) return;
+  const list = mmdBandFreqs("wwv").map(([hz, mode]) => [hz, mode]);
+  WWV.search = { list: list, i: -1, start: mmdDial(), listening: false, samples: [], results: [], timer: null };
+  WWV.searchDone = null;
+  if (!DEC.running) mmdStart();
+  mmdWwvSearchNext();
+}
+
+// The next frequency tuned to (the mode's Set Mode sets the rig's mode too), listened to once the rig has had the time to get there;
+// after the last, the best one
+function mmdWwvSearchNext()
+{
+  const W = WWV.search;
+  if (!W) return;
+  W.i++;
+  if (W.i >= W.list.length)
+  {
+    mmdWwvSearchEnd("", false);
+    return;
+  }
+  const [hz, mode] = W.list[W.i];
+  W.listening = false;
+  W.samples = [];
+  mmdTuneToFreq(hz, mode);
+  mmdWwvSearchShow();
+  mmdWwvRender();
+  W.timer = nodeTimers.setTimeout(() =>
+  {
+    if (WWV.search !== W) return;
+    // (the pulses found afresh, from this frequency's audio only)
+    mmdWwvReset();
+    W.listening = true;
+    W.timer = nodeTimers.setTimeout(() => mmdWwvSearchScore(W), WWV_SEARCH_LISTEN_MS);
+  }, WWV_SEARCH_SETTLE_MS);
+}
+
+// A status while listening: the station whose pulses stand out more, and how much
+function mmdWwvSearchSample(m)
+{
+  const best = m.stations.reduce((a, b) => ((b.ratio || 0) > (a.ratio || 0) ? b : a));
+  WWV.search.samples.push({ ratio: best.ratio || 0, name: best.name, snr: best.snr, locked: best.locked });
+}
+
+// A frequency listened to: its score, the mean of its last WWV_SEARCH_LAST seconds'; the rig tuned elsewhere meanwhile (by hand, or
+// another program) ends the search there
+function mmdWwvSearchScore(W)
+{
+  if (WWV.search !== W) return;
+  const [hz, mode] = W.list[W.i];
+  const dial = mmdDial();
+  if (dial == null || Math.abs(dial - hz) > 5)
+  {
+    mmdWwvSearchEnd("moved", false);
+    return;
+  }
+  const last = W.samples.slice(-WWV_SEARCH_LAST);
+  const score = last.length ? last.reduce((s, x) => s + x.ratio, 0) / last.length : 0;
+  const end = last.length ? last[last.length - 1] : null;
+  W.results.push({ hz: hz, mode: mode, score: score, heard: score >= WWV_SEARCH_HEARD, name: end ? end.name : "", snr: end && end.locked && end.snr != null ? end.snr : null });
+  mmdWwvSearchNext();
+}
+
+// The search over: done (stopped ""), the rig tuned to the best frequency heard (none heard: back where it was); "stopped" (back where it
+// was, when back is true); "moved" (the rig left where it was tuned)
+function mmdWwvSearchEnd(stopped, back)
+{
+  const W = WWV.search;
+  if (!W) return;
+  nodeTimers.clearTimeout(W.timer);
+  WWV.search = null;
+  let best = -1;
+  W.results.forEach((r, i) =>
+  {
+    if (r.heard && (best < 0 || r.score > W.results[best].score)) best = i;
+  });
+  WWV.searchDone = { results: W.results, best: stopped ? -1 : best, stopped: stopped };
+  if (!stopped && best >= 0) mmdTuneToFreq(W.results[best].hz, W.results[best].mode);
+  else if ((back || !stopped) && W.start != null && mmdDial() != null && mmdDial() != W.start) mmdTuneDial(W.start, null);
+  mmdWwvSearchShow();
+  mmdWwvRender();
+}
+
+// Its line in the WWV view: the frequency listened to now, or how the last search went; then each frequency's station and dB
+function mmdWwvSearchHtml()
+{
+  const W = WWV.search, D = WWV.searchDone;
+  if (!W && !D) return "";
+  let head;
+  if (W) head = I18N("cwViewer.wwv.search.listening").replace("{freq}", mmdWwvSearchFreq(W.list[Math.max(0, W.i)][0])).replace("{n}", Math.max(1, W.i + 1)).replace("{total}", W.list.length);
+  else if (D.stopped) head = I18N(D.stopped == "moved" ? "cwViewer.wwv.search.moved" : "cwViewer.wwv.search.stopped");
+  else if (D.best >= 0) head = I18N("cwViewer.wwv.search.best").replace("{freq}", mmdWwvSearchFreq(D.results[D.best].hz));
+  else head = I18N("cwViewer.wwv.search.none");
+  const results = (W ? W.results : D.results).map((r, i) =>
+  {
+    const what = r.heard ? r.name + (r.snr != null ? " " + Math.round(r.snr) + " dB" : "") : I18N("cwViewer.wwv.notHeard");
+    const cls = !W && i == D.best ? "wwvGood" : r.heard ? "" : "wwvBad";
+    return "<span" + (cls ? " class='" + cls + "'" : "") + ">" + mmdEscape(mmdWwvSearchFreq(r.hz) + " " + what) + "</span>";
+  });
+  return "<div class='wwvLine'>" + mmdEscape(head) + (results.length ? " · " + results.join(" · ") : "") + "</div>";
 }
 
 // The status line: how the audio is read (the carrier found, or AM audio), else what's listened for
@@ -300,6 +462,8 @@ function mmdWwvRender()
   if (f) head += " · " + new Date(f.minuteStart).toISOString().slice(0, 10) + " · " + mmdEscape(I18N("cwViewer.wwv.day").replace("{day}", f.doy));
   if (WWV.frame && WWV.frame.mode == "unconfirmed") head += " <span class='wwvFair'>(" + mmdEscape(I18N("cwViewer.wwv.mode.unconfirmed")) + ")</span>";
   parts.push("<div class='wwvHead'>" + head + "</div>");
+  // Best Signal Search: under way, or how the last one went
+  parts.push(mmdWwvSearchHtml());
   // The stations: heard (their pulses' dB) or not
   if (s)
   {
@@ -385,18 +549,30 @@ mmdRegisterMode({
   shown: (on) =>
   {
     wwvView.style.display = on ? "" : "none";
+    // (Best Signal Search's button: only in this mode; a search under way stops with it)
+    mmdWwvSearchShow();
     if (!on) return;
     mmdWwvReset();
     WWV.listKey = null;
     mmdWwvRender();
   },
   draw: (ctx, x, ratio, w, h) => mmdWwvDraw(ctx, x, ratio, w, h),
-  tick: () => mmdWwvRender(),
+  // (Best Signal Search's button shown or hidden as Rig Control and the rig allow, then the view)
+  tick: () =>
+  {
+    mmdWwvSearchShow();
+    mmdWwvRender();
+  },
   clear: () => mmdWwvClear(),
   retune: () =>
   {
     if (mmdWwvMode()) mmdWwvReset();
   },
-  // (its count of samples starts again with the next start; the minutes timed stay)
-  stop: () => mmdWwvReset()
+  // (its count of samples starts again with the next start; the minutes timed stay. A search under way stops: there's nothing to hear,
+  // the rig back where it was)
+  stop: () =>
+  {
+    if (WWV.search) mmdWwvSearchEnd("stopped", true);
+    mmdWwvReset();
+  }
 });

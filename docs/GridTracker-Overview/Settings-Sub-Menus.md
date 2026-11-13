@@ -58,9 +58,6 @@ Programs such as fldigi can broadcast each logged QSO as an ADIF record over UDP
 * **Window Theme:** Dark, Light or System.
 * **Distance Units:** Kilometers, Statute Miles, Nautical Miles or Degrees.
 * **Control Panel On Left Side:** puts the side panel on the left of the window and the map on the right.
-* **Enable Casting:** adds the Cast button to the button panel, to show the map on a TV through a Google TV Streamer or Chromecast. See [Casting the Map](Control-Panel.md#casting-the-map). While it's on, the video's address is shown beside it; click it to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), as it's standard HLS video.
-* **Port:** the port the map's video is served on (21575 unless changed). It can be changed while **Enable Casting** is on and nothing is being cast; with **Enable Casting** off it's grayed out.
-* **Software Frame Rate** and **Software Resolution:** shown only on a computer without a hardware video encoder, where the map's video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See [Casting the Map](Control-Panel.md#casting-the-map).
 
 ### Settings
 
@@ -87,6 +84,17 @@ This box only appears while more than one WSJT-X or JTDX is sending to GridTrack
   * **... include Custom Alerts** also remembers the Custom Alerts for each band and mode.
 * **Clear WSJT-X / JTDX On CQ:** when you start calling CQ, the DX Call and DX Grid left over from your last QSO are cleared in WSJT-X or JTDX.
 * **Open Event Viewer On Error:** an error, such as a log upload that failed, opens the [Event Viewer](Control-Panel.md#event-viewer).
+
+### Casting
+
+* **Enable Casting:** adds the Cast button to the button panel, to show the map on a TV through a Chromecast, a Google TV Streamer or a DLNA player such as Kodi. Beside it, the main window's size now, in your screen's pixels (for example **1920x1080**): the size of the map's video. See [Casting the Map](Control-Panel.md#casting-the-map).
+* **Port:** the port the map's video is served on (21575 unless changed). It can be changed while nothing is being cast. It and everything below it in the box are shown only while **Enable Casting** is on.
+* **Announce On Network:** off unless you turn it on. GridTracker2 shows up on your network as a media server (UPnP / DLNA), with one video in it, **Live Map**, so Kodi, VLC, the Roku Media Player app and smart TVs find the map themselves, without an address typed in. See [Casting the Map](Control-Panel.md#casting-the-map).
+* **Name:** the name players list it under, "GridTracker2 by N0TTL" unless you change it (clear it to go back to that). Shown while **Announce On Network** is on.
+* **Lock Window Size To 1080p:** shown on a computer with a hardware video encoder; off unless you turn it on. While casting, the main window is sized so the map is captured at exactly 1920x1080, as sharp as a 1080p TV can show it, and it can't be resized until the last cast stops; then it goes back to its own size. Off, the window keeps about its size, snapped to the TV's 16:9 shape. It takes effect the next time you cast. See [Casting the Map](Control-Panel.md#casting-the-map).
+* **Software Frame Rate** and **Software Resolution:** shown only on a computer without a hardware video encoder, where the map's video is made in software: its frames a second (1 to 30) and its size (480p to 4K). See [Casting the Map](Control-Panel.md#casting-the-map).
+* **Devices:** the Chromecasts, Google TVs and DLNA players found on your network, each with its kind after its name. Tick one to cast to it as well, untick it to stop. Opening the Features tab looks for them again, and so does **Search**.
+* **Watch On Your Network:** the video's two addresses, **HLS** (`map.m3u8`) and **MPEG-TS** (`map.ts`, the same video as one plain stream, for players that don't take HLS). Click one to copy it, to watch the map on your network in most video players (VLC, QuickTime Player, Safari, Kodi and many more), or right-click the HLS one for **Open In Default Browser**.
 
 ### Service
 

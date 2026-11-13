@@ -2,23 +2,28 @@
 // All rights reserved.
 // See LICENSE for more information.
 
-// Map Cast (Settings -> General -> Display -> Enable Casting, and the button panel's Cast button: at the end): the map as the main window
+// Map Cast (Settings -> Features -> Casting -> Enable Casting, and the button panel's Cast button: at the end): the map as the main window
 // shows it, sent to a Google Cast device (the Google TV Streamer) as a live video.
 //   The frames: while the video is wanted (a cast, or someone on the network watching it), the main window captures itself, cut to #main
 //   (the map and what's over it) by Element Capture, at up to 30 frames a second, scaled on the GPU to the video's size; the window is
 //   snapped to 16:9 while casting (the main process: 'mapCastSnap'). The capture goes to mapCastWorker.js, which encodes it (H.264: on a
 //   hardware encoder, else in software at CAST_SOFTWARE_FPS, said in the Event Viewer) and keeps the last 12 seconds as HLS (a live
-//   playlist of 2 second fragmented MP4 segments). While Enable Casting is on it serves them on the Port, to the device cast to and to
-//   anyone on the network (VLC, a browser), and asks for the video when someone does. Nothing here per frame.
+//   playlist of 2 second MPEG-TS segments, and the same as one endless stream, map.ts). While Enable Casting is on it serves them on the
+//   Port, to the device cast to and to anyone on the network (VLC, a browser), and asks for the video when someone does. Nothing here
+//   per frame. With Announce On Network on too, mapCastAnnounceWorker.js lists the video as a UPnP / DLNA media server, so players on the
+//   network (Kodi, VLC, Roku, smart TVs) find it themselves.
 //   The device: Google's Default Media Receiver (no receiver app of our own to register or host), contacted once the playlist is full
 //   (CAST_SEGMENTS_FULL), and told over the Cast protocol to play it as a LIVE stream.
 //   The Cast protocol (CASTV2): TLS to port 8009 (the device's certificate is its own: not checked), each message a 4-byte big-endian
 //   length and a CastMessage protobuf (protocol version, source, destination, namespace, payload type, JSON payload). CONNECT to the
 //   receiver, PING/PONG every few seconds, LAUNCH the app, CONNECT to its transport, then LOAD on the media namespace.
-//   Several devices can be cast to at once (CAST.sessions, one Cast connection each), all playing the one video; the window stays snapped
-//   while any is cast to.
-// mapCastFind() lists the Cast devices on the network (mDNS); mapCastSupported(), mapCastStart(host) (adds one), mapCastStop() (all),
-// mapCastStatus() (the console's too); mapCastServe(), mapCastUnserve()
+//   DLNA / UPnP players (Kodi, many smart TVs): MediaRenderers with an AVTransport, found by SSDP (those that take only audio left out),
+//   told over SOAP to play the video (SetAVTransportURI, Play) and asked how it goes every CAST_DLNA_POLL_MS; one that stops or plays
+//   something else is no longer cast to.
+//   Several devices can be cast to at once (CAST.sessions, one connection each), all playing the one video (MPEG-TS HLS); the window stays
+//   snapped while any is cast to.
+// mapCastFind() lists the devices on the network (Cast by mDNS, DLNA by SSDP); mapCastSupported(), mapCastStart(host) (adds one),
+// mapCastStop() (all), mapCastStatus() (the console's too); mapCastServe(), mapCastUnserve()
 
 const CAST_PORT = 8009;
 const CAST_APP_DEFAULT_MEDIA = "CC1AD845";
@@ -35,7 +40,8 @@ const CAST_SEGMENTS_FULL = 6;
 const CAST_PREPARE_WAIT_MS = 45000;
 // A device whose app is ready but has had no video to play this long: the cast stopped, said in the Event Viewer
 const CAST_LOAD_WAIT_MS = 20000;
-// The video's largest size (a smaller map is sent at its own size: the device scales it)
+// The video's largest size (a smaller map is sent at its own size: the device scales it); on a hardware encoder with Resize Window To
+// 1080p (map.castHardware1080), the size the window is made for, so the map is captured at it
 const CAST_MAX_WIDTH = 1920;
 const CAST_MAX_HEIGHT = 1080;
 // H.264 High, level 4.0 (1920x1080 at up to 30 fps), on a hardware encoder
@@ -45,7 +51,7 @@ const CAST_FPS = 30;
 // what changed (next to nothing for a still map; a key frame ~250 KB, one each 2 second segment)
 const CAST_QP = 20;
 // Without a hardware encoder: the software one (OpenH264: no fixed quantizer, only a bitrate; nothing past H.264 level 5.2, so no 8K),
-// H.264 Constrained Baseline, at the Software Resolution and Software Frame Rate (Settings -> General -> Display: map.castSoftwareHeight,
+// H.264 Constrained Baseline, at the Software Resolution and Software Frame Rate (Settings -> Features -> Casting: map.castSoftwareHeight,
 // map.castSoftwareFps). Each resolution's width (16:9) and the level that fits it at up to 30 fps; ms a frame on a desktop CPU: 480p 7,
 // 720p 9, 1080p 16, 1440p 21, 2160p 50
 const CAST_SOFTWARE_SIZES = {
@@ -65,6 +71,8 @@ const CAST_SOFTWARE_BITRATE_MAX = 20000000;
 const CAST_DISCOVER_RETRY_MS = 30000;
 // The Port changed: served on once the typing has stopped this long
 const CAST_PORT_WAIT_MS = 1000;
+// The main window resized while casting: the casts started again at its new size once it has stopped changing this long (mapCastResized)
+const CAST_RESIZE_SETTLE_MS = 1000;
 // At the start, a cast going when the app closed resumed after this (the main window laid out first)
 const CAST_RESUME_WAIT_MS = 10000;
 // A message bigger than this is taken as the stream gone wrong (the protocol's own limit is 64 KiB)
@@ -73,6 +81,14 @@ const CAST_LOG_LINES = 40;
 // How long the Cast devices are listened for: by the button (done as soon as the one wanted answers), and by its menu
 const CAST_FIND_MS = 2500;
 const CAST_MENU_FIND_MS = 1500;
+// DLNA: the service a player is told to play by, how often it's asked how it goes, the failed asks in a row that end its cast, and how
+// long a request (and a player's description, after the search) may take
+const CAST_DLNA_AVTRANSPORT = "urn:schemas-upnp-org:service:AVTransport:1";
+const CAST_DLNA_POLL_MS = 5000;
+const CAST_DLNA_FAILS = 3;
+const CAST_DLNA_TIMEOUT_MS = 4000;
+// Announce On Network's name until another is typed in Name (the same for everyone: not translated)
+const CAST_ANNOUNCE_NAME = "GridTracker2 by N0TTL";
 
 const CAST = {
   // Whether this computer can cast (mapCastSupported), null until known, and whether it has a hardware encoder for it
@@ -82,11 +98,17 @@ const CAST = {
   finding: 0,
   devicesFound: false,
   discoverTimer: null,
-  // How many devices the last search found (one: a click on the button casts to it or stops; more: it lists them)
+  // How many devices the last search found (one: a click on the button casts to it or stops; more: it lists them), and those devices
+  // (the Casting box lists them)
   foundCount: 0,
-  // The devices cast to, by their address: each { host, name, id, remember (kept for the next start: not a console cast), socket, input,
-  // requestId, transportId, sessionId, loaded (told to play the video), playerState, pingTimer, loadTimer, prepareTimer, waiting (the
-  // video still being prepared: not contacted yet), localAddress }
+  found: [],
+  // A DLNA player's description as read (its location: { device } or { device: null } when it isn't one to cast to), not read again
+  dlnaDescriptions: new Map(),
+  // The devices cast to, by mapCastKey (the address, "dlna:" before a DLNA player's): each { key, kind ("cast" or "dlna"), host, name,
+  // id, remember (kept for the next start: not a console cast), socket, input, requestId, transportId, sessionId, loaded (told to play
+  // the video), playerState, pingTimer, loadTimer, prepareTimer, waiting (the video still being prepared: not contacted yet),
+  // localAddress; a DLNA player's control (its AVTransport's address), playing (told to play, and doing so), played (seen PLAYING),
+  // pollTimer, fails }
   sessions: new Map(),
   // The address a device last reached this computer at (kept after the cast), and the one it would be expected at before a cast (the link
   // in Settings, mapCastLinkAddress)
@@ -96,6 +118,11 @@ const CAST = {
   worker: null,
   port: 0,
   viewers: [],
+  // The worker listing the video as a media server on the network (Announce On Network, while the video is served), the name it was
+  // started with, and the wait after Name is typed in
+  announcer: null,
+  announcedName: "",
+  announceNameTimer: null,
   // The video being made: its codec, size and frame rate, and whether in software
   encoding: false,
   codec: "",
@@ -120,6 +147,10 @@ const CAST = {
   track: null,
   mainStyle: null,
   snapped: false,
+  // The main window's size locked while casting (Lock Window Size To 1080p: it can't be resized until the last cast stops); the casts
+  // being stopped to be cast to again at a new size (mapCastRecast)
+  locked: false,
+  recasting: false,
   log: []
 };
 
@@ -141,12 +172,25 @@ function mapCastPreparing()
 
 function mapCastConnected()
 {
-  return mapCastSessions().some((S) => !!S.socket);
+  return mapCastSessions().some(mapCastOn);
 }
 
-// Two devices the same: by their id when both have one, else by their address
+// A device cast to that is playing the video, or about to (a Cast device connected, a DLNA player told to play it)
+function mapCastOn(S)
+{
+  return !!S.socket || !!S.playing;
+}
+
+// A session's key: the device's address (a TV can be a Cast device and a DLNA player at once: "dlna:" before the player's)
+function mapCastKey(kind, host)
+{
+  return (kind == "dlna" ? "dlna:" : "") + host;
+}
+
+// Two devices the same: of one kind, and by their id when both have one, else by their address
 function mapCastSame(a, b)
 {
+  if ((a.kind || "cast") != (b.kind || "cast")) return false;
   return a.id && b.id ? a.id == b.id : !!a.host && a.host == b.host;
 }
 
@@ -242,14 +286,22 @@ async function mapCastVideoSize(software)
 {
   const main = await electron.ipcRenderer.invoke("mapCastSize").catch(() => null);
   if (!main || main.width <= 0 || main.height <= 0) return null;
-  if (software)
+  const box = mapCastTarget(software);
+  if (box)
   {
-    const box = mapCastSoftwareSize();
     const fit = mapCastFit(main.width, main.height, box.width, box.height, true);
     // A window 16:9 but for its rounding (snapped to it): the resolution picked exactly (1280x720, not 1280x718)
     return fit.width == box.width && Math.abs(fit.height - box.height) <= 4 ? { width: box.width, height: box.height } : fit;
   }
   return mapCastFit(main.width, main.height, CAST_MAX_WIDTH, CAST_MAX_HEIGHT, false);
+}
+
+// The size the window is made for while casting (in the screen's pixels), so the map is captured at it: in software the Software
+// Resolution's; on a hardware encoder 1920x1080 with Resize Window To 1080p on; else none (the window snapped to 16:9 at about its size)
+function mapCastTarget(software)
+{
+  if (software) return mapCastSoftwareSize();
+  return GT.settings.map.castHardware1080 === true ? { width: CAST_MAX_WIDTH, height: CAST_MAX_HEIGHT } : null;
 }
 
 // The Software Resolution's size and H.264 level (720p if the one kept isn't one of them)
@@ -300,25 +352,28 @@ async function mapCastSupported()
 }
 
 // Casting to host as well (name: what the user calls it, in the Event Viewer and the button's tooltip; remember: kept for the next start,
-// mapCastRemember). The first device: the window snapped and the video made (or the one being made for those watching, when it's that
-// size); each device contacted once the playlist is full (at once when it is already)
-async function mapCastStart(host, name = "", id = "", remember = false)
+// mapCastRemember; control: a DLNA player's AVTransport address, else a Cast device). The first device: the window snapped and the
+// video made (or the one being made for those watching, when it's that size); each device contacted once the playlist is full (at once
+// when it is already)
+async function mapCastStart(host, name = "", id = "", remember = false, control = "")
 {
   host = String(host || "").trim();
   if (!host) return "no host";
-  if (CAST.sessions.has(host)) return "already casting to " + host;
+  const kind = control ? "dlna" : "cast";
+  const key = mapCastKey(kind, host);
+  if (CAST.sessions.has(key)) return "already casting to " + host;
   if (!(await mapCastSupported())) return "can't cast here: no video encoder (or no Element Capture)";
   CAST.supported = true;
-  if (CAST.sessions.has(host)) return "already casting to " + host;
-  const S = { host, name: name || host, id: id || "", remember, socket: null, input: Buffer.alloc(0), requestId: 0, transportId: "", sessionId: "", loaded: false, playerState: "", pingTimer: null, loadTimer: null, prepareTimer: null, waiting: true, localAddress: "" };
+  if (CAST.sessions.has(key)) return "already casting to " + host;
+  const S = { key, kind, host, name: name || host, id: id || "", remember, socket: null, input: Buffer.alloc(0), requestId: 0, transportId: "", sessionId: "", loaded: false, playerState: "", pingTimer: null, loadTimer: null, prepareTimer: null, waiting: true, localAddress: "", control, playing: false, played: false, pollTimer: null, fails: 0 };
   const first = !mapCastActive();
-  CAST.sessions.set(host, S);
+  CAST.sessions.set(key, S);
   mapCastRemember();
   // No video in time: this device given up (said in the Event Viewer)
   S.prepareTimer = nodeTimers.setTimeout(() =>
   {
     S.prepareTimer = null;
-    if (!S.waiting || CAST.sessions.get(host) !== S) return;
+    if (!S.waiting || CAST.sessions.get(key) !== S) return;
     mapCastLog("no video after " + CAST_PREPARE_WAIT_MS / 1000 + " s for " + host);
     mapCastEvent("cast.event.failed", true, "", false, S.name);
     mapCastStopOne(S);
@@ -327,9 +382,10 @@ async function mapCastStart(host, name = "", id = "", remember = false)
   if (first)
   {
     const start = ++CAST.starts;
-    // In software the window sized to the Software Resolution, so the map is captured at it (not scaled up from a smaller window)
+    // In software the window sized to the Software Resolution, so the map is captured at it (not scaled up from a smaller window); on a
+    // hardware encoder to 1080p the same way, with Resize Window To 1080p
     const software = mapCastUseSoftware();
-    const target = software ? mapCastSoftwareSize() : null;
+    const target = mapCastTarget(software);
     const snapped = await electron.ipcRenderer.invoke("mapCastSnap", true, target && { width: target.width, height: target.height });
     // (all stopped meanwhile: the window put back)
     if (start != CAST.starts)
@@ -338,6 +394,9 @@ async function mapCastStart(host, name = "", id = "", remember = false)
       return "stopped";
     }
     CAST.snapped = snapped;
+    // A window made for the video's size (the Software Resolution; on a hardware encoder 1080p with Lock Window Size To 1080p) can't be
+    // resized while casting (as the Log QSO card's while its lock is shut): the video would no longer match it
+    if (snapped && target) mapCastLockWindow(true);
     const size = await mapCastVideoSize(software);
     if (start != CAST.starts) return "stopped";
     // (served here when Enable Casting isn't on: from the console)
@@ -377,6 +436,11 @@ function mapCastConnect(S)
 {
   S.loaded = false;
   S.playerState = "";
+  if (S.kind == "dlna")
+  {
+    mapCastDlnaConnect(S);
+    return;
+  }
   const socket = window.require("tls").connect({ host: S.host, port: CAST_PORT, rejectUnauthorized: false });
   S.socket = socket;
   S.input = Buffer.alloc(0);
@@ -403,17 +467,276 @@ function mapCastConnect(S)
   });
 }
 
-// One device no longer cast to (the others go on); the last: the window put back, and the video no longer served unless Enable Casting is
-// on (a cast from the console). The video goes on being made while others watch it (the worker says when nobody does)
-function mapCastStopOne(S)
+// ---- DLNA / UPnP players
+
+// Text for XML (an element's or an attribute's), and an element's text out of XML (any namespace prefix), its entities decoded
+function mapCastXml(text)
 {
-  if (CAST.sessions.get(S.host) !== S) return;
-  CAST.sessions.delete(S.host);
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function mapCastXmlTag(xml, name)
+{
+  const match = new RegExp("<(?:[\\w-]+:)?" + name + "(?:\\s[^>]*)?>([^<]*)<", "i").exec(xml || "");
+  return match ? match[1].replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&").trim() : "";
+}
+
+// A SOAP action on a player's service (control: its address); resolves { text, localAddress } (the address this computer reached it
+// from), rejects on an error, an answer that isn't 200 or no answer in CAST_DLNA_TIMEOUT_MS
+function mapCastSoap(control, action, args, service = CAST_DLNA_AVTRANSPORT)
+{
+  return new Promise((resolve, reject) =>
+  {
+    let url;
+    try
+    {
+      url = new URL(control);
+    }
+    catch (e)
+    {
+      reject(new Error(action + ": bad address"));
+      return;
+    }
+    const body = Buffer.from('<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:' + action + ' xmlns:u="' + service + '">' +
+      Object.entries(args).map(([name, value]) => "<" + name + ">" + mapCastXml(value) + "</" + name + ">").join("") + "</u:" + action + "></s:Body></s:Envelope>", "utf8");
+    const headers = { "Content-Type": 'text/xml; charset="utf-8"', SOAPACTION: '"' + service + "#" + action + '"', "Content-Length": body.length };
+    const request = window.require("http").request({ host: url.hostname, port: url.port || 80, path: url.pathname + url.search, method: "POST", headers, timeout: CAST_DLNA_TIMEOUT_MS }, (response) =>
+    {
+      // (read now: once the answer has ended its connection may be let go)
+      const localAddress = String(response.socket?.localAddress || "").replace(/^::ffff:/, "");
+      const parts = [];
+      response.on("data", (data) => parts.push(data));
+      response.on("end", () =>
+      {
+        const text = Buffer.concat(parts).toString("utf8");
+        if (response.statusCode == 200) resolve({ text, localAddress });
+        else reject(new Error(action + ": " + response.statusCode + (mapCastXmlTag(text, "errorDescription") ? " " + mapCastXmlTag(text, "errorDescription") : "")));
+      });
+      response.on("error", reject);
+    });
+    request.on("timeout", () => request.destroy(new Error(action + ": no answer")));
+    request.on("error", reject);
+    request.end(body);
+  });
+}
+
+// A player's description (XML, at most 256 KB), or a rejection
+function mapCastHttpGet(address)
+{
+  return new Promise((resolve, reject) =>
+  {
+    const request = window.require("http").get(address, { timeout: CAST_DLNA_TIMEOUT_MS }, (response) =>
+    {
+      if (response.statusCode != 200)
+      {
+        response.resume();
+        reject(new Error("HTTP " + response.statusCode));
+        return;
+      }
+      const parts = [];
+      let size = 0;
+      response.on("data", (data) =>
+      {
+        size += data.length;
+        if (size > 262144) request.destroy(new Error("too big"));
+        else parts.push(data);
+      });
+      response.on("end", () => resolve(Buffer.concat(parts).toString("utf8")));
+      response.on("error", reject);
+    });
+    request.on("timeout", () => request.destroy(new Error("no answer")));
+    request.on("error", reject);
+  });
+}
+
+// A service's control address in a description (its type containing type), made whole from the description's address, else ""
+function mapCastDlnaService(xml, location, type)
+{
+  const base = mapCastXmlTag(xml, "URLBase") || location;
+  for (const match of xml.matchAll(/<(?:[\w-]+:)?service>([\s\S]*?)<\/(?:[\w-]+:)?service>/gi))
+  {
+    if (!mapCastXmlTag(match[1], "serviceType").includes(type)) continue;
+    const control = mapCastXmlTag(match[1], "controlURL");
+    try
+    {
+      return control ? new URL(control, base).href : "";
+    }
+    catch (e)
+    {
+      return "";
+    }
+  }
+  return "";
+}
+
+// The player whose description is at location (a search's answer from host): { kind: "dlna", id (its UDN), name, model, host, control },
+// or null when it has no AVTransport or takes only audio (its ConnectionManager's sink protocols; one that won't say is taken as one
+// that plays video). Kept once read (a description that couldn't be read is tried again by the next search)
+async function mapCastDlnaDescribe(location, host)
+{
+  if (CAST.dlnaDescriptions.has(location)) return CAST.dlnaDescriptions.get(location).device;
+  let device = null;
+  try
+  {
+    const xml = await mapCastHttpGet(location);
+    const control = mapCastDlnaService(xml, location, "AVTransport");
+    if (control)
+    {
+      const manager = mapCastDlnaService(xml, location, "ConnectionManager");
+      const sinks = manager ? await mapCastSoap(manager, "GetProtocolInfo", {}, "urn:schemas-upnp-org:service:ConnectionManager:1").then((answer) => mapCastXmlTag(answer.text, "Sink")).catch(() => "") : "";
+      if (!sinks || /video\/|mpegurl|mp2t/i.test(sinks)) device = { kind: "dlna", id: mapCastXmlTag(xml, "UDN") || location, name: mapCastXmlTag(xml, "friendlyName") || host, model: "DLNA", host, control };
+    }
+    CAST.dlnaDescriptions.set(location, { device });
+  }
+  catch (e)
+  {
+    mapCastLog("DLNA " + location + ": " + e.message);
+  }
+  return device;
+}
+
+// The DLNA players that answer an SSDP search for media renderers within waitMs, asked on each network interface (an answer can only
+// come back the way the search went out)
+function mapCastDlnaFind(waitMs)
+{
+  return new Promise((resolve) =>
+  {
+    const dgram = window.require("dgram");
+    const interfaces = Object.values(window.require("os").networkInterfaces()).flat().filter((a) => a.family == "IPv4" && !a.internal).map((a) => a.address);
+    const answers = new Map();
+    const sockets = [];
+    const search = Buffer.from('M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: "ssdp:discover"\r\nMX: 1\r\nST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n\r\n', "ascii");
+    for (const address of interfaces)
+    {
+      const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
+      socket.on("error", () => {});
+      socket.on("message", (msg, rinfo) =>
+      {
+        const location = /^location:\s*(\S+)/im.exec(msg.toString("latin1"));
+        if (location && !answers.has(location[1])) answers.set(location[1], rinfo.address);
+      });
+      socket.bind(0, address, () =>
+      {
+        socket.send(search, 1900, "239.255.255.250");
+        socket.send(search, 1900, "239.255.255.250");
+      });
+      sockets.push(socket);
+    }
+    nodeTimers.setTimeout(async () =>
+    {
+      for (const socket of sockets)
+      {
+        try
+        {
+          socket.close();
+        }
+        catch (e)
+        {
+          // Already closed
+        }
+      }
+      const devices = await Promise.all([...answers].map(([location, host]) => mapCastDlnaDescribe(location, host)));
+      resolve(devices.filter(Boolean));
+    }, waitMs);
+  });
+}
+
+// A DLNA player told to play the video (MPEG-TS HLS, at the address it reached this computer at), then asked how it goes
+async function mapCastDlnaConnect(S)
+{
+  const current = () => CAST.sessions.get(S.key) === S;
+  try
+  {
+    // (first an ask that changes nothing: the address this computer reaches it from)
+    const probe = await mapCastSoap(S.control, "GetTransportInfo", { InstanceID: 0 });
+    if (!current()) return;
+    S.localAddress = CAST.localAddress = probe.localAddress || CAST.localAddress || CAST.linkAddress;
+    if (!S.localAddress) throw new Error("no address of this computer to give it");
+    S.url ="http://" + S.localAddress + ":" + CAST.port + "/map.m3u8";
+    const mime = "application/vnd.apple.mpegurl";
+    const didl = '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"><item id="gridtracker2" parentID="0" restricted="1"><dc:title>GridTracker2</dc:title><upnp:class>object.item.videoItem</upnp:class><res protocolInfo="http-get:*:' + mime + ':*">' + mapCastXml(S.url) + "</res></item></DIDL-Lite>";
+    await mapCastSoap(S.control, "SetAVTransportURI", { InstanceID: 0, CurrentURI: S.url, CurrentURIMetaData: didl });
+    if (!current()) return;
+    await mapCastSoap(S.control, "Play", { InstanceID: 0, Speed: 1 });
+    if (!current())
+    {
+      // (stopped while it was being told to play: told to stop)
+      mapCastSoap(S.control, "Stop", { InstanceID: 0 }).catch(() => {});
+      return;
+    }
+    S.playing = S.loaded = true;
+    S.loadedAt = Date.now();
+    mapCastLog(S.host + ": playing " + S.url + " (DLNA, from " + S.localAddress + ")");
+    mapCastEvent("cast.event.started", false, "", false, S.name);
+    S.pollTimer = nodeTimers.setInterval(() => mapCastDlnaPoll(S), CAST_DLNA_POLL_MS);
+    mapCastRender();
+  }
+  catch (e)
+  {
+    if (!current()) return;
+    mapCastLog(S.host + ": " + e.message);
+    mapCastEvent("cast.event.unreachable", true, "", false, S.name);
+    mapCastStopOne(S);
+  }
+}
+
+// How a DLNA player cast to goes: stopped (once it has played, or long after it was told to), playing something else (not from this
+// port), or not answering CAST_DLNA_FAILS times in a row: no longer cast to (not told to stop: it may be playing what the user picked)
+async function mapCastDlnaPoll(S)
+{
+  if (S.polling || CAST.sessions.get(S.key) !== S) return;
+  S.polling = true;
+  try
+  {
+    const info = await mapCastSoap(S.control, "GetTransportInfo", { InstanceID: 0 });
+    const media = await mapCastSoap(S.control, "GetMediaInfo", { InstanceID: 0 }).catch(() => null);
+    if (CAST.sessions.get(S.key) !== S) return;
+    S.fails = 0;
+    const state = mapCastXmlTag(info.text, "CurrentTransportState");
+    if (state != S.playerState) mapCastLog(S.host + ": player " + state);
+    S.playerState = state;
+    if (state == "PLAYING") S.played = true;
+    const uri = media ? mapCastXmlTag(media.text, "CurrentURI") : "";
+    const other = !!uri && !uri.includes(":" + CAST.port + "/");
+    const stopped = (state == "STOPPED" || state == "NO_MEDIA_PRESENT") && (S.played || Date.now() - S.loadedAt > CAST_LOAD_WAIT_MS);
+    if (other || stopped)
+    {
+      mapCastLog(S.host + (other ? ": playing something else" : ": stopped"));
+      mapCastEvent("cast.event.ended", false, "", false, S.name);
+      mapCastStopOne(S, true);
+    }
+  }
+  catch (e)
+  {
+    if (CAST.sessions.get(S.key) === S && ++S.fails >= CAST_DLNA_FAILS)
+    {
+      mapCastLog(S.host + ": " + e.message);
+      mapCastEvent("cast.event.ended", false, "", false, S.name);
+      mapCastStopOne(S, true);
+    }
+  }
+  finally
+  {
+    S.polling = false;
+  }
+}
+
+// One device no longer cast to (the others go on); the last: the window put back, and the video no longer served unless Enable Casting is
+// on (a cast from the console). The video goes on being made while others watch it (the worker says when nobody does). byDevice: a DLNA
+// player that stopped or plays something else by itself, not told to stop (it may be playing what the user picked there)
+function mapCastStopOne(S, byDevice = false)
+{
+  if (CAST.sessions.get(S.key) !== S) return;
+  CAST.sessions.delete(S.key);
   S.waiting = false;
   nodeTimers.clearTimeout(S.prepareTimer);
   nodeTimers.clearInterval(S.pingTimer);
   nodeTimers.clearTimeout(S.loadTimer);
-  S.prepareTimer = S.pingTimer = S.loadTimer = null;
+  nodeTimers.clearInterval(S.pollTimer);
+  S.prepareTimer = S.pingTimer = S.loadTimer = S.pollTimer = null;
+  // (as GridTracker2 closes, the main process tells it: mapCastClose)
+  if (S.kind == "dlna" && S.playing && !byDevice && !GT.closing) mapCastSoap(S.control, "Stop", { InstanceID: 0 }).catch((e) => mapCastLog(S.host + ": stop " + e.message));
+  S.playing = false;
   const socket = S.socket;
   S.socket = null;
   if (socket && !socket.destroyed)
@@ -423,14 +746,75 @@ function mapCastStopOne(S)
   }
   if (CAST.worker) CAST.worker.postMessage({ type: "castEnded", address: S.host });
   mapCastRemember();
-  if (!mapCastActive())
+  // (the last one: the window put back; not while casting again at a new size, mapCastRecast: it keeps the size it was given)
+  if (!mapCastActive() && !CAST.recasting)
   {
     CAST.starts++;
+    // (resizable again before its old size is put back)
+    mapCastLockWindow(false);
     if (CAST.snapped) electron.ipcRenderer.invoke("mapCastSnap", false);
     CAST.snapped = false;
     if (!GT.settings.map.castEnable) mapCastUnserve();
   }
   mapCastRender();
+}
+
+// The main window resized while casting (it isn't locked: a hardware encoder's without Lock Window Size To 1080p), once it has settled
+// for CAST_RESIZE_SETTLE_MS: when that changes the video's size, every device cast to is stopped and cast to again at the new one (the
+// video is made again at it; the size the window goes back to when the casts stop is kept)
+async function mapCastResized()
+{
+  if (!mapCastActive() || CAST.locked || CAST.recasting || !CAST.encoding || mapCastPreparing()) return;
+  const size = await mapCastVideoSize(CAST.software);
+  if (!size || (size.width == CAST.width && size.height == CAST.height) || !mapCastActive() || CAST.recasting) return;
+  mapCastLog("window resized: casting again at " + size.width + "x" + size.height);
+  mapCastEvent("cast.event.resized", false, size.width + "x" + size.height, false, mapCastNames(mapCastSessions()));
+  mapCastRecast();
+}
+
+// Every device cast to stopped and cast to again (the first one makes the video again, at the window's size now), the window left as it is
+function mapCastRecast()
+{
+  const devices = mapCastSessions().map((S) => ({ host: S.host, name: S.name, id: S.id, remember: S.remember, control: S.control }));
+  CAST.recasting = true;
+  try
+  {
+    for (const S of mapCastSessions()) mapCastStopOne(S);
+  }
+  finally
+  {
+    CAST.recasting = false;
+  }
+  // (the video no longer the old size: made again at the new one by the first device's start)
+  mapCastEncodeStop();
+  for (const d of devices) mapCastStart(d.host, d.name, d.id, d.remember, d.control);
+}
+
+// The DLNA players watching the video, each by its AVTransport's address: those cast to (casting: false leaves them out), and any found
+// whose address is watching it now (playing it from its own list of media servers, Announce On Network, or from an address typed in:
+// Kodi's own player says what it plays, and stops on its Stop, however it was started)
+function mapCastDlnaWatching(casting = true)
+{
+  const controls = new Set();
+  if (casting) for (const S of mapCastSessions()) if (S.kind == "dlna" && S.playing && S.control) controls.add(S.control);
+  const viewers = new Set(CAST.viewers);
+  const cast = new Set(mapCastSessions().map((S) => S.control));
+  for (const device of CAST.found.concat([GT.settings.map.castDevice]))
+  {
+    if (device && device.kind == "dlna" && device.control && viewers.has(device.host) && (casting || !cast.has(device.control))) controls.add(device.control);
+  }
+  return [...controls];
+}
+
+// GridTracker2 closing or restarting (saveAndCloseApp): the DLNA players watching told to stop (else they're left waiting on a video that
+// has gone), by the main process, which holds the exit until they've answered (the window would be gone before they were sent from
+// here); then every cast stopped, and the video no longer served
+function mapCastClose()
+{
+  const controls = mapCastDlnaWatching();
+  if (controls.length) electron.ipcRenderer.sendSync("mapCastStopDevices", controls);
+  mapCastStop();
+  mapCastUnserve();
 }
 
 // Every device no longer cast to
@@ -441,12 +825,12 @@ function mapCastStop()
   return "stopped";
 }
 
-// The devices cast to, kept (map.castDevices: [{ id, name, host }], not the console's casts) so the next start casts to them again
-// (mapCastResume); not as the app closes (its casts stopping then are resumed)
+// The devices cast to, kept (map.castDevices: [{ id, name, host, kind, control }], not the console's casts) so the next start casts to
+// them again (mapCastResume); not as the app closes (its casts stopping then are resumed)
 function mapCastRemember()
 {
   if (GT.closing) return;
-  GT.settings.map.castDevices = mapCastSessions().filter((S) => S.remember).map((S) => ({ id: S.id, name: S.name, host: S.host }));
+  GT.settings.map.castDevices = mapCastSessions().filter((S) => S.remember).map((S) => ({ id: S.id, name: S.name, host: S.host, kind: S.kind, control: S.control }));
 }
 
 // The devices kept to cast to again (map.castDevices)
@@ -459,7 +843,7 @@ function mapCastRemembered()
 function mapCastStatus()
 {
   return {
-    sessions: mapCastSessions().map((S) => ({ host: S.host, name: S.name, connected: !!S.socket, waiting: S.waiting, transportId: S.transportId, playerState: S.playerState })),
+    sessions: mapCastSessions().map((S) => ({ kind: S.kind, host: S.host, name: S.name, connected: mapCastOn(S), waiting: S.waiting, transportId: S.transportId, playerState: S.playerState })),
     url: CAST.port ? "http://" + (CAST.localAddress || CAST.linkAddress) + ":" + CAST.port + "/map.m3u8" : "",
     codec: CAST.codec,
     encoding: CAST.encoding,
@@ -468,12 +852,13 @@ function mapCastStatus()
     segments: CAST.segments,
     grabbing: CAST.grabbing,
     devicesFound: CAST.devicesFound,
+    announcing: !!CAST.announcer,
     worker: CAST.stats,
     log: CAST.log
   };
 }
 
-// The video served on the Port (Settings -> General -> Display), made when asked for: while Enable Casting is on, and while casting
+// The video served on the Port (Settings -> Features -> Casting), made when asked for: while Enable Casting is on, and while casting
 function mapCastServe()
 {
   if (CAST.worker || !CAST.supported) return;
@@ -486,6 +871,7 @@ function mapCastServe()
 
 function mapCastUnserve()
 {
+  mapCastAnnounceStop();
   mapCastEncodeStop();
   // It closes itself once its server and encoder are closed (ended here if it hasn't by then)
   const worker = CAST.worker;
@@ -497,6 +883,77 @@ function mapCastUnserve()
   }
   CAST.port = 0;
   CAST.viewers = [];
+  mapCastRender();
+}
+
+// Settings -> Features -> Casting -> Announce On Network: while the video is served (Enable Casting on, listening on the Port), it's
+// listed on the network as a UPnP / DLNA media server (mapCastAnnounceWorker.js), under its Name, the video in it
+function mapCastAnnounceStart()
+{
+  if (CAST.announcer || GT.settings.map.castAnnounce !== true || !CAST.worker || !CAST.port) return;
+  const worker = new Worker("./lib/services/mapCastAnnounceWorker.js");
+  CAST.announcer = worker;
+  worker.onmessage = (event) =>
+  {
+    if (CAST.announcer != worker) return;
+    const msg = event.data;
+    if (msg.type == "log") mapCastLog("announce: " + msg.text);
+    else if (msg.type == "error") mapCastLog("announce error " + msg.text);
+  };
+  worker.onerror = (e) => mapCastLog("announce worker error " + e.message);
+  CAST.announcedName = mapCastAnnounceName();
+  worker.postMessage({ type: "start", castPort: CAST.port, name: CAST.announcedName, title: I18N("settings.map.cast.announce.item"), version: gtVersionStr });
+}
+
+// The name it's listed under: the one typed in Name, else CAST_ANNOUNCE_NAME
+function mapCastAnnounceDefaultName()
+{
+  return CAST_ANNOUNCE_NAME;
+}
+
+function mapCastAnnounceName()
+{
+  const typed = String(GT.settings.map.castAnnounceName || "").trim();
+  return typed || mapCastAnnounceDefaultName();
+}
+
+// Name typed in: kept (the default's own text, or nothing, keeps the default), and announced under it once the typing has stopped
+function mapCastAnnounceNameChanged()
+{
+  const typed = castAnnounceName.value.trim();
+  GT.settings.map.castAnnounceName = typed == mapCastAnnounceDefaultName() ? "" : typed;
+  nodeTimers.clearTimeout(CAST.announceNameTimer);
+  CAST.announceNameTimer = nodeTimers.setTimeout(() =>
+  {
+    CAST.announceNameTimer = null;
+    if (!CAST.announcer || CAST.announcedName == mapCastAnnounceName()) return;
+    mapCastLog("announce name changed to " + mapCastAnnounceName());
+    mapCastAnnounceStop();
+    mapCastAnnounceStart();
+  }, CAST_PORT_WAIT_MS);
+}
+
+// The Name box showing the name it's listed under (an emptied box shows the default again)
+function mapCastAnnounceNameShow()
+{
+  castAnnounceName.value = mapCastAnnounceName();
+}
+
+// No longer listed (it says goodbye on the network first, then closes itself: ended here if it hasn't by then)
+function mapCastAnnounceStop()
+{
+  const worker = CAST.announcer;
+  CAST.announcer = null;
+  if (!worker) return;
+  worker.postMessage({ type: "stop" });
+  nodeTimers.setTimeout(() => worker.terminate(), 2000);
+}
+
+function mapCastAnnounceChanged()
+{
+  GT.settings.map.castAnnounce = castAnnounce.checked;
+  if (GT.settings.map.castAnnounce) mapCastAnnounceStart();
+  else mapCastAnnounceStop();
   mapCastRender();
 }
 
@@ -574,6 +1031,7 @@ function mapCastWorkerStart()
     {
       CAST.port = msg.port;
       mapCastLog("serving on port " + msg.port);
+      mapCastAnnounceStart();
       mapCastConnectWhenReady();
       mapCastLoadWhenReady();
     }
@@ -621,9 +1079,11 @@ function mapCastWorkerStart()
   worker.onerror = (e) => mapCastLog("worker error " + e.message);
 }
 
-// A device's bytes in (S: its session): each whole message read
+// A device's bytes in (S: its session): each whole message read. None once its cast has stopped: after the STOP the device still says
+// its app closed and its connection did, which would be taken for the device ending the cast itself (said again in the Event Viewer)
 function mapCastReceive(S, data)
 {
+  if (CAST.sessions.get(S.key) !== S) return;
   S.input = S.input.length ? Buffer.concat([S.input, data]) : Buffer.from(data);
   while (S.input.length >= 4)
   {
@@ -638,7 +1098,7 @@ function mapCastReceive(S, data)
     const message = mapCastDecode(S.input.subarray(4, 4 + size));
     S.input = S.input.subarray(4 + size);
     mapCastMessage(S, message);
-    if (CAST.sessions.get(S.host) !== S) return;
+    if (CAST.sessions.get(S.key) !== S) return;
   }
 }
 
@@ -791,19 +1251,25 @@ function mapCastLoadWhenReady()
   }
 }
 
-// HLS with fragmented MP4 segments (the Default Media Receiver needs to be told the segments' format), at the address the device reached
-// this computer at
+// HLS with MPEG-TS segments (the Default Media Receiver is told the segments' format), at the address the device reached this computer at
 function mapCastLoad(S)
 {
   const url = "http://" + S.localAddress + ":" + CAST.port + "/map.m3u8";
-  const media = { contentId: url, contentType: "application/x-mpegurl", streamType: "LIVE", hlsSegmentFormat: "fmp4", hlsVideoSegmentFormat: "fmp4" };
+  const media = { contentId: url, contentType: "application/x-mpegurl", streamType: "LIVE", hlsSegmentFormat: "ts", hlsVideoSegmentFormat: "mpeg2_ts" };
   mapCastSend(S, S.transportId, CAST_NS_MEDIA, { type: "LOAD", requestId: ++S.requestId, sessionId: S.sessionId, autoplay: true, media: media });
   mapCastLog(S.host + ": load " + url);
 }
 
-// The Cast devices that answer an mDNS query for _googlecast._tcp within waitMs: [{ id, name, model, host }] in the order they
-// answered (each from its own address); done as soon as one answers that until(device) is true for, when given
-function mapCastFind(waitMs = CAST_FIND_MS, until = null)
+// The devices on the network: the Cast devices, then the DLNA players (both looked for at once, for waitMs)
+async function mapCastFind(waitMs = CAST_FIND_MS, until = null)
+{
+  const [cast, dlna] = await Promise.all([mapCastFindCast(waitMs, until), mapCastDlnaFind(waitMs)]);
+  return cast.concat(dlna);
+}
+
+// The Cast devices that answer an mDNS query for _googlecast._tcp within waitMs: [{ kind: "cast", id, name, model, host }] in the order
+// they answered (each from its own address); done as soon as one answers that until(device) is true for, when given
+function mapCastFindCast(waitMs = CAST_FIND_MS, until = null)
 {
   return new Promise((resolve) =>
   {
@@ -829,7 +1295,7 @@ function mapCastFind(waitMs = CAST_FIND_MS, until = null)
     {
       const txt = mapCastDnsTxt(msg);
       if (!txt) return;
-      const device = { id: txt.id || "", name: txt.fn || "", model: txt.md || "", host: rinfo.address };
+      const device = { kind: "cast", id: txt.id || "", name: txt.fn || "", model: txt.md || "", host: rinfo.address };
       found[rinfo.address] = device;
       if (until && until(device)) finish();
     });
@@ -894,12 +1360,22 @@ function mapCastDnsTxt(msg)
   return null;
 }
 
-// ---- Settings -> General -> Display -> Enable Casting, and the button panel's Cast button (shown while it's on). With one device found a
+// ---- Settings -> Features -> Casting -> Enable Casting, and the button panel's Cast button (shown while it's on). With one device found a
 // click casts to it (or to the one picked last, GT.settings.map.castDevice, tried at the address it had when none answers) or stops;
 // with more, it lists them as a right click does: each with a checkbox, ticked to cast to it as well, unticked to stop it
 
 async function mapCastInit()
 {
+  // The window's size beside Enable Casting follows the window (once it has stopped changing); while casting, the casts are started again
+  // at its new size once it has settled (mapCastResized)
+  let sizeTimer = null, settleTimer = null;
+  window.addEventListener("resize", () =>
+  {
+    nodeTimers.clearTimeout(sizeTimer);
+    sizeTimer = nodeTimers.setTimeout(mapCastWindowSizeShow, 250);
+    nodeTimers.clearTimeout(settleTimer);
+    settleTimer = nodeTimers.setTimeout(mapCastResized, CAST_RESIZE_SETTLE_MS);
+  });
   mapCastRender();
   CAST.supported = await mapCastSupported();
   castPort.value = GT.settings.map.castPort;
@@ -992,31 +1468,32 @@ function mapCastLinkAddress()
   });
 }
 
-// The cast video's address, for VLC or a browser (served while casting)
-function mapCastLink()
+// The cast video's address, for VLC or a browser (served while Enable Casting is on): file "map.m3u8" (HLS, what a cast plays) or
+// "map.ts" (the same as one endless MPEG-TS stream)
+function mapCastLink(file)
 {
   const address = CAST.localAddress || CAST.linkAddress;
-  return address ? "http://" + address + ":" + GT.settings.map.castPort + "/map.m3u8" : "";
+  return address ? "http://" + address + ":" + GT.settings.map.castPort + "/" + file : "";
 }
 
-function mapCastCopyLink()
+function mapCastCopyLink(file)
 {
-  const link = mapCastLink();
+  const link = mapCastLink(file);
   if (link) navigator.clipboard.writeText(link);
 }
 
-// A right click on the link: Open In Default Browser (a new window or tab there: the main process hands it on)
-function mapCastLinkMenu(event)
+// A right click on a link: Open In Default Browser (a new window or tab there: the main process hands it on)
+function mapCastLinkMenu(event, file)
 {
   event.preventDefault();
-  const link = mapCastLink();
+  const link = mapCastLink(file);
   if (!link) return;
   const menu = new Menu();
   menu.append(new MenuItem({ label: I18N("cast.menu.openBrowser.label"), click: () => openSite(link) }));
   menu.popup();
 }
 
-// Settings -> General -> Display -> Port (only while Enable Casting is on and nothing is cast: mapCastRender): served on from then on,
+// Settings -> Features -> Casting -> Port (only while Enable Casting is on and nothing is cast: mapCastRender): served on from then on,
 // once the typing has stopped (those watching then open the link again)
 function mapCastPortChanged()
 {
@@ -1034,7 +1511,50 @@ function mapCastPortChanged()
   mapCastRender();
 }
 
-// Settings -> General -> Display -> Software Frame Rate and Software Resolution (without a hardware encoder): from the next video made on
+// Settings -> Features -> Casting -> Software Frame Rate and Software Resolution (without a hardware encoder): from the next video made on
+// Settings -> Features -> Casting -> Lock Window Size To 1080p (a hardware encoder's): from the next cast on; and while casting, at once:
+// turned off, the window can be resized again (a resize then casts again at its size, mapCastResized); turned on, it's made 1080p again
+// and locked, and when the video isn't 1080p, every device is cast to again at it
+function mapCastHardware1080Changed()
+{
+  GT.settings.map.castHardware1080 = castHardware1080.checked;
+  if (CAST.software) return;
+  if (!GT.settings.map.castHardware1080)
+  {
+    mapCastLockWindow(false);
+    return;
+  }
+  if (!mapCastActive() || !CAST.snapped) return;
+  electron.ipcRenderer.invoke("mapCastSnap", true, mapCastTarget(false)).then((snapped) =>
+  {
+    // (still on, and still casting, once the window has been sized)
+    if (!snapped || GT.settings.map.castHardware1080 !== true || !mapCastActive() || !CAST.snapped) return;
+    mapCastLockWindow(true);
+    if (CAST.encoding && !CAST.recasting && (CAST.width != CAST_MAX_WIDTH || CAST.height != CAST_MAX_HEIGHT))
+    {
+      mapCastEvent("cast.event.resized", false, CAST_MAX_WIDTH + "x" + CAST_MAX_HEIGHT, false, mapCastNames(mapCastSessions()));
+      mapCastRecast();
+    }
+  });
+}
+
+// The main window resizable or not (the main process's setResizable, as the Log QSO card's), told only when it changes
+function mapCastLockWindow(locked)
+{
+  if (CAST.locked == locked) return;
+  CAST.locked = locked;
+  electron.ipcRenderer.send("setResizable", "GridTracker2", !locked);
+  mapCastLog(locked ? "window size locked" : "window size unlocked");
+}
+
+// Beside Enable Casting: the main window's size now, in the screen's pixels (what the video is made from), as it changes
+async function mapCastWindowSizeShow()
+{
+  const size = GT.settings.map.castEnable && CAST.supported ? await electron.ipcRenderer.invoke("mapCastWindowSize").catch(() => null) : null;
+  const text = size ? size.width + "x" + size.height : "";
+  if (castWindowSize.textContent != text) castWindowSize.textContent = text;
+}
+
 function mapCastSoftwareChanged()
 {
   GT.settings.map.castSoftwareFps = Number(castSoftwareFps.value);
@@ -1062,21 +1582,30 @@ function mapCastRender()
   // Only where it can cast (a video encoder): the setting is kept as it is, but can't be changed, and the button stays hidden
   castEnable.checked = GT.settings.map.castEnable;
   castEnable.disabled = CAST.supported === false;
-  castEnableRow.title = I18N(CAST.supported === false ? "settings.map.cast.unsupported.hover" : "settings.map.cast.hover");
-  // The port changed while Enable Casting is on and nothing is cast (a cast uses it); grayed out with Enable Casting off
-  castPort.disabled = !GT.settings.map.castEnable || CAST.supported === false || mapCastActive();
-  castPortRow.style.opacity = GT.settings.map.castEnable && CAST.supported ? "" : "0.5";
-  // The software encoder's frame rate and resolution: only without a hardware encoder; grayed out with Enable Casting off, as the Port
-  const software = CAST.supported && !CAST.hardware;
-  for (const row of [castSoftwareFpsRow, castSoftwareSizeRow])
-  {
-    row.style.display = software ? "" : "none";
-    row.style.opacity = GT.settings.map.castEnable ? "" : "0.5";
-  }
-  castSoftwareFps.disabled = castSoftwareSize.disabled = !GT.settings.map.castEnable;
-  const link = GT.settings.map.castEnable && CAST.supported ? mapCastLink() : "";
-  castLinkText.textContent = link;
-  castLink.style.display = link ? "" : "none";
+  mapCastWindowSizeShow();
+  castEnableRow.title = I18N(CAST.supported === false ? "settings.map.cast.unsupported.hover" : "settings.map.cast.enable.hover");
+  // Everything else in the box only while Enable Casting is on (and it can cast)
+  const linked = GT.settings.map.castEnable && CAST.supported;
+  // The port changed while nothing is cast (a cast uses it)
+  castPortRow.style.display = linked ? "" : "none";
+  castPort.disabled = !linked || mapCastActive();
+  // The software encoder's frame rate and resolution: only without a hardware encoder
+  const software = linked && !CAST.hardware;
+  for (const row of [castSoftwareFpsRow, castSoftwareSizeRow]) row.style.display = software ? "" : "none";
+  // Resize Window To 1080p: only with a hardware encoder (the software one has its Software Resolution)
+  castHardware1080Row.style.display = linked && CAST.hardware ? "" : "none";
+  castHardware1080.checked = GT.settings.map.castHardware1080 === true;
+  // Announce On Network, and its Name only while it's on (not rewritten while being typed in)
+  castAnnounceRow.style.display = linked ? "" : "none";
+  castAnnounce.checked = GT.settings.map.castAnnounce === true;
+  castAnnounceNameRow.style.display = linked && GT.settings.map.castAnnounce === true ? "" : "none";
+  if (document.activeElement != castAnnounceName) castAnnounceName.value = mapCastAnnounceName();
+  // The devices, and the two addresses (HLS, then the plain stream)
+  castDevicesRow.style.display = linked ? "" : "none";
+  if (linked) mapCastRenderDevices();
+  castLinkHlsText.textContent = linked ? mapCastLink("map.m3u8") : "";
+  castLinkStreamText.textContent = linked ? mapCastLink("map.ts") : "";
+  for (const row of [castWatchRow, castLinkHlsRow, castLinkStreamRow]) row.style.display = linked && castLinkHlsText.textContent ? "" : "none";
   // The button enabled once a Cast device has been found (a right click looks again)
   const active = mapCastActive();
   const usable = CAST.devicesFound || active;
@@ -1085,7 +1614,7 @@ function mapCastRender()
   castButton.style.cursor = CAST.finding || mapCastPreparing() ? "progress" : usable ? "" : "default";
   castImg.style.filter = active ? "" : "grayscale(1)";
   // The devices played on, else the ones still waiting for the video
-  const on = mapCastSessions().filter((S) => S.socket);
+  const on = mapCastSessions().filter(mapCastOn);
   const waiting = mapCastSessions().filter((S) => S.waiting);
   // (with more than one device found, a click lists them instead of stopping)
   const many = CAST.foundCount > 1;
@@ -1100,6 +1629,57 @@ function mapCastRender()
   const text = count > 0 ? String(count) : "";
   if (castBadge.textContent != text) castBadge.textContent = text;
   castBadge.style.display = text ? "" : "none";
+}
+
+// Settings -> Features -> Casting -> Devices: the devices the last search found and any cast to that didn't answer it, each ticked while
+// cast to (a click casts to it as well, or stops); the names come from the network, so they're set as text. Rebuilt only when it changes
+function mapCastRenderDevices()
+{
+  const list = CAST.found.slice();
+  for (const S of mapCastSessions())
+  {
+    if (!list.some((device) => mapCastSame(S, device))) list.push({ kind: S.kind, id: S.id, name: S.name, host: S.host, control: S.control, model: S.kind == "dlna" ? "DLNA" : "" });
+  }
+  const shown = JSON.stringify([CAST.finding > 0, list.map((device) => [device.kind, device.id, device.host, device.name, device.model, !!mapCastSessionOf(device)])]);
+  if (castDeviceList.dataset.shown == shown) return;
+  castDeviceList.dataset.shown = shown;
+  const rows = list.map((device) =>
+  {
+    const row = document.createElement("label");
+    row.className = "castDevice";
+    row.title = device.host;
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = !!mapCastSessionOf(device);
+    box.onchange = () => mapCastToggle(device);
+    const name = document.createElement("span");
+    name.textContent = device.name || device.host;
+    row.append(box, name);
+    if (device.model)
+    {
+      const kind = document.createElement("span");
+      kind.className = "castDeviceKind";
+      kind.textContent = device.model;
+      row.append(kind);
+    }
+    return row;
+  });
+  if (!rows.length)
+  {
+    const none = document.createElement("div");
+    none.className = "castDeviceNone";
+    none.textContent = I18N(CAST.finding ? "settings.map.cast.searching.label" : "settings.map.cast.noDevices.label");
+    rows.push(none);
+  }
+  castDeviceList.replaceChildren(...rows);
+  castSearchButton.textContent = I18N(CAST.finding ? "settings.map.cast.searching.label" : "settings.map.cast.search.label");
+}
+
+// Search (and the Features tab shown): the devices looked for again, listed once found
+async function mapCastSearchClick()
+{
+  if (CAST.finding || !GT.settings.map.castEnable || !CAST.supported) return;
+  await mapCastSearch(CAST_FIND_MS, null);
 }
 
 function mapCastEnableChanged()
@@ -1120,6 +1700,9 @@ function mapCastEnableChanged()
     nodeTimers.clearTimeout(CAST.discoverTimer);
     CAST.discoverTimer = null;
     CAST.devicesFound = false;
+    // (DLNA players watching without a cast told to stop as well: the video goes away)
+    for (const control of mapCastDlnaWatching(false)) mapCastSoap(control, "Stop", { InstanceID: 0 }).catch((e) => mapCastLog(control + ": stop " + e.message));
+    CAST.found = [];
     mapCastStop();
     // (nothing to cast to again at the next start)
     GT.settings.map.castDevices = [];
@@ -1145,16 +1728,28 @@ function mapCastDeviceLabel(device)
 // link's address in Settings)
 function mapCastTo(device)
 {
-  GT.settings.map.castDevice = { id: device.id || "", name: device.name || "", host: device.host };
-  mapCastStart(device.host, device.name || device.host, device.id || "", true);
+  const control = device.kind == "dlna" ? device.control || "" : "";
+  GT.settings.map.castDevice = { id: device.id || "", name: device.name || "", host: device.host, kind: control ? "dlna" : "cast", control };
+  mapCastStart(device.host, device.name || device.host, device.id || "", true, control);
   mapCastLinkAddress();
 }
 
-// Whether any Cast device answered a search (the Cast button enabled); none: looked for again in a while
+// A device in the Casting box's list ticked (cast to it as well) or unticked (no longer)
+function mapCastToggle(device)
+{
+  const S = mapCastSessionOf(device);
+  if (S) mapCastStopOne(S);
+  else mapCastTo(device);
+  mapCastRender();
+}
+
+// Whether any device answered a search (the Cast button enabled), those devices listed in the Casting box; none: looked for again in a
+// while
 function mapCastFound(devices)
 {
   CAST.devicesFound = devices.length > 0;
   CAST.foundCount = devices.length;
+  CAST.found = devices;
   nodeTimers.clearTimeout(CAST.discoverTimer);
   CAST.discoverTimer = !CAST.devicesFound && GT.settings.map.castEnable ? nodeTimers.setTimeout(mapCastDiscover, CAST_DISCOVER_RETRY_MS) : null;
   mapCastRender();
@@ -1232,12 +1827,7 @@ function mapCastDeviceMenu(devices)
       label: mapCastDeviceLabel(device),
       type: "checkbox",
       checked: !!mapCastSessionOf(device),
-      click: () =>
-      {
-        const S = mapCastSessionOf(device);
-        if (S) mapCastStopOne(S);
-        else mapCastTo(device);
-      }
+      click: () => mapCastToggle(device)
     }));
   }
   // Cast to but not answering this search: listed too, ticked, so each can be stopped
