@@ -24,9 +24,17 @@ The Frequency menu lists the stations heard around the world (NOAA's, Germany's,
 
 ## Auto-Tune
 
-With **Rig Control** on, tick **Auto-Tune** on the WEFAX row to have the rig tuned to each next chart from the stations' published schedules (NOAA's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another. Beside it, it shows the station, frequency, chart and time it is waiting for, or **No chart scheduled**.
+With **Rig Control** on, tick **Auto-Tune** on the WEFAX row to have the rig tuned to each next chart from the stations' published schedules (NOAA's, Canada's, Germany's, Japan's, Korea's, Australia's and the UK's), one chart after another. Beside it, it shows the station, frequency, distance, expected path, chart and time it is waiting for, or **No chart scheduled**.
 
-* For a station on several frequencies, the one that copied last time is used, else one suited to the hour (lower at night, higher by day).
+The chart is chosen by how its transmitter reaches the locator set in **Settings → General → My Grid**:
+
+* **Ground wave:** very close to the transmitter.
+* **One F2 hop:** outside the skip zone (the dead ring between the ground wave and where the first hop returns) and within about 4,000 km. The skip zone depends on the band and the time: it is small on 80 and 40 meters and can be about 2,000 km on 20 meters at night or 10 meters by day.
+* **Marginal paths:** when no ground-wave or one-hop chart is available, a sporadic-E path or a two-hop F2 path may be taken. Higher-band two-hop paths only work near the solar maximum and fade away as it declines.
+
+The solar cycle is estimated from the date, and low frequencies are penalized or rejected in daylight (D-layer absorption). With no locator set, Auto-Tune falls back to choosing the soonest chart as before.
+
+* For a station on several frequencies, the one that reaches you best is used, then the one that copied last time, then one suited to the hour (lower at night, higher by day).
 * A frequency whose chart never starts is passed over for a while.
 * Tuning the rig by hand turns Auto-Tune off. It is off each time GridTracker2 starts.
 

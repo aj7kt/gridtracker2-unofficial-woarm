@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "Auto-Tune off: the rig was tuned by hand",
 	"cwViewer.wefax.auto.none": "No chart scheduled",
 	"cwViewer.wefax.auto.in": "in {minutes} min",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "ground wave",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "Save Charts",
 	"settings.wefaxDecoder.save.hover": "Each chart is saved as a PNG in the folder below when it ends, however much of it came",
 	"settings.wefaxDecoder.folder.hover": "Where charts are saved: click to open it"

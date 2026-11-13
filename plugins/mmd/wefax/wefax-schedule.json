@@ -1,11 +1,14 @@
 {
-  "$comment": "Assigned kHz (dial USB = kHz - 1.9), UTC. Sources: NOAA hfhi/hfak/hfreyes/hfmarsh/hfgulf.txt (info Dec 12 2024; NWS PNS 26-48 proposes ending US stations); JMA JMH-ENG.pdf (eff 19 Jan 2022); BoM radio-fax-schedule (updated 1 Jul 2017); DWD broadcast_fax_102020.pdf (Oct 2020); NOAA rfax.pdf (Mar 7 2025) for HLL2 (info 2009) and GYA (info Jan 2022). note/monthDays/khz/call/shiftHz are extra fields.",
-  "updated": "2026-11-01",
+  "$comment": "Assigned kHz (dial USB = kHz - 1.9), UTC. Sources: NOAA hfhi/hfak/hfreyes/hfmarsh/hfgulf.txt (info Dec 12 2024; NWS PNS 26-48 proposes ending US stations); JMA JMH-ENG.pdf (eff 19 Jan 2022); BoM radio-fax-schedule (updated 1 Jul 2017); DWD broadcast_fax_102020.pdf (Oct 2020); NOAA rfax.pdf (Mar 7 2025) for HLL2 (info 2009) and GYA (info Jan 2022); Canadian Coast Guard Radio Aids to Marine Navigation 2026 for VFA/VFF/VFR; Weatherfax.com VCO schedule (2023). lat/lon are approximate transmitter or city positions; powerKw is the published transmitter power (5 kW assumed for VCO/VFA/VFF/VFR). note/monthDays/months/khz/call/shiftHz are extra fields.",
+  "updated": "2026-11-11",
   "stations": [
     {
       "id": "KVM70",
       "name": "Honolulu, HI",
       "country": "US",
+      "lat": 21.43,
+      "lon": -157.95,
+      "powerKw": 4,
       "source": "https://www.weather.gov/media/marine/hfhi.txt",
       "sourceDate": "Schedule effective Feb 11, 2020; information dated Dec 12, 2024",
       "endingProposed": true,
@@ -116,6 +119,9 @@
       "id": "NOJ",
       "name": "Kodiak, AK",
       "country": "US",
+      "lat": 57.79,
+      "lon": -152.4,
+      "powerKw": 4,
       "source": "https://www.weather.gov/media/marine/hfak.txt",
       "sourceDate": "Schedule effective Sep 04, 2018; information dated Dec 12, 2024",
       "endingProposed": true,
@@ -186,6 +192,9 @@
       "id": "NMC",
       "name": "Point Reyes, CA",
       "country": "US",
+      "lat": 38.07,
+      "lon": -122.81,
+      "powerKw": 4,
       "source": "https://www.weather.gov/media/marine/hfreyes.txt",
       "sourceDate": "Schedule effective Sep 04, 2018; information dated Dec 12, 2024",
       "endingProposed": true,
@@ -289,6 +298,9 @@
       "id": "NMF",
       "name": "Boston, MA",
       "country": "US",
+      "lat": 42.09,
+      "lon": -70.71,
+      "powerKw": 4,
       "source": "https://www.weather.gov/media/marine/hfmarsh.txt",
       "sourceDate": "Schedule effective Sep 04, 2018; information dated Dec 12, 2024",
       "endingProposed": true,
@@ -378,6 +390,9 @@
       "id": "NMG",
       "name": "New Orleans, LA",
       "country": "US",
+      "lat": 30.28,
+      "lon": -89.78,
+      "powerKw": 4,
       "source": "https://www.weather.gov/media/marine/hfgulf.txt",
       "sourceDate": "Schedule effective Apr 03, 2012; information dated Dec 12, 2024",
       "endingProposed": true,
@@ -456,6 +471,9 @@
       "id": "JMH",
       "name": "Tokyo, Japan",
       "country": "JP",
+      "lat": 35.68,
+      "lon": 139.69,
+      "powerKw": 5,
       "source": "https://www.data.jma.go.jp/common/177jmh/JMH-ENG.pdf",
       "sourceDate": "Effective 19 Jan 2022",
       "frequencies": [
@@ -542,6 +560,9 @@
       "id": "HLL2",
       "name": "Seoul, Korea",
       "country": "KR",
+      "lat": 37.57,
+      "lon": 126.98,
+      "powerKw": 3,
       "source": "https://www.weather.gov/media/marine/rfax.pdf",
       "sourceDate": "rfax.pdf of Mar 7, 2025, page I-4: information dated Jan 01, 2009",
       "frequencies": [
@@ -620,6 +641,9 @@
       "id": "VMC",
       "name": "Charleville, Australia",
       "country": "AU",
+      "lat": -26.4,
+      "lon": 146.24,
+      "powerKw": 1,
       "source": "http://www.bom.gov.au/marine/radio-sat/radio-fax-schedule.shtml",
       "sourceDate": "Schedule updated 1 July 2017 (page served 1 Nov 2026); frequencies from vmc-technical-guide.shtml",
       "frequencies": [
@@ -696,6 +720,9 @@
       "id": "VMW",
       "name": "Wiluna, Australia",
       "country": "AU",
+      "lat": -26.59,
+      "lon": 120.22,
+      "powerKw": 1,
       "source": "http://www.bom.gov.au/marine/radio-sat/radio-fax-schedule.shtml",
       "sourceDate": "Schedule updated 1 July 2017 (page served 1 Nov 2026); frequencies from vmw-technical-guide.shtml",
       "frequencies": [
@@ -769,6 +796,9 @@
       "id": "DDH",
       "name": "Hamburg/Pinneberg, Germany",
       "country": "DE",
+      "lat": 53.66,
+      "lon": 9.8,
+      "powerKw": 10,
       "source": "https://www.dwd.de/EN/specialusers/shipping/broadcast_en/broadcast_fax_102020.pdf?__blob=publicationFile&v=1",
       "sourceDate": "broadcast_fax_102020.pdf, created 21 Oct 2020 (rfax.pdf: information dated 24 July 2024)",
       "shiftHz": 850,
@@ -832,6 +862,9 @@
       "id": "GYA",
       "name": "Northwood, UK",
       "country": "GB",
+      "lat": 51.61,
+      "lon": -0.42,
+      "powerKw": 10,
       "source": "https://www.weather.gov/media/marine/rfax.pdf",
       "sourceDate": "rfax.pdf of Mar 7, 2025, pages V-4/5 (JOMOC HF-Fax Schedule): information dated Jan 05, 2022",
       "frequencies": [
@@ -943,6 +976,99 @@
         { "time": "23:24", "title": "18Z SEA AND SWELL T+24" },
         { "time": "23:36", "title": "18Z SFC PROGNOSIS T+24" },
         { "time": "23:48", "title": "18Z SEA AND SWELL T+24" }
+      ]
+    },
+    {
+      "id": "VCO",
+      "name": "Sydney, NS",
+      "country": "CA",
+      "lat": 46.14,
+      "lon": -60.19,
+      "powerKw": 5,
+      "source": "https://weatherfax.com/vco-sydney-ns/",
+      "sourceDate": "Schedule effective 2023",
+      "frequencies": [
+        { "khz": 4416 },
+        { "khz": 6915.1 }
+      ],
+      "charts": [
+        { "time": "11:21", "title": "ICE ANALYSIS GULF OF ST. LAWRENCE", "khz": 6915.1 },
+        { "time": "11:42", "title": "ICE ANALYSIS EAST OR SOUTHEAST NEWFOUNDLAND WATERS", "khz": 6915.1 },
+        { "time": "17:41", "title": "ICE ANALYSIS ICEBERG LIMIT", "khz": 6915.1 },
+        { "time": "22:00", "title": "ICE ANALYSIS GULF OF ST. LAWRENCE", "khz": 4416 },
+        { "time": "23:31", "title": "ICE ANALYSIS EAST OR SOUTHEAST NEWFOUNDLAND WATERS", "khz": 4416 }
+      ]
+    },
+    {
+      "id": "VFA",
+      "name": "Inuvik, NT",
+      "country": "CA",
+      "lat": 68.36,
+      "lon": -133.72,
+      "powerKw": 5,
+      "months": [7, 8, 9, 10],
+      "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
+      "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 15 Jul - 15 Oct",
+      "frequencies": [
+        { "khz": 4292 },
+        { "khz": 8456 }
+      ],
+      "charts": [
+        { "time": "02:00", "title": "ARCTIC MARINE SURFACE ANALYSIS / ICE ANALYSIS" },
+        { "time": "16:30", "title": "ARCTIC MARINE SURFACE ANALYSIS / ICE ANALYSIS" }
+      ]
+    },
+    {
+      "id": "VFF",
+      "name": "Iqaluit, NU",
+      "country": "CA",
+      "lat": 63.75,
+      "lon": -68.52,
+      "powerKw": 5,
+      "months": [6, 7, 8, 9, 10, 11],
+      "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
+      "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 25 Jun - 30 Nov",
+      "frequencies": [
+        { "khz": 3253 },
+        { "khz": 7710 }
+      ],
+      "charts": [
+        { "time": "00:10", "title": "ICE ANALYSIS" },
+        { "time": "01:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "02:00", "title": "ICE ANALYSIS" },
+        { "time": "05:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "06:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "07:00", "title": "ICE ANALYSIS" },
+        { "time": "08:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "09:00", "title": "ICE ANALYSIS" },
+        { "time": "10:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "11:00", "title": "ICE ANALYSIS" },
+        { "time": "21:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "21:25", "title": "ICE ANALYSIS" },
+        { "time": "22:00", "title": "ICE ANALYSIS" }
+      ]
+    },
+    {
+      "id": "VFR",
+      "name": "Resolute, NU",
+      "country": "CA",
+      "lat": 74.754,
+      "lon": -94.969,
+      "powerKw": 5,
+      "months": [6, 7, 8, 9, 10, 11],
+      "source": "https://www.canada.ca/content/dam/ccg-gcc/documents/publications/mcts-sctm/ramn-arnm-2026-eng.pdf",
+      "sourceDate": "Radio Aids to Marine Navigation 2026; seasonal 25 Jun - 30 Nov",
+      "frequencies": [
+        { "khz": 3253 },
+        { "khz": 7710 }
+      ],
+      "charts": [
+        { "time": "00:10", "title": "ICE ANALYSIS" },
+        { "time": "01:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "07:00", "title": "ICE ANALYSIS" },
+        { "time": "10:00", "title": "ARCTIC MARINE SURFACE ANALYSIS" },
+        { "time": "11:00", "title": "ICE ANALYSIS" },
+        { "time": "23:30", "title": "ICE ANALYSIS" }
       ]
     }
   ]

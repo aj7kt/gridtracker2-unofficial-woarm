@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "Auto-Strojenie wyłączone: radio zostało nastrojone ręcznie",
 	"cwViewer.wefax.auto.none": "Brak zaplanowanej mapy",
 	"cwViewer.wefax.auto.in": "za {minutes} min",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "fala przyziemna",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "Zapisuj mapy",
 	"settings.wefaxDecoder.save.hover": "Każda mapa po zakończeniu jest zapisywana jako PNG w folderze poniżej, niezależnie od tego, ile jej dotarło",
 	"settings.wefaxDecoder.folder.hover": "Gdzie zapisywane są mapy: kliknij, aby otworzyć"

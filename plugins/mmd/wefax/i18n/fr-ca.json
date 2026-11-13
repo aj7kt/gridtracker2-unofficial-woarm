@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "Syntonisation Automatique désactivée : la radio a été syntonisée à la main",
 	"cwViewer.wefax.auto.none": "Aucune carte prévue",
 	"cwViewer.wefax.auto.in": "dans {minutes} min",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "onde de sol",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "Enregistrer les cartes",
 	"settings.wefaxDecoder.save.hover": "Chaque carte est enregistrée en PNG dans le dossier ci-dessous à sa fin, quelle que soit la part reçue",
 	"settings.wefaxDecoder.folder.hover": "Où les cartes sont enregistrées : cliquez pour l'ouvrir"

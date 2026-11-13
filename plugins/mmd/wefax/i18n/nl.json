@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "Automatisch Afstemmen uit: de radio is met de hand afgestemd",
 	"cwViewer.wefax.auto.none": "Geen kaart gepland",
 	"cwViewer.wefax.auto.in": "over {minutes} min",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "grondgolf",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "Kaarten opslaan",
 	"settings.wefaxDecoder.save.hover": "Elke kaart wordt na afloop als PNG in de map hieronder opgeslagen, hoeveel er ook van binnenkwam",
 	"settings.wefaxDecoder.folder.hover": "Waar kaarten worden opgeslagen: klik om te openen"

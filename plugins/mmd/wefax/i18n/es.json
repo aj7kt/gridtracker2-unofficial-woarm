@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "Sintonía Automática desactivada: el equipo se sintonizó a mano",
 	"cwViewer.wefax.auto.none": "Ninguna carta programada",
 	"cwViewer.wefax.auto.in": "en {minutes} min",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "onda terrestre",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "Guardar cartas",
 	"settings.wefaxDecoder.save.hover": "Cada carta se guarda como PNG en la carpeta de abajo al terminar, por mucho o poco que haya llegado",
 	"settings.wefaxDecoder.folder.hover": "Dónde se guardan las cartas: haz clic para abrirla"

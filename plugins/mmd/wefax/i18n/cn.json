@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "自动调谐已关闭：电台被手动调谐",
 	"cwViewer.wefax.auto.none": "没有计划的图表",
 	"cwViewer.wefax.auto.in": "{minutes} 分钟后",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "地波",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "保存天气图",
 	"settings.wefaxDecoder.save.hover": "每张天气图结束时都会以 PNG 保存到下面的文件夹，无论收到多少",
 	"settings.wefaxDecoder.folder.hover": "天气图的保存位置：点击打开"

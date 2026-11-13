@@ -19,6 +19,11 @@
 	"cwViewer.wefax.auto.byHand": "自動同調オフ: リグが手で同調されました",
 	"cwViewer.wefax.auto.none": "予定された天気図はありません",
 	"cwViewer.wefax.auto.in": "{minutes} 分後",
+	"cwViewer.wefax.auto.km": "{km} km",
+	"cwViewer.wefax.auto.path.ground": "地表波",
+	"cwViewer.wefax.auto.path.onehop": "1F2",
+	"cwViewer.wefax.auto.path.es": "Es",
+	"cwViewer.wefax.auto.path.twohop": "2F2",
 	"settings.wefaxDecoder.save.label": "天気図を保存",
 	"settings.wefaxDecoder.save.hover": "各天気図は終了時に、受信できた分だけ下のフォルダにPNGで保存されます",
 	"settings.wefaxDecoder.folder.hover": "天気図の保存先：クリックで開きます"
