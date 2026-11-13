@@ -212,7 +212,7 @@ function mmdHostFor(def)
     tune: (hz, rigMode) => mmdTuneToFreq(hz, rigMode),
     vfo: () => window.opener.mmDecoderVfo(),
     // Your location (Settings, General, My Grid): its grid, and its latitude and longitude, or null while it isn't set
-    myGrid: () => String(GT.settings.app.myRawGrid || GT.settings.app.myGrid || "").trim(),
+    myGrid: () => window.opener.mmDecoderInstanceGrid(),
     myLat: () => GT.myLat,
     myLon: () => GT.myLon,
     // (its own settings only: own's)

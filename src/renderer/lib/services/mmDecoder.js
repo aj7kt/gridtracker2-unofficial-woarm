@@ -560,13 +560,14 @@ function mmDecoderInstanceDecodes(mode, start, lines, modeChar)
 }
 
 // The distance from your location to a grid's center, in the distance unit of Settings (rounded), and that unit ("km", "mi" ...); the
-// window's WSPR list. A grid that isn't one: null
+// window's WSPR list. A grid that isn't one, or no locator: null
 function mmDecoderGridDistance(grid)
 {
-  const unit = String(distanceUnit.value || "KM");
-  if (!/^[A-R]{2}[0-9]{2}([A-X]{2})?$/i.test(String(grid || ""))) return { distance: null, unit: unit.toLowerCase() };
+  const unit = String(distanceUnit.value || "KM").toLowerCase();
+  if (!/^[A-R]{2}[0-9]{2}([A-X]{2})?$/i.test(String(grid || ""))) return { distance: null, unit };
   const LL = squareToCenter(grid);
-  return { distance: Math.round(MyCircle.distance(GT.myLat, GT.myLon, LL.a, LL.o) * MyCircle.validateRadius(unit)), unit: unit.toLowerCase() };
+  const d = mmDecoderDistance(LL.a, LL.o);
+  return { distance: d ? d.distance : null, unit };
 }
 
 // How far a place is from you, in km (for a model) and in the distance unit of Settings (rounded) to show: { km, distance, unit };

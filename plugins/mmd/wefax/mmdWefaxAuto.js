@@ -7,7 +7,7 @@
 // menu tunes it) a little before, the chart's start tone starts the picture as always, and once it is over the next chart anywhere is
 // tuned for. Nothing is ever sent but the frequency and USB; tuning the rig by hand (its dial, the Frequency menu) turns it off.
 // A chart is chosen by where its transmitter is from your locator: ground wave first, then the first F2 hop, avoiding the skip zone
-// (between the ground wave and the first hop), and only as a last resort a sporadic-E or two-hop path. When no modelled path reaches you
+// (between the ground wave and the first hop), and only as a last resort a sporadic-E or two-hop path. When no modeled path reaches you
 // (a locator far from every station, or every frequency dead or in the skip zone), the soonest chart is taken as before. Frequencies
 // whose chart never started (no start tone heard) are passed over for a while.
 
@@ -133,12 +133,11 @@ function mmdWefaxAutoOnAir(f, ms)
   return from <= to ? now >= from && now < to : now >= from || now < to;
 }
 
-// Your place as { lat, lon }, or null with no locator set (or a host without the getters: an older app, where the old choice is made)
+// Your place as { lat, lon }, or null with no locator set (the old choice is made)
 function mmdWefaxAutoMyPlace()
 {
   const H = WEFAX.host;
-  if (!H || typeof H.myGrid != "function" || typeof H.myLat != "function" || typeof H.myLon != "function") return null;
-  if (String(H.myGrid() || "").length < 4) return null;
+  if (!H || String(H.myGrid() || "").length < 4) return null;
   const lat = Number(H.myLat()), lon = Number(H.myLon());
   return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
 }
@@ -263,7 +262,7 @@ function mmdWefaxAutoEsPossible(mhz, km, lat, lon, ms)
 }
 
 // Daytime D-layer absorption: "ok", "marginal" or "dead"
-function mmdWefaxAutoLuf(mhz, lat, lon, ms)
+function mmdWefaxAutoLuf(mhz, lon, ms)
 {
   const hour = mmdWefaxAutoLocalHour(lon, ms);
   if (hour < 6 || hour >= 18) return "ok";
@@ -273,21 +272,20 @@ function mmdWefaxAutoLuf(mhz, lat, lon, ms)
 }
 
 // Your place, and how far a station is from it (km for the model, and in Settings' distance unit to show): { me, lat, lon, km,
-// distance, unit }, or null with no locator, station position, or a host without the distance getter to go by. me is found once for a
-// whole search (mmdWefaxAutoFind)
+// distance, unit }, or null with no locator or station position to go by. me is found once for a whole search (mmdWefaxAutoFind)
 function mmdWefaxAutoPlace(station, me)
 {
-  const H = WEFAX.host;
   if (!me) return null;
   const lat = Number(station.lat), lon = Number(station.lon);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  const dist = typeof H.distance == "function" ? H.distance(lat, lon) : null;
+  const dist = WEFAX.host.distance(lat, lon);
   if (!dist || !(dist.km >= 0)) return null;
   return { me, lat, lon, km: dist.km, distance: dist.distance, unit: dist.unit };
 }
 
-// How a frequency reaches a station at a time: { kind, reliable, marginal, ... }, or null with nothing to go by.
-// kind: "ground", "onehop", "twohop", "es" or "dead"; distance and unit: how far it is, in Settings' unit, to show
+// How a frequency reaches a station at a time: { kind, reliable, ... }, or null with nothing to go by.
+// kind: "ground", "onehop", "twohop", "es" or "dead"; reliable: ground wave, or one hop clear of daytime absorption (any other path
+// but "dead" is marginal); distance and unit: how far it is, in Settings' unit, to show
 function mmdWefaxAutoPath(station, khz, at, place)
 {
   if (!place) return null;
@@ -296,30 +294,27 @@ function mmdWefaxAutoPath(station, khz, at, place)
   const far = { km, distance: place.distance, unit: place.unit };
   const mhz = khz / 1000;
   const ground = mmdWefaxAutoGroundKm(mhz, station.powerKw);
-  if (km <= ground) return Object.assign({ kind: "ground", mhz, ground, margin: ground - km, reliable: true, marginal: false }, far);
+  if (km <= ground) return Object.assign({ kind: "ground", mhz, ground, margin: ground - km, reliable: true }, far);
   const mid = mmdWefaxAutoMidpoint(me.lat, me.lon, place.lat, place.lon);
   const fof2 = mmdWefaxAutoFof2(mid.lat, mid.lon, at);
-  const luf = mmdWefaxAutoLuf(mhz, mid.lat, mid.lon, at);
-  if (luf == "dead") return Object.assign({ kind: "dead", mhz, ground, fof2, reliable: false, marginal: false }, far);
+  const luf = mmdWefaxAutoLuf(mhz, mid.lon, at);
+  if (luf == "dead") return Object.assign({ kind: "dead", mhz, ground, fof2, reliable: false }, far);
   const skip = mmdWefaxAutoSkipKm(mhz, fof2, WEFAX_AUTO_MUF_MARGIN);
   if (skip != Infinity && km >= skip && km <= WEFAX_AUTO_HOP_MAX_KM)
-  {
-    const reliable = luf == "ok";
-    return Object.assign({ kind: "onehop", mhz, ground, fof2, skip, margin: mmdWefaxAutoMuf(km, fof2) - mhz, reliable, marginal: !reliable }, far);
-  }
+    return Object.assign({ kind: "onehop", mhz, ground, fof2, skip, margin: mmdWefaxAutoMuf(km, fof2) - mhz, reliable: luf == "ok" }, far);
   const twoHopTarget = mhz / (fof2 * WEFAX_AUTO_TWO_HOP_MARGIN);
   const twoHopSkip = mmdWefaxAutoSkipKm(mhz, fof2, WEFAX_AUTO_TWO_HOP_MARGIN);
   if (twoHopTarget <= mmdWefaxAutoMufFactor(3000) && twoHopSkip != Infinity && km >= Math.max(WEFAX_AUTO_HOP_MAX_KM, 2 * twoHopSkip) && km <= WEFAX_AUTO_TWO_HOP_MAX_KM)
-    return Object.assign({ kind: "twohop", mhz, ground, fof2, skip: twoHopSkip, margin: mmdWefaxAutoMuf(3000, fof2) - mhz, reliable: false, marginal: true }, far);
+    return Object.assign({ kind: "twohop", mhz, ground, fof2, skip: twoHopSkip, margin: mmdWefaxAutoMuf(3000, fof2) - mhz, reliable: false }, far);
   if (mmdWefaxAutoEsPossible(mhz, km, mid.lat, mid.lon, at))
-    return Object.assign({ kind: "es", mhz, ground, fof2, skip, margin: 0, reliable: false, marginal: true }, far);
-  return Object.assign({ kind: "dead", mhz, ground, fof2, skip, reliable: false, marginal: false }, far);
+    return Object.assign({ kind: "es", mhz, ground, fof2, skip, margin: 0, reliable: false }, far);
+  return Object.assign({ kind: "dead", mhz, ground, fof2, skip, reliable: false }, far);
 }
 
-// The path's preference: ground before one hop before a marginal path
+// The path's preference: ground before one hop before a marginal path (none or an unknown kind last)
 function mmdWefaxAutoPathRank(path)
 {
-  if (!path) return 0;
+  if (!path) return 9;
   return path.kind == "ground" ? 0 : path.kind == "onehop" ? 1 : path.kind == "es" ? 2 : path.kind == "twohop" ? 3 : 9;
 }
 
@@ -359,7 +354,7 @@ function mmdWefaxAutoFreq(station, ms, chart = {}, place)
 }
 
 // The next chart anywhere: a reliable one within WEFAX_AUTO_LOOKAHEAD_MS (ground wave before one F2 hop, then the sooner), else a
-// marginal one only if it starts well before the next reliable one, else the next reliable one, else the soonest chart (one no modelled
+// marginal one only if it starts well before the next reliable one, else the next reliable one, else the soonest chart (one no modeled
 // path reaches: the old choice)
 function mmdWefaxAutoFind(from = Date.now())
 {
@@ -383,19 +378,17 @@ function mmdWefaxAutoFind(from = Date.now())
         const pick = mmdWefaxAutoFreq(station, at, chart, place);
         if (!pick) continue;
         const candidate = { at, station, chart, khz: pick.khz, path: pick.path, dial: Math.round(pick.khz * 1000 - 1900) };
+        // (mmdWefaxAutoFreq never picks a "dead" path: with a path it is reliable or marginal)
         if (!pick.path) legacy.push(candidate);
-        else if (pick.path.reliable) reliable.push(candidate);
-        else if (pick.path.marginal) marginal.push(candidate);
+        else (pick.path.reliable ? reliable : marginal).push(candidate);
         break;
       }
     }
   }
   const byTime = (a, b) => a.at - b.at || String(a.station.id).localeCompare(String(b.station.id));
-  // Ground wave before one F2 hop, then the sooner (and closer, then the more margin)
-  const byRank = (a, b) => mmdWefaxAutoPathRank(a.path) - mmdWefaxAutoPathRank(b.path) ||
-    a.at - b.at ||
-    (a.path ? a.path.km : Infinity) - (b.path ? b.path.km : Infinity) ||
-    (b.path ? b.path.margin : 0) - (a.path ? a.path.margin : 0) || String(a.station.id).localeCompare(String(b.station.id));
+  // Ground wave before one F2 hop, then the sooner (and closer, then the more margin); reliable charts only, which always have a path
+  const byRank = (a, b) => mmdWefaxAutoPathRank(a.path) - mmdWefaxAutoPathRank(b.path) || a.at - b.at || a.path.km - b.path.km ||
+    b.path.margin - a.path.margin || String(a.station.id).localeCompare(String(b.station.id));
   reliable.sort(byTime);
   marginal.sort(byTime);
   legacy.sort(byTime);
@@ -414,7 +407,7 @@ function mmdWefaxAutoFind(from = Date.now())
   // Beyond it a marginal chart is taken only when it starts well before the next reliable one
   const good = reliable[0];
   if (marginal.length && (!good || marginal[0].at < good.at - WEFAX_AUTO_MARGINAL_EARLY_MS)) return marginal[0];
-  // No modelled path reaches any chart: the old choice (the soonest chart anywhere)
+  // No modeled path reaches any chart: the old choice (the soonest chart anywhere)
   return good || marginal[0] || legacy[0] || null;
 }
 
@@ -517,16 +510,13 @@ function mmdWefaxAutoTick()
   // Not tuned yet, or a marginal chart not yet begun: the best chart is followed as the lookahead moves (a reliable chart may come
   // within it). The same chart's path is kept up too (the hour, the sun). The search runs when a chart crosses into the lookahead
   // (recheckAt), not every tick
-  const marginal = WEFAX_AUTO.next && WEFAX_AUTO.next.path && WEFAX_AUTO.next.path.marginal;
+  const marginal = WEFAX_AUTO.next && WEFAX_AUTO.next.path && !WEFAX_AUTO.next.path.reliable;
   const need = !WEFAX_AUTO.next || WEFAX_AUTO.dial != WEFAX_AUTO.next.dial || (marginal && !WEFAX_AUTO.started);
   if (need && now >= WEFAX_AUTO.recheckAt)
   {
     const found = mmdWefaxAutoFind(now), cur = WEFAX_AUTO.next;
     const same = !!cur && !!found && found.station.id == cur.station.id && found.khz == cur.khz && found.at == cur.at;
-    if (same)
-    {
-      if (found.path !== cur.path) cur.path = found.path;
-    }
+    if (same) cur.path = found.path;
     else
     {
       // (the chart before was tuned: the new one now, so the old one isn't received meanwhile, and not taken as tuned by hand)
