@@ -89,7 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it
 - Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them
 - Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency
-- Rig Control: the Yaesu FT-817, FT-818, FT-857 and FT-897's CAT acknowledgements are now read, so a frequency read back right after a change no longer comes back ten times too high (435 MHz as 4.35 GHz)
+- Rig Control: the Yaesu FT-817, FT-818, FT-857 and FT-897's CAT acknowledgements are now read, so a frequency read back right after a change no longer comes back a hundred times too low (435 MHz as 4.35 MHz)
 - Settings: Open Event Viewer On Error is now in Features, Operational
 - Settings, Audio: Device is now called Output Device
 - Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown
@@ -206,7 +206,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   <li>Settings: a new Radios tab holds Rig Control, Rotor Control and Network Audio, and a new Radios button in the button panel opens it</li>
   <li>Rig Control: SSB Data sends the digital modes to the rig's data mode (USB-D, PKTUSB, DATA-U), and DTR and RTS can be set for interfaces that need them</li>
   <li>Rig Control: a rig found to have a second VFO gets one set up for satellite uplinks, not connected until you tick its Connect, shown side by side with the rig's own; a second VFO that's off still shows its frequency</li>
-  <li>Rig Control: the Yaesu FT-817, FT-818, FT-857 and FT-897's CAT acknowledgements are now read, so a frequency read back right after a change no longer comes back ten times too high (435 MHz as 4.35 GHz)</li>
+  <li>Rig Control: the Yaesu FT-817, FT-818, FT-857 and FT-897's CAT acknowledgements are now read, so a frequency read back right after a change no longer comes back a hundred times too low (435 MHz as 4.35 MHz)</li>
   <li>Settings: Open Event Viewer On Error is now in Features, Operational</li>
   <li>Settings, Audio: Device is now called Output Device</li>
   <li>Lookup: the Callsign Lookup window has a new, shorter look in your App Theme's colors, and a callsign pasted with a space or in lower case no longer shows Unknown</li>

@@ -745,14 +745,19 @@ const RIG_PROTOCOLS = {
     poll: () => [new Uint8Array([0, 0, 0, 0, 0x03])],
     // Every command is answered: 03 with five bytes, a setting with one
     replies: () => true,
-    // A setting's acknowledgement can come after the command that follows it was sent (a setting not answered within its time has the next
-    // sent anyway). The rig answers in order, so its acknowledgement is the first byte in, before the answer that command gets: counted here,
-    // and taken off in receive, or it would shift the five bytes of an answer to 03 and read its frequency ten times too high (435 MHz as
-    // 4.35 GHz). Any bytes left from a setting's answer before the next command go too
+    // A setting's acknowledgement is counted here and taken off in receive, so it can't be read as the first of the five bytes of an answer
+    // to 03 (that frequency would read a hundred times too low: 435 MHz as 4.35 MHz). Any bytes left from a setting's answer before the next
+    // command go too
     beforeSend: (data, R) =>
     {
       R.bytes = [];
       if (data instanceof Uint8Array && data[4] != 0x03) R.acks++;
+    },
+    // A setting not acknowledged in its time (a rig or an interface that doesn't send them, as Hamlib allows for in ft817_read_ack) isn't
+    // waited for any longer, or the first bytes of the answers after it would be taken for its acknowledgement
+    unanswered: (data, R) =>
+    {
+      if (data instanceof Uint8Array && data[4] != 0x03 && R.acks > 0) R.acks--;
     },
     setFreq: (hz) =>
     {
@@ -2286,6 +2291,8 @@ function rigDrain(R)
   R.waiting = nodeTimers.setTimeout(() =>
   {
     R.waiting = null;
+    // Not answered in time: a protocol that counts the answers to come (the FT-817's acknowledgements) is told
+    if (answered && R.protocol.unanswered) R.protocol.unanswered(data, R);
     rigDrain(R);
   }, answered ? RIG_REPLY_MS : R.protocol.gapMs || RIG_GAP_MS);
   R.writer.write(typeof data == "string" ? new TextEncoder().encode(data) : data).catch((e) => rigFail(R, e.message));
