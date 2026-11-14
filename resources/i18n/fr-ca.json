@@ -2276,5 +2276,21 @@
 	"cwViewer.picture.autoCrop.label": "Recadrage Automatique",
 	"cwViewer.picture.autoAlignNone": "Alignement automatique : aucun bord de carte trouvé, ou elle est déjà alignée",
 	"cwViewer.picture.autoCropNone": "Recadrage automatique : rien à recadrer",
-	"cwViewer.picture.printFailed": "Échec de l'impression :"
+	"cwViewer.picture.printFailed": "Échec de l'impression :",
+	"mmd.plugin.noLicense": "aucune licence n'a été entrée pour lui",
+	"mmd.plugin.otherCall": "sa licence est pour un autre indicatif",
+	"mmd.plugin.locked": "il n'a pas pu être déverrouillé avec sa licence",
+	"mmd.plugin.licenseLost": "Décodeur multimode : {name} reste désactivé jusqu'au redémarrage de GridTracker2, car sa licence est pour un autre indicatif",
+	"mmd.license.bad": "Ce n'est pas une licence GridTracker2, ou elle a été modifiée.",
+	"mmd.license.needed": "Entrez d'abord sa licence.",
+	"mmd.license.added": "Licence enregistrée pour {call}.",
+	"mmd.license.otherCall": "Licence enregistrée, mais elle est pour {call} : elle fonctionne tant que votre indicatif est {call}.",
+	"mmd.license.paste.label": "Collez la licence reçue après l'achat :",
+	"mmd.license.ok.label": "Enregistrer la Licence",
+	"mmd.license.cancel.label": "Annuler",
+	"mmd.store.buy.label": "Acheter",
+	"mmd.store.enterLicense.label": "Entrer la Licence",
+	"mmd.store.noLicense": "Aucune licence",
+	"mmd.store.otherCall": "Licence pour un autre indicatif",
+	"mmd.store.loadsOnRestart": "Se charge au redémarrage de GridTracker2"
 }

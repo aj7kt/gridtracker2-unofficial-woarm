@@ -186,8 +186,21 @@ function mmdPluginDetectSpec(mode)
 
 // The host: what a mode may use of GridTracker2 (a mode once it's a plugin uses nothing else). Versioned with the manifest's api
 // (MMD_HOST_API, the one the main window checks plugins against: MMD_PLUGIN_API in services/mmdPlugins.js); the built-in modes don't
-// need it yet, as they still reach the core's globals. More (the map, geography) comes with the plugins that need it
-const MMD_HOST_API = 2;
+// need it yet, as they still reach the core's globals. More (the map, geography) comes with the plugins that need it. 3: readFile, the way a
+// paid plugin (read from memory) reads its own files; its file() is null
+const MMD_HOST_API = 3;
+// A paid plugin's workers: blob: URLs of their decrypted code, made once each (by the plugin's id and the file's path)
+const MMD_PLUGIN_BLOBS = {};
+
+// A plugin's worker's URL (file: its path in the plugin): its folder's or .asar's file URL; a paid one's a blob: URL of its code, so a paid
+// worker is one file (an importScripts or fetch beside it has no file to find)
+function mmdPluginWorkerUrl(p, file)
+{
+  if (!p.encrypted) return p.url + "/" + file;
+  const key = p.id + "/" + file;
+  if (!MMD_PLUGIN_BLOBS[key]) MMD_PLUGIN_BLOBS[key] = URL.createObjectURL(new Blob([p.read(file)], { type: "text/javascript" }));
+  return MMD_PLUGIN_BLOBS[key];
+}
 function mmdHostFor(def)
 {
   // (its own settings: those starting with its id or one of its modes': FT8 / FT4's ft8Depth, ft4SendDecodes; and those its plugin.json
@@ -225,7 +238,7 @@ function mmdHostFor(def)
     timers: nodeTimers,
     event: (text) => window.opener.addEvent("mmd", window.opener.htmlEntities(String(text))),
     // (a plugin's worker by its path in the plugin, its folder or its .asar; a built-in mode's in lib/mmd)
-    workerUrl: (file) => (def.plugin ? def.plugin.url + "/" + file : "lib/mmd/" + file),
+    workerUrl: (file) => (def.plugin ? mmdPluginWorkerUrl(def.plugin, file) : "lib/mmd/" + file),
     // fn guarded as its hooks are (a worker's onmessage): it throwing turns the mode off, with its Event Viewer line
     guard: (fn) => mmdPluginGuard(def, fn),
     // The audio decoded (Min Freq and Max Freq, Hz)
@@ -305,8 +318,14 @@ function mmdHostFor(def)
     tuneDial: (dial, mode, data) => mmdTuneDial(dial, mode, data),
     rigControl: () => GT.settings.MMD.rigControl === true,
     running: () => !!DEC.running,
-    // A file of the plugin's own (its folder's or its .asar's: read with fs)
-    file: (name) => (def.plugin ? path.join(def.plugin.base, name) : null),
+    // A file of the plugin's own (its folder's or its .asar's: read with fs; null for a paid one, which has no file to open: readFile)
+    file: (name) => (def.plugin && !def.plugin.encrypted ? path.join(def.plugin.base, name) : null),
+    // A file of the plugin's own, its bytes (a Buffer; throws if it hasn't one): any plugin's way, a paid one's only way (api 3)
+    readFile: (name) =>
+    {
+      if (!def.plugin) throw new Error("not a plugin");
+      return def.plugin.read(String(name));
+    },
     // A save folder shown in an element as the Settings boxes show them (… and its last two folders, the whole path in its tooltip)
     showFolder: (el, folder, hoverKey) => mmdShortFolder(el, folder, hoverKey),
     // The 12 kHz stream's latency (ms: a sample heard is taken as heard this much earlier, heardAt's), as the waterfall's rows are timed
@@ -377,7 +396,8 @@ function mmdPluginsLoad()
 {
   for (const p of GT.mmdPlugins || [])
   {
-    if (p.disabled) continue;
+    // (a paid one whose license is for another call sign since startup: services/mmdPlugins.js, mmdPaidCallCheck)
+    if (p.disabled || p.licenseLost) continue;
     try
     {
       mmdPluginLoad(p);
@@ -395,7 +415,7 @@ function mmdPluginsLoad()
 function mmdPluginLoad(p)
 {
   const m = p.manifest;
-  const read = (file) => fs.readFileSync(path.join(p.base, file), "utf8");
+  const read = (file) => p.read(file).toString("utf8");
   if (m.css)
   {
     const style = document.createElement("style");
@@ -488,8 +508,28 @@ function mmdPluginGuideButton(p)
 function mmdPluginGuide(id)
 {
   const p = MMD_PLUGINS.loaded.find((x) => x.id == id);
-  if (!p || !p.manifest.guide) return false;
-  window.opener.openUserGuideWindow(false, path.join(p.base, p.manifest.guide));
+  // (its path: services/mmdPlugins.js, guideFile; a paid one's is beside its .gt2e, unencrypted)
+  if (!p || !p.guideFile) return false;
+  window.opener.openUserGuideWindow(false, p.guideFile);
+  return true;
+}
+
+// A paid plugin whose license is for another call sign now (the main window's mmdPaidCallCheck): turned off for the rest of the session, as
+// one that fails is (its hooks no longer called, its Mode menu entries grayed), with one Event Viewer line saying why. True when it was
+// loaded here
+function mmdPluginsLicenseLost(id)
+{
+  const p = MMD_PLUGINS.loaded.find((x) => x.id == id);
+  if (!p) return false;
+  const defs = MMD_PLUGINS.list.filter((d) => d.plugin === p);
+  // (its bars hidden first when it's the mode showing)
+  const showing = mmdPluginOf();
+  if (showing && defs.includes(showing)) mmdPluginCall(showing, "shown", false);
+  const modes = p.modes.map((d) => d.id);
+  for (const d of defs) MMD_PLUGINS.off.add(d.id);
+  for (const option of cwMode.options) if (modes.includes(option.value)) option.disabled = true;
+  const text = I18N("mmd.plugin.licenseLost").replace("{name}", p.name);
+  window.opener.addEvent("mmd", "<font style='color:var(--gt-error)'>" + window.opener.htmlEntities(text) + "</font>");
   return true;
 }
 
@@ -548,7 +588,7 @@ function mmdPluginsBands(data)
     if (!names.length) continue;
     try
     {
-      const rows = JSON.parse(fs.readFileSync(path.join(p.base, b.file), "utf8")).frequencies || [];
+      const rows = JSON.parse(p.read(b.file).toString("utf8")).frequencies || [];
       for (const row of rows) if (row && names.includes(row.mode)) data.frequencies.push(row);
     }
     catch (e)
@@ -558,8 +598,8 @@ function mmdPluginsBands(data)
   }
 }
 
-// The Test Signals (mmdTest.js): each plugin's (its test-signals index.json, the same shape as resources/test-signals'), each with dir,
-// the folder its file is in
+// The Test Signals (mmdTest.js): each plugin's (its test-signals index.json, the same shape as resources/test-signals'), each with read(),
+// its audio file's bytes (from the plugin: a paid one's are in memory)
 function mmdPluginsTestSignals()
 {
   const list = [];
@@ -569,8 +609,8 @@ function mmdPluginsTestSignals()
     if (!file) continue;
     try
     {
-      const dir = path.dirname(path.join(p.base, file));
-      for (const t of JSON.parse(fs.readFileSync(path.join(p.base, file), "utf8")).signals || []) list.push(Object.assign({}, t, { dir }));
+      const dir = path.posix.dirname(file.replace(/\\/g, "/"));
+      for (const t of JSON.parse(p.read(file).toString("utf8")).signals || []) list.push(Object.assign({}, t, { read: () => p.read(dir + "/" + t.file) }));
     }
     catch (e)
     {

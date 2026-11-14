@@ -618,7 +618,8 @@ const def_settings = {
   // WWV (wwv): its Set Frequency and Set Mode (USB).
   // A plugin's own (navtexSave, FT8 / FT4's ft8Depth, ft8SendDecodes; the keyboard modes' pskSubmode, thorSubmode; Feld-Hell's hellTrim;
   // Olivia's oliviaSubmode, oliviaCenter ...): its plugin.json's settings, added where missing as it's found (services/mmdPlugins.js).
-  // pluginsDisabled: the ids of the plugins turned off (found, not loaded).
+  // pluginsDisabled: the ids of the plugins turned off (found, not loaded). licenses: the paid plugins' license tokens entered (Manage
+  // Decoders..., each "GT2L1...."; kept with the settings so they go with them, each checked against the call sign: services/mmdPlugins.js).
   // followBirdWatch: the mode follows the transmitter BirdWatch's rig follows (off). utcLines: the waterfall's UTC menu, a line on the
   // UTC clock every 10, 15, 30 or 60 s (0 none) in every mode not decoded in periods. rsid: the RSIDs heard in every mode named on the
   // waterfall (on). commonInput, commonVfo:
@@ -638,7 +639,7 @@ const def_settings = {
   // a mode not in it: the first VFO). tuneLocked: the lock on the divider beside the frequency (mmdTuneLockClick): unlocked, the mouse
   // wheel over the frequency tunes the rig (mmdTuneWheel); locked unless unlocked. (Log QSO's own setting is adifLog.logQso: its buttons
   // and menu items in the decoder, mmdLogQso.js, show with it on)
-  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, rigControl: false, followBirdWatch: false, utcLines: 30, rsid: true, commonInput: true, commonVfo: true, wwvSetFreq: true, wwvSetMode: true, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, sstvSave: true, sstvFolder: "",saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18, pluginsDisabled: [] },
+  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, rigControl: false, followBirdWatch: false, utcLines: 30, rsid: true, commonInput: true, commonVfo: true, wwvSetFreq: true, wwvSetMode: true, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, sstvSave: true, sstvFolder: "",saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18, pluginsDisabled: [], licenses: [] },
   // Network Audio (Settings -> Features -> Service, its streams in the Radios tab; netAudio.js): audio streams on the LAN, each an Input Device or an Output Device of the
   // Multi-Mode Decoder. streams: [{ id ("n1" ...), name (the user's own), connect (unchecked: not opened, its settings free to change),
   // protocol ("vban", "rtp", "pulse": NET_AUDIO_PROTOCOLS), dir ("in", "out"), host, port, streamName, rate, channels, channel ("left",

@@ -2276,5 +2276,21 @@
   "cwViewer.picture.autoCrop.label": "Automatisch Bijsnijden",
   "cwViewer.picture.autoAlignNone": "Automatisch uitlijnen: geen kaartrand gevonden, of de kaart is al uitgelijnd",
   "cwViewer.picture.autoCropNone": "Automatisch bijsnijden: niets om bij te snijden",
-  "cwViewer.picture.printFailed": "Afdrukken mislukt:"
+  "cwViewer.picture.printFailed": "Afdrukken mislukt:",
+  "mmd.plugin.noLicense": "er is geen licentie voor ingevoerd",
+  "mmd.plugin.otherCall": "de licentie is voor een andere roepnaam",
+  "mmd.plugin.locked": "het kon niet worden ontgrendeld met de licentie",
+  "mmd.plugin.licenseLost": "Multi-mode decoder: {name} blijft uit tot GridTracker2 opnieuw start, omdat de licentie voor een andere roepnaam is",
+  "mmd.license.bad": "Dat is geen GridTracker2-licentie, of hij is gewijzigd.",
+  "mmd.license.needed": "Voer eerst de licentie in.",
+  "mmd.license.added": "Licentie opgeslagen voor {call}.",
+  "mmd.license.otherCall": "Licentie opgeslagen, maar hij is voor {call}: hij werkt zolang uw roepnaam {call} is.",
+  "mmd.license.paste.label": "Plak de licentie die u na aankoop hebt ontvangen:",
+  "mmd.license.ok.label": "Licentie Opslaan",
+  "mmd.license.cancel.label": "Annuleren",
+  "mmd.store.buy.label": "Kopen",
+  "mmd.store.enterLicense.label": "Licentie Invoeren",
+  "mmd.store.noLicense": "Geen licentie",
+  "mmd.store.otherCall": "Licentie voor een andere roepnaam",
+  "mmd.store.loadsOnRestart": "Wordt geladen bij het herstarten van GridTracker2"
 }

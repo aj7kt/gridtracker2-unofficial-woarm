@@ -6,7 +6,8 @@
 // download server, each one's Install, Update or Remove, and each installed one's Enabled; the downloads, checks, files and the setting
 // are the main window's (services/mmdPlugins.js, mmdStore*). A change is done at the next start, before any decoder is opened: Restart
 // Now restarts GridTracker2 (its settings and open windows saved first), and Undo lets an install or removal go before then. Nothing is
-// downloaded without a click
+// downloaded without a click. A paid decoder (the paid list's, kind "commercial") has Buy (its page on tagloomis.com, in the browser) and
+// Enter License until a license for this call sign is entered (MMD.licenses: mmdLicenseAdd); only then Install
 
 // The list shown ({ plugins, others }: the list's, and the installed ones it hasn't), null until it has come; a plugin being downloaded
 const GETMORE = { list: null, busy: null, loading: false };
@@ -20,6 +21,7 @@ function mmdGetMoreOpen()
 function mmdGetMoreClose()
 {
   mmdGetMoreBox.style.display = "none";
+  mmdLicenseClose();
 }
 
 // The list asked for again (each time the box is opened: a list published since is seen)
@@ -62,7 +64,7 @@ function mmdGetMoreRender()
   const head = "<tr><th>" + I18N("mmd.store.decoder.label") + "</th><th>" + I18N("mmd.store.modes.label") + "</th><th>" + I18N("mmd.store.version.label") + "</th><th>" + I18N("mmd.store.enabled.label") + "</th><th></th></tr>";
   mmdGetMoreTable.innerHTML = rows.length ? head + rows.join("") : "";
   const all = L.plugins.concat(L.others);
-  const waiting = all.some((e) => e.state == "installPending" || e.state == "removePending" || (e.found && e.enabled != e.wasEnabled));
+  const waiting = all.some((e) => e.state == "installPending" || e.state == "removePending" || (e.found && e.enabled != e.wasEnabled) || (e.state == "locked" && e.license == "ok"));
   mmdGetMoreRestart.disabled = !waiting;
   mmdGetMoreRestart.classList.toggle("mmdGetMoreLit", waiting);
 }
@@ -74,10 +76,15 @@ function mmdGetMoreRow(e, listed)
   const esc = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const button = (key, action) => "<button class='cwButton' onclick=\"mmdGetMoreDo('" + e.id + "', '" + action + "');\">" + esc(I18N(key).replace("{version}", e.version)) + "</button>";
   const note = (key) => "<span class='mmdGetMoreNote'>" + esc(I18N(key)) + "</span>";
+  // (a paid one without a license for this call sign: Buy, when it's listed, and Enter License in place of Install)
+  const unlicensed = e.kind == "commercial" && e.license != "ok";
+  const buyOrLicense = (listed && e.buy ? button("mmd.store.buy.label", "buy") + " " : "") + button("mmd.store.enterLicense.label", "license");
   let action;
   if (GETMORE.busy == e.id) action = note("mmd.store.downloading");
-  else if (e.error) action = "<span class='mmdGetMoreError'>" + esc(e.error) + "</span> " + (listed ? button("mmd.store.install.label", "install") : "");
+  else if (e.error) action = "<span class='mmdGetMoreError'>" + esc(e.error) + "</span> " + (listed ? (unlicensed && e.state == "install" ? buyOrLicense : button("mmd.store.install.label", "install")) : "");
   else if (e.state == "dev") action = note("mmd.store.dev");
+  else if (e.state == "locked") action = (unlicensed ? note(e.license == "otherCall" ? "mmd.store.otherCall" : "mmd.store.noLicense") + " " + buyOrLicense : note("mmd.store.loadsOnRestart")) + " " + button("mmd.store.remove.label", "remove");
+  else if (e.state == "install" && unlicensed) action = listed ? buyOrLicense : "";
   else if (e.state == "installPending") action = note("mmd.store.installPending") + " " + button("mmd.store.undo.label", "undo");
   else if (e.state == "removePending") action = note("mmd.store.removePending") + " " + button("mmd.store.undo.label", "undo");
   else if (e.state == "update") action = button("mmd.store.update.label", "install") + " " + button("mmd.store.remove.label", "remove");
@@ -108,6 +115,18 @@ async function mmdGetMoreDo(id, action)
   const e = listed || L.others.find((x) => x.id == id);
   if (!e) return;
   e.error = null;
+  // Buy: its page in the browser (a sub-window's window.open goes there: the main process' handler); only tagloomis.com's, as the
+  // signed list has it
+  if (action == "buy")
+  {
+    if (listed && /^https:\/\/tagloomis\.com\//.test(String(listed.buy))) window.open(listed.buy);
+    return;
+  }
+  if (action == "license")
+  {
+    mmdLicenseOpen(e);
+    return;
+  }
   try
   {
     if (action == "install" && listed)
@@ -125,6 +144,56 @@ async function mmdGetMoreDo(id, action)
   }
   GETMORE.busy = null;
   mmdGetMoreRender();
+}
+
+// Enter License (a paid decoder's row, e): the box under the table, for the license text sent after buying
+function mmdLicenseOpen(e)
+{
+  mmdLicenseBox.style.display = "";
+  mmdLicenseName.textContent = e.name;
+  mmdLicenseText.value = "";
+  mmdLicenseStatus("", false);
+  mmdLicenseText.focus();
+}
+
+function mmdLicenseClose()
+{
+  mmdLicenseBox.style.display = "none";
+}
+
+function mmdLicenseStatus(text, error)
+{
+  mmdLicenseMessage.textContent = text;
+  mmdLicenseMessage.style.display = text ? "" : "none";
+  mmdLicenseMessage.classList.toggle("mmdGetMoreError", !!error);
+}
+
+// OK: the license checked and saved (the main window's mmdLicenseAdd: in the settings, so it goes with them). Every paid row's license
+// state again: one license may be for several decoders. One for another call sign is kept too (it works when that call is set)
+function mmdLicenseSave()
+{
+  let added;
+  try
+  {
+    added = window.opener.mmdLicenseAdd(mmdLicenseText.value);
+  }
+  catch (err)
+  {
+    mmdLicenseStatus((err && err.message) || String(err), true);
+    return;
+  }
+  const L = GETMORE.list;
+  if (L)
+  {
+    for (const e of L.plugins.concat(L.others)) if (e.kind == "commercial") e.license = window.opener.mmdLicenseOf(e.id).status;
+  }
+  mmdGetMoreRender();
+  if (added.matches)
+  {
+    mmdLicenseClose();
+    mmdGetMoreStatus(I18N("mmd.license.added").replace("{call}", added.call), false);
+  }
+  else mmdLicenseStatus(I18N("mmd.license.otherCall").replace("{call}", added.call), true);
 }
 
 // Restart Now: GridTracker2 restarted, its settings and open windows saved first, so the changes are done

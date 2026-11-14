@@ -108,7 +108,8 @@ async function mmdTestPlay(t)
   let buffer;
   try
   {
-    const file = fs.readFileSync(path.join(t.dir || path.join(resourcesPath, "test-signals"), t.file));
+    // (a plugin's from the plugin: mmdPluginsTestSignals; the core's from resources)
+    const file = t.read ? t.read() : fs.readFileSync(path.join(resourcesPath, "test-signals", t.file));
     buffer = await ctx.decodeAudioData(file.buffer.slice(file.byteOffset, file.byteOffset + file.length));
   }
   catch (e)

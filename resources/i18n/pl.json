@@ -2276,5 +2276,21 @@
   "cwViewer.picture.autoCrop.label": "Przytnij Automatycznie",
   "cwViewer.picture.autoAlignNone": "Wyrównaj automatycznie: nie znaleziono krawędzi mapy lub jest już wyrównana",
   "cwViewer.picture.autoCropNone": "Przytnij automatycznie: nie ma czego przyciąć",
-  "cwViewer.picture.printFailed": "Drukowanie nie powiodło się:"
+  "cwViewer.picture.printFailed": "Drukowanie nie powiodło się:",
+  "mmd.plugin.noLicense": "nie wprowadzono dla niego licencji",
+  "mmd.plugin.otherCall": "jego licencja dotyczy innego znaku wywoławczego",
+  "mmd.plugin.locked": "nie udało się go odblokować jego licencją",
+  "mmd.plugin.licenseLost": "Dekoder wielomodowy: {name} pozostaje wyłączony do ponownego uruchomienia GridTracker2, ponieważ jego licencja dotyczy innego znaku wywoławczego",
+  "mmd.license.bad": "To nie jest licencja GridTracker2 albo została zmieniona.",
+  "mmd.license.needed": "Najpierw wprowadź jego licencję.",
+  "mmd.license.added": "Zapisano licencję dla {call}.",
+  "mmd.license.otherCall": "Zapisano licencję, ale dotyczy {call}: działa, gdy Twój znak wywoławczy to {call}.",
+  "mmd.license.paste.label": "Wklej licencję otrzymaną po zakupie:",
+  "mmd.license.ok.label": "Zapisz Licencję",
+  "mmd.license.cancel.label": "Anuluj",
+  "mmd.store.buy.label": "Kup",
+  "mmd.store.enterLicense.label": "Wprowadź Licencję",
+  "mmd.store.noLicense": "Brak licencji",
+  "mmd.store.otherCall": "Licencja na inny znak wywoławczy",
+  "mmd.store.loadsOnRestart": "Zostanie wczytany po ponownym uruchomieniu GridTracker2"
 }

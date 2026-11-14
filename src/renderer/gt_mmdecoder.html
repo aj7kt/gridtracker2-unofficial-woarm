@@ -362,6 +362,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         border-color: #fa0;
         color: #fc6;
       }
+      #mmdLicenseBox {
+        text-align: left;
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #333;
+      }
+      #mmdLicenseText {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 320px;
+        margin: 4px 0;
+        font-family: monospace;
+        font-size: 11px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        background-color: #000;
+        color: inherit;
+        border: 1px solid var(--gt-button-border);
+      }
+      #mmdLicenseMessage {
+        margin: 2px 0 4px 0;
+        white-space: normal;
+      }
+      .mmdLicenseButtons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
       /* Test Signals while one plays (or waits for its period): it stops it */
       .cwButton.cwTestOn {
         border-color: #fa0;
@@ -1179,6 +1208,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <div class="mmdGetMoreHead"><span data-i18n="mmd.manage.title.label">Manage Decoders</span><span class="cwButton" onclick="mmdGetMoreClose();" data-i18n="mmd.store.close.label">Close</span></div>
       <div id="mmdGetMoreMessage" style="display: none;"></div>
       <table id="mmdGetMoreTable"></table>
+      <!-- Enter License (a paid decoder's row): the license text sent after buying, saved with the settings -->
+      <div id="mmdLicenseBox" style="display: none;">
+        <div id="mmdLicenseName" class="mmdGetMoreName"></div>
+        <div data-i18n="mmd.license.paste.label">Paste the license you received after buying:</div>
+        <textarea id="mmdLicenseText" rows="3" spellcheck="false"></textarea>
+        <div id="mmdLicenseMessage" style="display: none;"></div>
+        <div class="mmdLicenseButtons"><button class="cwButton" onclick="mmdLicenseSave();" data-i18n="mmd.license.ok.label">Save License</button><button class="cwButton" onclick="mmdLicenseClose();" data-i18n="mmd.license.cancel.label">Cancel</button></div>
+      </div>
       <div class="mmdGetMoreFoot"><span data-i18n="mmd.store.restartNote.label">Changes take effect when GridTracker2 restarts.</span><button id="mmdGetMoreRestart" class="cwButton" disabled onclick="mmdGetMoreRestartNow();" data-i18n="mmd.store.restart.label">Restart Now</button></div>
     </div>
     <!-- Its settings (mmdSettings.js), opened by Settings on the top line as the Call Roster's are: General (the waterfall, Rig Control, what

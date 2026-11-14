@@ -2276,5 +2276,21 @@
 	"cwViewer.picture.autoCrop.label": "Auto-Crop",
 	"cwViewer.picture.autoAlignNone": "Auto-Align: no chart edge found, or it's already lined up",
 	"cwViewer.picture.autoCropNone": "Auto-Crop: nothing to crop",
-	"cwViewer.picture.printFailed": "Printing failed:"
+	"cwViewer.picture.printFailed": "Printing failed:",
+	"mmd.plugin.noLicense": "no license for it has been entered",
+	"mmd.plugin.otherCall": "its license is for another call sign",
+	"mmd.plugin.locked": "it couldn't be unlocked with its license",
+	"mmd.plugin.licenseLost": "Multi-Mode Decoder: {name} is off until GridTracker2 starts again, as its license is for another call sign",
+	"mmd.license.bad": "That isn't a GridTracker2 license, or it was changed.",
+	"mmd.license.needed": "Enter its license first.",
+	"mmd.license.added": "License saved for {call}.",
+	"mmd.license.otherCall": "License saved, but it's for {call}: it works while your call sign is {call}.",
+	"mmd.license.paste.label": "Paste the license you received after buying:",
+	"mmd.license.ok.label": "Save License",
+	"mmd.license.cancel.label": "Cancel",
+	"mmd.store.buy.label": "Buy",
+	"mmd.store.enterLicense.label": "Enter License",
+	"mmd.store.noLicense": "No license",
+	"mmd.store.otherCall": "Licensed to another call sign",
+	"mmd.store.loadsOnRestart": "Loads when GridTracker2 restarts"
 }

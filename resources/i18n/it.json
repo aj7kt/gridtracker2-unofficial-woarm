@@ -2276,5 +2276,21 @@
 	"cwViewer.picture.autoCrop.label": "Ritaglio Automatico",
 	"cwViewer.picture.autoAlignNone": "Allineamento automatico: nessun bordo della carta trovato, oppure è già allineata",
 	"cwViewer.picture.autoCropNone": "Ritaglio automatico: niente da ritagliare",
-	"cwViewer.picture.printFailed": "Stampa non riuscita:"
+	"cwViewer.picture.printFailed": "Stampa non riuscita:",
+	"mmd.plugin.noLicense": "non è stata inserita alcuna licenza",
+	"mmd.plugin.otherCall": "la sua licenza è per un altro nominativo",
+	"mmd.plugin.locked": "non è stato possibile sbloccarlo con la sua licenza",
+	"mmd.plugin.licenseLost": "Decodificatore multimodo: {name} resta spento fino al riavvio di GridTracker2, perché la sua licenza è per un altro nominativo",
+	"mmd.license.bad": "Questa non è una licenza di GridTracker2, oppure è stata modificata.",
+	"mmd.license.needed": "Inserisci prima la sua licenza.",
+	"mmd.license.added": "Licenza salvata per {call}.",
+	"mmd.license.otherCall": "Licenza salvata, ma è per {call}: funziona finché il tuo nominativo è {call}.",
+	"mmd.license.paste.label": "Incolla la licenza ricevuta dopo l'acquisto:",
+	"mmd.license.ok.label": "Salva Licenza",
+	"mmd.license.cancel.label": "Annulla",
+	"mmd.store.buy.label": "Acquista",
+	"mmd.store.enterLicense.label": "Inserisci Licenza",
+	"mmd.store.noLicense": "Nessuna licenza",
+	"mmd.store.otherCall": "Licenza per un altro nominativo",
+	"mmd.store.loadsOnRestart": "Si carica al riavvio di GridTracker2"
 }

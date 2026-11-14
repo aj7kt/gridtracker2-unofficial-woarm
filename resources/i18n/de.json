@@ -2277,5 +2277,21 @@
 	"cwViewer.picture.autoCrop.label": "Automatisch Zuschneiden",
 	"cwViewer.picture.autoAlignNone": "Automatisch Ausrichten: kein Kartenrand gefunden, oder sie ist schon ausgerichtet",
 	"cwViewer.picture.autoCropNone": "Automatisch Zuschneiden: nichts zuzuschneiden",
-	"cwViewer.picture.printFailed": "Drucken fehlgeschlagen:"
+	"cwViewer.picture.printFailed": "Drucken fehlgeschlagen:",
+	"mmd.plugin.noLicense": "es wurde keine Lizenz dafür eingegeben",
+	"mmd.plugin.otherCall": "seine Lizenz gilt für ein anderes Rufzeichen",
+	"mmd.plugin.locked": "es konnte mit seiner Lizenz nicht entsperrt werden",
+	"mmd.plugin.licenseLost": "Multi-Mode-Decoder: {name} bleibt aus, bis GridTracker2 neu startet, da seine Lizenz für ein anderes Rufzeichen gilt",
+	"mmd.license.bad": "Das ist keine GridTracker2-Lizenz, oder sie wurde verändert.",
+	"mmd.license.needed": "Geben Sie zuerst seine Lizenz ein.",
+	"mmd.license.added": "Lizenz für {call} gespeichert.",
+	"mmd.license.otherCall": "Lizenz gespeichert, aber sie gilt für {call}: Sie funktioniert, solange Ihr Rufzeichen {call} ist.",
+	"mmd.license.paste.label": "Fügen Sie die nach dem Kauf erhaltene Lizenz ein:",
+	"mmd.license.ok.label": "Lizenz Speichern",
+	"mmd.license.cancel.label": "Abbrechen",
+	"mmd.store.buy.label": "Kaufen",
+	"mmd.store.enterLicense.label": "Lizenz Eingeben",
+	"mmd.store.noLicense": "Keine Lizenz",
+	"mmd.store.otherCall": "Für ein anderes Rufzeichen lizenziert",
+	"mmd.store.loadsOnRestart": "Wird beim Neustart von GridTracker2 geladen"
 }

@@ -2278,5 +2278,21 @@
   "cwViewer.picture.autoCrop.label": "自動裁剪",
   "cwViewer.picture.autoAlignNone": "自動對齊：未找到圖表邊緣，或已經對齊",
   "cwViewer.picture.autoCropNone": "自動裁剪：沒有可裁剪的內容",
-  "cwViewer.picture.printFailed": "列印失敗："
+  "cwViewer.picture.printFailed": "列印失敗：",
+  "mmd.plugin.noLicense": "尚未輸入其授權",
+  "mmd.plugin.otherCall": "其授權屬於另一個呼號",
+  "mmd.plugin.locked": "無法用其授權解鎖",
+  "mmd.plugin.licenseLost": "多模式解碼器：{name} 的授權屬於另一個呼號，在 GridTracker2 重新啟動前保持關閉",
+  "mmd.license.bad": "這不是 GridTracker2 授權，或已被修改。",
+  "mmd.license.needed": "請先輸入其授權。",
+  "mmd.license.added": "已為 {call} 儲存授權。",
+  "mmd.license.otherCall": "授權已儲存，但它屬於 {call}：僅當您的呼號為 {call} 時有效。",
+  "mmd.license.paste.label": "貼上購買後收到的授權：",
+  "mmd.license.ok.label": "儲存授權",
+  "mmd.license.cancel.label": "取消",
+  "mmd.store.buy.label": "購買",
+  "mmd.store.enterLicense.label": "輸入授權",
+  "mmd.store.noLicense": "無授權",
+  "mmd.store.otherCall": "授權屬於另一個呼號",
+  "mmd.store.loadsOnRestart": "將在 GridTracker2 重新啟動時載入"
 }

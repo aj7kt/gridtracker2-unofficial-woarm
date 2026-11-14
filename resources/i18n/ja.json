@@ -2276,5 +2276,21 @@
 	"cwViewer.picture.autoCrop.label": "自動トリミング",
 	"cwViewer.picture.autoAlignNone": "自動位置合わせ: チャートの端が見つからないか、すでに揃っています",
 	"cwViewer.picture.autoCropNone": "自動トリミング: トリミングするものはありません",
-	"cwViewer.picture.printFailed": "印刷できませんでした:"
+	"cwViewer.picture.printFailed": "印刷できませんでした:",
+	"mmd.plugin.noLicense": "ライセンスが入力されていません",
+	"mmd.plugin.otherCall": "ライセンスが別のコールサイン用です",
+	"mmd.plugin.locked": "ライセンスでロックを解除できませんでした",
+	"mmd.plugin.licenseLost": "マルチモードデコーダー: {name} のライセンスが別のコールサイン用のため、GridTracker2 を再起動するまでオフにします",
+	"mmd.license.bad": "GridTracker2 のライセンスではないか、変更されています。",
+	"mmd.license.needed": "先にライセンスを入力してください。",
+	"mmd.license.added": "{call} のライセンスを保存しました。",
+	"mmd.license.otherCall": "ライセンスを保存しましたが、{call} 用です。コールサインが {call} の間のみ有効です。",
+	"mmd.license.paste.label": "購入後に受け取ったライセンスを貼り付けてください:",
+	"mmd.license.ok.label": "ライセンスを保存",
+	"mmd.license.cancel.label": "キャンセル",
+	"mmd.store.buy.label": "購入",
+	"mmd.store.enterLicense.label": "ライセンスを入力",
+	"mmd.store.noLicense": "ライセンスなし",
+	"mmd.store.otherCall": "別のコールサインのライセンス",
+	"mmd.store.loadsOnRestart": "GridTracker2 の再起動時に読み込み"
 }

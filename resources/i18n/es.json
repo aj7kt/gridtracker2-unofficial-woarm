@@ -2269,5 +2269,21 @@
   "cwViewer.picture.autoCrop.label": "Recortar Automáticamente",
   "cwViewer.picture.autoAlignNone": "Alinear automáticamente: no se encontró el borde de la carta, o ya está alineada",
   "cwViewer.picture.autoCropNone": "Recortar automáticamente: no hay nada que recortar",
-  "cwViewer.picture.printFailed": "Error al imprimir:"
+  "cwViewer.picture.printFailed": "Error al imprimir:",
+  "mmd.plugin.noLicense": "no se ha introducido ninguna licencia para él",
+  "mmd.plugin.otherCall": "su licencia es para otro indicativo",
+  "mmd.plugin.locked": "no se pudo desbloquear con su licencia",
+  "mmd.plugin.licenseLost": "Decodificador multimodo: {name} queda desactivado hasta que GridTracker2 se reinicie, porque su licencia es para otro indicativo",
+  "mmd.license.bad": "Eso no es una licencia de GridTracker2, o fue modificada.",
+  "mmd.license.needed": "Introduzca primero su licencia.",
+  "mmd.license.added": "Licencia guardada para {call}.",
+  "mmd.license.otherCall": "Licencia guardada, pero es para {call}: funciona mientras su indicativo sea {call}.",
+  "mmd.license.paste.label": "Pegue la licencia que recibió tras la compra:",
+  "mmd.license.ok.label": "Guardar Licencia",
+  "mmd.license.cancel.label": "Cancelar",
+  "mmd.store.buy.label": "Comprar",
+  "mmd.store.enterLicense.label": "Introducir Licencia",
+  "mmd.store.noLicense": "Sin licencia",
+  "mmd.store.otherCall": "Con licencia para otro indicativo",
+  "mmd.store.loadsOnRestart": "Se carga al reiniciar GridTracker2"
 }
