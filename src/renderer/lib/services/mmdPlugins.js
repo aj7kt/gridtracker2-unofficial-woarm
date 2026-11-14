@@ -29,7 +29,7 @@
 const MMD_PLUGIN_API = { min: 1, max: 3 };
 // The free-plugin key: the public half of the key CI signs the free plugins with (its private half is the GitLab variable
 // MMD_FREE_SIGNING_KEY)
-const MMD_PLUGIN_FREE_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAZRrWLnaNIEvMys2cT3ndbQHL5fM+unYNkWsAnepx9pI=\n-----END PUBLIC KEY-----\n";
+const MMD_PLUGIN_FREE_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAhPceOF/fPIWg9TiZvJG/iVcwVxSSB3mybNzbKoMqWms=\n-----END PUBLIC KEY-----\n";
 // The commercial key: the public half of the key the commercial-plugins repo's CI signs the paid plugins and their lists with
 // (COMMERCIAL_SIGNING_KEY there); the license key: the public half of the one license tokens are signed with
 const MMD_PLUGIN_COMMERCIAL_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOTv0WZ77G4TSJyFZPDBVYPDxW0yxmQZYy8K2CxLqlWs=\n-----END PUBLIC KEY-----\n";
@@ -396,7 +396,7 @@ function mmdPluginsFind()
       else add(id, full, false);
     }
   }
-  for (const file of files.filter((f) => /^[a-z][a-z0-9]*\.gt2e$/.test(f)))
+  for (const file of PAID_DECODERS_LEFT_OUT ? [] : files.filter((f) => /^[a-z][a-z0-9]*\.gt2e$/.test(f)))
   {
     const id = file.replace(/\.gt2e$/, "");
     if (found.some((p) => p.id == id)) continue;
@@ -546,10 +546,14 @@ function mmdPluginsI18n()
 // offered to an older one. Nothing is used before its signature is checked: the list's, then each download's size, SHA-256 and its own
 // signature. An install, update or removal waits in the plugins folder (<id>.asar.new + <id>.asar.sig.new, or <id>.remove) and is done
 // at the next start, before any plugin file is opened (mmdPluginsApplyPending): a plugin's .asar is never replaced while it is in use
-const MMD_STORE_URL = "https://download2.gridtracker.org/plugins/mmd/";
+// Unofficial WoARM build: the free plugins from this project's GitHub Pages site, signed by its own key (MMD_PLUGIN_FREE_KEY)
+const MMD_STORE_URL = "https://aj7kt.github.io/gridtracker2-unofficial-woarm/plugins/mmd/";
 // The paid plugins' store (the commercial-plugins repo's deploy): the same layout, its lists and plugins signed by the commercial key, each
 // plugin a .gt2e (+ .sig) and its guide a .pdf (its size and SHA-256 in the list). Installed only once a license for it is entered
 const MMD_PAID_STORE_URL = "https://tagloomis.com/plugins/mmd/";
+// Unofficial WoARM build: paid plugins are left out. Their store is never asked (mmdStoreGet, mmdStoreList), and installed ones
+// (.gt2e) aren't looked for at startup, so no license is ever asked for or used. The code is kept
+const PAID_DECODERS_LEFT_OUT = true;
 // The largest list, and the largest plugin, taken (bytes)
 const MMD_STORE_LIST_MAX = 1024 * 1024;
 const MMD_STORE_PLUGIN_MAX = 200 * 1024 * 1024;
@@ -576,6 +580,7 @@ function mmdStoreWhere(rel, paid = false)
 // set (404: not there)
 function mmdStoreGet(rel, max, paid = false)
 {
+  if (paid && PAID_DECODERS_LEFT_OUT) return Promise.reject(Object.assign(new Error("paid plugins are left out"), { status: 404 }));
   const where = mmdStoreWhere(rel, paid);
   return new Promise((resolve, reject) =>
   {
@@ -627,7 +632,7 @@ function mmdStoreGet(rel, max, paid = false)
 // when there is none for this version; a list not signed by its key (a dev run's dev key too) or not this version's is a failure
 async function mmdStoreList()
 {
-  const lists = await Promise.allSettled([mmdStoreListOf(false), mmdStoreListOf(true)]);
+  const lists = await Promise.allSettled([mmdStoreListOf(false), PAID_DECODERS_LEFT_OUT ? Promise.reject(Object.assign(new Error("left out"), { status: 404 })) : mmdStoreListOf(true)]);
   if (lists[0].status == "rejected" && lists[1].status == "rejected") throw lists[0].reason;
   if (lists[1].status == "rejected" && lists[1].reason && lists[1].reason.status != 404) console.log("paid plugin list: " + lists[1].reason.message);
   const free = lists[0].status == "fulfilled" ? lists[0].value : [];

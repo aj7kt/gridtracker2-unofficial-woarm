@@ -36,7 +36,7 @@ const only = args.filter((a) => a != "write" && !a.startsWith("--"));
 const publishFor = args.some((a) => a == "--publish" || a.startsWith("--publish=")) ? opt("publish") || JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version : null;
 if (publishFor !== null && !/^\d+\.\d+\.\d+$/.test(publishFor)) throw new Error("--publish: " + publishFor + " isn't an app version (2.YYMMDD.N)");
 // The free-plugin key's public half, as services/mmdPlugins.js has it
-const FREE_KEY = "MCowBQYDK2VwAyEAZRrWLnaNIEvMys2cT3ndbQHL5fM+unYNkWsAnepx9pI=";
+const FREE_KEY = "MCowBQYDK2VwAyEAhPceOF/fPIWg9TiZvJG/iVcwVxSSB3mybNzbKoMqWms=";
 
 if (args.some((a) => a == "--make-dev-key" || a.startsWith("--make-dev-key=")))
 {

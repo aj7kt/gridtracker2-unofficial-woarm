@@ -1,0 +1,181 @@
+# GridTracker2 Unofficial WoARM, Windows on ARM builds of GridTracker2: not signed, not made or supported by GridTracker.org.
+# Built with electron-builder.github.yml, which gives them their own identity (they install beside the official app).
+#   A push to a branch, or Run workflow (Actions tab): builds, installs and smoke-tests, then puts the tested files in the draft
+#   release for its version (tag v<package.json version>-woarm: upstream's tag with -woarm on the end), replacing what was there.
+#   Drafts are invisible to the app's updater. Releasing is done by hand on GitHub: write the notes, publish (not as a prerelease,
+#   kept as latest). The updater reads latest.yml from the latest published release (the tag's -woarm doesn't matter to it: it
+#   only looks at a tag's text when the installed version is a prerelease). A published release is never replaced, so the same
+#   version is built again only into a new draft once it has a new version. The tag is made on GitHub when the release is
+#   published, so no tag is ever pushed from here.
+# Jobs: build packages the arm64 installer on Linux, in electron-builder's own image with Wine (packaging needs no Windows or
+# arm64 machine; Wine runs the two x86 Windows tools it uses: rcedit, and the installer once to write its uninstaller); smoke
+# installs it on GitHub's Windows ARM64 runner, which tests the installer too, and launches the real arm64 app; draft puts what
+# smoke tested in the standing draft.
+name: Windows ARM64
+
+on:
+  push:
+    # (woarm/<upstream version>, e.g. woarm/v2.261108.4: the fork's changes on that version of GridTracker2)
+    branches: ["woarm/*"]
+  workflow_dispatch:
+
+# Read-only, but for the draft job
+permissions:
+  contents: read
+
+# One run per branch at a time, never cancelled (a draft half replaced would lose its files); a newer push waits its turn
+concurrency:
+  group: windows-arm64-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ARTIFACT: GridTracker2-Unofficial-WoARM-${{ github.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: electronuserland/builder:wine
+      # As root (so HOME=/root is its own), and without the default seccomp filter, which refuses the socket Wine's server needs
+      options: --user root --security-opt seccomp=unconfined
+    timeout-minutes: 30
+    env:
+      # No code signing certificate: don't look for one
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      # Only the Windows arm64 Electron is packaged (electron-builder downloads it), not the Linux one npm ci would
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+      # The container runs as root, but a container job's HOME is /github/home (the runner user's), where Wine refuses to make its
+      # prefix: root's own home, as the image is set up for
+      HOME: /root
+      # Headless: no Wine Mono or Gecko install offered (it waits for an answer), no menu entries made
+      WINEDLLOVERRIDES: "mscoree,mshtml=;winemenubuilder.exe=d"
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "version $version"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Static checks
+        run: node tools/smoke_static.js
+
+      # Wine's prefix made (or brought up to date) here, with a time limit and its output shown, rather than silently inside
+      # electron-builder's first Wine call (rcedit), which has none
+      - name: Prepare Wine
+        timeout-minutes: 6
+        run: |
+          wine --version
+          timeout 300 wineboot --init; echo "wineboot exit $?"
+          timeout 60 wineserver --wait; echo "wineserver exit $?"
+
+      - name: Build installer
+        timeout-minutes: 15
+        # (owner and repo given: inside the container electron-builder may not read them from the git remote)
+        run: npx electron-builder --win --arm64 --config electron-builder.github.yml --publish never -c.publish.owner=${{ github.repository_owner }} -c.publish.repo=${{ github.event.repository.name }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: |
+            dist/*-setup.exe
+            dist/*-setup.exe.blockmap
+            dist/latest.yml
+          if-no-files-found: error
+
+  smoke:
+    needs: build
+    runs-on: windows-11-arm
+    timeout-minutes: 30
+    steps:
+      # tools/cdp.mjs and the smoke scripts (Node 24's own fetch and WebSocket: no npm install)
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: installer
+
+      # Silent install for this user (/S), into a folder of its own (/D must come last, unquoted)
+      - name: Install
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem installer\*-setup.exe | Select-Object -First 1
+          $p = Start-Process -FilePath $setup.FullName -ArgumentList '/S', '/D=C:\gt2woarm' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "installer exit code $($p.ExitCode)" }
+          if (-not (Test-Path "C:\gt2woarm\GridTracker2 Unofficial WoARM.exe")) { throw "GridTracker2 Unofficial WoARM.exe not installed" }
+          # Its version info, which electron-builder sets with rcedit under Wine
+          (Get-Item "C:\gt2woarm\GridTracker2 Unofficial WoARM.exe").VersionInfo | Format-List ProductName, ProductVersion, FileDescription, CompanyName
+          Get-ChildItem C:\gt2woarm | Select-Object -First 10 | Format-Table Name, Length
+
+      - name: Smoke test the installed build
+        run: node .github/scripts/smoke_packaged.mjs "C:\gt2woarm\GridTracker2 Unofficial WoARM.exe" arm64
+
+  # The version's draft release (v<version>-woarm): the files smoke tested (not a rebuild), each build replacing the last's.
+  # The updater ignores drafts; it reads latest.yml from the latest published release, and the blockmap lets it download only
+  # what changed. A published release with that tag is never touched
+  draft:
+    needs: [build, smoke]
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: dist
+
+      - name: Update the version's draft release
+        run: |
+          set -euo pipefail
+          R=$GITHUB_REPOSITORY
+          tag="v$VERSION-woarm"
+          title="GridTracker2 Unofficial WoARM v$VERSION"
+          {
+            echo "**To release this build: replace these notes and publish it (not as a pre-release, set as the latest release).**"
+            echo
+            echo "GridTracker2 Unofficial WoARM: an unofficial, unsigned Windows on ARM build of GridTracker2 v$VERSION, from https://gitlab.com/gridtracker.org/gridtracker2. Not made or supported by GridTracker.org. Windows SmartScreen will warn that the installer is unsigned."
+            echo
+            echo "This build doesn't depend on GridTracker.org or on services run by its developer. It downloads its reference data from this fork's GitHub Pages, and it switches off the features that need those services. The README lists the differences: $GITHUB_SERVER_URL/$R#readme"
+            echo
+            echo "Built from $GITHUB_SHA by $GITHUB_SERVER_URL/$R/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo '```'
+            (cd dist && sha256sum *-setup.exe *-setup.exe.blockmap latest.yml)
+            echo '```'
+            echo
+            echo "_Draft, replaced by every build of v$VERSION until it is published._"
+          } > notes.md
+
+          state=$(TAG="$tag" gh release list -R "$R" --limit 200 --json tagName,isDraft \
+                    --jq '.[] | select(.tagName == env.TAG) | if .isDraft then "draft" else "published" end')
+          case "$state" in
+            published)
+              echo "::error::$tag is already published, and a published release is never replaced: give this build a new version in package.json"; exit 1 ;;
+            draft)
+              echo "updating draft $tag"
+              gh release edit "$tag" -R "$R" --target "$GITHUB_SHA" --title "$title" --notes-file notes.md
+              gh release view "$tag" -R "$R" --json assets --jq '.assets[].name' |
+                while read -r a; do gh release delete-asset "$tag" "$a" -R "$R" --yes; done
+              gh release upload "$tag" -R "$R" dist/*-setup.exe dist/*-setup.exe.blockmap dist/latest.yml ;;
+            *)
+              echo "creating draft $tag"
+              gh release create "$tag" -R "$R" --draft --target "$GITHUB_SHA" --title "$title" --notes-file notes.md \
+                dist/*-setup.exe dist/*-setup.exe.blockmap dist/latest.yml ;;
+          esac

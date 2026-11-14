@@ -1002,8 +1002,9 @@ function updateDownloaded(info) {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('org.gridtracker.GridTracker2');
-  app.setAppUserModelId('org.gridtracker.GridTracker2');
+  // Unofficial WoARM build: its own id (electron-builder.github.yml's appId), so it doesn't share the official app's taskbar entry
+  electronApp.setAppUserModelId('io.github.aj7kt.gridtracker2-woarm');
+  app.setAppUserModelId('io.github.aj7kt.gridtracker2-woarm');
 
   dialog.showErrorBox = (title, content) => {
     log.error(`${title}\n${content}`);
