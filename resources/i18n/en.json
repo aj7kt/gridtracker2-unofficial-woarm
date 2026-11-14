@@ -2269,5 +2269,16 @@
 	"settings.map.cast.lock.label": "Lock Window Size",
 	"settings.map.cast.lock.hover": "While casting, the main window is sized so the map is captured at exactly that size, and can't be resized until the cast stops. 1080p is the sharpest; at 720p everything on the TV is bigger, easier to read from across a room. Off, the window keeps about its size, snapped to the TV's shape",
 	"events.menu.panel.label": "View As Waterfall",
-	"events.panel.rule.hover": "Drag this line out over the map to show the Event Viewer there"
+	"events.panel.rule.hover": "Drag this line out over the map to show the Event Viewer there",
+	"cwViewer.picture.print.label": "Print…",
+	"cwViewer.picture.showFolder.label": "Show In Folder",
+	"cwViewer.picture.autoAlign.label": "Auto-Align",
+	"cwViewer.picture.wrap.label": "Wrap Scroll",
+	"cwViewer.picture.wrapLeft.label": "Left",
+	"cwViewer.picture.wrapRight.label": "Right",
+	"cwViewer.picture.wrapReset.label": "Reset",
+	"cwViewer.picture.autoCrop.label": "Auto-Crop",
+	"cwViewer.picture.autoAlignNone": "Auto-Align: no chart edge found, or it's already lined up",
+	"cwViewer.picture.autoCropNone": "Auto-Crop: nothing to crop",
+	"cwViewer.picture.printFailed": "Printing failed:"
 }

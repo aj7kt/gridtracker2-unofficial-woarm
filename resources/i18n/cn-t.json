@@ -2271,5 +2271,16 @@
   "settings.map.cast.lock.label": "鎖定視窗大小",
   "settings.map.cast.lock.hover": "投放時將主視窗調整為使地圖恰好以該尺寸擷取，並在投放結束前無法調整大小。1080p 最清晰；720p 時電視上的一切都更大，遠處也更容易看清。關閉時，視窗大致保持原大小，依電視的比例調整",
   "events.menu.panel.label": "以瀑布方式顯示",
-  "events.panel.rule.hover": "將這條線拖到地圖上，即可在那裡顯示事件檢視器"
+  "events.panel.rule.hover": "將這條線拖到地圖上，即可在那裡顯示事件檢視器",
+  "cwViewer.picture.print.label": "列印…",
+  "cwViewer.picture.showFolder.label": "在資料夾中顯示",
+  "cwViewer.picture.autoAlign.label": "自動對齊",
+  "cwViewer.picture.wrap.label": "循環捲動",
+  "cwViewer.picture.wrapLeft.label": "向左",
+  "cwViewer.picture.wrapRight.label": "向右",
+  "cwViewer.picture.wrapReset.label": "重設",
+  "cwViewer.picture.autoCrop.label": "自動裁剪",
+  "cwViewer.picture.autoAlignNone": "自動對齊：未找到圖表邊緣，或已經對齊",
+  "cwViewer.picture.autoCropNone": "自動裁剪：沒有可裁剪的內容",
+  "cwViewer.picture.printFailed": "列印失敗："
 }

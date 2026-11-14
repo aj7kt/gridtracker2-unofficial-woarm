@@ -2269,5 +2269,16 @@
   "settings.map.cast.lock.label": "Travar Tamanho Da Janela",
   "settings.map.cast.lock.hover": "Durante a transmissão, a janela principal é dimensionada para capturar o mapa exatamente nesse tamanho, e não pode ser redimensionada até a transmissão parar. 1080p é o mais nítido; em 720p tudo na TV fica maior, mais fácil de ler de longe. Desativado, a janela mantém mais ou menos seu tamanho, ajustada ao formato da TV",
   "events.menu.panel.label": "Ver Como Cascata",
-  "events.panel.rule.hover": "Arraste esta linha para cima do mapa para mostrar o visualizador de eventos ali"
+  "events.panel.rule.hover": "Arraste esta linha para cima do mapa para mostrar o visualizador de eventos ali",
+  "cwViewer.picture.print.label": "Imprimir…",
+  "cwViewer.picture.showFolder.label": "Mostrar Na Pasta",
+  "cwViewer.picture.autoAlign.label": "Alinhar Automaticamente",
+  "cwViewer.picture.wrap.label": "Rolagem Circular",
+  "cwViewer.picture.wrapLeft.label": "Esquerda",
+  "cwViewer.picture.wrapRight.label": "Direita",
+  "cwViewer.picture.wrapReset.label": "Redefinir",
+  "cwViewer.picture.autoCrop.label": "Cortar Automaticamente",
+  "cwViewer.picture.autoAlignNone": "Alinhar automaticamente: nenhuma borda da carta encontrada, ou ela já está alinhada",
+  "cwViewer.picture.autoCropNone": "Cortar automaticamente: nada para cortar",
+  "cwViewer.picture.printFailed": "Falha ao imprimir:"
 }

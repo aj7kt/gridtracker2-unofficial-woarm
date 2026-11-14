@@ -2269,5 +2269,16 @@
 	"settings.map.cast.lock.label": "Verrouiller La Taille De La Fenêtre",
 	"settings.map.cast.lock.hover": "Pendant la diffusion, la fenêtre principale est dimensionnée pour que la carte soit capturée exactement à cette taille, et ne peut pas être redimensionnée avant la fin de la diffusion. 1080p est le plus net ; en 720p, tout est plus grand sur le téléviseur, plus facile à lire de loin. Désactivé, la fenêtre garde à peu près sa taille, ajustée à la forme du téléviseur",
 	"events.menu.panel.label": "Afficher En Cascade",
-	"events.panel.rule.hover": "Faites glisser cette ligne sur la carte pour y afficher la visionneuse d'événements"
+	"events.panel.rule.hover": "Faites glisser cette ligne sur la carte pour y afficher la visionneuse d'événements",
+	"cwViewer.picture.print.label": "Imprimer…",
+	"cwViewer.picture.showFolder.label": "Afficher Dans Le Dossier",
+	"cwViewer.picture.autoAlign.label": "Alignement Automatique",
+	"cwViewer.picture.wrap.label": "Défilement Circulaire",
+	"cwViewer.picture.wrapLeft.label": "Gauche",
+	"cwViewer.picture.wrapRight.label": "Droite",
+	"cwViewer.picture.wrapReset.label": "Réinitialiser",
+	"cwViewer.picture.autoCrop.label": "Recadrage Automatique",
+	"cwViewer.picture.autoAlignNone": "Alignement automatique : aucun bord de carte trouvé, ou elle est déjà alignée",
+	"cwViewer.picture.autoCropNone": "Recadrage automatique : rien à recadrer",
+	"cwViewer.picture.printFailed": "Échec de l'impression :"
 }

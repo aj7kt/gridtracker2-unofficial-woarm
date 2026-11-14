@@ -2262,5 +2262,16 @@
   "settings.map.cast.lock.label": "Bloquear Tamaño De Ventana",
   "settings.map.cast.lock.hover": "Al transmitir, la ventana principal se ajusta para capturar el mapa exactamente a ese tamaño, y no se puede cambiar de tamaño hasta que termine la transmisión. 1080p es lo más nítido; a 720p todo en el televisor se ve más grande, más fácil de leer desde lejos. Desactivado, la ventana conserva más o menos su tamaño, ajustado a la forma del televisor",
   "events.menu.panel.label": "Ver Como Cascada",
-  "events.panel.rule.hover": "Arrastre esta línea sobre el mapa para mostrar allí el visor de eventos"
+  "events.panel.rule.hover": "Arrastre esta línea sobre el mapa para mostrar allí el visor de eventos",
+  "cwViewer.picture.print.label": "Imprimir…",
+  "cwViewer.picture.showFolder.label": "Mostrar En La Carpeta",
+  "cwViewer.picture.autoAlign.label": "Alinear Automáticamente",
+  "cwViewer.picture.wrap.label": "Desplazar Con Ajuste",
+  "cwViewer.picture.wrapLeft.label": "Izquierda",
+  "cwViewer.picture.wrapRight.label": "Derecha",
+  "cwViewer.picture.wrapReset.label": "Restablecer",
+  "cwViewer.picture.autoCrop.label": "Recortar Automáticamente",
+  "cwViewer.picture.autoAlignNone": "Alinear automáticamente: no se encontró el borde de la carta, o ya está alineada",
+  "cwViewer.picture.autoCropNone": "Recortar automáticamente: no hay nada que recortar",
+  "cwViewer.picture.printFailed": "Error al imprimir:"
 }

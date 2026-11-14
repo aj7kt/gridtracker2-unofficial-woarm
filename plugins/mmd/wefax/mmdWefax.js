@@ -45,6 +45,10 @@ function mmdWefaxInit(host)
     tabs: false,
     // How much of a chart came: its lines so far (its length isn't known until its stop tone), and Receiving while it comes
     describe: (pic, live) => [host.t("cwViewer.wefax.lines").replace("{line}", pic.rows)].concat(live ? [host.t("cwViewer.wefax.receiving")] : []),
+    // Its right-click's Print, Show In Folder, Auto-Align, Wrap Scroll and Auto-Crop, and a drag wrap-scrolls it
+    chartTools: true,
+    // A saved chart's station: its file name's, else found from its time and frequency
+    station: (info) => mmdWefaxStation(info.dial, info.at, info.station),
     fromFile: (name) =>
     {
       const m = name.match(/^WEFAX(\d+?)(576|288)$/);
@@ -90,8 +94,11 @@ function mmdWefaxMessage(m)
   }
   if (m.type == "start")
   {
-    // Its length isn't known yet (it grows), named by its line rate and index of cooperation
-    P.start({ id: m.id, name: "WEFAX " + m.lpm + "/" + m.ioc, width: m.width, height: 0, shift: m.offsetHz || 0 });
+    // Its length isn't known yet (it grows), named by its line rate and index of cooperation, and the station it is from (none for a
+    // test signal's: the rig's dial says nothing about it)
+    const now = Date.now();
+    const station = WEFAX.host.testHeard(now) ? null : mmdWefaxStation(WEFAX.host.dialHz(), now, null);
+    P.start({ id: m.id, name: "WEFAX " + m.lpm + "/" + m.ioc, width: m.width, height: 0, shift: m.offsetHz || 0, station });
     // Auto-Tune: the chart tuned for has begun (mmdWefaxAuto.js)
     mmdWefaxAutoStarted();
     return;
@@ -126,6 +133,67 @@ function mmdWefaxDrawMarks(ctx, x, ratio, w, h)
     ctx.stroke();
   }
   ctx.setLineDash([]);
+}
+
+// ---- The station a chart is from (shown over its caption, in its file name)
+
+// A listed frequency this close (kHz) to the carrier is the station's, and a chart this close (ms) to the time is the one being sent
+const WEFAX_STATION_KHZ = 1;
+const WEFAX_STATION_NEAR_MS = 15 * 60000;
+
+// The station a chart is from: { id, label } ("NMC · Point Reyes, CA"), or null. By its id (a saved chart's file name; "VFF-VFR" for two),
+// else by its frequency (dial Hz: the carrier is 1.9 kHz above it) and time (ms): the chart Auto-Tune tuned for there, else the
+// schedule's stations sending on it; two or more: those on the air then, then those with a chart near then, else all of them together
+function mmdWefaxStation(dial, at, id)
+{
+  try
+  {
+    const stations = mmdWefaxAutoData().stations;
+    const named = (list) => (list.length ? { id: list.map((s) => s.id).join("-"), label: list.map((s) => s.id).join("/") + " · " + list.map((s) => s.name).join(" / ") } : null);
+    if (id)
+    {
+      const ids = String(id).split("-");
+      const list = ids.map((i) => stations.find((s) => String(s.id) == i)).filter(Boolean);
+      if (list.length == ids.length) return named(list);
+    }
+    if (!(dial > 0)) return null;
+    const khz = (dial + 1900) / 1000;
+    const n = WEFAX_AUTO.next;
+    if (n && WEFAX_AUTO.dial != null && Math.abs(n.dial - dial) <= WEFAX_AUTO_MOVED_HZ && Math.abs(n.at - at) <= WEFAX_STATION_NEAR_MS) return named([n.station]);
+    const on = (f) => Math.abs(Number(f.khz) - khz) <= WEFAX_STATION_KHZ;
+    let list = stations.filter((s) => (s.frequencies || []).some(on));
+    if (list.length > 1)
+    {
+      const onAir = list.filter((s) => s.frequencies.some((f) => on(f) && mmdWefaxAutoOnAir(f, at)));
+      if (onAir.length) list = onAir;
+    }
+    if (list.length > 1)
+    {
+      const near = list.filter((s) => mmdWefaxStationNear(s, at));
+      if (near.length) list = near;
+    }
+    return named(list);
+  }
+  catch (e)
+  {
+    return null;
+  }
+}
+
+// A station with a chart scheduled within WEFAX_STATION_NEAR_MS of a time (the day before, of, or after it)
+function mmdWefaxStationNear(station, at)
+{
+  const day = 86400000, midnight = Math.floor(at / day) * day;
+  return (station.charts || []).some((chart) =>
+  {
+    const minutes = mmdWefaxAutoMinutes(chart.time);
+    if (minutes == null) return false;
+    return [midnight - day, midnight, midnight + day].some((base) =>
+    {
+      const t = base + minutes * 60000;
+      return Math.abs(t - at) <= WEFAX_STATION_NEAR_MS && mmdWefaxAutoOnDay(station, chart, t);
+    });
+  });
 }
 
 // ---- Its row: LPM, IOC, Trim, Start Now, Stop (Auto-Tune: mmdWefaxAuto.js)

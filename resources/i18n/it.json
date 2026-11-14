@@ -2269,5 +2269,16 @@
 	"settings.map.cast.lock.label": "Blocca Dimensione Finestra",
 	"settings.map.cast.lock.hover": "Durante la trasmissione, la finestra principale è dimensionata perché la mappa sia catturata esattamente a quella dimensione, e non può essere ridimensionata finché la trasmissione non termina. 1080p è il più nitido; a 720p tutto sul televisore è più grande, più facile da leggere da lontano. Disattivato, la finestra mantiene circa la sua dimensione, adattata alla forma del televisore",
 	"events.menu.panel.label": "Mostra A Cascata",
-	"events.panel.rule.hover": "Trascina questa linea sulla mappa per mostrare lì il visualizzatore eventi"
+	"events.panel.rule.hover": "Trascina questa linea sulla mappa per mostrare lì il visualizzatore eventi",
+	"cwViewer.picture.print.label": "Stampa…",
+	"cwViewer.picture.showFolder.label": "Mostra Nella Cartella",
+	"cwViewer.picture.autoAlign.label": "Allineamento Automatico",
+	"cwViewer.picture.wrap.label": "Scorrimento Circolare",
+	"cwViewer.picture.wrapLeft.label": "Sinistra",
+	"cwViewer.picture.wrapRight.label": "Destra",
+	"cwViewer.picture.wrapReset.label": "Ripristina",
+	"cwViewer.picture.autoCrop.label": "Ritaglio Automatico",
+	"cwViewer.picture.autoAlignNone": "Allineamento automatico: nessun bordo della carta trovato, oppure è già allineata",
+	"cwViewer.picture.autoCropNone": "Ritaglio automatico: niente da ritagliare",
+	"cwViewer.picture.printFailed": "Stampa non riuscita:"
 }

@@ -12,16 +12,27 @@
 // its rows come), planes (3, or 1 for grey: Filter's Undo kept smaller), tabs (SSTV's Receive and Send tabs shown), datestamp (its caption
 // shows the UTC date before the time, WEFAX's), describe(pic, live)
 // (its own words for how much of a picture came, else SSTV's line counts), fromFile(name) (a saved file's name part, as mmdPicFileName
-// wrote it, claimed as its kind's: its shown name, else null), catchAll (claims any name the others don't: SSTV's) }
+// wrote it, claimed as its kind's: its shown name, else null), catchAll (claims any name the others don't: SSTV's), chartTools (its
+// right-click also prints, shows its file in its folder, lines it up, wrap-scrolls and crops it, and a
+// drag on it wrap-scrolls: WEFAX's), station({ at, dial, station }) (the station a saved picture is from, its file name's station id or
+// null: { id, label } or null; one coming in names its own, mmdPicStart's m.station) }
 
 // Pictures kept in the strip (each kind's)
 const PICS_KEEP = 12;
 // A growing picture's canvas is made this many lines longer each time its lines run past its end
 const PICS_GROW_ROWS = 600;
-// The caption over the picture shown: its font this many times the header's, its colors (the mode, the UTC date and time, the frequency,
-// the band, Saved)
+// The caption over the picture shown: its font this many times the header's (a chart kind's, chartTools, this much of that), its colors
+// (the station, on a line above the rest; the mode, the UTC date and time, the frequency, the band, Saved)
 const PICS_CAPTION_SCALE = 2;
-const PICS_CAPTION_COLORS = { name: "#8cf", time: "#fff", freq: "#8f8", band: "#ff0", saved: "#bbb" };
+const PICS_CHART_CAPTION_SCALE = 0.75;
+const PICS_CAPTION_COLORS = { station: "#fc6", name: "#8cf", time: "#fff", freq: "#8f8", band: "#ff0", saved: "#bbb" };
+// A chart kind's (chartTools) Wrap Scroll step (of its width), a press on the picture that moves less than this (px) still a click, the
+// columns of margin Auto-Align leaves before a chart's left edge and Auto-Crop around it, and the dark level (0 black, 255 white) the two
+// count as ink
+const PICS_WRAP_STEP = 0.01;
+const PICS_DRAG_MIN_PX = 5;
+const PICS_EDGE_PAD = 8;
+const PICS_INK_LEVEL = 128;
 // Filter's choices, in its submenu's order (each PICS_FILTER's, its label cwViewer.picture.filter<Name>.label), and the Undo steps kept
 // for each picture (the oldest let go past it)
 const PICS_FILTERS = ["sharpen", "denoise", "smooth", "autoContrast", "equalize", "lighten", "darken", "invert"];
@@ -33,11 +44,14 @@ const PICS = {
   kinds: {},       // by kind (mmdPicturesKind)
   order: [],       // the kinds, in the order they were registered
   lists: {},       // each kind's pictures, the newest first: { id, kind, name, width, height, canvas, rows, complete, at (ms, its start),
-                   // dial (Hz on the air or null), shift, saved, files, rotate, undo }
+                   // dial (Hz on the air or null), shift, saved, files, rotate, undo, station (its station's name to show, or null),
+                   // stationId (in its file name), roll (columns Wrap Scroll and Auto-Align moved it left, for Reset) }
   views: {},       // each kind's one shown large (a click on the strip); null: the newest
   live: null,      // the one coming in (any kind's)
   drawn: null,     // where the picture shown was drawn on sstvPicture (device pixels: x, y, w, h), and which
   drawQueued: false,
+  drag: null,      // a chart being wrap-scrolled by a drag: { pic, x (where it was pressed), roll (columns, as shown), moved }
+  dragged: false,  // a drag just ended: its click isn't one
   savedLoaded: {}  // each kind's saved pictures put in its strip this window (mmdPicLoadSaved)
 };
 
@@ -56,10 +70,77 @@ function mmdPicturesKind(def)
 // The view's own events, once (mmdInit)
 function mmdPicInit()
 {
-  // A click: back to the newest
-  sstvPicture.addEventListener("click", () => mmdPicView(null));
+  // A click: back to the newest (not the click that ends a drag)
+  sstvPicture.addEventListener("click", () =>
+  {
+    if (PICS.dragged)
+    {
+      PICS.dragged = false;
+      return;
+    }
+    mmdPicView(null);
+  });
   sstvPicture.addEventListener("contextmenu", (event) => mmdPicMenu(event, mmdPicShown()));
   window.addEventListener("resize", mmdPicDraw);
+  mmdPicDragInit();
+}
+
+// A chart kind's (chartTools) picture dragged sideways: wrap-scrolled as it moves, kept where it is let go (one Undo step, as a filter);
+// not one coming in or turned. Less than PICS_DRAG_MIN_PX of movement is a click
+function mmdPicDragInit()
+{
+  sstvPicture.addEventListener("pointerdown", (event) =>
+  {
+    PICS.dragged = false;
+    const drawn = PICS.drawn;
+    if (event.button != 0 || !drawn || !drawn.pic || drawn.rotate || drawn.pic == PICS.live || !(drawn.w > 0)) return;
+    const def = PICS.kinds[drawn.pic.kind];
+    if (!def || !def.chartTools) return;
+    PICS.drag = { pic: drawn.pic, x: event.clientX, roll: 0, moved: false, scale: drawn.w / drawn.pic.width };
+    try
+    {
+      sstvPicture.setPointerCapture(event.pointerId);
+    }
+    catch (e)
+    {
+      // (a synthetic event)
+    }
+  });
+  sstvPicture.addEventListener("pointermove", (event) =>
+  {
+    const D = PICS.drag;
+    if (!D) return;
+    // Its button let go where this window never heard it (a menu took the mouse), or another picture shown meanwhile: given up
+    if (!(event.buttons & 1) || mmdPicShown() != D.pic)
+    {
+      end(false);
+      return;
+    }
+    const dx = event.clientX - D.x;
+    if (!D.moved && Math.abs(dx) < PICS_DRAG_MIN_PX) return;
+    D.moved = true;
+    sstvPicture.style.cursor = "ew-resize";
+    // (moved right, its columns come from further left: rolled left by minus the columns the pointer went)
+    const w = D.pic.width;
+    D.roll = ((Math.round((-dx * (window.devicePixelRatio || 1)) / D.scale) % w) + w) % w;
+    mmdPicDraw();
+  });
+  // (kept only where it is still the picture shown)
+  function end(keep)
+  {
+    const D = PICS.drag;
+    if (!D) return;
+    PICS.drag = null;
+    sstvPicture.style.cursor = "";
+    if (!D.moved) return;
+    // (the click that follows a release ignored; given up, no click follows)
+    PICS.dragged = keep;
+    if (keep && D.roll && mmdPicShown() == D.pic) mmdPicRoll(D.pic, D.roll);
+    else mmdPicDraw();
+  }
+  sstvPicture.addEventListener("pointerup", () => end(true));
+  sstvPicture.addEventListener("pointercancel", () => end(false));
+  sstvPicture.addEventListener("lostpointercapture", () => end(false));
 }
 
 // The kind shown in a mode (DEC.mode by default), else null
@@ -99,8 +180,8 @@ function mmdPicShowView()
 
 // ---- A picture coming in (a kind's decoder: SSTV's worker, a plugin's)
 
-// One starting (m: { id, name, width, height: its lines, 0 for a kind that grows; shift: Hz its sender is from where its tones belong }):
-// a canvas of its own, first in its kind's strip, the one coming in
+// One starting (m: { id, name, width, height: its lines, 0 for a kind that grows; shift: Hz its sender is from where its tones belong;
+// station: { id, label } it is from, or none }): a canvas of its own, first in its kind's strip, the one coming in
 function mmdPicStart(kind, m)
 {
   const def = PICS.kinds[kind];
@@ -113,6 +194,7 @@ function mmdPicStart(kind, m)
   ctx.fillStyle = def.background || "black";
   ctx.fillRect(0, 0, m.width, height);
   const pic = { id: m.id, kind, name: m.name, width: m.width, height: def.grows ? 0 : m.height, canvas, rows: 0, complete: false, at: Date.now(), dial: mmdDial(), shift: Math.round(m.shift || 0), saved: null };
+  mmdPicStation(pic, m.station);
   const list = PICS.lists[kind];
   list.unshift(pic);
   if (list.length > PICS_KEEP) list.length = PICS_KEEP;
@@ -124,6 +206,14 @@ function mmdPicStart(kind, m)
   // The waterfall's guides moved to where this sender is
   mmdOverlay();
   return pic;
+}
+
+// The station a picture is from ({ id, label }, or none): its name shown over its caption, its id in its file name
+function mmdPicStation(pic, station)
+{
+  const label = station && station.label ? String(station.label) : "";
+  pic.station = label || null;
+  pic.stationId = label && station.id ? String(station.id).replace(/[^A-Za-z0-9-]+/g, "") || null : null;
 }
 
 function mmdPicFind(kind, id)
@@ -291,9 +381,17 @@ function mmdPicDraw()
     {
       const shape = grows ? Math.max(height, pic.width / 2) : height;
       const scale = Math.min(w / pic.width, room / shape);
-      const dw = pic.width * scale, dh = height * scale;
-      ctx.drawImage(pic.canvas, 0, 0, pic.width, height, (w - dw) / 2, top + (room - shape * scale) / 2, dw, dh);
-      PICS.drawn = { x: (w - dw) / 2, y: top + (room - shape * scale) / 2, w: dw, h: dh, pic, rotate: 0 };
+      const dw = pic.width * scale, dh = height * scale, dx = (w - dw) / 2, dy = top + (room - shape * scale) / 2;
+      // (Being dragged: wrap-scrolled as it is, its columns from roll on first, then those before it)
+      const roll = PICS.drag && PICS.drag.pic == pic ? PICS.drag.roll : 0;
+      if (!roll) ctx.drawImage(pic.canvas, 0, 0, pic.width, height, dx, dy, dw, dh);
+      else
+      {
+        const right = pic.width - roll;
+        ctx.drawImage(pic.canvas, roll, 0, right, height, dx, dy, right * scale, dh);
+        ctx.drawImage(pic.canvas, 0, 0, roll, height, dx + right * scale, dy, roll * scale, dh);
+      }
+      PICS.drawn = { x: dx, y: dy, w: dw, h: dh, pic, rotate: 0 };
     }
     else
     {
@@ -319,8 +417,10 @@ function mmdPicWhen(pic)
   return (PICS.kinds[pic.kind] && PICS.kinds[pic.kind].datestamp ? t.slice(0, 10) + " " : "") + t.slice(11, 19) + " UTC";
 }
 
-// The caption over the picture shown, centered: its mode (light blue), UTC date and time (white), frequency on the air (light green) with its band
-// (yellow), and Saved once it is; smaller where the line is too narrow for it. Its height (device pixels)
+// The caption over the picture shown, centered: the station it is from on a line of its own (orange), then its mode (light blue), UTC date
+// and time (white), frequency on the air (light green) with its band (yellow; none for a kind whose frequencies are all outside the
+// amateur bands, BANDS_NOTE_MODES: WEFAX's), and Saved once it is; each line smaller where it is too narrow for it. Its height (device
+// pixels)
 function mmdPicCaption(ctx, pic, w, ratio)
 {
   const C = PICS_CAPTION_COLORS;
@@ -328,12 +428,29 @@ function mmdPicCaption(ctx, pic, w, ratio)
   if (pic.dial)
   {
     parts.push([(pic.dial / 1e6).toFixed(3) + " MHz", C.freq]);
-    const band = mmdBandOf(pic.dial);
+    const band = mmdPicBandShown(pic) ? mmdBandOf(pic.dial) : null;
     if (band) parts.push(["(" + band + ")", C.band]);
   }
   if (pic.saved) parts.push([I18N("cwViewer.sstv.saved"), C.saved]);
   const family = window.getComputedStyle(sstvHeadText).fontFamily;
-  let size = parseFloat(window.getComputedStyle(sstvHeadText).fontSize) * PICS_CAPTION_SCALE * ratio;
+  const chart = PICS.kinds[pic.kind] && PICS.kinds[pic.kind].chartTools;
+  const size = parseFloat(window.getComputedStyle(sstvHeadText).fontSize) * PICS_CAPTION_SCALE * (chart ? PICS_CHART_CAPTION_SCALE : 1) * ratio;
+  let top = 0;
+  if (pic.station) top += mmdPicCaptionLine(ctx, [[pic.station, C.station]], w, top, size, family);
+  return top + mmdPicCaptionLine(ctx, parts, w, top, size, family);
+}
+
+// A picture's band shown: not for a kind whose modes' frequencies are all outside the amateur bands (always "OOB")
+function mmdPicBandShown(pic)
+{
+  const def = PICS.kinds[pic.kind];
+  return !def || !def.modes.some((mode) => BANDS_NOTE_MODES.includes(mode));
+}
+
+// One line of the caption (parts: [text, color]) at top, centered, its font size made smaller where the line is too narrow for it. Its
+// height
+function mmdPicCaptionLine(ctx, parts, w, top, size, family)
+{
   const measure = () =>
   {
     ctx.font = Math.round(size) + "px " + family;
@@ -353,7 +470,7 @@ function mmdPicCaption(ctx, pic, w, ratio)
   for (const [t, color] of parts)
   {
     ctx.fillStyle = color;
-    ctx.fillText(t, x, height / 2);
+    ctx.fillText(t, x, top + height / 2);
     x += ctx.measureText(t).width + m.gap;
   }
   return height;
@@ -381,11 +498,11 @@ function mmdPicStrip()
   }
 }
 
-// A picture told in a line: its mode, UTC date and time, frequency on the air (the strip's tooltips; not with caption false, the header's: the
+// A picture told in a line: its station, mode, UTC date and time, frequency on the air (the strip's tooltips; not with caption false, the header's: the
 // caption over the picture has them), and how much of it came (its kind's own words, else its lines of all of them)
 function mmdPicDescribe(pic, caption = true)
 {
-  const parts = caption ? [pic.name, mmdPicWhen(pic)] : [];
+  const parts = caption ? (pic.station ? [pic.station] : []).concat([pic.name, mmdPicWhen(pic)]) : [];
   if (caption && pic.dial) parts.push((pic.dial / 1e6).toFixed(3) + " MHz");
   // Its sender's tones this far from where they belong (it was found and read there)
   if (Math.abs(pic.shift) >= 25) parts.push((pic.shift > 0 ? "+" : "") + pic.shift + " Hz");
@@ -412,7 +529,9 @@ function mmdPicHead()
 }
 
 // The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Filter (not while it comes in), Delete (From Session; File,
-// its saved files deleted; Both: those two only while a file it was saved to is still there)
+// its saved files deleted; Both: those two only while a file it was saved to is still there). A chart kind's (chartTools) also: Save As
+// Print..., Show In Folder (while a file it was saved to is there), and (not while it comes in) Auto-Align, Wrap Scroll (Left, Right,
+// Reset; not on a turned chart) and Auto-Crop, each an Undo step of Filter's
 function mmdPicMenu(event, pic)
 {
   event.preventDefault();
@@ -424,10 +543,20 @@ function mmdPicMenu(event, pic)
   const saved = mmdPicSavedFiles(pic).length > 0;
   const undo = (pic.undo || []).length;
   const filters = PICS_FILTERS.map((name) => ({ label: I18N("cwViewer.picture.filter" + name[0].toUpperCase() + name.slice(1) + ".label"), click: () => mmdPicFilter(pic, name) }));
+  const chart = !!PICS.kinds[pic.kind].chartTools;
+  const still = pic != PICS.live;
+  const step = Math.max(1, Math.round(pic.width * PICS_WRAP_STEP));
   // (An SSTV picture's Log QSO... first, with Log QSO on: mmdLogQso.js)
   const menu = remote.Menu.buildFromTemplate(mmdLogQsoPictureMenu(pic).concat([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdPicSaveAs(pic) },
     { label: I18N("cwViewer.picture.copy.label"), click: () => mmdPicCopy(pic) },
+    ...(chart
+      ? [
+          { label: I18N("cwViewer.picture.print.label"), click: () => mmdPicPrint(pic) },
+          { label: I18N("cwViewer.picture.showFolder.label"), enabled: saved, click: () => mmdPicShowFile(pic) },
+          { type: "separator" }
+        ]
+      : []),
     {
       label: I18N("cwViewer.picture.rotate.label"),
       submenu: [
@@ -439,13 +568,29 @@ function mmdPicMenu(event, pic)
     },
     {
       label: I18N("cwViewer.picture.filter.label"),
-      enabled: pic != PICS.live,
+      enabled: still,
       submenu: filters.concat([
         { type: "separator" },
         { label: I18N("cwViewer.picture.filterUndo.label").replace("{count}", undo), enabled: undo > 0, click: () => mmdPicUndo(pic, 1) },
         { label: I18N("cwViewer.picture.filterUndoAll.label"), enabled: undo > 0, click: () => mmdPicUndo(pic, undo) }
       ])
     },
+    ...(chart
+      ? [
+          { label: I18N("cwViewer.picture.autoAlign.label"), enabled: still, click: () => mmdPicAutoAlign(pic) },
+          {
+            // (not on a turned chart: its left and right aren't the received rows')
+            label: I18N("cwViewer.picture.wrap.label"),
+            enabled: still && !pic.rotate,
+            submenu: [
+              { label: I18N("cwViewer.picture.wrapLeft.label"), click: () => mmdPicRoll(pic, step) },
+              { label: I18N("cwViewer.picture.wrapRight.label"), click: () => mmdPicRoll(pic, pic.width - step) },
+              { label: I18N("cwViewer.picture.wrapReset.label"), enabled: !!pic.roll, click: () => mmdPicRoll(pic, pic.width - (pic.roll || 0)) }
+            ]
+          },
+          { label: I18N("cwViewer.picture.autoCrop.label"), enabled: still, click: () => mmdPicAutoCrop(pic) }
+        ]
+      : []),
     { type: "separator" },
     {
       label: I18N("cwViewer.picture.delete.label"),
@@ -534,21 +679,58 @@ function mmdPicTurned(pic)
 // was kept for Undo. A file saved already stays as it was
 function mmdPicFilter(pic, name)
 {
+  mmdPicChange(pic, (planes, width, rows) => PICS_FILTER[name](planes, width, rows));
+}
+
+// A picture changed in place as far as it came (Filter, Auto-Align, Wrap Scroll, Auto-Crop): change(planes, width, rows) works
+// on its planes, and gives false for nothing done (no Undo step kept), or { planes, width, rows } for a new size (Auto-Crop: its Wrap
+// Scroll starts again from there). What it was kept for Undo; true once done. wrap: a Wrap Scroll, one Undo step with the Wrap Scrolls
+// right before it (clicked or dragged a step at a time, they would soon use up PICS_UNDO_KEEP)
+function mmdPicChange(pic, change, wrap = false)
+{
   const width = pic.canvas.width, rows = pic.rows > 0 ? Math.min(pic.rows, pic.canvas.height) : pic.canvas.height;
   const image = pic.canvas.getContext("2d").getImageData(0, 0, width, rows);
   // (A grey kind's: one plane, so its Undo steps take a quarter of the room; else red, green and blue)
   const planes = mmdPicPlanes(image.data, PICS.kinds[pic.kind].planes || 3);
-  pic.undo = (pic.undo || []).concat([{ rows, planes: planes.map((p) => p.slice()) }]).slice(-PICS_UNDO_KEEP);
-  PICS_FILTER[name](planes, width, rows);
-  mmdPicPut(pic, planes, rows);
+  const undo = pic.undo || [];
+  const merge = wrap && undo.length > 0 && undo[undo.length - 1].wrap;
+  const before = merge ? null : { width, rows, height: pic.height, roll: pic.roll || 0, planes: planes.map((p) => p.slice()), wrap };
+  const out = change(planes, width, rows);
+  if (out === false) return false;
+  if (before) pic.undo = undo.concat([before]).slice(-PICS_UNDO_KEEP);
+  if (out && out.planes)
+  {
+    mmdPicResize(pic, out.width, out.rows, out.rows);
+    pic.roll = 0;
+    mmdPicPut(pic, out.planes, out.rows);
+  }
+  else mmdPicPut(pic, planes, rows);
+  return true;
 }
 
-// Undo: steps filters taken back (all of them: as it was received, turned as it is)
+// Undo: steps filters taken back (all of them: as it was received, turned as it is), its size and Wrap Scroll as they were then
 function mmdPicUndo(pic, steps)
 {
   if (!pic.undo || !pic.undo.length) return;
   const back = pic.undo.splice(Math.max(0, pic.undo.length - steps))[0];
+  if (back.width != pic.canvas.width || back.rows != Math.min(pic.rows || pic.canvas.height, pic.canvas.height)) mmdPicResize(pic, back.width, back.rows, back.height);
+  pic.roll = back.roll;
   mmdPicPut(pic, back.planes, back.rows);
+}
+
+// A picture's canvas made width by rows (its kind's background; drawn again by mmdPicPut), height its lines (one cut: more than came)
+function mmdPicResize(pic, width, rows, height)
+{
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = Math.max(rows, height || rows);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = PICS.kinds[pic.kind].background || "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  pic.canvas = canvas;
+  pic.width = width;
+  pic.rows = rows;
+  pic.height = PICS.kinds[pic.kind].grows ? rows : canvas.height;
 }
 
 // A picture's rows from its planes, shown again
@@ -686,6 +868,260 @@ function mmdPicMedian(p, w, h)
   return out;
 }
 
+// ---- A chart kind's tools (chartTools): lining up, wrap-scrolling and cropping (each an Undo step of Filter's), print, its folder
+
+// Wrap Scroll: every row moved by columns to the left (what goes off its left end comes in at its right), kept in its roll for Reset
+function mmdPicRoll(pic, by)
+{
+  const width = pic.canvas.width;
+  by = ((Math.round(by) % width) + width) % width;
+  if (!by) return;
+  if (mmdPicChange(pic, (planes, w, rows) => planes.forEach((p) => mmdPicRollPlane(p, w, rows, by)), true)) pic.roll = ((pic.roll || 0) + by) % width;
+}
+
+// A plane's rows each moved by columns to the left, wrapping
+function mmdPicRollPlane(p, w, rows, by)
+{
+  const row = new Uint8ClampedArray(w);
+  for (let y = 0; y < rows; y++)
+  {
+    const at = y * w;
+    row.set(p.subarray(at, at + w));
+    p.set(row.subarray(by), at);
+    p.set(row.subarray(0, by), at + w - by);
+  }
+}
+
+// Auto-Align: the chart's left edge found (the widest run of empty columns, around the wrap, ends there) and moved to the left, a little
+// of its margin before it. Nothing found to go by, or already there: said so
+function mmdPicAutoAlign(pic)
+{
+  const width = pic.canvas.width;
+  let by = 0;
+  const done = mmdPicChange(pic, (planes, w, rows) =>
+  {
+    const ink = mmdPicInk(planes[0], w, rows);
+    const run = ink ? mmdPicEmptyRun(ink.columns, w) : null;
+    if (!run) return false;
+    // (the run's end, with up to PICS_EDGE_PAD of it left before the chart)
+    by = (run.start + run.length - Math.min(PICS_EDGE_PAD, Math.floor(run.length / 2)) + w) % w;
+    if (!by) return false;
+    planes.forEach((p) => mmdPicRollPlane(p, w, rows, by));
+  });
+  if (done) pic.roll = ((pic.roll || 0) + by) % width;
+  else mmdStatus(I18N("cwViewer.picture.autoAlignNone"));
+}
+
+// Auto-Crop: the empty columns and rows around the chart taken off (PICS_EDGE_PAD of them kept). Nothing to take off: said so
+function mmdPicAutoCrop(pic)
+{
+  const done = mmdPicChange(pic, (planes, w, rows) =>
+  {
+    const ink = mmdPicInk(planes[0], w, rows);
+    if (!ink) return false;
+    const across = mmdPicContentSpan(ink.columns, w);
+    if (!across) return false;
+    // (its rows counted only across the chart's columns; a row of small text has little ink against the chart's busiest rows, so only
+    // rows with almost none are taken off)
+    const down = mmdPicContentSpan(mmdPicRowInk(ink.dark, ink.skip, w, rows, across), rows, (across.to - across.from) * 0.01);
+    if (!down) return false;
+    const x0 = Math.max(0, across.from - PICS_EDGE_PAD), x1 = Math.min(w, across.to + PICS_EDGE_PAD);
+    const y0 = Math.max(0, down.from - PICS_EDGE_PAD), y1 = Math.min(rows, down.to + PICS_EDGE_PAD);
+    if (x0 == 0 && x1 == w && y0 == 0 && y1 == rows) return false;
+    const cw = x1 - x0, ch = y1 - y0;
+    const cropped = planes.map((p) =>
+    {
+      const out = new Uint8ClampedArray(cw * ch);
+      for (let y = 0; y < ch; y++) out.set(p.subarray((y0 + y) * w + x0, (y0 + y) * w + x1), y * cw);
+      return out;
+    });
+    return { planes: cropped, width: cw, rows: ch };
+  });
+  if (!done) mmdStatus(I18N("cwViewer.picture.autoCropNone"));
+}
+
+// Where a grey picture has ink: its 3 x 3 medians (specks of noise taken out) dark or not, and each column's count of dark pixels, rows
+// almost all dark left out (a phasing line, a black bar across the whole width; skip: those rows, 1). Null for a picture with nothing to
+// go by
+function mmdPicInk(p, w, rows)
+{
+  if (w < 16 || rows < 16) return null;
+  const median = mmdPicMedian(p, w, rows);
+  const dark = new Uint8Array(w * rows);
+  const skip = new Uint8Array(rows);
+  const columns = new Float64Array(w);
+  for (let y = 0; y < rows; y++)
+  {
+    const at = y * w;
+    let count = 0;
+    for (let x = 0; x < w; x++) if ((dark[at + x] = median[at + x] < PICS_INK_LEVEL ? 1 : 0)) count++;
+    if (count > w * 0.9)
+    {
+      skip[y] = 1;
+      continue;
+    }
+    for (let x = 0; x < w; x++) columns[x] += dark[at + x];
+  }
+  return { dark, skip, columns };
+}
+
+// Each row's dark pixels across the columns of span ({ from, to }), the almost all dark rows (skip) none, as for the columns: a black
+// bar above or below the chart is cropped off too
+function mmdPicRowInk(dark, skip, w, rows, span)
+{
+  const counts = new Float64Array(rows);
+  for (let y = 0; y < rows; y++)
+  {
+    if (skip[y]) continue;
+    const at = y * w;
+    let n = 0;
+    for (let x = span.from; x < span.to; x++) n += dark[at + x];
+    counts[y] = n;
+  }
+  return counts;
+}
+
+// Which of counts (a column's or row's ink) are empty, smoothed over a few neighbors: little ink against the inkiest tenth of them (and
+// no more than most, where given). Null when there's nothing to tell apart (all empty, or all alike)
+function mmdPicEmpty(counts, n, wrap, most = Infinity)
+{
+  const smooth = new Float64Array(n);
+  const half = 4;
+  for (let i = 0; i < n; i++)
+  {
+    let sum = 0, k = 0;
+    for (let d = -half; d <= half; d++)
+    {
+      let j = i + d;
+      if (wrap) j = (j + n) % n;
+      else if (j < 0 || j >= n) continue;
+      sum += counts[j];
+      k++;
+    }
+    smooth[i] = sum / k;
+  }
+  const sorted = Array.from(smooth).sort((a, b) => a - b);
+  const lo = sorted[Math.floor(n * 0.02)], hi = sorted[Math.floor(n * 0.9)];
+  if (!(hi > lo) || hi < 2) return null;
+  const limit = Math.min(most, lo + (hi - lo) * 0.15);
+  return Array.from(smooth, (v) => v <= limit);
+}
+
+// The widest run of empty columns, around the wrap: { start, length }, or null (none, or no column with ink)
+function mmdPicEmptyRun(columns, w)
+{
+  const empty = mmdPicEmpty(columns, w, true);
+  if (!empty) return null;
+  // (from a column with ink round to it again, so every run ends inside the loop)
+  const first = empty.indexOf(false);
+  if (first < 0) return null;
+  let best = null, start = -1;
+  for (let i = 1; i <= w; i++)
+  {
+    if (empty[(first + i) % w])
+    {
+      if (start < 0) start = i;
+    }
+    else if (start >= 0)
+    {
+      if (!best || i - start > best.length) best = { start: (first + start) % w, length: i - start };
+      start = -1;
+    }
+  }
+  return best && best.length >= 3 ? best : null;
+}
+
+// The span from the first to the last of counts with ink ({ from, to }: to past the last), or null; most: the most ink an empty one has
+function mmdPicContentSpan(counts, n, most = Infinity)
+{
+  const empty = mmdPicEmpty(counts, n, false, most);
+  if (!empty) return null;
+  const from = empty.indexOf(false), last = empty.lastIndexOf(false);
+  return from < 0 ? null : { from, to: last + 1 };
+}
+
+// Its saved file shown in its folder (the newest it was saved to)
+function mmdPicShowFile(pic)
+{
+  const files = mmdPicSavedFiles(pic);
+  if (files.length) window.require("electron").shell.showItemInFolder(files[files.length - 1]);
+}
+
+// Print...: the picture on a page of its own (fitted, turned to landscape when it's wider than tall), its caption under it: its station,
+// then its mode, UTC date and time and frequency. The page and the picture are written to a folder in the system's temporary folder and
+// shown in a window of their own (its own process: this window's decoding goes on while the print dialog is up; a hidden one never
+// shows the dialog), in front of this one, the dialog over it; both let go when done
+async function mmdPicPrint(pic)
+{
+  const remote = window.require("@electron/remote");
+  const os = window.require("os");
+  let dir = null, win = null;
+  const finish = () =>
+  {
+    try
+    {
+      if (win && !win.isDestroyed()) win.destroy();
+    }
+    catch (e)
+    {
+      // (gone already)
+    }
+    try
+    {
+      if (dir) fs.rmSync(dir, { recursive: true, force: true });
+    }
+    catch (e)
+    {
+      // (left for the system to clear)
+    }
+  };
+  try
+  {
+    const turned = (pic.rotate || 0) % 180 != 0;
+    const rows = PICS.kinds[pic.kind].grows && pic.rows > 0 ? Math.min(pic.rows, pic.canvas.height) : pic.canvas.height;
+    const landscape = (turned ? rows : pic.canvas.width) > (turned ? pic.canvas.width : rows);
+    const escape = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const line = [pic.name, mmdPicWhen(pic)].concat(pic.dial ? [(pic.dial / 1e6).toFixed(3) + " MHz"] : []).join(" · ");
+    const html = "<!doctype html><html><head><meta charset=\"utf-8\"><style>" +
+      (landscape ? "@page{size:landscape}" : "") +
+      "html,body{margin:0;background:#fff;color:#000;font-family:sans-serif}" +
+      "body{height:99vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}" +
+      "img{display:block;max-width:100%;max-height:calc(100vh - 14mm);object-fit:contain}" +
+      ".caption{margin-top:2mm;font-size:10pt;text-align:center}.station{font-weight:bold}" +
+      "</style></head><body><img src=\"picture.png\"><div class=\"caption\">" +
+      (pic.station ? "<div class=\"station\">" + escape(pic.station) + "</div>" : "") +
+      "<div>" + escape(line) + "</div></div></body></html>";
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "GridTracker2-print-"));
+    fs.writeFileSync(path.join(dir, "picture.png"), window.require("buffer").Buffer.from(mmdPicPng(pic).split(",")[1], "base64"));
+    fs.writeFileSync(path.join(dir, "page.html"), html);
+    // (titled, macOS: tabbingIdentifier, so the main process never takes it for one of its windows: untitled it would be the app's
+    // name, the main window's)
+    win = new remote.BrowserWindow({
+      show: false,
+      title: I18N("cwViewer.picture.print.label").replace(/[.…]+$/, ""),
+      tabbingIdentifier: "printPicture",
+      width: 800,
+      height: 600,
+      parent: remote.getCurrentWindow(),
+      autoHideMenuBar: true,
+      backgroundColor: "#ffffff",
+      // (its own page's print() is all that runs in it)
+      webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, javascript: true }
+    });
+    await win.loadFile(path.join(dir, "page.html"));
+    // Its page's own print(), as the hot key list prints (the main process's webContents.print never shows the dialog), done once the
+    // dialog is answered; closed by hand meanwhile: let go
+    win.show();
+    win.on("closed", finish);
+    win.webContents.executeJavaScript("print()").then(finish, finish);
+  }
+  catch (e)
+  {
+    finish();
+    mmdStatus(I18N("cwViewer.picture.printFailed") + " " + e.message, true);
+  }
+}
+
 // ---- Copy, save, delete
 
 // The picture (as much of it as came) onto the clipboard as an image
@@ -749,12 +1185,14 @@ function mmdPicSaveAs(pic)
   mmdPicSave(pic, file);
 }
 
-// Its name: the UTC time it started, its mode, and the frequency on the air (20261027-225115Z_Martin1_14230kHz.png)
+// Its name: the UTC time it started, its mode, the frequency on the air, and the station it is from (20261027-225115Z_Martin1_14230kHz.png,
+// 20261113-201456Z_WEFAX120576_8680kHz_NMC.png)
 function mmdPicFileName(pic)
 {
   const t = new Date(pic.at).toISOString();
   const when = t.slice(0, 10).replace(/-/g, "") + "-" + t.slice(11, 19).replace(/:/g, "") + "Z";
-  return when + "_" + pic.name.replace(/[^\w-]+/g, "") + (pic.dial ? "_" + Math.round(pic.dial / 1000) + "kHz" : "") + ".png";
+  const freq = pic.dial ? "_" + Math.round(pic.dial / 1000) + "kHz" + (pic.stationId ? "_" + pic.stationId : "") : "";
+  return when + "_" + pic.name.replace(/[^\w-]+/g, "") + freq + ".png";
 }
 
 // Saved as a PNG: to file, or (null) into its kind's folder
@@ -822,7 +1260,20 @@ async function mmdPicLoadSaved(kind)
       canvas.height = bitmap.height;
       canvas.getContext("2d").drawImage(bitmap, 0, 0);
       bitmap.close();
-      pics.push({ id: "file:" + info.file, kind, name: info.name, width: canvas.width, height: canvas.height, canvas, rows: canvas.height, complete: true, at: info.at, dial: info.dial, shift: 0, saved: info.file, files: [info.file] });
+      const pic = { id: "file:" + info.file, kind, name: info.name, width: canvas.width, height: canvas.height, canvas, rows: canvas.height, complete: true, at: info.at, dial: info.dial, shift: 0, saved: info.file, files: [info.file] };
+      // (its station: from its name, else its kind's guess from its time and frequency; a kind's that fails, none)
+      const def = PICS.kinds[kind];
+      let station = null;
+      try
+      {
+        station = typeof def.station == "function" ? def.station({ at: info.at, dial: info.dial, station: info.station }) : null;
+      }
+      catch (e)
+      {
+        station = null;
+      }
+      mmdPicStation(pic, station);
+      pics.push(pic);
     }
     catch (e)
     {
@@ -841,25 +1292,26 @@ async function mmdPicLoadSaved(kind)
   }
 }
 
-// A saved picture's file told by its name (mmdPicFileName: 20261027-225115Z_Martin1_14230kHz.png): { file, kind, at, name, dial }, its
-// kind the one whose fromFile claims its name part (a catch-all kind's last: SSTV's). Another name: itself, its folder's kind, at the time
-// it was written. Null for one it can't read
+// A saved picture's file told by its name (mmdPicFileName: 20261027-225115Z_Martin1_14230kHz.png, a station id after the frequency:
+// ..._8680kHz_NMC.png): { file, kind, at, name, dial, station }, its kind the one whose fromFile claims its name part (a catch-all kind's
+// last: SSTV's). Another name: itself, its folder's kind, at the time it was written. Null for one it can't read
 function mmdPicSavedInfo(file, folderKind)
 {
   try
   {
     const base = path.basename(file, path.extname(file));
-    const m = base.match(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)Z_([\w-]+?)(?:_(\d+)kHz)?$/);
-    if (!m) return { file, kind: folderKind, at: fs.statSync(file).mtimeMs, name: base, dial: null };
+    const m = base.match(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)Z_([\w-]+?)(?:_(\d+)kHz(?:_([A-Za-z0-9-]+))?)?$/);
+    if (!m) return { file, kind: folderKind, at: fs.statSync(file).mtimeMs, name: base, dial: null, station: null };
     const at = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6]);
+    const dial = m[8] ? Number(m[8]) * 1000 : null, station = m[9] || null;
     const kinds = PICS.order.filter((k) => !PICS.kinds[k].catchAll).concat(PICS.order.filter((k) => PICS.kinds[k].catchAll));
     for (const kind of kinds)
     {
       const def = PICS.kinds[kind];
       const name = typeof def.fromFile == "function" ? def.fromFile(m[7]) : null;
-      if (name) return { file, kind, at, name, dial: m[8] ? Number(m[8]) * 1000 : null };
+      if (name) return { file, kind, at, name, dial, station };
     }
-    return { file, kind: folderKind, at, name: m[7], dial: m[8] ? Number(m[8]) * 1000 : null };
+    return { file, kind: folderKind, at, name: m[7], dial, station };
   }
   catch (e)
   {

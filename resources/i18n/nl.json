@@ -2269,5 +2269,16 @@
   "settings.map.cast.lock.label": "Venstergrootte Vastzetten",
   "settings.map.cast.lock.hover": "Tijdens het casten krijgt het hoofdvenster de grootte waarmee de kaart precies op die grootte wordt vastgelegd, en kan het pas weer van grootte veranderen als het casten stopt. 1080p is het scherpst; bij 720p is alles op de tv groter, beter leesbaar van een afstand. Uit, houdt het venster ongeveer zijn grootte, aangepast aan de vorm van de tv",
   "events.menu.panel.label": "Tonen Als Waterval",
-  "events.panel.rule.hover": "Sleep deze lijn naar de kaart om de gebeurtenissenviewer daar te tonen"
+  "events.panel.rule.hover": "Sleep deze lijn naar de kaart om de gebeurtenissenviewer daar te tonen",
+  "cwViewer.picture.print.label": "Afdrukken…",
+  "cwViewer.picture.showFolder.label": "Tonen In Map",
+  "cwViewer.picture.autoAlign.label": "Automatisch Uitlijnen",
+  "cwViewer.picture.wrap.label": "Rondom Verschuiven",
+  "cwViewer.picture.wrapLeft.label": "Links",
+  "cwViewer.picture.wrapRight.label": "Rechts",
+  "cwViewer.picture.wrapReset.label": "Herstellen",
+  "cwViewer.picture.autoCrop.label": "Automatisch Bijsnijden",
+  "cwViewer.picture.autoAlignNone": "Automatisch uitlijnen: geen kaartrand gevonden, of de kaart is al uitgelijnd",
+  "cwViewer.picture.autoCropNone": "Automatisch bijsnijden: niets om bij te snijden",
+  "cwViewer.picture.printFailed": "Afdrukken mislukt:"
 }

@@ -70,7 +70,7 @@ How the waterfall moves and looks is set in [Settings → General](#general): **
 
 The bar between the waterfall and the decoded lines shows, in its center:
 
-* with Rig Control, the rig's frequency, band and mode, for example **14.074.00 (20m) USB** (the frequency in green, the band in yellow, the mode in orange);
+* with Rig Control, the rig's frequency, band and mode, for example **14.074.00 (20m) USB** (the frequency in green, the band in yellow, the mode in orange; no band in modes whose frequencies are all outside the amateur bands, such as WWV / WWVH);
 * without it, the audio decoded, from the **[** to the **Bandpass**, for example **250 Hz - 4 kHz** in cyan.
 
 Drag the bar up or down to give the waterfall or the decoded lines more room.

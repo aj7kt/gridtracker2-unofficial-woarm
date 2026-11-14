@@ -2269,5 +2269,16 @@
   "settings.map.cast.lock.label": "Zablokuj Rozmiar Okna",
   "settings.map.cast.lock.hover": "Podczas przesyłania główne okno ma rozmiar, przy którym mapa jest przechwytywana dokładnie w tym rozmiarze, i nie można zmienić jego rozmiaru do końca przesyłania. 1080p jest najostrzejsze; przy 720p wszystko na telewizorze jest większe, łatwiejsze do odczytania z daleka. Wyłączone, okno zachowuje mniej więcej swój rozmiar, dopasowany do kształtu telewizora",
   "events.menu.panel.label": "Pokaż Jako Kaskadę",
-  "events.panel.rule.hover": "Przeciągnij tę linię na mapę, aby pokazać tam przeglądarkę zdarzeń"
+  "events.panel.rule.hover": "Przeciągnij tę linię na mapę, aby pokazać tam przeglądarkę zdarzeń",
+  "cwViewer.picture.print.label": "Drukuj…",
+  "cwViewer.picture.showFolder.label": "Pokaż W Folderze",
+  "cwViewer.picture.autoAlign.label": "Wyrównaj Automatycznie",
+  "cwViewer.picture.wrap.label": "Przewijanie Zawijane",
+  "cwViewer.picture.wrapLeft.label": "W Lewo",
+  "cwViewer.picture.wrapRight.label": "W Prawo",
+  "cwViewer.picture.wrapReset.label": "Resetuj",
+  "cwViewer.picture.autoCrop.label": "Przytnij Automatycznie",
+  "cwViewer.picture.autoAlignNone": "Wyrównaj automatycznie: nie znaleziono krawędzi mapy lub jest już wyrównana",
+  "cwViewer.picture.autoCropNone": "Przytnij automatycznie: nie ma czego przyciąć",
+  "cwViewer.picture.printFailed": "Drukowanie nie powiodło się:"
 }

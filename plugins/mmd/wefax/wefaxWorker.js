@@ -672,9 +672,9 @@ function wefaxPhasingTuning(edge, period)
 }
 
 // Each phasing line's pulse measured as its line comes in, and the line rate fitted through them; the chart's own lines begin at the
-// first of three lines in a row with no pulse (after three with one), its phasing lines drawn above them (those before the first pulse
-// found too, back to where they were looked for from: at most WEFAX_PHASING_MOST). Too few found: the chart runs on at the rate the
-// fold gave
+// first of three lines in a row with no pulse (after three with one), the picture with them (the phasing lines aren't drawn). Too few
+// found: the chart runs on at the rate the fold gave. Black lines with no clear pulse count as phasing only within WEFAX_PHASING_MOST
+// lines of where it was found
 const WEFAX_PHASING_MOST = 120;
 // A line whose level (all but its pulse) is below this is still a phasing line's black, whether its pulse was clear or not
 const WEFAX_PHASING_BLACK = 0.3;
@@ -706,8 +706,7 @@ function wefaxTrack()
     if (m.misses >= 3 && m.hits >= 3)
     {
       wefaxRateCheck(m);
-      const before = Math.max(0, Math.floor((m.a - WF.searchFrom) / m.b));
-      wefaxPicture(m.firstMiss, true, Math.min(WEFAX_PHASING_MOST, before + m.firstMiss));
+      wefaxPicture(m.firstMiss, true);
       return;
     }
     if (m.misses >= 8 && m.hits < 3)
@@ -849,15 +848,14 @@ function wefaxFreeRun(from)
 
 // ---- The chart's lines
 
-// A chart's own lines begin at line y0 of the line model, its phasing lines (lead of them) drawn above them
-function wefaxPicture(y0, phasing, lead = 0)
+// A chart's own lines begin at line y0 of the line model, the picture with them (its phasing lines aren't drawn)
+function wefaxPicture(y0, phasing)
 {
   const width = Math.floor(WF.ioc * Math.PI);
   const id = WF.nextId++;
   // shift: each row's start moved by this (samples) as it was read, adjust: the rows still to come, mark: where each row's line-start
-  // marker says it should start (NaN: none found) (wefaxTrackRow); trackFrom: the first row followed (the chart's own, after its
-  // phasing lines, so its reference is made from the chart)
-  WF.pic = { id, width, y0: y0 - lead, trackFrom: lead, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false, alignNext: WEFAX_ALIGN_EVERY };
+  // marker says it should start (NaN: none found) (wefaxTrackRow); every row is the chart's own, so all are followed
+  WF.pic = { id, width, y0, rendered: 0, rows: new Uint8Array(width * 600), shift: new Float64Array(600), adjust: 0, mark: new Float64Array(600).fill(NaN), track: wefaxTrackNew(width), complete: false, alignNext: WEFAX_ALIGN_EVERY };
   // (lined up afresh: wefaxAutoAlign)
   WF.config.align = 0;
   WF.state = "image";
@@ -918,17 +916,15 @@ function wefaxRender()
       pic.mark = mark;
     }
     const r = pic.rendered;
-    // The chart's own first row: following begun there (the phasing lines above it aren't followed)
-    if (WF.config.track && r == pic.trackFrom && r > 0) wefaxTrackReset(pic);
     pic.shift[r] = pic.adjust;
     wefaxRow(pic, r);
     pic.rendered++;
-    if (WF.config.track && r >= pic.trackFrom) from = Math.min(from, wefaxTrackRow(pic, r));
+    if (WF.config.track) from = Math.min(from, wefaxTrackRow(pic, r));
   }
   wefaxSend(pic, from);
   // Every WEFAX_ALIGN_EVERY of its own rows: its left edge looked for (the chart so far drawn again when it's moved); not on a chart
   // whose line-start markers line it up
-  if (pic.rendered - pic.trackFrom >= pic.alignNext && !(WF.config.track && pic.track.markWidth))
+  if (pic.rendered >= pic.alignNext && !(WF.config.track && pic.track.markWidth))
   {
     pic.alignNext += WEFAX_ALIGN_EVERY;
     wefaxAutoAlign(pic, true);
@@ -939,7 +935,7 @@ function wefaxRender()
 // else 0
 function wefaxAlignFind(pic)
 {
-  const W = pic.width, r0 = pic.trackFrom, r1 = pic.rendered;
+  const W = pic.width, r0 = 0, r1 = pic.rendered;
   if (r1 - r0 < WEFAX_ALIGN_ROWS) return 0;
   const rows = pic.rows;
   // A pixel is ink when it's dark and so is the one above or below it (static on a fax line comes as dots and short dashes along the

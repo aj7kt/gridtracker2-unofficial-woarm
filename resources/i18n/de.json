@@ -2270,5 +2270,16 @@
 	"settings.map.cast.lock.label": "Fenstergröße Sperren",
 	"settings.map.cast.lock.hover": "Beim Casten wird das Hauptfenster so eingestellt, dass die Karte genau in dieser Größe aufgenommen wird, und kann bis zum Ende des Castens nicht in der Größe geändert werden. 1080p ist am schärfsten; bei 720p ist auf dem Fernseher alles größer und aus der Ferne leichter zu lesen. Aus, behält das Fenster etwa seine Größe, an die Form des Fernsehers angepasst",
 	"events.menu.panel.label": "Als Wasserfall Anzeigen",
-	"events.panel.rule.hover": "Ziehen Sie diese Linie auf die Karte, um die Ereignisanzeige dort zu zeigen"
+	"events.panel.rule.hover": "Ziehen Sie diese Linie auf die Karte, um die Ereignisanzeige dort zu zeigen",
+	"cwViewer.picture.print.label": "Drucken…",
+	"cwViewer.picture.showFolder.label": "Im Ordner Anzeigen",
+	"cwViewer.picture.autoAlign.label": "Automatisch Ausrichten",
+	"cwViewer.picture.wrap.label": "Umlaufend Verschieben",
+	"cwViewer.picture.wrapLeft.label": "Links",
+	"cwViewer.picture.wrapRight.label": "Rechts",
+	"cwViewer.picture.wrapReset.label": "Zurücksetzen",
+	"cwViewer.picture.autoCrop.label": "Automatisch Zuschneiden",
+	"cwViewer.picture.autoAlignNone": "Automatisch Ausrichten: kein Kartenrand gefunden, oder sie ist schon ausgerichtet",
+	"cwViewer.picture.autoCropNone": "Automatisch Zuschneiden: nichts zuzuschneiden",
+	"cwViewer.picture.printFailed": "Drucken fehlgeschlagen:"
 }

@@ -1792,12 +1792,13 @@ function mmdTop()
 }
 
 // Frequency: the rig's frequency with its band and its mode, read only (14.230.000 (20m) USB: the frequency light green, the band yellow, the
-// mode orange); no rig (VFO-A not connected): the audio decoded, from the [ to the Bandwidth, in cyan. Beside it the Frequencies menu,
-// each as the viewer shows them with its band: the one the rig is on picked, else -
+// mode orange; no band in a mode whose frequencies are all outside the amateur bands, BANDS_NOTE_MODES: WWV's, WEFAX's ...); no rig (VFO-A
+// not connected): the audio decoded, from the [ to the Bandwidth, in cyan. Beside it the Frequencies menu, each as the viewer shows them
+// with its band: the one the rig is on picked, else -
 function mmdFreqsShow(connected)
 {
   const mode = window.opener.mmDecoderVfoRead().mode;
-  const dial = mmdDial(), band = connected ? mmdBandOf(dial) : null;
+  const dial = mmdDial(), band = connected && !BANDS_NOTE_MODES.includes(DEC.mode) ? mmdBandOf(dial) : null;
   const parts = connected ? [[window.opener.formatDialFreq(dial), "cwFreqHz"], [band ? " (" + band + ")" : "", "cwFreqBand"], [mode ? " " + mode : "", "cwFreqMode"]] : [[mmdMinHz() + " Hz - " + mmdBandwidth() / 1000 + " kHz", ""]];
   mmdTuneLockShow(connected);
   const text = parts.map(([t]) => t).join("");
