@@ -1,0 +1,123 @@
+{
+  "format": 1,
+  "app": "2.261113.2",
+  "built": "2026-11-14T22:37:03.174Z",
+  "plugins": [
+    {
+      "id": "ftx",
+      "name": "FT8 / FT4",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "FT8",
+        "FT4"
+      ],
+      "file": "ftx/ftx-1.0.0-beedcd3af140.asar",
+      "size": 1632120,
+      "sha256": "beedcd3af1402fdb989cbd7c05c2476a8b83759b31225ea74804b679bc372604"
+    },
+    {
+      "id": "hell",
+      "name": "Feld-Hell",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "Feld-Hell"
+      ],
+      "file": "hell/hell-1.0.0-80fbafa24ef2.asar",
+      "size": 1021846,
+      "sha256": "80fbafa24ef260cebbdf46fa72d6821b60a42239e0e9eb26803f3813902a96bd"
+    },
+    {
+      "id": "keyboard",
+      "name": "PSK / RTTY / MFSK / DominoEX / THOR",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "PSK",
+        "RTTY",
+        "MFSK",
+        "DominoEX / THOR"
+      ],
+      "file": "keyboard/keyboard-1.0.0-df4706dc4fa9.asar",
+      "size": 4630653,
+      "sha256": "df4706dc4fa9b0e77a0879c7c4a2ab949d643d9071b373368d16f2ce44f948a9"
+    },
+    {
+      "id": "navtex",
+      "name": "NAVTEX",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "NAVTEX"
+      ],
+      "file": "navtex/navtex-1.0.0-9d76083b1d43.asar",
+      "size": 1051278,
+      "sha256": "9d76083b1d43e3bb7876b7109bd1dd5730cee5437e343afb8a3508165b50ab2b"
+    },
+    {
+      "id": "olivia",
+      "name": "Olivia",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "Olivia"
+      ],
+      "file": "olivia/olivia-1.0.0-eb783b9c7504.asar",
+      "size": 1549367,
+      "sha256": "eb783b9c75047ed179204238d5cdaee8b543cc29590c983dac2396c47c94c366"
+    },
+    {
+      "id": "packet",
+      "name": "Packet",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "Packet"
+      ],
+      "file": "packet/packet-1.0.0-ceef402fd819.asar",
+      "size": 638176,
+      "sha256": "ceef402fd8198d24935781f5e6d7abd9a8cb7b9f6a2ff35bea2f1b4be5b68ba3"
+    },
+    {
+      "id": "wefax",
+      "name": "WEFAX",
+      "version": "1.1.0",
+      "kind": "free",
+      "api": 2,
+      "minAppVersion": "2.261113.1",
+      "modes": [
+        "WEFAX"
+      ],
+      "file": "wefax/wefax-1.1.0-deb505c8bcfb.asar",
+      "size": 2331708,
+      "sha256": "deb505c8bcfb665a1f1e742b00c6855153713ad97d64ba40accc00c4f0777ee3"
+    },
+    {
+      "id": "wspr",
+      "name": "WSPR",
+      "version": "1.0.0",
+      "kind": "free",
+      "api": 1,
+      "minAppVersion": "2.261110.1",
+      "modes": [
+        "WSPR"
+      ],
+      "file": "wspr/wspr-1.0.0-5efb9d26d49c.asar",
+      "size": 198700,
+      "sha256": "5efb9d26d49cebebf5cff094d1610e4127f19815f62356e2482aa4f3896e142b"
+    }
+  ]
+}
