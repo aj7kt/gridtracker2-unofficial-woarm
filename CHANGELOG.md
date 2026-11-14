@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Click the button to show or hide the window, right-click it to only show it; Esc closes it
   - F1 still shows the hotkey list
 
+#### App
+
+- Windows on ARM (such as Snapdragon laptops) now runs GridTracker2 natively: the Windows installer puts the ARM64 build there, instead of the Intel build running under emulation
+
 ### HTML List
 
 ```html
@@ -33,5 +37,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>F1 still shows the hotkey list</li>
     </ul>
   </li>
+</ul>
+<h4>App</h4>
+<ul>
+  <li>Windows on ARM (such as Snapdragon laptops) now runs GridTracker2 natively: the Windows installer puts the ARM64 build there, instead of the Intel build running under emulation</li>
 </ul>
 ```

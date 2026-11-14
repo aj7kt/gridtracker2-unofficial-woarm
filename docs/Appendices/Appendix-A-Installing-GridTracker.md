@@ -4,7 +4,7 @@ Download GridTracker2 from [gridtracker.org/downloads](https://gridtracker.org/d
 
 ## Windows
 
-1. Download the Windows installer, `GridTracker2-<version>-setup.exe`. One installer works on both 64-bit and 32-bit Windows. (For Windows 7 and 8, download the separate Windows 7 installer.)
+1. Download the Windows installer, `GridTracker2-<version>-setup.exe`. One installer works on 64-bit and 32-bit Windows, with Intel, AMD or ARM processors. (For Windows 7 and 8, download the separate Windows 7 installer.)
 2. Double-click the installer in your Downloads folder.
 
    ```{tip}
