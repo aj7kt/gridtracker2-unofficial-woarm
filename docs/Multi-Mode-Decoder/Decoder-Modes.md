@@ -29,7 +29,7 @@ SSTV receives slow-scan TV pictures in Martin 1 and 2, Scottie 1, 2 and DX, Robo
 
 ![SSTV mode: a Martin 1 picture from 20 meters, with earlier pictures in the strip](../img/GT2_MMD_SSTV.jpg){width=480px}
 
-* Each picture is drawn as it comes in, and the newest 12 are kept in a strip on the right. Click one to see it large, and click the large picture to go back to the newest.
+* Each picture is drawn as it comes in, and the newest 12 are kept in a strip on the right. Click one to see it large, and click the large picture to go back to the newest. The Up and Down arrow keys show the picture above or below it in the strip.
 * Above the picture, in color: its mode, the UTC time it started, its frequency with its band, and **saved** once it is.
 * You don't need to tune exactly: a picture is found anywhere up to 1000 Hz either side of where its tones belong. Dashed lines on the waterfall show where its sync (1200 Hz), black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest picture was found.
 * A sender whose sound card runs a little fast or slow, one that drifts, or a satellite's Doppler, is put right, so the picture stays straight and its colors true.

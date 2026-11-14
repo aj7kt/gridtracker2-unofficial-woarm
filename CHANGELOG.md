@@ -44,8 +44,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Changing My Grid while it waits makes it choose again
 - WEFAX charts show the UTC date as well as the time in their caption
 - WEFAX charts show the station they're from above their caption, and saved charts have its call sign in their file name
-- WEFAX chart right-click: Print, Show In Folder, Auto-Align (a chart that started partway across the line put back in place), Wrap Scroll and Auto-Crop
-  - Drag a chart sideways to wrap-scroll it by hand
+- WEFAX chart right-click: Print, Show In Folder, Auto-Align (a chart that started partway across the line put back in place) and Auto-Crop
+  - Settings, Decoders, WEFAX: Auto-Align and Auto-Crop do the same to each chart as it ends, before it's saved- WEFAX and SSTV: the Up and Down arrow keys show the next picture up or down the strip
 - No "(OOB)" after the frequency in WEFAX, NAVTEX and WWV / WWVH, whose frequencies are all outside the amateur bands
 
 #### BirdWatch
@@ -160,9 +160,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   </li>
   <li>WEFAX charts show the UTC date as well as the time in their caption</li>
   <li>WEFAX charts show the station they're from above their caption, and saved charts have its call sign in their file name</li>
-  <li>WEFAX chart right-click: Print, Show In Folder, Auto-Align (a chart that started partway across the line put back in place), Wrap Scroll and Auto-Crop
+  <li>WEFAX chart right-click: Print, Show In Folder, Auto-Align (a chart that started partway across the line put back in place) and Auto-Crop
     <ul>
-      <li>Drag a chart sideways to wrap-scroll it by hand</li>
+      <li>Settings, Decoders, WEFAX: Auto-Align and Auto-Crop do the same to each chart as it ends, before it's saved- WEFAX and SSTV: the Up and Down arrow keys show the next picture up or down the strip</li>
     </ul>
   </li>
   <li>No "(OOB)" after the frequency in WEFAX, NAVTEX and WWV / WWVH, whose frequencies are all outside the amateur bands</li>

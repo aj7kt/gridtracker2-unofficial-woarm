@@ -13,9 +13,10 @@
 // shows the UTC date before the time, WEFAX's), describe(pic, live)
 // (its own words for how much of a picture came, else SSTV's line counts), fromFile(name) (a saved file's name part, as mmdPicFileName
 // wrote it, claimed as its kind's: its shown name, else null), catchAll (claims any name the others don't: SSTV's), chartTools (its
-// right-click also prints, shows its file in its folder, lines it up, wrap-scrolls and crops it, and a
-// drag on it wrap-scrolls: WEFAX's), station({ at, dial, station }) (the station a saved picture is from, its file name's station id or
-// null: { id, label } or null; one coming in names its own, mmdPicStart's m.station) }
+// right-click also prints and shows its file in its folder, and each one is lined up and cropped as it ends, when its Auto-Align and
+// Auto-Crop settings are on (<kind>AutoAlign, <kind>AutoCrop in GT.settings.MMD; WEFAX's on Settings, Decoders): WEFAX's),
+// station({ at, dial, station }) (the station a saved picture is from, its file name's station id or null: { id, label } or null; one
+// coming in names its own, mmdPicStart's m.station) }
 
 // Pictures kept in the strip (each kind's)
 const PICS_KEEP = 12;
@@ -26,11 +27,8 @@ const PICS_GROW_ROWS = 600;
 const PICS_CAPTION_SCALE = 2;
 const PICS_CHART_CAPTION_SCALE = 0.75;
 const PICS_CAPTION_COLORS = { station: "#fc6", name: "#8cf", time: "#fff", freq: "#8f8", band: "#ff0", saved: "#bbb" };
-// A chart kind's (chartTools) Wrap Scroll step (of its width), a press on the picture that moves less than this (px) still a click, the
-// columns of margin Auto-Align leaves before a chart's left edge and Auto-Crop around it, and the dark level (0 black, 255 white) the two
-// count as ink
-const PICS_WRAP_STEP = 0.01;
-const PICS_DRAG_MIN_PX = 5;
+// A chart kind's (chartTools) columns of margin Auto-Align leaves before a chart's left edge and Auto-Crop around it, and the dark level
+// (0 black, 255 white) the two count as ink
 const PICS_EDGE_PAD = 8;
 const PICS_INK_LEVEL = 128;
 // Filter's choices, in its submenu's order (each PICS_FILTER's, its label cwViewer.picture.filter<Name>.label), and the Undo steps kept
@@ -45,13 +43,10 @@ const PICS = {
   order: [],       // the kinds, in the order they were registered
   lists: {},       // each kind's pictures, the newest first: { id, kind, name, width, height, canvas, rows, complete, at (ms, its start),
                    // dial (Hz on the air or null), shift, saved, files, rotate, undo, station (its station's name to show, or null),
-                   // stationId (in its file name), roll (columns Wrap Scroll and Auto-Align moved it left, for Reset) }
+                   // stationId (in its file name) }
   views: {},       // each kind's one shown large (a click on the strip); null: the newest
   live: null,      // the one coming in (any kind's)
-  drawn: null,     // where the picture shown was drawn on sstvPicture (device pixels: x, y, w, h), and which
   drawQueued: false,
-  drag: null,      // a chart being wrap-scrolled by a drag: { pic, x (where it was pressed), roll (columns, as shown), moved }
-  dragged: false,  // a drag just ended: its click isn't one
   savedLoaded: {}  // each kind's saved pictures put in its strip this window (mmdPicLoadSaved)
 };
 
@@ -70,77 +65,47 @@ function mmdPicturesKind(def)
 // The view's own events, once (mmdInit)
 function mmdPicInit()
 {
-  // A click: back to the newest (not the click that ends a drag)
-  sstvPicture.addEventListener("click", () =>
-  {
-    if (PICS.dragged)
-    {
-      PICS.dragged = false;
-      return;
-    }
-    mmdPicView(null);
-  });
+  // A click: back to the newest
+  sstvPicture.addEventListener("click", () => mmdPicView(null));
   sstvPicture.addEventListener("contextmenu", (event) => mmdPicMenu(event, mmdPicShown()));
   window.addEventListener("resize", mmdPicDraw);
-  mmdPicDragInit();
+  window.addEventListener("keydown", mmdPicKey);
 }
 
-// A chart kind's (chartTools) picture dragged sideways: wrap-scrolled as it moves, kept where it is let go (one Undo step, as a filter);
-// not one coming in or turned. Less than PICS_DRAG_MIN_PX of movement is a click
-function mmdPicDragInit()
+// Up and Down arrows: the picture above or below the one shown in the strip, as a click on it (the top one: back to the newest). Not
+// while typing in a box or a menu has the keys, with a modifier held, or with Settings open
+function mmdPicKey(event)
 {
-  sstvPicture.addEventListener("pointerdown", (event) =>
-  {
-    PICS.dragged = false;
-    const drawn = PICS.drawn;
-    if (event.button != 0 || !drawn || !drawn.pic || drawn.rotate || drawn.pic == PICS.live || !(drawn.w > 0)) return;
-    const def = PICS.kinds[drawn.pic.kind];
-    if (!def || !def.chartTools) return;
-    PICS.drag = { pic: drawn.pic, x: event.clientX, roll: 0, moved: false, scale: drawn.w / drawn.pic.width };
-    try
-    {
-      sstvPicture.setPointerCapture(event.pointerId);
-    }
-    catch (e)
-    {
-      // (a synthetic event)
-    }
-  });
-  sstvPicture.addEventListener("pointermove", (event) =>
-  {
-    const D = PICS.drag;
-    if (!D) return;
-    // Its button let go where this window never heard it (a menu took the mouse), or another picture shown meanwhile: given up
-    if (!(event.buttons & 1) || mmdPicShown() != D.pic)
-    {
-      end(false);
-      return;
-    }
-    const dx = event.clientX - D.x;
-    if (!D.moved && Math.abs(dx) < PICS_DRAG_MIN_PX) return;
-    D.moved = true;
-    sstvPicture.style.cursor = "ew-resize";
-    // (moved right, its columns come from further left: rolled left by minus the columns the pointer went)
-    const w = D.pic.width;
-    D.roll = ((Math.round((-dx * (window.devicePixelRatio || 1)) / D.scale) % w) + w) % w;
-    mmdPicDraw();
-  });
-  // (kept only where it is still the picture shown)
-  function end(keep)
-  {
-    const D = PICS.drag;
-    if (!D) return;
-    PICS.drag = null;
-    sstvPicture.style.cursor = "";
-    if (!D.moved) return;
-    // (the click that follows a release ignored; given up, no click follows)
-    PICS.dragged = keep;
-    if (keep && D.roll && mmdPicShown() == D.pic) mmdPicRoll(D.pic, D.roll);
-    else mmdPicDraw();
-  }
-  sstvPicture.addEventListener("pointerup", () => end(true));
-  sstvPicture.addEventListener("pointercancel", () => end(false));
-  sstvPicture.addEventListener("lostpointercapture", () => end(false));
+  if (event.key != "ArrowUp" && event.key != "ArrowDown") return;
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || !mmdPicMode()) return;
+  if (typeof mmdSettings != "undefined" && mmdSettings.style.display == "flex") return;
+  const el = document.activeElement;
+  if (el && (el.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName))) return;
+  const list = mmdPicList();
+  const at = list.indexOf(mmdPicShown());
+  if (at < 0) return;
+  event.preventDefault();
+  const next = Math.max(0, Math.min(list.length - 1, at + (event.key == "ArrowDown" ? 1 : -1)));
+  if (next == at) return;
+  mmdPicView(next == 0 ? null : list[next].id);
+  mmdPicStripReveal();
+}
+
+// The strip scrolled (its own scroller, not the page) just enough to show the outlined thumbnail
+function mmdPicStripReveal()
+{
+  const item = sstvStrip.querySelector(".sstvThumbShown");
+  if (!item) return;
+  let box = sstvStrip;
+  while (box && box != document.body && box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1) box = box.parentElement;
+  if (!box || box == document.body) return;
+  // (with its margin, so the top one goes right back to the top)
+  const m = parseFloat(window.getComputedStyle(item).margin) || 0;
+  const r = item.getBoundingClientRect(), b = box.getBoundingClientRect();
+  if (r.top - m < b.top) box.scrollTop -= b.top - r.top + m;
+  else if (r.bottom + m > b.bottom) box.scrollTop += r.bottom + m - b.bottom;
+  if (r.left - m < b.left) box.scrollLeft -= b.left - r.left + m;
+  else if (r.right + m > b.right) box.scrollLeft += r.right + m - b.right;
 }
 
 // The kind shown in a mode (DEC.mode by default), else null
@@ -250,8 +215,8 @@ function mmdPicRedraw(kind, id, count, rgba, thumb = true)
   mmdPicDraw();
 }
 
-// One ended (complete: all of it came): nothing of it ever drawn, off the strip; else saved however much of it came, with its kind's
-// Save, not a test signal's (mmdTest.js)
+// One ended (complete: all of it came): nothing of it ever drawn, off the strip; else a chart kind's lined up and cropped (its Auto-Align
+// and Auto-Crop, where ticked), then saved however much of it came, with its kind's Save, not a test signal's (mmdTest.js)
 function mmdPicDone(kind, id, complete)
 {
   const pic = mmdPicFind(kind, id);
@@ -260,7 +225,15 @@ function mmdPicDone(kind, id, complete)
   pic.complete = complete;
   if (PICS.live == pic) PICS.live = null;
   if (pic.rows == 0) PICS.lists[kind] = PICS.lists[kind].filter((p) => p != pic);
-  else if (GT.settings.MMD[def.saveKey] && !mmdTestHeard(pic.at, Date.now())) mmdPicSave(pic, null);
+  else
+  {
+    if (def.chartTools)
+    {
+      if (GT.settings.MMD[kind + "AutoAlign"] === true) mmdPicAutoAlign(pic);
+      if (GT.settings.MMD[kind + "AutoCrop"] === true) mmdPicAutoCrop(pic);
+    }
+    if (GT.settings.MMD[def.saveKey] && !mmdTestHeard(pic.at, Date.now())) mmdPicSave(pic, null);
+  }
   mmdPicStrip();
   mmdPicHead();
   mmdPicDraw();
@@ -382,16 +355,7 @@ function mmdPicDraw()
       const shape = grows ? Math.max(height, pic.width / 2) : height;
       const scale = Math.min(w / pic.width, room / shape);
       const dw = pic.width * scale, dh = height * scale, dx = (w - dw) / 2, dy = top + (room - shape * scale) / 2;
-      // (Being dragged: wrap-scrolled as it is, its columns from roll on first, then those before it)
-      const roll = PICS.drag && PICS.drag.pic == pic ? PICS.drag.roll : 0;
-      if (!roll) ctx.drawImage(pic.canvas, 0, 0, pic.width, height, dx, dy, dw, dh);
-      else
-      {
-        const right = pic.width - roll;
-        ctx.drawImage(pic.canvas, roll, 0, right, height, dx, dy, right * scale, dh);
-        ctx.drawImage(pic.canvas, 0, 0, roll, height, dx + right * scale, dy, roll * scale, dh);
-      }
-      PICS.drawn = { x: dx, y: dy, w: dw, h: dh, pic, rotate: 0 };
+      ctx.drawImage(pic.canvas, 0, 0, pic.width, height, dx, dy, dw, dh);
     }
     else
     {
@@ -405,7 +369,6 @@ function mmdPicDraw()
       ctx.rotate((rotate * Math.PI) / 180);
       ctx.drawImage(pic.canvas, 0, 0, pic.width, height, (-pic.width * scale) / 2, (-height * scale) / 2, pic.width * scale, height * scale);
       ctx.restore();
-      PICS.drawn = { x: bx, y: by, w: bw, h: bh, pic, rotate };
     }
   });
 }
@@ -529,9 +492,9 @@ function mmdPicHead()
 }
 
 // The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Filter (not while it comes in), Delete (From Session; File,
-// its saved files deleted; Both: those two only while a file it was saved to is still there). A chart kind's (chartTools) also: Save As
-// Print..., Show In Folder (while a file it was saved to is there), and (not while it comes in) Auto-Align, Wrap Scroll (Left, Right,
-// Reset; not on a turned chart) and Auto-Crop, each an Undo step of Filter's
+// its saved files deleted; Both: those two only while a file it was saved to is still there). A chart kind's (chartTools) also: Print...,
+// Show In Folder (while a file it was saved to is there), and Auto-Align and Auto-Crop done to this one now (not while it comes in; each
+// an Undo step of Filter's: its settings' Auto-Align and Auto-Crop do every chart as it ends)
 function mmdPicMenu(event, pic)
 {
   event.preventDefault();
@@ -545,7 +508,6 @@ function mmdPicMenu(event, pic)
   const filters = PICS_FILTERS.map((name) => ({ label: I18N("cwViewer.picture.filter" + name[0].toUpperCase() + name.slice(1) + ".label"), click: () => mmdPicFilter(pic, name) }));
   const chart = !!PICS.kinds[pic.kind].chartTools;
   const still = pic != PICS.live;
-  const step = Math.max(1, Math.round(pic.width * PICS_WRAP_STEP));
   // (An SSTV picture's Log QSO... first, with Log QSO on: mmdLogQso.js)
   const menu = remote.Menu.buildFromTemplate(mmdLogQsoPictureMenu(pic).concat([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdPicSaveAs(pic) },
@@ -577,18 +539,8 @@ function mmdPicMenu(event, pic)
     },
     ...(chart
       ? [
-          { label: I18N("cwViewer.picture.autoAlign.label"), enabled: still, click: () => mmdPicAutoAlign(pic) },
-          {
-            // (not on a turned chart: its left and right aren't the received rows')
-            label: I18N("cwViewer.picture.wrap.label"),
-            enabled: still && !pic.rotate,
-            submenu: [
-              { label: I18N("cwViewer.picture.wrapLeft.label"), click: () => mmdPicRoll(pic, step) },
-              { label: I18N("cwViewer.picture.wrapRight.label"), click: () => mmdPicRoll(pic, pic.width - step) },
-              { label: I18N("cwViewer.picture.wrapReset.label"), enabled: !!pic.roll, click: () => mmdPicRoll(pic, pic.width - (pic.roll || 0)) }
-            ]
-          },
-          { label: I18N("cwViewer.picture.autoCrop.label"), enabled: still, click: () => mmdPicAutoCrop(pic) }
+          { label: I18N("cwViewer.picture.autoAlign.label"), enabled: still, click: () => mmdPicAutoAlign(pic, true) },
+          { label: I18N("cwViewer.picture.autoCrop.label"), enabled: still, click: () => mmdPicAutoCrop(pic, true) }
         ]
       : []),
     { type: "separator" },
@@ -682,39 +634,34 @@ function mmdPicFilter(pic, name)
   mmdPicChange(pic, (planes, width, rows) => PICS_FILTER[name](planes, width, rows));
 }
 
-// A picture changed in place as far as it came (Filter, Auto-Align, Wrap Scroll, Auto-Crop): change(planes, width, rows) works
-// on its planes, and gives false for nothing done (no Undo step kept), or { planes, width, rows } for a new size (Auto-Crop: its Wrap
-// Scroll starts again from there). What it was kept for Undo; true once done. wrap: a Wrap Scroll, one Undo step with the Wrap Scrolls
-// right before it (clicked or dragged a step at a time, they would soon use up PICS_UNDO_KEEP)
-function mmdPicChange(pic, change, wrap = false)
+// A picture changed in place as far as it came (Filter, Auto-Align, Auto-Crop): change(planes, width, rows) works on its planes, and
+// gives false for nothing done (no Undo step kept), or { planes, width, rows } for a new size (Auto-Crop). What it was kept for Undo;
+// true once done
+function mmdPicChange(pic, change)
 {
   const width = pic.canvas.width, rows = pic.rows > 0 ? Math.min(pic.rows, pic.canvas.height) : pic.canvas.height;
   const image = pic.canvas.getContext("2d").getImageData(0, 0, width, rows);
   // (A grey kind's: one plane, so its Undo steps take a quarter of the room; else red, green and blue)
   const planes = mmdPicPlanes(image.data, PICS.kinds[pic.kind].planes || 3);
-  const undo = pic.undo || [];
-  const merge = wrap && undo.length > 0 && undo[undo.length - 1].wrap;
-  const before = merge ? null : { width, rows, height: pic.height, roll: pic.roll || 0, planes: planes.map((p) => p.slice()), wrap };
+  const before = { width, rows, height: pic.height, planes: planes.map((p) => p.slice()) };
   const out = change(planes, width, rows);
   if (out === false) return false;
-  if (before) pic.undo = undo.concat([before]).slice(-PICS_UNDO_KEEP);
+  pic.undo = (pic.undo || []).concat([before]).slice(-PICS_UNDO_KEEP);
   if (out && out.planes)
   {
     mmdPicResize(pic, out.width, out.rows, out.rows);
-    pic.roll = 0;
     mmdPicPut(pic, out.planes, out.rows);
   }
   else mmdPicPut(pic, planes, rows);
   return true;
 }
 
-// Undo: steps filters taken back (all of them: as it was received, turned as it is), its size and Wrap Scroll as they were then
+// Undo: steps filters taken back (all of them: as it was received, turned as it is), its size as it was then
 function mmdPicUndo(pic, steps)
 {
   if (!pic.undo || !pic.undo.length) return;
   const back = pic.undo.splice(Math.max(0, pic.undo.length - steps))[0];
   if (back.width != pic.canvas.width || back.rows != Math.min(pic.rows || pic.canvas.height, pic.canvas.height)) mmdPicResize(pic, back.width, back.rows, back.height);
-  pic.roll = back.roll;
   mmdPicPut(pic, back.planes, back.rows);
 }
 
@@ -868,16 +815,7 @@ function mmdPicMedian(p, w, h)
   return out;
 }
 
-// ---- A chart kind's tools (chartTools): lining up, wrap-scrolling and cropping (each an Undo step of Filter's), print, its folder
-
-// Wrap Scroll: every row moved by columns to the left (what goes off its left end comes in at its right), kept in its roll for Reset
-function mmdPicRoll(pic, by)
-{
-  const width = pic.canvas.width;
-  by = ((Math.round(by) % width) + width) % width;
-  if (!by) return;
-  if (mmdPicChange(pic, (planes, w, rows) => planes.forEach((p) => mmdPicRollPlane(p, w, rows, by)), true)) pic.roll = ((pic.roll || 0) + by) % width;
-}
+// ---- A chart kind's tools (chartTools): lining up and cropping as it ends (each an Undo step of Filter's), print, its folder
 
 // A plane's rows each moved by columns to the left, wrapping
 function mmdPicRollPlane(p, w, rows, by)
@@ -893,27 +831,25 @@ function mmdPicRollPlane(p, w, rows, by)
 }
 
 // Auto-Align: the chart's left edge found (the widest run of empty columns, around the wrap, ends there) and moved to the left, a little
-// of its margin before it. Nothing found to go by, or already there: said so
-function mmdPicAutoAlign(pic)
+// of its margin before it. Nothing found to go by, or already there: left as it is (said so for one picked from its right-click, asked)
+function mmdPicAutoAlign(pic, asked = false)
 {
-  const width = pic.canvas.width;
-  let by = 0;
   const done = mmdPicChange(pic, (planes, w, rows) =>
   {
     const ink = mmdPicInk(planes[0], w, rows);
     const run = ink ? mmdPicEmptyRun(ink.columns, w) : null;
     if (!run) return false;
     // (the run's end, with up to PICS_EDGE_PAD of it left before the chart)
-    by = (run.start + run.length - Math.min(PICS_EDGE_PAD, Math.floor(run.length / 2)) + w) % w;
+    const by = (run.start + run.length - Math.min(PICS_EDGE_PAD, Math.floor(run.length / 2)) + w) % w;
     if (!by) return false;
     planes.forEach((p) => mmdPicRollPlane(p, w, rows, by));
   });
-  if (done) pic.roll = ((pic.roll || 0) + by) % width;
-  else mmdStatus(I18N("cwViewer.picture.autoAlignNone"));
+  if (!done && asked) mmdStatus(I18N("cwViewer.picture.autoAlignNone"));
 }
 
-// Auto-Crop: the empty columns and rows around the chart taken off (PICS_EDGE_PAD of them kept). Nothing to take off: said so
-function mmdPicAutoCrop(pic)
+// Auto-Crop: the empty columns and rows around the chart taken off (PICS_EDGE_PAD of them kept). Nothing to take off: left as it is
+// (said so for one picked from its right-click, asked)
+function mmdPicAutoCrop(pic, asked = false)
 {
   const done = mmdPicChange(pic, (planes, w, rows) =>
   {
@@ -937,7 +873,7 @@ function mmdPicAutoCrop(pic)
     });
     return { planes: cropped, width: cw, rows: ch };
   });
-  if (!done) mmdStatus(I18N("cwViewer.picture.autoCropNone"));
+  if (!done && asked) mmdStatus(I18N("cwViewer.picture.autoCropNone"));
 }
 
 // Where a grey picture has ink: its 3 x 3 medians (specks of noise taken out) dark or not, and each column's count of dark pixels, rows

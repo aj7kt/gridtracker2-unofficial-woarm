@@ -844,6 +844,10 @@ function createMainWindow() {
   session.setDevicePermissionHandler((details) => details.deviceType === 'serial' && serialPortMatches(details.device));
   session.setDisplayMediaRequestHandler(mapCastDisplayMedia);
 
+  // Electron adds a 'current-render-view-deleted' listener here for each window opened from the main window (removed when it closes); more than
+  // Node's default of 10 open together is normal, not a leak, so its MaxListenersExceededWarning is kept quiet
+  mainWindow.webContents.setMaxListeners(30);
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     if (details.frameName == 'printHotKeys') {
       let options = {

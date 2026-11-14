@@ -5,21 +5,12 @@
 // The WEFAX plugin (plugin.json beside this file): weather fax charts from the 12 kHz audio (the worklet's stream, input "audio12"),
 // read by wefaxWorker.js. Each chart is shown in the decoder's picture view as a kind of its own (host.pictures: kept apart from SSTV's
 // pictures, saved with Save Charts into its own folder); a chart's length isn't known as it starts, so its canvas grows as its lines
-// come. Its line rate, index of cooperation, Trim, Start Now, Stop and Auto-Tune (mmdWefaxAuto.js) are on a row of their own (its ui.html's
-// bar)
-
-// Its menus: lines a minute, index of cooperation ("auto": found from the start tone and phasing)
-const WEFAX_LPM_CHOICES = ["auto", 60, 90, 120, 240];
-const WEFAX_IOC_CHOICES = ["auto", 576, 288];
-// Trim's step and limit (ppm: the line rate made this much slower, positive, or faster)
-const WEFAX_TRIM_STEP = 20;
-const WEFAX_TRIM_MAX = 2000;
+// come. Its line rate and index of cooperation are found by the worker (from the start tone and phasing), and it keeps the chart straight
+// and lined up by itself. Start Now, Stop and Auto-Tune (mmdWefaxAuto.js) are on a row of their own (its ui.html's bar)
 
 const WEFAX = {
   host: null,   // the decoder's host (mmdPluginHost.js), from init
-  worker: null, // wefaxWorker.js, once
-  // Trim by hand (ppm; kept across restarts in MMD.wefaxTrim). Where a chart's own left edge is on its lines the worker finds by itself
-  trim: 0
+  worker: null  // wefaxWorker.js, once
 };
 
 function mmdWefaxMode()
@@ -30,8 +21,6 @@ function mmdWefaxMode()
 function mmdWefaxInit(host)
 {
   WEFAX.host = host;
-  const trim = Number(host.get("wefaxTrim"));
-  WEFAX.trim = Number.isFinite(trim) ? Math.max(-WEFAX_TRIM_MAX, Math.min(WEFAX_TRIM_MAX, Math.round(trim / WEFAX_TRIM_STEP) * WEFAX_TRIM_STEP)) : 0;
   // Its charts in the picture view: grey on white, growing as they come; saved in Save Charts' folder (MMD.wefaxFolder, else WEFAX Charts
   // beside GridTracker's own folders) with Save Charts; a saved file's name part "WEFAX120576" is a chart's (WEFAX 120/576)
   host.pictures.kind({
@@ -45,7 +34,8 @@ function mmdWefaxInit(host)
     tabs: false,
     // How much of a chart came: its lines so far (its length isn't known until its stop tone), and Receiving while it comes
     describe: (pic, live) => [host.t("cwViewer.wefax.lines").replace("{line}", pic.rows)].concat(live ? [host.t("cwViewer.wefax.receiving")] : []),
-    // Its right-click's Print, Show In Folder, Auto-Align, Wrap Scroll and Auto-Crop, and a drag wrap-scrolls it
+    // Its right-click's Print and Show In Folder; each chart lined up and cropped as it ends with Auto-Align and Auto-Crop on (Settings,
+    // Decoders: wefaxAutoAlign, wefaxAutoCrop)
     chartTools: true,
     // A saved chart's station: its file name's, else found from its time and frequency
     station: (info) => mmdWefaxStation(info.dial, info.at, info.station),
@@ -57,14 +47,13 @@ function mmdWefaxInit(host)
   });
 }
 
-// The worker, once (told its menus' choices)
+// The worker, once
 function mmdWefaxLoad()
 {
   if (WEFAX.worker) return WEFAX.worker;
   const H = WEFAX.host;
   WEFAX.worker = new Worker(H.workerUrl("wefaxWorker.js"));
   WEFAX.worker.onmessage = (event) => H.guard(() => mmdWefaxMessage(event.data));
-  mmdWefaxConfig({});
   return WEFAX.worker;
 }
 
@@ -196,45 +185,13 @@ function mmdWefaxStationNear(station, at)
   });
 }
 
-// ---- Its row: LPM, IOC, Trim, Start Now, Stop (Auto-Tune: mmdWefaxAuto.js)
+// ---- Its row: Start Now, Stop (Auto-Tune: mmdWefaxAuto.js)
 
-// The worker told the menus' choices (MMD.wefaxLpm, MMD.wefaxIoc) and Trim, and whatever else is given (startNow)
+// The worker told what is given (startNow)
 function mmdWefaxConfig(extra)
 {
-  const H = WEFAX.host;
   if (!WEFAX.worker) return;
-  WEFAX.worker.postMessage(Object.assign({ type: "config", lpm: H.get("wefaxLpm") || "auto", ioc: H.get("wefaxIoc") || "auto", trim: WEFAX.trim }, extra));
-}
-
-// Trim: the chart's slant (step: -1 or 1; 0 back to none), drawn again at once, and kept for the next start (MMD.wefaxTrim)
-function mmdWefaxTrimStep(step)
-{
-  WEFAX.trim = step == 0 ? 0 : Math.max(-WEFAX_TRIM_MAX, Math.min(WEFAX_TRIM_MAX, WEFAX.trim + step * WEFAX_TRIM_STEP));
-  WEFAX.host.set("wefaxTrim", WEFAX.trim);
-  cwWefaxTrimValue.textContent = (WEFAX.trim > 0 ? "+" : "") + WEFAX.trim;
-  mmdWefaxConfig({});
-}
-
-// Its row's menus, shown in its mode
-function mmdWefaxMenu()
-{
-  const H = WEFAX.host;
-  const fill = (select, choices, value) =>
-  {
-    select.innerHTML = "";
-    for (const c of choices) select.add(new Option(c == "auto" ? H.t("cwViewer.wefax.auto") : String(c), c, false, String(c) == String(value || "auto")));
-  };
-  fill(cwWefaxLpm, WEFAX_LPM_CHOICES, H.get("wefaxLpm"));
-  fill(cwWefaxIoc, WEFAX_IOC_CHOICES, H.get("wefaxIoc"));
-  cwWefaxTrimValue.textContent = (WEFAX.trim > 0 ? "+" : "") + WEFAX.trim;
-}
-
-function mmdWefaxPicked()
-{
-  const value = (v) => (v == "auto" ? "auto" : Number(v));
-  WEFAX.host.set("wefaxLpm", value(cwWefaxLpm.value));
-  WEFAX.host.set("wefaxIoc", value(cwWefaxIoc.value));
-  mmdWefaxConfig({});
+  WEFAX.worker.postMessage(Object.assign({ type: "config" }, extra));
 }
 
 // Start Now: a chart begun here, without waiting for its start tone (one tuned in partway)
@@ -250,15 +207,26 @@ function mmdWefaxStop()
   if (WEFAX.worker) WEFAX.worker.postMessage({ type: "stop" });
 }
 
-// ---- Its box on Settings, Decoders: Set Mode, Save Charts and its folder (Set Frequency and the rest are the decoder's own, as every mode's)
+// ---- Its box on Settings, Decoders: Set Mode, Auto-Align, Auto-Crop, Save Charts and its folder (Set Frequency and the rest are the
+// decoder's own, as every mode's)
 
 function mmdWefaxSettings()
 {
   const H = WEFAX.host;
   wefaxSetModeValue.checked = H.get("wefaxSetMode") === true;
+  wefaxAutoAlignValue.checked = H.get("wefaxAutoAlign") === true;
+  wefaxAutoCropValue.checked = H.get("wefaxAutoCrop") === true;
   wefaxSaveValue.checked = H.get("wefaxSave") === true;
   wefaxFolderTr.style.display = H.get("wefaxSave") === true ? "" : "none";
   H.showFolder(wefaxFolderText, H.get("wefaxFolder") || H.folder("WEFAX Charts"), "settings.wefaxDecoder.folder.hover");
+}
+
+// Auto-Align and Auto-Crop: each chart lined up and cropped as it ends, before it's saved (mmdPicDone; wefaxAutoAlign, wefaxAutoCrop)
+function mmdWefaxSetAuto()
+{
+  WEFAX.host.set("wefaxAutoAlign", wefaxAutoAlignValue.checked);
+  WEFAX.host.set("wefaxAutoCrop", wefaxAutoCropValue.checked);
+  mmdWefaxSettings();
 }
 
 // Save Charts: each chart saved as it ends, into its folder; its Folder shown while it is on
@@ -275,11 +243,10 @@ mmdRegisterMode({
   input: "audio12",
   init: (host) => mmdWefaxInit(host),
   audio: (data) => mmdWefaxAudio(data),
-  // Its row (line rate, IOC, Trim, Start Now, Stop, Auto-Tune); the picture view is the decoder's own (shown in its mode)
+  // Its row (Start Now, Stop, Auto-Tune); the picture view is the decoder's own (shown in its mode)
   shown: (on) =>
   {
     cwWefaxBar.style.display = on ? "" : "none";
-    if (on) mmdWefaxMenu();
   },
   // Listening afresh (what it had heard before is gone); the first time in this window, its saved charts in its strip
   entered: () =>

@@ -246,6 +246,21 @@ function logQsoLookupArrived(lookup)
   }
 }
 
+// Queue QSOs To Send Later turned on or off, or its count changed: the Log QSO window's chip saying so redrawn (a card on it already
+// would otherwise keep what it showed when it was filled)
+function logQsoQueuedChanged()
+{
+  try
+  {
+    if (!GT.logQsoWindowInitialized || !GT.logQsoWindowHandle) return;
+    GT.logQsoWindowHandle.window.logQsoWinQueued();
+  }
+  catch (e)
+  {
+    console.error(e);
+  }
+}
+
 // Settings -> Logging, Log QSO: its box ticked or not
 function logQsoEnableChanged(what)
 {

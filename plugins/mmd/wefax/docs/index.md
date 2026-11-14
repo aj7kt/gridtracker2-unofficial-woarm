@@ -1,6 +1,6 @@
 # WEFAX
 
-WEFAX is a Multi-Mode Decoder plugin. It receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the decoder's picture view, the newest 12 kept in a strip on the right; click one to see it large. WEFAX's charts are kept apart from SSTV's pictures.
+WEFAX is a Multi-Mode Decoder plugin. It receives weather fax charts from the coast and weather stations that still send them on HF. Charts are shown in the decoder's picture view, the newest 12 kept in a strip on the right; click one to see it large, and the Up and Down arrow keys show the one above or below it. WEFAX's charts are kept apart from SSTV's pictures.
 
 Once the plugin is installed, pick **WEFAX** in the decoder's **Mode** menu. How the decoder itself works (its waterfall, Input Device, Rig Control and the Frequency menu) is in the GridTracker2 User Guide, under *The Multi-Mode Decoder*.
 
@@ -8,10 +8,9 @@ Once the plugin is installed, pick **WEFAX** in the decoder's **Mode** menu. How
 
 ## Receiving Charts
 
-* A chart starts by itself with its start tone, or with its phasing lines (the black lines with a white mark that follow the start tone) when static garbles the tone. Its line rate and width are found by themselves, or you can pick them on the WEFAX row under the second line: **LPM** (lines a minute: **Auto**, 60, 90, 120 or 240) and **IOC** (the chart's width: **Auto**, 576 or 288).
+* A chart starts by itself with its start tone, or with its phasing lines (the black lines with a white mark that follow the start tone) when static garbles the tone. Its line rate (60, 90, 120 or 240 lines a minute) and width (576 or 288) are found by themselves.
 * **Start Now** begins a chart that is already being sent. **Stop** ends the chart being received. A chart keeps going through a fade of up to two minutes.
 * Charts are kept straight and lined up by themselves, even when the sound card's clock is off or audio is lost for a moment. Many stations place a chart partway across the line, so its right side would show on the left: the decoder finds the strip of blank paper between the chart's edges and starts each line after it, as the chart comes in.
-  * **Trim:** click **−** or **+** until the chart's upright lines stand straight (what came is drawn again). Click the value to set it back to 0. Trim is kept for next time.
 * Dashed lines on the waterfall show where a chart's black (1500 Hz) and white (2300 Hz) tones are, moved to where the newest chart was found.
 * The header above the chart shows the station it is from (for example **NMC · Point Reyes, CA**, found from the frequency and the stations' schedules) on a line of its own, then its line rate and width (for example **WEFAX 120/576**), its UTC date and time and frequency, and **saved** once it is.
 * Right-click a chart for **Save Picture…**, **Copy To Clipboard**, **Rotate** (**90° Right**, **90° Left**, **180°** or **As Received**, for charts some stations send sideways), **Filter** or **Delete**, as for SSTV's pictures. A rotated or filtered chart is saved and copied as shown. **Filter** (once the chart has ended) cleans up a noisy chart: the filters are described in the User Guide, under SSTV.
@@ -25,10 +24,11 @@ The right-click also has these for charts:
 * **Print…:** the chart on a page of its own, fitted to it (landscape when the chart is wider than tall), with the station, line rate and width, UTC date and time and frequency under it.
 * **Show In Folder:** opens the folder the chart was saved in, with its file picked out. Only while a saved file is there.
 * **Auto-Align:** a chart that started without its phasing lines (tuned in partway, or **Start Now**) can come out with its right side on the left. Auto-Align finds the chart's left edge and moves it to the left side of the picture, wrapping what was before it round to the right.
-* **Wrap Scroll** (**Left**, **Right** or **Reset**): moves the chart sideways by hand, a little at a time, wrapping round the edges. You can also drag the chart sideways with the mouse; a click without moving still shows the newest chart. Not on a rotated chart (set **Rotate** back to **As Received** first).
 * **Auto-Crop:** takes off the empty edges around the chart (the blank part of the line Auto-Align leaves at the right, and blank rows above and below).
 
-Auto-Align, Wrap Scroll and Auto-Crop work once the chart has ended, and each is a step of **Filter**'s **Undo** (Wrap Scroll moves one after another make one step), so **Undo All** puts the chart back as received, for up to its last 20 steps. As with Filter, a chart is saved, copied and printed as shown, and a file saved already stays as it was.
+Auto-Align and Auto-Crop work on any chart in the strip once it has ended, including saved charts from earlier sessions; if there's nothing to do, the status line says so. Each is a step of **Filter**'s **Undo**, so **Undo All** puts the chart back as received. A file saved already stays as it was: use **Save Picture…** to keep the tidied chart.
+
+To tidy every chart by itself, turn on **Auto-Align** and **Auto-Crop** in the decoder's **Settings**, **Decoders**, **WEFAX** box, above **Save Charts** (both off at first). Each chart is then aligned first, then cropped, as it ends and before it's saved.
 
 ## Frequencies
 
@@ -56,4 +56,5 @@ In the decoder window's **Settings** → **Decoders**, under **WEFAX**:
 
 * **Input Device** and **VFO:** as every mode has them. A new install starts on CW's Input Device.
 * **Set Frequency** and **Set Mode:** what picking a frequency in the Frequency menu sends the rig. Shown with **Rig Control** on. Each is on unless you turn it off.
+* **Auto-Align** and **Auto-Crop** (off at first): line up and crop each chart as it ends, before it's saved (see Printing and Tidying Up a Chart).
 * **Save Charts** (on at first): saves each chart as a PNG when it ends, however much of it came, named by its UTC time, line rate and width, frequency and station (for example `20261113-201456Z_WEFAX120576_8680kHz_NMC.png`). **Folder** shows where they go (`WEFAX Charts` at first, beside GridTracker2's own folders; click it to open it); **Choose** picks another.

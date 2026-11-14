@@ -8,7 +8,7 @@
   "menu": { "label": "WEFAX", "group": "utility" },
   "input": "audio12",
   "rig": { "inputFrom": "cw", "instanceModes": ["WEFAX", "FAX"] },
-  "settings": { "wefaxSetFreq": true, "wefaxSetMode": true, "wefaxLpm": "auto", "wefaxIoc": "auto", "wefaxTrim": 0, "wefaxSave": true, "wefaxFolder": "" },
+  "settings": { "wefaxSetFreq": true, "wefaxSetMode": true, "wefaxSave": true, "wefaxFolder": "", "wefaxAutoAlign": false, "wefaxAutoCrop": false },
   "scripts": ["mmdWefax.js", "mmdWefaxAuto.js"],
   "workers": ["wefaxWorker.js"],
   "ui": "ui.html",

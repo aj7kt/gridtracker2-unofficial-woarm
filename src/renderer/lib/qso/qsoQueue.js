@@ -274,6 +274,7 @@ function qsoQueueAutoChanged()
 // in it. Send All greyed out offline (its tooltip says why) and while it runs; Export ADIF with nothing queued
 function qsoQueueRender()
 {
+  logQsoQueuedChanged();
   if (typeof qsoQueueCheckBox == "undefined") return;
   const Q = GT.qsoQueue;
   qsoQueueCheckBox.checked = qsoQueueOn();
