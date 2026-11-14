@@ -48,7 +48,8 @@ function makeTitleInfo(mapWindow)
   let band = GT.settings.app.gtBandFilter.length == 0 ? "Mixed" : GT.settings.app.gtBandFilter == "auto" ? GT.settings.app.myBand : GT.settings.app.gtBandFilter;
   let mode = GT.settings.app.gtModeFilter.length == 0 ? "Mixed" : GT.settings.app.gtModeFilter == "auto" ? GT.settings.app.myMode : GT.settings.app.gtModeFilter;
 
-  let news = `GridTracker2 [Band: ${band} Mode: ${mode}`;
+  // Unofficial WoARM build: says so in the title bar (the page's own <title> stays GridTracker2: windows are told apart by it)
+  let news = `GridTracker2 Unofficial WoARM [Band: ${band} Mode: ${mode}`;
   let end = "]";
 
   if (mapWindow)
@@ -678,15 +679,25 @@ function createPredLayer()
   return layerVector;
 }
 
+// Unofficial WoARM build: the MUF, foF2, EPI and AUF layers (1 to 4) are left out: their images come from tagloomis.com, the
+// GridTracker2 developer's own server. Off (0) and Tropo (5, vhf.dxview.org) remain
+const PRED_MODES_LEFT_OUT = [1, 2, 3, 4];
+
+function predModeAvailable(mode)
+{
+  return !PRED_MODES_LEFT_OUT.includes(mode);
+}
+
 function cyclePredLayer()
 {
-  GT.settings.map.predMode = (GT.settings.map.predMode + 1) % 6;
+  do GT.settings.map.predMode = (GT.settings.map.predMode + 1) % 6;
+  while (!predModeAvailable(GT.settings.map.predMode));
   displayPredLayer();
 }
 
 function directPredLayer(layer)
 {
-  GT.settings.map.predMode = layer;
+  GT.settings.map.predMode = predModeAvailable(layer) ? layer : 0;
   displayPredLayer();
 }
 
@@ -706,6 +717,8 @@ function predInit()
 
 function displayPredLayer()
 {
+  // (one left out, saved by an official GridTracker2's settings: off)
+  if (!predModeAvailable(GT.settings.map.predMode)) GT.settings.map.predMode = 0;
   predButton.style.display = (GT.settings.map.offlineMode == true) ? "none" : "";
   if (GT.settings.map.predMode > 0 && GT.settings.map.offlineMode == false)
   {

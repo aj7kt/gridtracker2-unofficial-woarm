@@ -1399,7 +1399,9 @@ function convertToDate(julian)
   return new Date((Number(julian) - UNIX_EPOCH_JULIAN_DATE) * DAY);
 }
 
-const CLk = "25bc718451a71954cb6d0d1b50541dd45d4ba148";
+// Unofficial WoARM build: GridTracker's own Club Log application key isn't shipped, so QSOs aren't sent to Club Log as they're
+// logged (its Log QSO checkbox is hidden). Downloading your Club Log log needs no key and stays
+const CLk = "";
 
 GT.lastReport = "";
 
@@ -2023,7 +2025,7 @@ function sendeQSLEntry(report)
 {
   if (GT.settings.map.offlineMode == true) return;
 
-  let pid = "GridTracker";
+  let pid = "GridTracker2-Unofficial-WoARM";
   let pver = String(gtVersion);
   let header = "<PROGRAMID:" + pid.length + ">" + pid + "\r\n";
   header += "<PROGRAMVERSION:" + pver.length + ">" + pver + "\r\n";
@@ -2124,7 +2126,7 @@ function sendLotwLogEntry(report, callsignFile, gridFile)
     if (!fs.existsSync(fullPath))
     {
       let header = "Generated " + userTimeString(null) + " for " + callsignFile.replaceAll('_','/') + "\r\n\r\n";
-      let pid = "GridTracker";
+      let pid = "GridTracker2-Unofficial-WoARM";
       let pver = String(gtVersion);
       header += "<PROGRAMID:" + pid.length + ">" + pid + "\r\n";
       header += "<PROGRAMVERSION:" + pver.length + ">" + pver + "\r\n";
@@ -2476,7 +2478,7 @@ function sendClubLogEntry(report)
 {
   if (GT.settings.map.offlineMode == true) return;
 
-  if (logClubqsoCheckBox.checked == true)
+  if (logClubqsoCheckBox.checked == true && CLk)
   {
     let postData = {
       email: clubEmail.value,
@@ -2646,7 +2648,7 @@ function HamCQTest(test)
 
     let postData = { key: HamCQApiKey.value };
     getPostJSONBuffer(
-      "https://www.hamcq.cn/v1/logbook?from=gridtracker",
+      "https://www.hamcq.cn/v1/logbook?from=gridtracker-woarm",
       HamCQSendResult,
       test,
       "https",
@@ -2712,7 +2714,7 @@ function sendHamCQEntry(report)
       adif: report
     };
     getPostBuffer(
-      "https://www.hamcq.cn/v1/logbook?from=gridtracker",
+      "https://www.hamcq.cn/v1/logbook?from=gridtracker-woarm",
       HamCQSendResult,
       null,
       "https",

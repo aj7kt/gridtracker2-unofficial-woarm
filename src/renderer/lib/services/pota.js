@@ -369,7 +369,7 @@ function reportPotaQSO(record)
     frequency: record.FREQ,
     reference: record.POTA_REF,
     mode: record.MODE,
-    source: "GT2",
+    source: "GT2-WoARM",
     comments: record.COMMENT ? record.COMMENT : "",
     activatorGrid: record.GRIDSQUARE ? record.GRIDSQUARE : "",
     spotterGrid: record.MY_GRIDSQUARE ? record.MY_GRIDSQUARE : ""
@@ -484,7 +484,7 @@ function getPotaParks()
   if (GT.settings.map.offlineMode == false && GT.settings.app.potaFeatureEnabled)
   {
     getBuffer(
-      "https://app2.gridtracker.org/dbs/pota.json?cb=" + Date.now(),
+      "https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/pota.json?cb=" + Date.now(),
       processPotaParks,
       null,
       "https",

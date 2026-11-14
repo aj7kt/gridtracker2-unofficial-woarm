@@ -78,7 +78,7 @@ function openPskMqtt()
 
     if (calls.size == 0) return;
 
-    const clientId = `GT2_${[...calls][0]}_${GT.settings.app.myGrid}_${Math.random().toString(16).slice(3)}`;
+    const clientId = `GT2-WoARM_${[...calls][0]}_${GT.settings.app.myGrid}_${Math.random().toString(16).slice(3)}`;
     GT.pskMqttTopics = topics;
 
     GT.pskMqttClient = mqtt.connect(GT.pskMqttUrl, {

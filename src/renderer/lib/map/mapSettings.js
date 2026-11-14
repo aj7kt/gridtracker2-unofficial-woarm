@@ -579,6 +579,7 @@ function registerLegendContextMenus()
     }
     
     GT.predLayers.forEach((layerKey, index) => {
+      if (!predModeAvailable(index)) return;
       menu.append(new MenuItem({
         type: "radio",
         label: I18N(layerKey),

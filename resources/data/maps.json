@@ -100,45 +100,51 @@
     "offline": false
   },
   "Voyager by Carto (English)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
 
     "maxZoom": 19,
     "offline": false
   },
   "Positron by Carto (English)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
     "maxZoom": 19,
     "offline": false
   },
   "Dark Matter by Carto (English)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
     "maxZoom": 19,
     "offline": false
   },
   "Voyager by Carto (No Labels)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
     "maxZoom": 19,
     "offline": false
   },
   "Positron by Carto (No Labels)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
     "maxZoom": 19,
     "offline": false
   },
   "Dark Matter by Carto (No Labels)": {
-    "sourceType" : "XYZ",
-    "url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png?key=CARTO_API_KEY",
+    "sourceType" : "Group",
+    "keyId": "Carto",
     "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>",
+    "group": [ { "sourceType": "XYZ", "_url": "https://{a-d}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png?key={k}", "maxZoom": 19, "attributions": "<a href=\"https://carto.com\" target=\"_blank\">CARTO</a>" } ],
     "maxZoom": 19,
     "offline": false
   },

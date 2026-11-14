@@ -24,13 +24,13 @@ function setUdpPort()
 
 function changeOffAirServicesEnable()
 {
-  GT.settings.app.offAirServicesEnable = offAirServicesEnable.checked;
+  GT.settings.app.offAirServicesEnable = offAirServicesEnable.checked && !OFF_AIR_SERVICES_LEFT_OUT;
   updateOffAirServicesViews();
 }
 
 function updateOffAirServicesViews()
 {
-  offAirServicesTr.style.display = GT.settings.map.offlineMode == true ? "none" : "";
+  offAirServicesTr.style.display = GT.settings.map.offlineMode == true || OFF_AIR_SERVICES_LEFT_OUT ? "none" : "";
   updateGTFlagViews();
   setMsgSettingsView();
   updateBandActivityViews();

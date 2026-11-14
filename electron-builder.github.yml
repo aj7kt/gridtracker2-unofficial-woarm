@@ -1,0 +1,58 @@
+# GridTracker2 Unofficial WoARM: Windows on ARM builds, made by .github/workflows/windows-arm64.yml (not signed, not from GridTracker.org).
+# Its own identity, so it installs beside the official GridTracker2 instead of over it: appId (installer GUID, taskbar
+# id), productName (install folder, Start menu, and userData: its own settings, logs and single-instance lock).
+# The executable is named for it too: electron-builder names the install folder and the uninstaller after executableName,
+# so with GridTracker2's it would install into the official app's folder (%LOCALAPPDATA%\Programs\GridTracker2).
+# Updates come from this repository's GitHub Releases (owner and repo: from its git remote at build time).
+appId: io.github.aj7kt.gridtracker2-woarm
+productName: GridTracker2 Unofficial WoARM
+# The code's copyright stays its authors' (BSD 3-Clause, LICENSE), not this build's
+copyright: Copyright © 2026 GridTracker.org and the GridTracker2 contributors. Unofficial build by AJ7KT
+extraMetadata:
+  name: gridtracker2-unofficial-woarm
+  productName: GridTracker2 Unofficial WoARM
+  # The exe's CompanyName, the installer's Publisher and the default copyright come from author: not the GridTracker Team's
+  # (an object: electron-builder reads author.name, and only package.json's own string author is turned into one)
+  author:
+    name: AJ7KT (unofficial build)
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CLAUDE.md,HISTORY.md,README.md,SVG Image Notes}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!tools{,/**/*}'
+  - '!docs{,/**/*}'
+  - '!plugins{,/**/*}'
+  - '!.cache{,/**/*}'
+  - '!.github{,/**/*}'
+  - '!electron-builder*.yml'
+asar: true
+afterPack: "./electron-builder-afterpack.js"
+win:
+  executableName: GridTracker2 Unofficial WoARM
+  target:
+    - target: nsis
+      arch:
+        - arm64
+nsis:
+  artifactName: GridTracker2-Unofficial-WoARM-${version}-setup.${ext}
+  shortcutName: GridTracker2 Unofficial WoARM
+  uninstallDisplayName: GridTracker2 Unofficial WoARM
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  menuCategory: GridTracker2 Unofficial WoARM
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  selectPerMachineByDefault: false
+  packElevateHelper: true
+  allowElevation: true
+  license: LICENSE
+  deleteAppDataOnUninstall: false
+  warningsAsErrors: false
+  preCompressedFileExtensions: [".png", ".mp3"]
+npmRebuild: false
+publish:
+  provider: github
+  releaseType: release

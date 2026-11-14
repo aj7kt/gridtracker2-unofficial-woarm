@@ -55,7 +55,13 @@ GT.gtLiveStatusUpdate = false;
 GT.oamsBandActivityData = null;
 GT.lastGtStatus = "";
 
+// Unofficial WoARM build: Off-Air Services (oams.space, GridTracker2's own online service) can't be turned on. Its code is kept;
+// its setting is held off at startup (loaders.js), its Settings row hidden and its checkbox ignored (network.js), and nothing
+// here connects
+const OFF_AIR_SERVICES_LEFT_OUT = true;
+
 function gtConnectChat() {
+  if (OFF_AIR_SERVICES_LEFT_OUT) return;
   if (GT.gtChatSocket != null) {
     GT.gtState = ChatState.error;
     GT.lastGtStatus = "";
@@ -1345,7 +1351,7 @@ GT.getEngineWasRunning = false;
 
 function gtChatStateMachine()
 {
-  if (GT.settings.app.offAirServicesEnable && !GT.settings.map.offlineMode && GT.settings.app.myCall.length > 2 && GT.settings.app.myCall != "NOCALL" && !GT.oamsDenied)
+  if (!OFF_AIR_SERVICES_LEFT_OUT && GT.settings.app.offAirServicesEnable && !GT.settings.map.offlineMode && GT.settings.app.myCall.length > 2 && GT.settings.app.myCall != "NOCALL" && !GT.oamsDenied)
   {
     GT.gtStateToFunction[GT.gtState]();
     GT.getEngineWasRunning = true;

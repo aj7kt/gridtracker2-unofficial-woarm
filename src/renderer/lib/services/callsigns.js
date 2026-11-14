@@ -231,7 +231,7 @@ function oqrsSettingsDisplay() { updateServiceUI("oqrs"); }
 function oqrsValuesChanged() { toggleService("oqrs", oqrsLoadCallsigns, oqrsSettingsDisplay); }
 function oqrsDownload() {
   if (window.oqrsUpdatedTd) oqrsUpdatedTd.innerHTML = "<b><i>Downloading...</i></b>";
-  getBuffer("https://app2.gridtracker.org/dbs/clublog.json", processoqrsCallsigns, null, "https", 443);
+  getBuffer("https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/clublog.json", processoqrsCallsigns, null, "https", 443);
 }
 function processoqrsCallsigns(buffer) {
   try { GT.oqrsCallsigns = JSON.parse(buffer); } catch (e) { GT.oqrsCallsigns = {}; }
@@ -254,7 +254,7 @@ function cacSettingsDisplay() { updateServiceUI("cac"); }
 function cacValuesChanged() { toggleService("cac", cacLoadCallsigns, cacSettingsDisplay); }
 function cacDownload() {
   if (window.cacUpdatedTd) cacUpdatedTd.innerHTML = "<b><i>Downloading...</i></b>";
-  getBuffer("https://app2.gridtracker.org/dbs/canada.txt", processCacCallsigns, null, "https", 443);
+  getBuffer("https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/canada.txt", processCacCallsigns, null, "https", 443);
 }
 function processCacCallsigns(buffer) {
   parseCacCallsigns(String(buffer));
@@ -301,7 +301,7 @@ function ulsValuesChanged() { toggleService("uls", ulsLoadCallsigns, ulsSettings
 function ulsDownload() {
   if (window.ulsUpdatedTd) ulsUpdatedTd.innerHTML = "<b><i>Downloading...</i></b>";
   if (window.ulsCountTd) ulsCountTd.innerHTML = 0;
-  getBuffer("https://app2.gridtracker.org/dbs/fipszips.txt", ulsDownloadHandler, null, "https", 443);
+  getBuffer("https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/fipszips.txt", ulsDownloadHandler, null, "https", 443);
 }
 function ulsDownloadHandler(data) {
   fs.writeFileSync(GT.ulsFile, data, { flush: true });
@@ -434,7 +434,7 @@ function downloadCtyDat() {
     bigctyUpdatedTd.innerHTML = "<b><i>Checking...</i></b>";
     bigctyDetailsTd.innerHTML = "";
   }
-  getBuffer("https://app2.gridtracker.org/dbs/ctydatver.json", processCtyDatVer, null, "https", 443);
+  getBuffer("https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/ctydatver.json", processCtyDatVer, null, "https", 443);
 }
 
 function processCtyDatVer(buffer) {
@@ -445,7 +445,7 @@ function processCtyDatVer(buffer) {
 
       if (GT.newDxccVersion > GT.dxccVersion) {
         if (window.bigctyUpdatedTd) bigctyUpdatedTd.innerHTML = "<b><i>Downloading...</i></b>";
-        getBuffer("https://app2.gridtracker.org/dbs/ctydat.json", processCtyDat, null, "https", 443);
+        getBuffer("https://aj7kt.github.io/gridtracker2-unofficial-woarm/dbs/ctydat.json", processCtyDat, null, "https", 443);
       } else {
         updateLookupsBigCtyUI();
         GT.downloadingCtyDat = false;

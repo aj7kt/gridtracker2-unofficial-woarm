@@ -305,6 +305,7 @@ function startupButtonsAndInputs()
     gtGridViewMode.value = GT.settings.app.gridViewMode;
     graylineImg.src = GT.GraylineImageArray[GT.settings.app.graylineImgSrc];
     gtFlagImg.src = GT.gtFlagImageArray[GT.settings.app.gtFlagImgSrc % 2];
+    if (OFF_AIR_SERVICES_LEFT_OUT) GT.settings.app.offAirServicesEnable = false;
     offAirServicesEnable.checked = GT.settings.app.offAirServicesEnable;
 
     alertMuteImg.src = GT.alertImageArray[GT.settings.audio.alertMute];

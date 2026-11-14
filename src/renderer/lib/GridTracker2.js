@@ -213,7 +213,8 @@ function loadAllSettings()
 loadAllSettings();
 
 const gtShortVersion = "v" + gtVersionStr;
-const gtUserAgent = "GridTracker/" + gtVersionStr;
+// Unofficial WoARM build: says so to the services it uses (User-Agent, x-user-agent, QRZ's agent)
+const gtUserAgent = "GridTracker2-Unofficial-WoARM/" + gtVersionStr;
 const backupAdifHeader = "GridTracker v" + gtVersion + " <EOH>\r\n";
 
 GT.lastVersionInfo = null;

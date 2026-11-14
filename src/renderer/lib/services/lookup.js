@@ -343,7 +343,7 @@ function getLookup(useCache)
   let url, callback;
   if (service == "QRZCQ")
   {
-    url = "https://ssl.qrzcq.com/xml?s=" + GT.qrzLookupSessionId + "&callsign=" + call + "&agent=GridTracker";
+    url = "https://ssl.qrzcq.com/xml?s=" + GT.qrzLookupSessionId + "&callsign=" + call + "&agent=GridTracker2-Unofficial-WoARM";
     callback = qrzLookupResults;
   }
   else if (service == "QRZ")
@@ -353,7 +353,7 @@ function getLookup(useCache)
   }
   else
   {
-    url = "https://www.hamqth.com/xml.php?id=" + GT.qrzLookupSessionId + "&callsign=" + call + "&prg=GridTracker";
+    url = "https://www.hamqth.com/xml.php?id=" + GT.qrzLookupSessionId + "&callsign=" + call + "&prg=GridTracker2-Unofficial-WoARM";
     callback = hamQthLookupResults;
   }
   const requested = GT.qrzLookupCallsign;

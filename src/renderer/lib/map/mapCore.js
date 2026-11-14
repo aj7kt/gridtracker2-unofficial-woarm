@@ -155,6 +155,8 @@ function initMap()
     return;
   }
 
+  // Unofficial WoARM build: maps served from tagloomis.com (the GridTracker2 developer's own server) are left out of the list
+  for (const key of Object.keys(mapsData)) if (JSON.stringify(mapsData[key]).includes("tagloomis.com")) delete mapsData[key];
   const sortedKeys = Object.keys(mapsData).sort();
   GT.maps = Object.fromEntries(sortedKeys.map(key => [key, mapsData[key]]));
 
