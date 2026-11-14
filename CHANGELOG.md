@@ -108,6 +108,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - New in Mode Colors and the map's Mode filter: CONTESTI, DMR, FREEDV, FSK, FSQCALL, JT44, JTMS, M17, MFSK11, MFSK64L, MFSK128L and MTONE
   - Statistics, Scores: a new Image type for SSTV, FAX and ATV QSOs, which counted as Other before; they now count toward Phone as well, as for DXCC, there and in the Call Roster's award tracking
 - Fixed: a Feed Roster QSO logged by hand with a Park now keeps its park, in your logs and in its POTA spot
+- Windows on ARM (such as Snapdragon laptops) now runs GridTracker2 natively: the Windows installer puts the ARM64 build there, instead of the Intel build running under emulation
+  - Rig control over serial ports works there too
 
 ### HTML List
 
@@ -243,5 +245,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     </ul>
   </li>
   <li>Fixed: a Feed Roster QSO logged by hand with a Park now keeps its park, in your logs and in its POTA spot</li>
+  <li>Windows on ARM (such as Snapdragon laptops) now runs GridTracker2 natively: the Windows installer puts the ARM64 build there, instead of the Intel build running under emulation
+    <ul>
+      <li>Rig control over serial ports works there too</li>
+    </ul>
+  </li>
 </ul>
 ```

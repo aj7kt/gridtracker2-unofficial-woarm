@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | Radio | An amateur radio transceiver, with a computer interface for digital modes |
-| Computer | A PC with an Intel or AMD processor (64 or 32 bit), a Mac with an Intel or Apple Silicon processor, or an ARM computer running Linux, such as a Raspberry Pi |
+| Computer | A PC with an Intel or AMD processor (64 or 32 bit) or an ARM processor (such as Snapdragon), a Mac with an Intel or Apple Silicon processor, or an ARM computer running Linux, such as a Raspberry Pi |
 | Monitor | 1024 × 768 or larger. A second or third monitor helps you watch WSJT-X, GridTracker2 and your SDR at once. |
 
 ## Operating Systems
