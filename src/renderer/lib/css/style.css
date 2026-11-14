@@ -3526,6 +3526,16 @@ img {
   border-color: var(--gt-hover-border);
 }
 
+/* The settings boxes (the main window's groups, BirdWatch's, the Call Roster's: its groups as the main window's and its Columns box,
+   style_roster.css): the Log QSO card's gradient, the App Theme's hover accent from the top down, with its light along the top edge.
+   Laid over each box's own background, see-through (the accent mixed with transparent, not black: on the black panels the same shades
+   as Log QSO's), so Map Settings Transparency still shows the map */
+.mapGroup,
+.mapItem {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--gt-hover-accent) 19%, transparent) 0%, color-mix(in srgb, var(--gt-hover-accent) 8%, transparent) 65%, color-mix(in srgb, var(--gt-hover-accent) 4%, transparent) 100%);
+  box-shadow: inset 0 1px 0 #ffffff14;
+}
+
 .buttonImg {
   height: 32px;
   padding: 0;
@@ -4201,7 +4211,7 @@ table.birdDopplerTable {
   text-align: left;
   border: 1px solid color-mix(in srgb, var(--gt-label) 40%, black);
   border-radius: 6px;
-  background: #00000066;
+  background-color: #00000066;
 }
 
 /* Enable: a source can be turned off without deleting it. A box and its words share one center line */

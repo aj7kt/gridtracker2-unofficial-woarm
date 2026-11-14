@@ -319,7 +319,7 @@ The **Decoders** tab has a box for each mode. (The decoder's Log QSO buttons and
 
 Some modes have settings of their own here, described in [Decoder Modes](Decoder-Modes.md):
 
-* **SSTV:** **Save Pictures**, and its **Folder** (click it to open it, **Choose** to pick another).
+* **SSTV:** **Save Pictures**, and its **Folder** (click it to open it, **Choose** to pick another); **Original Size**; **Start Without VIS**.
 
 Running one sound card for several radios? Turn off **Common Input Device** and **Common VFO**, and give each mode its own. For example, SSTV can listen to an SDR on a VFO of its own while CW listens to your HF rig.
 

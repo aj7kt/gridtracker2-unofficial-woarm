@@ -31,7 +31,7 @@
 <img src="_images/GridTracker_logo.png" alt="GridTracker2 logo">
 <h1 class="gt-cover-title">GridTracker2 User Guide</h1>
 <p class="gt-cover-version">Version 2.261113.2</p>
-<p class="gt-cover-date">November 13, 2026</p>
+<p class="gt-cover-date">November 14, 2026</p>
 <p class="gt-cover-site">gridtracker.org</p>
 </div>
             
@@ -3065,7 +3065,7 @@
 </ul>
 <p>Some modes have settings of their own here, described in <a class="reference internal" href="#document-Multi-Mode-Decoder/Decoder-Modes"><span class="std std-doc">Decoder Modes</span></a>:</p>
 <ul class="simple">
-<li><p><strong>SSTV:</strong> <strong>Save Pictures</strong>, and its <strong>Folder</strong> (click it to open it, <strong>Choose</strong> to pick another).</p></li>
+<li><p><strong>SSTV:</strong> <strong>Save Pictures</strong>, and its <strong>Folder</strong> (click it to open it, <strong>Choose</strong> to pick another); <strong>Original Size</strong>; <strong>Start Without VIS</strong>.</p></li>
 </ul>
 <p>Running one sound card for several radios? Turn off <strong>Common Input Device</strong> and <strong>Common VFO</strong>, and give each mode its own. For example, SSTV can listen to an SDR on a VFO of its own while CW listens to your HF rig.</p>
 <p>A VFO removed in Rig Control is taken out of every mode’s menu at once; a mode that used it uses <strong>None</strong> until you pick another.</p>
@@ -3133,6 +3133,8 @@
 </li>
 <li><p>Each time the window opens, the newest 12 pictures in the save folder are back in the strip.</p></li>
 <li><p><strong>Save Pictures</strong> (the window’s <strong>Settings</strong> → <strong>Decoders</strong>, under <strong>SSTV</strong>; on at first) saves each picture as a PNG named by its UTC time, mode and frequency, however much of it came. <strong>Folder</strong> shows where they go, as its last two folders (hover over it to see the whole path, click it to open it); <strong>Choose</strong> picks another.</p></li>
+<li><p><strong>Original Size</strong> (under <strong>SSTV</strong> in <strong>Settings</strong> → <strong>Decoders</strong>, and in a picture’s right-click menu; off at first) shows the picture at its own size, one picture pixel to one screen pixel, instead of fitted to the window. A picture bigger than its place (PD 120, PD 180 in a small window) is cut at the edges.</p></li>
+<li><p><strong>Start Without VIS</strong> (under <strong>SSTV</strong> in <strong>Settings</strong> → <strong>Decoders</strong>; off at first) picks up a picture whose start was missed, such as a satellite pass that comes up in the middle of one, from its sync pulses. It starts a few seconds into the signal, is drawn from the top as it comes (where in the picture it began isn’t known), and ends when the sync pulses stop. Robot 36’s colors are put in the right order from the tones between its lines.</p></li>
 <li><p><strong>Frequency menu:</strong> the usual SSTV frequencies from 160 to 2 meters, and the ISS’s SSTV events on 145.800 MHz. There are none on 60 and 30 meters, where pictures may not be sent. <strong>Set Mode</strong> sets the rig to the frequency’s sideband (LSB below 10 MHz, USB above), or FM for the ISS.</p></li>
 <li><p>With <strong>Follow BirdWatch</strong>, a satellite’s SSTV transmitter switches the decoder to SSTV.</p></li>
 </ul>

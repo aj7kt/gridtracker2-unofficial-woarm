@@ -2292,5 +2292,16 @@
 	"mmd.store.enterLicense.label": "Saisir la Licence",
 	"mmd.store.noLicense": "Aucune licence",
 	"mmd.store.otherCall": "Licence pour un autre indicatif",
-	"mmd.store.loadsOnRestart": "Se charge au redémarrage de GridTracker2"
+	"mmd.store.loadsOnRestart": "Se charge au redémarrage de GridTracker2",
+	"settings.sstvDecoder.originalSize.label": "Taille Originale",
+	"settings.sstvDecoder.originalSize.hover": "Les images sont affichées à leur taille réelle (un pixel d'image par pixel d'écran), sans être ajustées à la fenêtre",
+	"settings.sstvDecoder.noVis.label": "Démarrer Sans VIS",
+	"settings.sstvDecoder.noVis.hover": "Une image dont le début (son code VIS) a été manqué est reprise à partir de ses impulsions de synchronisation et dessinée depuis le haut à mesure qu'elle arrive",
+	"roster.settings.group.roster.label": "Roster",
+	"roster.settings.group.window.label": "Fenêtre",
+	"roster.settings.saturate.label": "Saturation",
+	"roster.settings.sepia.label": "Sépia",
+	"roster.ignores.add.label": "Ajouter Un Ignoré",
+	"roster.ignores.entity.label": "Type",
+	"roster.watcher.edit.label": "Ajouter / Modifier Une Veille"
 }

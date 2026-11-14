@@ -1669,7 +1669,6 @@ function showRosterTab(name, render = true)
   callRosterTab.classList.toggle("active", name === "call");
   feedRosterTab.classList.toggle("active", name === "feed");
   rosterBody.classList.toggle("feedRosterShown", name === "feed");
-  rosterSettingsTitle.textContent = I18N(name === "feed" ? "roster.settings.feed" : "roster.settings.call");
 
   createColumnMenu();
   applyActiveRoster();

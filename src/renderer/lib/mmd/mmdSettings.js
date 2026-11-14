@@ -7,7 +7,7 @@
 // anything at all), Follow BirdWatch, RSID, Common Input Device and Common VFO (each with its menu: on, each decoder's own is hidden and
 // kept). Decoders: each decoder's own settings, the same rows in each (its Input Device and VFO; what it may send the rig, shown with Rig
 // Control on: Set Frequency and Set Mode, each on its own; then its own: SSTV's Save Pictures and folder; a plugin's in its own box,
-// FT8's Depth). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
+// FT8's Depth; SSTV's Original Size). Band Plans (mmdBands.js). All in GT.settings.MMD, read as used
 
 function mmdSettingsShow(show)
 {
@@ -66,6 +66,9 @@ function mmdSettingsRender()
   for (const mode of MMD_MODES) if (!["cw", "sstv", "wwv"].includes(mode) && window[mode + "SetModeValue"]) window[mode + "SetModeValue"].checked = S[mode + "SetMode"] === true;
   sstvSaveValue.checked = S.sstvSave === true;
   sstvFolderTr.style.display = S.sstvSave === true ? "" : "none";
+  // Original Size (mmdPicSetOriginalSize: the picture's right-click has it too)
+  sstvOriginalSizeValue.checked = S.sstvOriginalSize === true;
+  sstvNoVisValue.checked = S.sstvNoVis === true;
   mmdShortFolder(sstvFolderText, window.opener.mmDecoderSstvFolder(), "settings.sstvDecoder.folder.hover");
   // The plugins' own boxes (their registrations' settingsRender: FT8's Depth, NAVTEX's Set Mode and Save Messages)
   mmdPluginsEach("settingsRender", S);
@@ -259,6 +262,14 @@ function mmdSetFallSpeed()
 function mmdSetSstvSave()
 {
   GT.settings.MMD.sstvSave = sstvSaveValue.checked;
+  mmdSettingsRender();
+}
+
+// The SSTV Decoder's Start Without VIS: told to its worker at once (mmdSstvConfig)
+function mmdSetSstvNoVis()
+{
+  GT.settings.MMD.sstvNoVis = sstvNoVisValue.checked;
+  mmdSstvConfig();
   mmdSettingsRender();
 }
 

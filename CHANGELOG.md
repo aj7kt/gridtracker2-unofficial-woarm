@@ -30,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - In most modes every signal in the passband is decoded at once
   - It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening
   - With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency
-  - SSTV pictures are kept and can be saved
+  - SSTV pictures are kept and can be saved, and shown at their original size; Start Without VIS picks up a picture whose start was missed, such as a satellite pass that comes up in the middle of one
   - WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first (and notes the change in the Event Viewer)
   - WWV / WWVH's Best Signal Search: with Rig Control, listens on each WWV frequency in turn and tunes your rig to the one heard best
   - An Icom's own band scope (IC-7300 and others) can show above the waterfall
@@ -142,7 +142,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>In most modes every signal in the passband is decoded at once</li>
       <li>It keeps decoding while its window is hidden or minimized; a green dot on its button shows it's listening</li>
       <li>With Rig Control: signals shown at their frequency on the air, a Frequency menu with each mode's usual frequencies on every band, and picking a mode tunes the rig to its main frequency</li>
-      <li>SSTV pictures are kept and can be saved</li>
+      <li>SSTV pictures are kept and can be saved, and shown at their original size; Start Without VIS picks up a picture whose start was missed, such as a satellite pass that comes up in the middle of one</li>
       <li>WWV / WWVH: NIST's time stations' time code (UTC, date, DUT1, leap second and daylight saving time), each station heard, and how far your PC clock is off from them, with a Set PC Clock button that asks your system for permission first (and notes the change in the Event Viewer)</li>
       <li>WWV / WWVH's Best Signal Search: with Rig Control, listens on each WWV frequency in turn and tunes your rig to the one heard best</li>
       <li>An Icom's own band scope (IC-7300 and others) can show above the waterfall</li>

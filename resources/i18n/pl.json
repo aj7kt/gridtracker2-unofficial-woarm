@@ -2292,5 +2292,16 @@
   "mmd.store.enterLicense.label": "Wprowadź Licencję",
   "mmd.store.noLicense": "Brak licencji",
   "mmd.store.otherCall": "Licencja na inny znak wywoławczy",
-  "mmd.store.loadsOnRestart": "Zostanie wczytany po ponownym uruchomieniu GridTracker2"
+  "mmd.store.loadsOnRestart": "Zostanie wczytany po ponownym uruchomieniu GridTracker2",
+  "settings.sstvDecoder.originalSize.label": "Rozmiar Oryginalny",
+  "settings.sstvDecoder.originalSize.hover": "Obrazy są pokazywane w ich własnym rozmiarze (jeden piksel obrazu na piksel ekranu), bez dopasowania do okna",
+  "settings.sstvDecoder.noVis.label": "Start Bez VIS",
+  "settings.sstvDecoder.noVis.hover": "Obraz, którego początek (kod VIS) został pominięty, jest wychwytywany z impulsów synchronizacji i rysowany od góry w miarę odbioru",
+  "roster.settings.group.roster.label": "Roster",
+  "roster.settings.group.window.label": "Okno",
+  "roster.settings.saturate.label": "Nasycenie",
+  "roster.settings.sepia.label": "Sepia",
+  "roster.ignores.add.label": "Dodaj Ignorowanie",
+  "roster.ignores.entity.label": "Rodzaj",
+  "roster.watcher.edit.label": "Dodaj / Edytuj Obserwatora"
 }

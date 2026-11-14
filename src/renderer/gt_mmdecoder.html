@@ -1324,6 +1324,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                   <td class="mapRowLabel mapRowLabelLeft"><span data-i18n="settings.sstvDecoder.folder.label">Folder</span></td>
                   <td><span id="sstvFolderText" class="mapValue" style="cursor: pointer; white-space: normal; word-break: break-all;" data-i18n="settings.sstvDecoder.folder.hover" title="Where pictures are saved: click to open it" onclick="mmdSetPicturesFolderOpen('sstv');"></span> <div class="button birdTleButton" style="display: inline-block; padding: 2px 10px;" data-i18n="settings.sstvDecoder.choose.hover" title="Pick another folder" onclick="mmdSetPicturesFolderChoose('sstv');"><span data-i18n="settings.sstvDecoder.choose.label">Choose</span></div></td>
                 </tr>
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="sstvOriginalSizeValue" data-i18n="settings.sstvDecoder.originalSize.hover" title="Pictures are shown at their own size (one picture pixel to one screen pixel), not fitted to the window" onclick="mmdPicSetOriginalSize(this.checked);" /> <label for="sstvOriginalSizeValue" data-i18n="settings.sstvDecoder.originalSize.label">Original Size</label></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="mapRowLabel mapRowLabelLeft"><input type="checkbox" id="sstvNoVisValue" data-i18n="settings.sstvDecoder.noVis.hover" title="A picture whose start (its VIS code) was missed is picked up from its sync pulses and drawn from the top as it comes" onclick="mmdSetSstvNoVis();" /> <label for="sstvNoVisValue" data-i18n="settings.sstvDecoder.noVis.label">Start Without VIS</label></td>
+                </tr>
               </table>
             </div>
             <!-- WWV and WWVH (mmdWwv.js): its frequencies are 1 kHz under each carrier, USB -->

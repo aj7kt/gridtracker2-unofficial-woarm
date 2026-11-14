@@ -8,7 +8,8 @@
 // each moment's frequency read from a short spectrum whose window grows as the signal weakens, and the line rate taken from the sync
 // pulses (a sound card's clock a little off slants the picture; here it is measured as the lines come in, and the picture redrawn).
 //
-// In:  { type: "audio", samples (Float32Array at 12 kHz, one chunk after another) }, { type: "reset" } (the audio started again)
+// In:  { type: "audio", samples (Float32Array at 12 kHz, one chunk after another) }, { type: "reset" } (the audio started again),
+//      { type: "config", noVis } (Start Without VIS: sstvSyncStart)
 // Out: { type: "start", id, mode, name, width, height }  a picture begins (its VIS code was heard)
 //      { type: "rows", id, from, count, rgba }            rows from .. from + count - 1 (Uint8ClampedArray, width * count * 4)
 //      { type: "redraw", id, count, rgba }                its first count rows again (the line rate measured better)
@@ -34,6 +35,15 @@ const SSTV_IDLE_HI = 3300;
 const SSTV_IDLE_WINDOW = 140;
 // The window by the signal to noise ratio (samples; slowrx's lengths at this rate): strong signals read sharply, weak ones steadily
 const SSTV_WINDOWS = [[20, 14], [10, 18], [9, 26], [3, 36], [-5, 70], [-10, 140], [-Infinity, 256]];
+// The ratio it is chosen by: the median of the newest SSTV_SNR_KEEP measurements (each over 256 samples, 21 ms), less SSTV_SNR_BIAS dB.
+// One measurement swings with the picture itself (a sync pulse, fine detail) and with a satellite's FM or a fading HF signal, which
+// changed the window several times a line; steadier and a little longer, the pictures read closer to what was sent (by 1 to 6 dB on FM
+// satellite recordings and on HF-like noise, 0.4 dB softer on a strong clean signal)
+const SSTV_SNR_KEEP = 15;
+const SSTV_SNR_BIAS = 6;
+// A picture's color is cleaned (sstvPaint) on the lines read with a window longer than this (the signal not strong): noise there shows
+// as specks of color, while the color carries little fine detail (Robot and PD send it at half resolution)
+const SSTV_CLEAN_WINDOW = 14;
 // The sync pulses are found in readings with a window of their own (3 ms: 1200 Hz told from the porch's 1500 Hz, and short beside a pulse),
 // as where the frequency climbs out of the sync tone (below SSTV_SYNC_EDGE above it)
 const SSTV_SYNC_WINDOW = 36;
@@ -120,13 +130,22 @@ const S = {
   est: 0,         // readings ever made
   window: 36,     // the window now (samples)
   snr: -20,
+  snrs: [],       // the newest measurements, for the window (SSTV_SNR_KEEP)
+  full: -1,       // within a picture, the newest reading whose frequencies were worked out (sstvReadAll; -1: none yet)
   hann: {},
   cos: null,
   sin: null,
   visFrom: 0,     // the reading the VIS search goes on from
   pic: null,      // the picture being received
   nextId: 1,
-  statusAt: 0
+  statusAt: 0,
+  // Start Without VIS (MMD.sstvNoVis, the "config" message): a picture whose VIS code was missed started from its sync pulses
+  // (sstvSyncStart); the reading it last looked at, the train it found then (to be found again before it starts), and the reading the
+  // last picture ended at (its own pulses are not looked at again)
+  noVis: false,
+  syncCheckAt: 0,
+  syncSeen: null,
+  quietFrom: 0
 };
 
 function sstvTables()
@@ -158,9 +177,14 @@ function sstvReset()
   S.est = 0;
   S.visFrom = 0;
   S.snr = -20;
+  S.snrs = [];
+  S.full = -1;
   S.window = 36;
   if (S.pic) sstvFinish(false);
   S.pic = null;
+  S.syncCheckAt = 0;
+  S.syncSeen = null;
+  S.quietFrom = 0;
 }
 
 // ---- Reading the frequency
@@ -189,7 +213,10 @@ function sstvRead(c, pic)
   {
     sstvSpectrum(c, SSTV_IDLE_WINDOW, SSTV_IDLE_LO, SSTV_IDLE_HI);
     const f = sstvPeak(SSTV_IDLE_LO, SSTV_IDLE_HI);
-    return [f, f, f];
+    if (!S.noVis) return [f, f, f];
+    // Start Without VIS: the sync pulses' own reading too, for sstvSyncStart
+    sstvSpectrum(c, SSTV_SYNC_WINDOW, SSTV_IDLE_LO, SSTV_IDLE_HI);
+    return [f, f, sstvPeak(SSTV_IDLE_LO, SSTV_IDLE_HI)];
   }
   const lo = 1000 + pic.shift, hi = 2500 + pic.shift;
   sstvSpectrum(c, S.window, lo, hi);
@@ -224,11 +251,35 @@ function sstvSpectrum(c, length, lo, hi)
 
 // The signal to noise ratio (dB) from the newest 256 samples: the power from black to white against the noise either side of the signal
 // (400 to 800 Hz and 2700 to 3400 Hz, each moved with the picture's sender when one comes in), in the same width
+// Its every other sample windowed (SSTV_SNR_X), and each bin's cosine and sine at those samples (SSTV_SNR_COS, SSTV_SNR_SIN: by bin, up to
+// 5500 Hz), worked out once (a Math.cos and Math.sin a sample each time took half the worker's time)
+const SSTV_SNR_X = new Float64Array(SSTV_N / 2);
+const SSTV_SNR_COS = [];
+const SSTV_SNR_SIN = [];
+
+function sstvSnrTables()
+{
+  for (let k = 0; k <= Math.round(5500 / SSTV_BIN_HZ); k++)
+  {
+    const c = new Float64Array(SSTV_N / 2), s = new Float64Array(SSTV_N / 2);
+    for (let m = 0; m < SSTV_N / 2; m++)
+    {
+      const p = (2 * Math.PI * k * 2 * m) / SSTV_N;
+      c[m] = Math.cos(p);
+      s[m] = Math.sin(p);
+    }
+    SSTV_SNR_COS.push(c);
+    SSTV_SNR_SIN.push(s);
+  }
+}
+
 function sstvSnr()
 {
   const mask = S.samples.length - 1;
   const first = S.count - SSTV_N;
   const shift = S.pic ? S.pic.shift : 0;
+  if (!SSTV_SNR_COS.length) sstvSnrTables();
+  for (let m = 0; m < SSTV_N / 2; m++) SSTV_SNR_X[m] = S.samples[(first + 2 * m) & mask] * (0.5 - 0.5 * Math.cos((2 * Math.PI * 2 * m) / SSTV_N));
   const power = (lo, hi) =>
   {
     lo = Math.max(100, lo + shift);
@@ -236,13 +287,12 @@ function sstvSnr()
     let sum = 0;
     for (let k = Math.round(lo / SSTV_BIN_HZ); k <= Math.round(hi / SSTV_BIN_HZ); k++)
     {
+      const ct = SSTV_SNR_COS[k], st = SSTV_SNR_SIN[k];
       let re = 0, im = 0;
-      for (let n = 0; n < SSTV_N; n += 2)
+      for (let m = 0; m < SSTV_N / 2; m++)
       {
-        const x = S.samples[(first + n) & mask] * (0.5 - 0.5 * Math.cos((2 * Math.PI * n) / SSTV_N));
-        const p = (2 * Math.PI * k * n) / SSTV_N;
-        re += x * Math.cos(p);
-        im += x * Math.sin(p);
+        re += SSTV_SNR_X[m] * ct[m];
+        im += SSTV_SNR_X[m] * st[m];
       }
       sum += re * re + im * im;
     }
@@ -252,9 +302,13 @@ function sstvSnr()
   const noise = (n1 + n2) / (c1 + c2) + 1e-20;
   const snr = 10 * Math.log10(Math.max(1e-6, sv - noise * cv) / (noise * cv));
   S.snr = Math.max(-20, snr);
+  S.snrs.push(S.snr);
+  if (S.snrs.length > SSTV_SNR_KEEP) S.snrs.shift();
+  const sorted = S.snrs.slice().sort((a, b) => a - b);
+  const steady = sorted[sorted.length >> 1] - SSTV_SNR_BIAS;
   for (const [above, length] of SSTV_WINDOWS)
   {
-    if (S.snr >= above)
+    if (steady >= above)
     {
       S.window = length;
       break;
@@ -274,8 +328,9 @@ function sstvFeed(samples)
     if ((S.count & 255) == 0) sstvSnr();
   }
   sstvReadAll();
-  // A picture just begun: read again from its start, at the full rate and within its range
-  if (sstvVisSearch()) sstvReadAll();
+  // A picture just begun (its VIS code heard, or with Start Without VIS its sync pulses): read again from its start, at the full rate and
+  // within its range
+  if (sstvVisSearch() || sstvSyncStart()) sstvReadAll();
   if (S.pic) sstvLinesIn();
   const now = Date.now();
   if (now - S.statusAt > 500)
@@ -287,13 +342,18 @@ function sstvFeed(samples)
 }
 
 // The readings the samples allow (each needs the samples up to half the longest window past its center); with no picture coming in, one
-// every SSTV_IDLE_STEP, the ones between it the same
+// every SSTV_IDLE_STEP, the ones between it the same. Within a picture read with a long window (SSTV_STRIDE_FROM samples or more: it
+// changes slowly), its frequencies are worked out every window / 32 readings and the ones between drawn straight from one to the next
+// (the sync pulses' own reading still at every one): a 256-sample window costs a sixth of what it would
+const SSTV_STRIDE_FROM = 70;
+
 function sstvReadAll()
 {
   const fmask = S.freq.length - 1;
   while (S.est * SSTV_STEP + 129 <= S.count)
   {
     const i = S.est & fmask;
+    const stride = S.pic && S.window >= SSTV_STRIDE_FROM ? S.window >> 5 : 1;
     if (!S.pic && S.est % SSTV_IDLE_STEP != 0)
     {
       const before = (S.est - 1) & fmask;
@@ -301,7 +361,28 @@ function sstvReadAll()
       S.wide[i] = S.wide[before];
       S.sync[i] = S.sync[before];
     }
-    else [S.freq[i], S.wide[i], S.sync[i]] = sstvRead(S.est * SSTV_STEP, S.pic);
+    else if (stride > 1 && S.est % stride != 0 && S.full >= 0 && S.est > S.full && S.est - S.full < 16)
+    {
+      // Between two worked out: filled in at the next one
+      const lo = 1000 + S.pic.shift, hi = 2500 + S.pic.shift;
+      sstvSpectrum(S.est * SSTV_STEP, SSTV_SYNC_WINDOW, lo, hi);
+      S.sync[i] = sstvPeak(lo, hi);
+    }
+    else
+    {
+      [S.freq[i], S.wide[i], S.sync[i]] = sstvRead(S.est * SSTV_STEP, S.pic);
+      if (S.pic && S.full >= 0 && S.est - S.full > 1 && S.est - S.full < 16)
+      {
+        const a = S.full & fmask, gap = S.est - S.full;
+        for (let k = 1; k < gap; k++)
+        {
+          const j = (S.full + k) & fmask, f = k / gap;
+          S.freq[j] = S.freq[a] + (S.freq[i] - S.freq[a]) * f;
+          S.wide[j] = S.wide[a] + (S.wide[i] - S.wide[a]) * f;
+        }
+      }
+      S.full = S.pic ? S.est : -1;
+    }
     S.est++;
   }
 }
@@ -401,9 +482,104 @@ function sstvVisSearch()
   return true;
 }
 
+// ---- Start Without VIS (S.noVis): with no picture coming in, every SSTV_SYNC_CHECK s the newest lines' worth of sync readings (6 to 16
+// lines, at most SSTV_SYNC_SPAN s) are laid side by side at each mode's line period, its shortest first. A train of the mode's sync
+// pulses shows as one place in the line where the readings agree (SSTV_SYNC_AGREE of them within 60 Hz) on the lowest steady tone (1200 Hz
+// with the sender up to SSTV_SHIFT_MAX off), for about as long as its pulse, with the porch after it 200 Hz or more higher, that tone
+// nowhere else in the line and the rest of it mostly between black and white (a data signal's carrier passed the others). Found the
+// same way twice in a row (the same mode, its pulses where they were), the picture starts at the first of those lines, drawn from the
+// top: where it began isn't known (Robot 36's separators tell its color differences apart: sstvSeparator). It ends after
+// SSTV_SYNC_LOST lines with no pulse, those left out (sstvLinesIn), and is never complete
+const SSTV_SYNC_CHECK = 0.5;
+const SSTV_SYNC_SPAN = 6;
+const SSTV_SYNC_AGREE = 0.75;
+const SSTV_SYNC_LOST = 12;
+const SSTV_SYNC_SORT = new Float32Array(16);
+
+function sstvSyncStart()
+{
+  if (!S.noVis || S.pic || S.est - S.syncCheckAt < SSTV_SYNC_CHECK * SSTV_EST_RATE) return false;
+  S.syncCheckAt = S.est;
+  const smask = S.sync.length - 1, step = SSTV_IDLE_STEP;
+  let found = null;
+  for (const mode of SSTV_MODES.slice().sort((p, q) => p.line - q.line))
+  {
+    const period = mode.line * SSTV_EST_RATE;
+    const lines = Math.max(6, Math.min(16, Math.floor(SSTV_SYNC_SPAN / mode.line)));
+    const first = S.est - 1 - period * lines;
+    // (All of them heard since the last picture ended, and their samples still kept to read the picture again from)
+    if (first < S.quietFrom || first * SSTV_STEP - 4096 < S.count - S.samples.length) continue;
+    const phases = Math.floor(period / step);
+    const med = new Float32Array(phases), agree = new Float32Array(phases);
+    const v = SSTV_SYNC_SORT.subarray(0, lines);
+    for (let p = 0; p < phases; p++)
+    {
+      for (let k = 0; k < lines; k++) v[k] = S.sync[Math.round(first + k * period + p * step) & smask];
+      v.sort();
+      const m = v[lines >> 1];
+      let near = 0;
+      for (let k = 0; k < lines; k++) if (Math.abs(v[k] - m) < 60) near++;
+      med[p] = m;
+      agree[p] = near / lines;
+    }
+    let low = Infinity, at = -1;
+    for (let p = 0; p < phases; p++)
+    {
+      if (agree[p] >= SSTV_SYNC_AGREE && med[p] < low)
+      {
+        low = med[p];
+        at = p;
+      }
+    }
+    if (at < 0 || Math.abs(low - SSTV_SYNC) > SSTV_SHIFT_MAX) continue;
+    // The run of steady phases at it (round the line), as long as the mode's pulse
+    const wrap = (p) => ((p % phases) + phases) % phases;
+    const steady = (p) => agree[wrap(p)] >= SSTV_SYNC_AGREE && Math.abs(med[wrap(p)] - low) < 60;
+    let a = at, b = at;
+    while (b - a < phases && steady(b + 1)) b++;
+    while (b - a < phases && steady(a - 1)) a--;
+    const width = ((b - a + 1) * step) / SSTV_MS, pulse = mode.sync * 1000;
+    if (width < Math.max(2, pulse * 0.4) || width > pulse + 6) continue;
+    // The porch after it higher
+    const after = [];
+    for (let ms = 2; ms <= 5; ms++) after.push(med[wrap(b + Math.round((ms * SSTV_MS) / step))]);
+    after.sort((p, q) => p - q);
+    if (after[2] - low < 200) continue;
+    // The rest of the line a picture: its tone nowhere else (a carrier's would be), and the line mostly between black and white (250 to
+    // 1200 Hz above it)
+    const clearOf = Math.round(((pulse + 3) * SSTV_MS) / step);
+    let rest = 0, atLow = 0, inPicture = 0;
+    for (let p = b + clearOf; p < a + phases - clearOf; p++)
+    {
+      const m = med[wrap(p)];
+      rest++;
+      if (Math.abs(m - low) < 60) atLow++;
+      if (m >= low + 250 && m <= low + 1200) inPicture++;
+    }
+    if (rest == 0 || atLow > rest * 0.05 || inPicture < rest * 0.7) continue;
+    // From the first of those lines whose own pulse (and the next two's) is there: never from noise before the signal came, whose pulse
+    // the line rate would be measured from
+    const there = (k) => Math.abs(S.sync[Math.round(first + k * period + at * step) & smask] - low) < 60;
+    let k0 = 0;
+    while (k0 < lines - 3 && !(there(k0) && there(k0 + 1) && there(k0 + 2))) k0++;
+    found = { mode, period, end: first + k0 * period + b * step, shift: low - SSTV_SYNC };
+    break;
+  }
+  const seen = S.syncSeen;
+  S.syncSeen = found ? { vis: found.mode.vis, end: found.end, period: found.period } : null;
+  if (!found || !seen || seen.vis != found.mode.vis) return false;
+  // Its pulses where they were half a second ago (within 5 ms of a whole number of lines on)
+  const off = (((found.end - seen.end) % found.period) + found.period) % found.period;
+  if (Math.min(off, found.period - off) > 5 * SSTV_MS) return false;
+  // The first line's start, from its pulse's end (Scottie's lead pulse before it, as sstvStart adds)
+  const mode = found.mode;
+  sstvStart(mode, found.end - (mode.syncEnd + (mode.lead || 0)) * SSTV_EST_RATE, found.shift, true);
+  return true;
+}
+
 // ---- A picture's lines
 
-function sstvStart(mode, at, shift)
+function sstvStart(mode, at, shift, noVis = false)
 {
   if (S.pic) sstvFinish(false);
   const id = S.nextId++;
@@ -414,6 +590,7 @@ function sstvStart(mode, at, shift)
     // tone (sstvSyncTone: a sender that drifts, a satellite's Doppler); lineShift: the one each line was read with
     id, mode, shift, period,
     lineShift: [],
+    tones: [],        // the newest sync pulses' tones (sstvSyncTone), for the one followed
     lines: sstvLines(mode),
     // The line rate and where line 0's sync pulse ends (readings): as the mode says, until the pulses are measured
     a: start + mode.syncEnd * SSTV_EST_RATE, b: period, nominal: period,
@@ -423,11 +600,28 @@ function sstvStart(mode, at, shift)
     drawnAt: [],      // the start each drawn line was read from (to tell when a better rate moves them)
     redrawnAt: 0,
     rgba: new Uint8ClampedArray(mode.width * mode.height * 4),
-    chroma: null      // Robot 36: the even line's R-Y, for the odd line after it
+    // Each row's luminance and color differences as read (0 to 255, the differences about 128), painted into rgba with the color cleaned
+    // (sstvPaint); the window each line was read with
+    Y: new Float32Array(mode.width * mode.height),
+    U: new Float32Array(mode.width * mode.height),
+    V: new Float32Array(mode.width * mode.height),
+    lineWindow: [],
+    // Robot 36: the separators' votes, and 1 when the even lines carry B-Y (sstvSeparator)
+    sepAgree: 0,
+    sepDisagree: 0,
+    parity: 0,
+    reparity: false,
+    // Started without its VIS code (sstvSyncStart), and the lines in a row since its last sync pulse
+    noVis,
+    lost: 0,
+    lastClear: -1,    // its last line with a clear pulse
+    chroma: null      // Robot 36: the even line's color difference, for the odd line after it
   };
   // Read again from just before it starts (the samples are still kept): at the full rate, within its range
   const back = Math.floor(at - 10 * SSTV_MS);
   if (back * SSTV_STEP - 129 > S.count - S.samples.length) S.est = Math.min(S.est, back);
+  S.full = -1;
+  S.syncSeen = null;
   S.out({ type: "start", id, mode: mode.vis, name: mode.name, width: mode.width, height: mode.height, shift: Math.round(shift) });
 }
 
@@ -471,18 +665,29 @@ function sstvSyncEnd(pic, y)
 
 // The sender's tones followed (Hz): the sync tone's median over the pulse that ends at reading at (its middle: the edges left out), less
 // where it belongs. Null when too few readings agree on it (noise). A sender that drifts, or a satellite's Doppler not yet corrected
-// (BirdWatch retunes in steps), moves it line by line, and the picture's levels and the next pulses are read with it
+// (BirdWatch retunes in steps), moves it line by line, and the picture's levels and the next pulses are read with it (sstvLinesIn).
+// In noise the readings fall to the bottom of their range (a receiver's hiss is loudest low, an FM one's most of all) and agree there:
+// the readings within a bin of it are left out, the tone followed is the median of the newest SSTV_FOLLOW_LINES lines' (from the third),
+// and it moves at most SSTV_FOLLOW_STEP Hz a line (a drifting sender or a Doppler moves a few). Without these, an ISS pass's noise once
+// read every tone 170 Hz high for a dozen lines: a magenta band across the picture
 const SSTV_FOLLOW_MAX = 200;
 const SSTV_FOLLOW_GAIN = 0.5;
+const SSTV_FOLLOW_LINES = 5;
+const SSTV_FOLLOW_STEP = 25;
 
 function sstvSyncTone(pic, at)
 {
   const smask = S.sync.length - 1;
   const length = Math.round(pic.mode.sync * SSTV_EST_RATE);
   const from = Math.round(at - length * 0.85), to = Math.round(at - length * 0.15);
+  const floor = 1000 + pic.shift + SSTV_BIN_HZ;
   let n = 0;
-  for (let i = from; i < to && n < SSTV_MEDIAN.length; i++) SSTV_MEDIAN[n++] = S.sync[i & smask];
-  if (n < 5) return null;
+  for (let i = from; i < to && n < SSTV_MEDIAN.length; i++)
+  {
+    const v = S.sync[i & smask];
+    if (v > floor) SSTV_MEDIAN[n++] = v;
+  }
+  if (n < 5 || n < (to - from) * 0.6) return null;
   const values = SSTV_MEDIAN.subarray(0, n).sort();
   const median = values[n >> 1];
   let near = 0;
@@ -556,17 +761,87 @@ function sstvChannel(pic, y, channel, out)
   return out;
 }
 
-// Y, R-Y and B-Y (0 to 255, the differences about 128) to a row of the picture
+// Y, R-Y and B-Y (0 to 255, the differences about 128) of a row of the picture, kept for sstvPaint
 function sstvYuvRow(pic, row, Y, V, U)
 {
-  const w = pic.mode.width, rgba = pic.rgba;
+  const w = pic.mode.width, at = row * w;
   for (let x = 0; x < w; x++)
   {
-    const i = (row * w + x) * 4, v = V[x] - 128, u = U[x] - 128;
-    rgba[i] = Y[x] + 1.402 * v;
-    rgba[i + 1] = Y[x] - 0.344 * u - 0.714 * v;
-    rgba[i + 2] = Y[x] + 1.772 * u;
-    rgba[i + 3] = 255;
+    pic.Y[at + x] = Y[x];
+    pic.U[at + x] = U[x];
+    pic.V[at + x] = V[x];
+  }
+}
+
+// The line a row is read from
+function sstvRowLine(pic, row)
+{
+  return pic.mode.family == "pd" ? row >> 1 : row;
+}
+
+// Rows from .. to - 1 painted into rgba from the planes kept, the rows up to avail - 1 there to be read. On a line read with a longer
+// window than SSTV_CLEAN_WINDOW, each color difference is the median of the 5 x 3 about it, then averaged with its neighbors either side
+// (Robot, PD: their color comes at half resolution), or the median of the 3 x 3 (Martin, Scottie: theirs at full)
+const SSTV_NEAR = new Float32Array(15);
+const SSTV_CLEAN = [new Float32Array(800), new Float32Array(800)];
+
+function sstvPaint(pic, from, to, avail)
+{
+  const w = pic.mode.width, rgba = pic.rgba;
+  const wide = pic.mode.family == "gbr" ? 1 : 2;
+  for (let row = from; row < to; row++)
+  {
+    const at = row * w;
+    const clean = (pic.lineWindow[sstvRowLine(pic, row)] || 0) > SSTV_CLEAN_WINDOW;
+    for (const [p, plane] of [[0, pic.U], [1, pic.V]])
+    {
+      const out = SSTV_CLEAN[p];
+      for (let x = 0; x < w; x++)
+      {
+        if (!clean)
+        {
+          out[x] = plane[at + x];
+          continue;
+        }
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++)
+        {
+          const r = Math.max(0, Math.min(avail - 1, row + dy)) * w;
+          for (let dx = -wide; dx <= wide; dx++)
+          {
+            // Insertion into the ones taken so far, kept in order
+            const v = plane[r + Math.max(0, Math.min(w - 1, x + dx))];
+            let k = n++;
+            while (k > 0 && SSTV_NEAR[k - 1] > v)
+            {
+              SSTV_NEAR[k] = SSTV_NEAR[k - 1];
+              k--;
+            }
+            SSTV_NEAR[k] = v;
+          }
+        }
+        out[x] = SSTV_NEAR[n >> 1];
+      }
+      if (clean && wide == 2)
+      {
+        let before = out[0];
+        for (let x = 0; x < w; x++)
+        {
+          const here = out[x];
+          out[x] = (before + here + out[Math.min(w - 1, x + 1)]) / 3;
+          before = here;
+        }
+      }
+    }
+    const U = SSTV_CLEAN[0], V = SSTV_CLEAN[1];
+    for (let x = 0; x < w; x++)
+    {
+      const i = (at + x) * 4, y = pic.Y[at + x], v = V[x] - 128, u = U[x] - 128;
+      rgba[i] = y + 1.402 * v;
+      rgba[i + 1] = y - 0.344 * u - 0.714 * v;
+      rgba[i + 2] = y + 1.772 * u;
+      rgba[i + 3] = 255;
+    }
   }
 }
 
@@ -575,7 +850,7 @@ const SSTV_ROW = [new Float32Array(800), new Float32Array(800), new Float32Array
 // Line y read into the picture (its rows: two for PD, and for Robot 36 an odd line's pair); the first row it drew and how many
 function sstvRender(pic, y)
 {
-  const mode = pic.mode, w = mode.width, rgba = pic.rgba;
+  const mode = pic.mode, w = mode.width;
   const [c0, c1, c2, c3] = SSTV_ROW;
   pic.drawnAt[y] = sstvLineStart(pic, y);
   if (mode.family == "gbr")
@@ -583,13 +858,14 @@ function sstvRender(pic, y)
     sstvChannel(pic, y, 0, c0);
     sstvChannel(pic, y, 1, c1);
     sstvChannel(pic, y, 2, c2);
+    // Green, blue and red kept as luminance and color differences (sstvPaint puts them back)
+    const at = y * w;
     for (let x = 0; x < w; x++)
     {
-      const i = (y * w + x) * 4;
-      rgba[i] = c2[x];
-      rgba[i + 1] = c0[x];
-      rgba[i + 2] = c1[x];
-      rgba[i + 3] = 255;
+      const r = c2[x], g = c0[x], b = c1[x], lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      pic.Y[at + x] = lum;
+      pic.U[at + x] = 128 + (b - lum) / 1.772;
+      pic.V[at + x] = 128 + (r - lum) / 1.402;
     }
     return [y, 1];
   }
@@ -606,19 +882,22 @@ function sstvRender(pic, y)
     sstvYuvRow(pic, 2 * y + 1, sstvChannel(pic, y, 3, c3), c1, c2);
     return [2 * y, 2];
   }
-  // Robot 36: an even line keeps its R-Y for the odd line after it, which draws both rows with its B-Y
+  // Robot 36: an even line keeps its color difference for the odd line after it, which draws both rows with its own: R-Y on the even
+  // line and B-Y on the odd, or the other way round when the separators say so (pic.parity: sstvSeparator)
   const even = y % 2 == 0;
+  const none = () => new Float32Array(w).fill(128);
   if (even)
   {
     pic.chroma = Float32Array.from(sstvChannel(pic, y, 1, c1).subarray(0, w));
     pic.evenY = Float32Array.from(sstvChannel(pic, y, 0, c0).subarray(0, w));
-    // The last line of a picture that stops here: drawn with no B-Y
-    if (y == pic.lines - 1) return sstvR36Pair(pic, y, pic.evenY, null, pic.chroma, new Float32Array(w).fill(128));
+    // The last line of a picture that stops here: drawn with no other color difference
+    if (y == pic.lines - 1) return pic.parity ? sstvR36Pair(pic, y, pic.evenY, null, none(), pic.chroma) : sstvR36Pair(pic, y, pic.evenY, null, pic.chroma, none());
     return [y, 0];
   }
-  const v = pic.chroma || new Float32Array(w).fill(128);
+  const kept = pic.chroma || none();
   const evenY = pic.evenY || sstvChannel(pic, y - 1, 0, new Float32Array(w));
-  return sstvR36Pair(pic, y - 1, evenY, sstvChannel(pic, y, 0, c0), v, sstvChannel(pic, y, 1, c1));
+  const oddY = sstvChannel(pic, y, 0, c0), own = sstvChannel(pic, y, 1, c1);
+  return pic.parity ? sstvR36Pair(pic, y - 1, evenY, oddY, own, kept) : sstvR36Pair(pic, y - 1, evenY, oddY, kept, own);
 }
 
 function sstvR36Pair(pic, row, evenY, oddY, v, u)
@@ -627,6 +906,35 @@ function sstvR36Pair(pic, row, evenY, oddY, v, u)
   if (!oddY) return [row, 1];
   sstvYuvRow(pic, row + 1, oddY, v, u);
   return [row, 2];
+}
+
+// Robot 36's separator after line y's luminance (100 to 104.5 ms into it): 1500 Hz before R-Y, 2300 Hz before B-Y. Its middle's sync
+// readings (a short window) vote whether the even lines carry R-Y as the mode says (pic.sepAgree) or B-Y (pic.sepDisagree; a picture
+// started without its VIS code doesn't know which line it began on: sstvSyncStart); pic.parity changes when one side leads by
+// SSTV_PARITY_LEAD votes, and the picture is drawn again with it
+const SSTV_PARITY_LEAD = 6;
+
+function sstvSeparator(pic, y)
+{
+  const smask = S.sync.length - 1, scale = sstvScale(pic), base = sstvLineStart(pic, y);
+  const from = Math.round(base + 0.1013 * SSTV_EST_RATE * scale), to = Math.round(base + 0.1032 * SSTV_EST_RATE * scale);
+  let n = 0;
+  for (let i = from; i < to && n < SSTV_MEDIAN.length; i++) SSTV_MEDIAN[n++] = S.sync[i & smask];
+  if (n < 5) return;
+  const values = SSTV_MEDIAN.subarray(0, n).sort();
+  const median = values[n >> 1];
+  let near = 0;
+  for (let i = 0; i < n; i++) if (Math.abs(values[i] - median) < 200) near++;
+  const tone = median - pic.shift;
+  if (near / n < 0.6 || Math.abs(tone - 1900) < 200) return;
+  if ((tone < 1900) == (y % 2 == 0)) pic.sepAgree++;
+  else pic.sepDisagree++;
+  const parity = pic.parity ? (pic.sepAgree >= pic.sepDisagree + SSTV_PARITY_LEAD ? 0 : 1) : pic.sepDisagree >= pic.sepAgree + SSTV_PARITY_LEAD ? 1 : 0;
+  if (parity != pic.parity)
+  {
+    pic.parity = parity;
+    pic.reparity = true;
+  }
 }
 
 // The rows lines 0 to y - 1 have drawn
@@ -652,16 +960,43 @@ function sstvLinesIn()
     {
       pic.points.push([pic.measured, at, clear]);
       sstvFit(pic);
-      // The sender's tones followed from this pulse's (a measurement far off is noise, not a drift)
+      // The sender's tones followed from the newest pulses' (a measurement far off is noise, not a drift)
       const tone = sstvSyncTone(pic, at);
-      if (tone !== null && Math.abs(tone - pic.shift) < SSTV_FOLLOW_MAX) pic.shift += (tone - pic.shift) * SSTV_FOLLOW_GAIN;
+      if (tone !== null && Math.abs(tone - pic.shift) < SSTV_FOLLOW_MAX)
+      {
+        pic.tones.push(tone);
+        if (pic.tones.length > SSTV_FOLLOW_LINES) pic.tones.shift();
+        if (pic.tones.length >= 3)
+        {
+          const sorted = pic.tones.slice().sort((p, q) => p - q);
+          const step = (sorted[sorted.length >> 1] - pic.shift) * SSTV_FOLLOW_GAIN;
+          pic.shift += Math.max(-SSTV_FOLLOW_STEP, Math.min(SSTV_FOLLOW_STEP, step));
+        }
+      }
     }
     pic.lineShift[pic.measured] = pic.shift;
+    pic.lineWindow[pic.measured] = S.window;
     pic.measured++;
+    // Started without its VIS code: over after SSTV_SYNC_LOST lines with no pulse, kept up to its last clear one (noise's stray pulses
+    // after it left out too)
+    if (pic.noVis)
+    {
+      pic.lost = clear > 0.3 ? 0 : pic.lost + 1;
+      if (clear > 0.5) pic.lastClear = pic.measured;
+      if (pic.lost >= SSTV_SYNC_LOST)
+      {
+        pic.lines = Math.max(0, Math.min(pic.measured - pic.lost, pic.lastClear + 1));
+        break;
+      }
+    }
   }
+  // (Started without its VIS code: drawn SSTV_SYNC_LOST lines behind, so the lines with no pulse at its end are never shown)
+  const drawTo = Math.min(pic.lines, pic.noVis && pic.measured < pic.lines ? pic.measured - SSTV_SYNC_LOST : pic.measured);
   let from = -1, to = -1;
-  while (pic.rendered < pic.measured && sstvLineStart(pic, pic.rendered) + pic.period + margin <= S.est)
+  while (pic.rendered < drawTo && sstvLineStart(pic, pic.rendered) + pic.period + margin <= S.est)
   {
+    // (Robot 36: its separator's vote, now that the whole line has been read)
+    if (pic.mode.family == "r36") sstvSeparator(pic, pic.rendered);
     const [row, count] = sstvRender(pic, pic.rendered);
     if (count > 0)
     {
@@ -670,22 +1005,30 @@ function sstvLinesIn()
     }
     pic.rendered++;
   }
-  if (from >= 0) S.out({ type: "rows", id: pic.id, from, count: to - from, rgba: pic.rgba.slice(from * pic.mode.width * 4, to * pic.mode.width * 4) });
-  // A better line rate that moves the lines drawn by half a pixel or more: all of them drawn again (not more often than every 8 lines)
-  if (pic.rendered - pic.redrawnAt >= 8)
+  if (from >= 0)
+  {
+    // The row before them painted again too: its color is cleaned with the rows below it, now in
+    from = Math.max(0, from - 1);
+    sstvPaint(pic, from, to, to);
+    S.out({ type: "rows", id: pic.id, from, count: to - from, rgba: pic.rgba.slice(from * pic.mode.width * 4, to * pic.mode.width * 4) });
+  }
+  // A better line rate that moves the lines drawn by half a pixel or more: all of them drawn again (not more often than every 8 lines);
+  // at once when Robot 36's color differences change places (sstvSeparator)
+  if (pic.rendered - pic.redrawnAt >= 8 || pic.reparity)
   {
     const pixel = (pic.mode.channels[0][1] * SSTV_EST_RATE) / pic.mode.width;
     let moved = 0;
     for (let y = 0; y < pic.rendered; y++) moved = Math.max(moved, Math.abs(sstvLineStart(pic, y) - pic.drawnAt[y]));
-    if (moved > pixel / 2)
+    if (moved > pixel / 2 || pic.reparity)
     {
       sstvRedraw(pic, pic.rendered);
       const count = sstvRowsOf(pic, pic.rendered);
       S.out({ type: "redraw", id: pic.id, count, rgba: pic.rgba.slice(0, count * pic.mode.width * 4) });
     }
     pic.redrawnAt = pic.rendered;
+    pic.reparity = false;
   }
-  if (pic.rendered >= pic.lines) sstvFinish(true);
+  if (pic.rendered >= pic.lines || (pic.noVis && pic.measured >= pic.lines)) sstvFinish(!pic.noVis);
 }
 
 function sstvRedraw(pic, lines)
@@ -693,6 +1036,8 @@ function sstvRedraw(pic, lines)
   pic.chroma = null;
   pic.evenY = null;
   for (let y = 0; y < lines; y++) sstvRender(pic, y);
+  const rows = sstvRowsOf(pic, lines);
+  sstvPaint(pic, 0, rows, rows);
 }
 
 // The picture as finally read: the line rate from all its sync pulses, every line drawn again with it (all of them kept)
@@ -701,6 +1046,10 @@ function sstvFinish(complete)
   const pic = S.pic;
   S.pic = null;
   if (!pic) return;
+  // Its pulses not looked at again by Start Without VIS
+  S.quietFrom = S.est;
+  // Started without its VIS code: every line up to its last pulse, also the ones not drawn yet (it is drawn behind: sstvLinesIn)
+  if (pic.noVis) pic.rendered = Math.min(pic.lines, Math.max(pic.rendered, Math.min(pic.measured - pic.lost, pic.lastClear + 1)));
   if (pic.rendered > 0)
   {
     sstvFit(pic);
@@ -719,6 +1068,12 @@ if (SSTV_IN_WORKER)
     const data = event.data;
     if (data.type == "audio") sstvFeed(data.samples);
     else if (data.type == "reset") sstvReset();
+    // Its settings (mmdSstv.js): Start Without VIS
+    else if (data.type == "config")
+    {
+      S.noVis = data.noVis === true;
+      S.syncSeen = null;
+    }
   };
 }
 

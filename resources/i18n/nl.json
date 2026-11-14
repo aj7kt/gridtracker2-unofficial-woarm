@@ -2292,5 +2292,16 @@
   "mmd.store.enterLicense.label": "Licentie Invoeren",
   "mmd.store.noLicense": "Geen licentie",
   "mmd.store.otherCall": "Licentie voor een andere roepnaam",
-  "mmd.store.loadsOnRestart": "Wordt geladen bij het herstarten van GridTracker2"
+  "mmd.store.loadsOnRestart": "Wordt geladen bij het herstarten van GridTracker2",
+  "settings.sstvDecoder.originalSize.label": "Originele Grootte",
+  "settings.sstvDecoder.originalSize.hover": "Afbeeldingen worden op hun eigen grootte getoond (één beeldpixel per schermpixel), niet passend gemaakt in het venster",
+  "settings.sstvDecoder.noVis.label": "Starten Zonder VIS",
+  "settings.sstvDecoder.noVis.hover": "Een beeld waarvan het begin (de VIS-code) gemist is, wordt opgepikt aan de synchronisatiepulsen en van boven af getekend zoals het binnenkomt",
+  "roster.settings.group.roster.label": "Roster",
+  "roster.settings.group.window.label": "Venster",
+  "roster.settings.saturate.label": "Verzadiging",
+  "roster.settings.sepia.label": "Sepia",
+  "roster.ignores.add.label": "Negeren Toevoegen",
+  "roster.ignores.entity.label": "Soort",
+  "roster.watcher.edit.label": "Watcher Toevoegen / Bewerken"
 }

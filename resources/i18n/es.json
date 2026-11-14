@@ -2285,5 +2285,16 @@
   "mmd.store.enterLicense.label": "Introducir Licencia",
   "mmd.store.noLicense": "Sin licencia",
   "mmd.store.otherCall": "Con licencia para otro indicativo",
-  "mmd.store.loadsOnRestart": "Se carga al reiniciar GridTracker2"
+  "mmd.store.loadsOnRestart": "Se carga al reiniciar GridTracker2",
+  "settings.sstvDecoder.originalSize.label": "Tamaño Original",
+  "settings.sstvDecoder.originalSize.hover": "Las imágenes se muestran a su propio tamaño (un píxel de imagen por píxel de pantalla), sin ajustarse a la ventana",
+  "settings.sstvDecoder.noVis.label": "Iniciar Sin VIS",
+  "settings.sstvDecoder.noVis.hover": "Una imagen cuyo inicio (su código VIS) se perdió se capta por sus pulsos de sincronismo y se dibuja desde arriba según llega",
+  "roster.settings.group.roster.label": "Roster",
+  "roster.settings.group.window.label": "Ventana",
+  "roster.settings.saturate.label": "Saturación",
+  "roster.settings.sepia.label": "Sepia",
+  "roster.ignores.add.label": "Añadir Un Ignorado",
+  "roster.ignores.entity.label": "Tipo",
+  "roster.watcher.edit.label": "Añadir / Editar Vigilante"
 }

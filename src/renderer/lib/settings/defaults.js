@@ -632,14 +632,16 @@ const def_settings = {
   // own; CW CW; SSTV its sideband), on unless turned off.
   // rigControl off: nothing is sent unless turned on.
   // The SSTV Decoder's: sstvSave each picture saved as it ends, into sstvFolder ("": SSTV Pictures in
-  // GridTracker's own folder, mmDecoderSstvFolder). saveAsDir: where a picture was last saved with Save, by kind, { sstv, wefax (a plugin's) }
+  // GridTracker's own folder, mmDecoderSstvFolder); sstvOriginalSize: the picture shown at its own size, a pixel of it to a screen pixel,
+  // not fitted to its place (its Settings box and the picture's right-click, off); sstvNoVis: Start Without VIS, a picture whose VIS code
+  // was missed started from its sync pulses (sstvWorker.js, sstvSyncStart; off). saveAsDir: where a picture was last saved with Save, by kind, { sstv, wefax (a plugin's) }
   // (mmdPicSaveAs: the dialog opens there next time). inputs: each mode's Input Device, { cw: { id, name } } (its menu in the window);
   // inputCards: the audio inputs last seen, { id: name }, so a change is warned of (mmDecoderInputsCheck). swGain: each mode's SW level
   // (a gain inside the decoder, dB), { cw: 0 }. vfos: the Rig Control VFO each mode reads and tunes, by its id, { cw: "v1" } ("": none;
   // a mode not in it: the first VFO). tuneLocked: the lock on the divider beside the frequency (mmdTuneLockClick): unlocked, the mouse
   // wheel over the frequency tunes the rig (mmdTuneWheel); locked unless unlocked. (Log QSO's own setting is adifLog.logQso: its buttons
   // and menu items in the decoder, mmdLogQso.js, show with it on)
-  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, rigControl: false, followBirdWatch: false, utcLines: 30, rsid: true, commonInput: true, commonVfo: true, wwvSetFreq: true, wwvSetMode: true, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, sstvSave: true, sstvFolder: "",saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18, pluginsDisabled: [], licenses: [] },
+  MMD: { vfos: {}, tuneLocked: true, enable: false, viewMode: "cw", span: 4000, minHz: 250, maxHz: 0, fallShare: 0, rigControl: false, followBirdWatch: false, utcLines: 30, rsid: true, commonInput: true, commonVfo: true, wwvSetFreq: true, wwvSetMode: true, cwSetFreq: true, cwSetMode: true, sstvSetFreq: true, sstvSetMode: true, sstvSave: true, sstvFolder: "", sstvOriginalSize: false, sstvNoVis: false, saveAsDir: {}, inputs: {}, inputCards: null, swGain: {}, scopeOob: 18, pluginsDisabled: [], licenses: [] },
   // Network Audio (Settings -> Features -> Service, its streams in the Radios tab; netAudio.js): audio streams on the LAN, each an Input Device or an Output Device of the
   // Multi-Mode Decoder. streams: [{ id ("n1" ...), name (the user's own), connect (unchecked: not opened, its settings free to change),
   // protocol ("vban", "rtp", "pulse": NET_AUDIO_PROTOCOLS), dir ("in", "out"), host, port, streamName, rate, channels, channel ("left",

@@ -2293,5 +2293,16 @@
 	"mmd.store.enterLicense.label": "Lizenz Eingeben",
 	"mmd.store.noLicense": "Keine Lizenz",
 	"mmd.store.otherCall": "Für ein anderes Rufzeichen lizenziert",
-	"mmd.store.loadsOnRestart": "Wird beim Neustart von GridTracker2 geladen"
+	"mmd.store.loadsOnRestart": "Wird beim Neustart von GridTracker2 geladen",
+	"settings.sstvDecoder.originalSize.label": "Originalgröße",
+	"settings.sstvDecoder.originalSize.hover": "Bilder werden in ihrer eigenen Größe angezeigt (ein Bildpixel pro Bildschirmpixel), nicht an das Fenster angepasst",
+	"settings.sstvDecoder.noVis.label": "Ohne VIS Starten",
+	"settings.sstvDecoder.noVis.hover": "Ein Bild, dessen Anfang (sein VIS-Code) verpasst wurde, wird an seinen Synchronimpulsen erkannt und von oben an gezeichnet, so wie es kommt",
+	"roster.settings.group.roster.label": "Roster",
+	"roster.settings.group.window.label": "Fenster",
+	"roster.settings.saturate.label": "Sättigung",
+	"roster.settings.sepia.label": "Sepia",
+	"roster.ignores.add.label": "Ignorierung Hinzufügen",
+	"roster.ignores.entity.label": "Art",
+	"roster.watcher.edit.label": "Beobachter Hinzufügen / Bearbeiten"
 }

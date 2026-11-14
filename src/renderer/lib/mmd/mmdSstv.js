@@ -42,7 +42,14 @@ function mmdSstvLoad()
   if (SSTV.worker) return SSTV.worker;
   SSTV.worker = new Worker("lib/mmd/sstvWorker.js");
   SSTV.worker.onmessage = (event) => mmdSstvMessage(event.data);
+  mmdSstvConfig();
   return SSTV.worker;
+}
+
+// The worker's settings: Start Without VIS (MMD.sstvNoVis); sent when it starts and when the setting changes
+function mmdSstvConfig()
+{
+  if (SSTV.worker) SSTV.worker.postMessage({ type: "config", noVis: GT.settings.MMD.sstvNoVis === true });
 }
 
 // A chunk of 12 kHz audio from the worklet

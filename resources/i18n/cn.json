@@ -2293,5 +2293,16 @@
   "mmd.store.enterLicense.label": "输入许可证",
   "mmd.store.noLicense": "无许可证",
   "mmd.store.otherCall": "许可证属于另一个呼号",
-  "mmd.store.loadsOnRestart": "将在 GridTracker2 重启时加载"
+  "mmd.store.loadsOnRestart": "将在 GridTracker2 重启时加载",
+  "settings.sstvDecoder.originalSize.label": "原始尺寸",
+  "settings.sstvDecoder.originalSize.hover": "以图片原始尺寸显示（图片一个像素对应屏幕一个像素），不缩放以适应窗口",
+  "settings.sstvDecoder.noVis.label": "无VIS启动",
+  "settings.sstvDecoder.noVis.hover": "错过开头（VIS码）的图片会根据同步脉冲接收，并在到达时从顶部开始绘制",
+  "roster.settings.group.roster.label": "名单",
+  "roster.settings.group.window.label": "窗口",
+  "roster.settings.saturate.label": "饱和度",
+  "roster.settings.sepia.label": "棕褐色",
+  "roster.ignores.add.label": "添加忽略",
+  "roster.ignores.entity.label": "类型",
+  "roster.watcher.edit.label": "添加 / 编辑监视"
 }

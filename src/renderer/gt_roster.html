@@ -55,7 +55,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <div style="top: 1px; right: 1px; position: absolute">
         <button class="Xbutton" onclick="closeSettings()">X</button>
       </div>
-      <div id="rosterSettingsTitle">Call Roster Settings</div>
       <div class="infotab">
         <button data-i18n="settings.General.label" id="generalbox" class="infoTablinks active" onclick="openInfoTab(event, 'generalSettingsDiv')">
           General
@@ -73,197 +72,85 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           Columns
         </button>
       </div>
+      <!-- General: grouped as the main window's Settings -> Map, a titled box each (Window, Roster, Window Filters) with its rows'
+           names at the right of their column -->
       <div id="generalSettingsDiv" class="infoTabcontent">
-        <div id="generalSettingsBoxes">
-        <div class="mapItem"  align="center">
-          <table >
-            <tr align="center" >
-              <td data-i18n="settings.callroster.AlwaysOnTop.label" >Window Always On Top</td>
-            </tr>
-            <tr align="center">
-              <td>
-                <input type="checkbox" id="rosterAlwaysOnTop" onchange="changeRosterTop(this)" />
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="mapItem"  align="center">
-          <table>
-            <tr align="center">
-              <td data-i18n="settings.callroster.MaxAge.label">Roster Max Age</td>
-            </tr>
-            <tr align="center">
-              <td id="rosterTimeTd">2m 0s</td>
-            </tr>
-            <tr align="center">
-              <td colspan="2">
-                <input type="range" min="5" max="300" value="120" step="5" class="slider" id="rosterTime"
-                  oninput="changeRosterTime()" />
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="mapItem"  align="center" id="clearRosterOnBandChangeDiv">
-          <table>
-            <tr align="center">
-              <td data-i18n="roster.settings.clearOnBand.label">Clear Roster on Band change</td>
-            </tr>
-            <tr align="center">
-              <td colspan="1">
-                <input type="checkbox" id="clearRosterOnBandChange" onchange="clearRosterOnBandChangeValueChanged(this)" />
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="mapItem"  align="center">
-          <table>
-            <tr align="center">
-              <td data-i18n="roster.settings.delayOnFocus.label">Decode Delay On Focus</td>
-            </tr>
-            <tr align="center"></tr>
-              <td  align="center" colspan="1">
-                <input type="checkbox" id="rosterDelayOnFocus" onchange="rosterDelayOnFocusValueChanged(this)" />
-              </td>
-            </tr>
-            <tr align="center">
-              <td  style="display:none;" id="rosterDelayTimeTd">1500ms</td>
-            </tr>
-            <tr align="center">
-              <td >
-                <input type="range" min="50" max="5000" value="1500" step="10" class="slider" id="rosterDelayTime"
-                  oninput="changeRosterDelayTime()" style="display:none;" />
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="mapItem">
-          <div class="button" style="margin: 5px; font:larger; padding:5px;" id="compactModeDiv" onclick="compactModeChanged()">Compact Mode</div>
-        </div>
-        <div class="mapItem" id="compactEnityDiv">
-          <span data-i18n="roster.settings.compactEntity.label">Compact Mode Entity</span><br />
-          <select id="compactEntitySelect" onchange="compactEntityChanged()"></select>
-        </div>
-        </div>
-        <div class="mapItem">
-          <table align="center">
-            <tr align="center">
-              <td align="center" data-i18n="roster.settings.windowFilters.label">Window Filters</td>
-            </tr>
-            <tr align="center">
-              <td align="center">
-                <div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center">Brightness</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filterbrightnessTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="15" max="100" value="100" step="1" class="slider"
-                          id="filterbrightnessSlider" oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-                <!-- div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center">Contrast</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filtercontrastTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="10" max="100" value="100" step="1" class="slider" id="filtercontrastSlider"
-                          oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div-->
-                <div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center">Saturate</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filtersaturateTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="0" max="200" value="100" step="1" class="slider" id="filtersaturateSlider"
-                          oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-                <div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center">Invert</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filterinvertTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="0" max="100" value="0" step="100" class="slider" id="filterinvertSlider"
-                          oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-                <br />
-                <div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center">Sepia</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filtersepiaTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="0" max="100" value="0" step="1" class="slider" id="filtersepiaSlider"
-                          oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-                <div class="mapItem">
-                  <table align="center">
-                    <tr align="center">
-                      <td align="center" data-i18n="roster.settings.hueRotate.label">Hue Rotate</td>
-                    </tr>
-                    <tr align="center">
-                      <td align="center" id="filterhuerotateTd"></td>
-                    </tr>
-                    <tr align="center">
-                      <td colspan="2">
-                        <input type="range" min="0" max="359" value="0" step="1" class="slider" id="filterhuerotateSlider"
-                          oninput="filtersChanged()" />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="mapItem">
-                  <div class="button" style="margin: 10px;padding:3px;" onclick="resetFilters()" data-i18n="roster.settings.resetFilters.label" title="Reset Filters">Reset Filters
-                    (Ctrl-L)</div>
-                </div>
-              </td>
-            </tr>
-          </table>
+        <div id="generalSettingsBoxes" class="mapGroups rosterGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="roster.settings.group.window.label">Window</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel"><label for="rosterAlwaysOnTop" data-i18n="settings.callroster.AlwaysOnTop.label">Window Always On Top</label></td>
+                <td><input type="checkbox" id="rosterAlwaysOnTop" onchange="changeRosterTop(this)" /></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel"><label for="rosterDelayOnFocus" data-i18n="roster.settings.delayOnFocus.label">Decode Delay On Focus</label></td>
+                <!-- The delay's slider and value show with it on (rosterDelayOnFocusValueChanged: display block, side by side in the flex) -->
+                <td><div class="rosterRowControls"><input type="checkbox" id="rosterDelayOnFocus" onchange="rosterDelayOnFocusValueChanged(this)" /><input type="range" min="50" max="5000" value="1500" step="10" class="slider" id="rosterDelayTime" oninput="changeRosterDelayTime()" style="display:none;" /><span id="rosterDelayTimeTd" class="mapValue" style="display:none;">1500ms</span></div></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="rosterButtonRow"><div class="button" id="compactModeDiv" onclick="compactModeChanged()">Compact Mode</div></td>
+              </tr>
+              <!-- Shown in Compact Mode (rosterWindow.js) -->
+              <tr id="compactEnityDiv">
+                <td class="mapRowLabel"><label for="compactEntitySelect" data-i18n="roster.settings.compactEntity.label">Compact Mode Entity</label></td>
+                <td><select id="compactEntitySelect" onchange="compactEntityChanged()"></select></td>
+              </tr>
+            </table>
+          </div>
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="roster.settings.group.roster.label">Roster</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel" data-i18n="settings.callroster.MaxAge.label">Roster Max Age</td>
+                <td><input type="range" min="5" max="300" value="120" step="5" class="slider" id="rosterTime" oninput="changeRosterTime()" /><span id="rosterTimeTd" class="mapValue">2m 0s</span></td>
+              </tr>
+              <!-- Not in the Feed Roster (rosterWindow.js) -->
+              <tr id="clearRosterOnBandChangeDiv">
+                <td class="mapRowLabel"><label for="clearRosterOnBandChange" data-i18n="roster.settings.clearOnBand.label">Clear Roster on Band change</label></td>
+                <td><input type="checkbox" id="clearRosterOnBandChange" onchange="clearRosterOnBandChangeValueChanged(this)" /></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Window Filters in the right column, as tall as Window and Roster on the left (style_roster.css) -->
+          <div class="rosterGroupRow">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="roster.settings.windowFilters.label">Window Filters</div>
+            <table>
+              <tr>
+                <td class="mapRowLabel" data-i18n="settings.map.Brightness.label">Brightness</td>
+                <td><input type="range" min="15" max="100" value="100" step="1" class="slider" id="filterbrightnessSlider" oninput="filtersChanged()" /><span id="filterbrightnessTd" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel" data-i18n="roster.settings.saturate.label">Saturate</td>
+                <td><input type="range" min="0" max="200" value="100" step="1" class="slider" id="filtersaturateSlider" oninput="filtersChanged()" /><span id="filtersaturateTd" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel" data-i18n="cwViewer.picture.filterInvert.label">Invert</td>
+                <td><input type="range" min="0" max="100" value="0" step="100" class="slider" id="filterinvertSlider" oninput="filtersChanged()" /><span id="filterinvertTd" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel" data-i18n="roster.settings.sepia.label">Sepia</td>
+                <td><input type="range" min="0" max="100" value="0" step="1" class="slider" id="filtersepiaSlider" oninput="filtersChanged()" /><span id="filtersepiaTd" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td class="mapRowLabel" data-i18n="roster.settings.hueRotate.label">Hue Rotate</td>
+                <td><input type="range" min="0" max="359" value="0" step="1" class="slider" id="filterhuerotateSlider" oninput="filtersChanged()" /><span id="filterhuerotateTd" class="mapValue"></span></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="rosterButtonRow"><div class="button" onclick="resetFilters()" data-i18n="roster.settings.resetFilters.label" title="Reset Filters">Reset Filters (Ctrl-L)</div></td>
+              </tr>
+            </table>
+          </div>
+          </div>
         </div>
       </div>
       <div id="watcherBoxDiv" class="infoTabcontent">
-        <div class="rowBuilder">
-        <table>
+        <!-- A titled box to add or edit one (as General's), its fields' names over them; under it the list as a card (renderWatchersTab) -->
+        <div class="mapGroups rosterGroups">
+        <div class="mapGroup">
+        <div class="mapGroupTitle" data-i18n="roster.watcher.edit.label">Add / Edit Watcher</div>
+        <table class="rosterWatcherForm">
           <tr>
             <th>Name</th>
             <th>Type</th>
@@ -311,97 +198,52 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <td id="watcherAutoDeleteTd">
               <input type="checkbox" id="watcherAutoDeleteCheckbox" />
             </td>
-            <td style="font:xx-large;cursor:pointer;" onclick="clearWatcher()">🛑</td>
-            <td style="font:xx-large;cursor:pointer;" onclick="saveWatcher()">✅</td>
+            <td><button class="rosterRoundButton rosterClearButton" onclick="clearWatcher()">✕</button></td>
+            <td><button class="rosterRoundButton rosterSaveButton" onclick="saveWatcher()">✓</button></td>
           </tr>
           </table>
+        </div>
         </div>
         <div id="watcherEditView"></div>
       </div>
       <div id="exceptionsBoxDiv" class="infoTabcontent">
-        <div class="exceptionTab" id="exceptionTabDiv">
-        <div id="minDbDiv">
-          <input type="checkbox" id="wantMinDB" onchange="huntingValueChanged(this);" />
-          <label data-i18n="roster.secondary.exceptions.minDB" for="wantMinDB">Min dB</label>
-          <span id="minDbView" class="roundBorderValue">-24</span>
-          <p>
-          <input
-            type="range"
-            min="-25"
-            max="0"
-            step="1"
-            class="slider"
-            id="minDb"
-            oninput="huntingValueChanged(this);"
-          />
-        </div>
-        <div id="maxDTDiv">
-          <input type="checkbox" id="wantMaxDT" onchange="huntingValueChanged(this);" />
-          <label data-i18n="roster.secondary.exceptions.maxDT" for="wantMaxDT">Max DT</label>
-          <span id="maxDTView" class="roundBorderValue">.5</span>
-          <p>
-          <input
-            type="range"
-            min="0.1"
-            max="2"
-            step="0.1"
-            class="slider"
-            id="maxDT"
-            oninput="huntingValueChanged(this);"
-          />
-        </div>
-        <div id="minFreqDiv">
-          <input type="checkbox" id="wantMinFreq" onchange="huntingValueChanged(this);" />
-          <label data-i18n="roster.secondary.exceptions.minFreq" for="wantMinFreq">Min freq</label>
-          <span id="minFreqView" class="roundBorderValue">400</span>
-          <p>
-          <input
-            type="range"
-            min="0"
-            max="2500"
-            step="10"
-            class="slider"
-            id="minFreq"
-            oninput="huntingValueChanged(this);"
-          />
-        </div>
-        <div id="maxFreqDiv">
-          <input type="checkbox" id="wantMaxFreq" onchange="huntingValueChanged(this);" />
-          <label data-i18n="roster.secondary.exceptions.maxFreq" for="wantMaxFreq">Max freq</label>
-          <span id="maxFreqView" class="roundBorderValue">3500</span>
-          <p>
-          <input
-            type="range"
-            min="500"
-            max="3500"
-            step="10"
-            class="slider"
-            id="maxFreq"
-            oninput="huntingValueChanged(this);"
-          />
-        </div>
-        <div id="usesLoTWDiv">
-          <input type="checkbox" id="usesLoTW" onchange="huntingValueChanged(this);" />
-          <label data-i18n="roster.secondary.exceptions.usesLoTW" for="usesLoTW">Uses LoTW</label>
-          <span id="maxLoTWView" class="roundBorderValue" style="width: 35px;">3</span>
-          <p>
-          <input
-            data-i18n="roster.secondary.exceptions.maxLoTW.hover" title="Max time since their last upload"
-            type="range"
-            min="3"
-            max="27"
-            step="3"
-            class="slider"
-            id="maxLoTW"
-            oninput="huntingValueChanged(this);"
-          />
-          
-        </div>
+        <!-- One titled box as General's, a row each: its name, then its tick, slider and value as Decode Delay On Focus's (the Feed
+             Roster's only Uses LoTW, the others hidden: rosterWindow.js) -->
+        <div id="exceptionTabDiv" class="mapGroups rosterGroups">
+          <div class="mapGroup">
+            <div class="mapGroupTitle" data-i18n="roster.exceptions.label">Exceptions</div>
+            <table>
+              <tr id="minDbDiv">
+                <td class="mapRowLabel"><label data-i18n="roster.secondary.exceptions.minDB" for="wantMinDB">Min dB</label></td>
+                <td><div class="rosterRowControls"><input type="checkbox" id="wantMinDB" onchange="huntingValueChanged(this);" /><input type="range" min="-25" max="0" step="1" class="slider" id="minDb" oninput="huntingValueChanged(this);" /><span id="minDbView" class="mapValue">-24</span></div></td>
+              </tr>
+              <tr id="maxDTDiv">
+                <td class="mapRowLabel"><label data-i18n="roster.secondary.exceptions.maxDT" for="wantMaxDT">Max DT</label></td>
+                <td><div class="rosterRowControls"><input type="checkbox" id="wantMaxDT" onchange="huntingValueChanged(this);" /><input type="range" min="0.1" max="2" step="0.1" class="slider" id="maxDT" oninput="huntingValueChanged(this);" /><span id="maxDTView" class="mapValue">.5</span></div></td>
+              </tr>
+              <tr id="minFreqDiv">
+                <td class="mapRowLabel"><label data-i18n="roster.secondary.exceptions.minFreq" for="wantMinFreq">Min freq</label></td>
+                <td><div class="rosterRowControls"><input type="checkbox" id="wantMinFreq" onchange="huntingValueChanged(this);" /><input type="range" min="0" max="2500" step="10" class="slider" id="minFreq" oninput="huntingValueChanged(this);" /><span id="minFreqView" class="mapValue">400</span></div></td>
+              </tr>
+              <tr id="maxFreqDiv">
+                <td class="mapRowLabel"><label data-i18n="roster.secondary.exceptions.maxFreq" for="wantMaxFreq">Max freq</label></td>
+                <td><div class="rosterRowControls"><input type="checkbox" id="wantMaxFreq" onchange="huntingValueChanged(this);" /><input type="range" min="500" max="3500" step="10" class="slider" id="maxFreq" oninput="huntingValueChanged(this);" /><span id="maxFreqView" class="mapValue">3500</span></div></td>
+              </tr>
+              <tr id="usesLoTWDiv">
+                <td class="mapRowLabel"><label data-i18n="roster.secondary.exceptions.usesLoTW" for="usesLoTW">Uses LoTW</label></td>
+                <td><div class="rosterRowControls"><input type="checkbox" id="usesLoTW" onchange="huntingValueChanged(this);" /><input data-i18n="roster.secondary.exceptions.maxLoTW.hover" title="Max time since their last upload" type="range" min="3" max="27" step="3" class="slider" id="maxLoTW" oninput="huntingValueChanged(this);" /><span id="maxLoTWView" class="mapValue">3</span></div></td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
       <div id="ignoresBoxDiv" class="infoTabcontent">
-        <div class="rowBuilder" >
-          Entity&nbsp;
+        <!-- A titled box to add one (as General's), and under it each kind's list as a card (renderIgnoresTab) -->
+        <div class="mapGroups rosterGroups">
+        <div class="mapGroup rosterIgnoreAdd">
+          <div class="mapGroupTitle" data-i18n="roster.ignores.add.label">Add An Ignore</div>
+          <div class="rosterIgnoreAddRow">
+          <span data-i18n="roster.ignores.entity.label">Entity</span>
           <select id="ignoreTypeSelect" onchange="ignoreTypeChanged(this.value);">
             <option value="Callsign" selected="true">Callsign</option>
             <option value="CQ" id="ignoreCqOption">CQ</option>
@@ -434,8 +276,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           </select>
           <select id="ignoreCqzSelect"></select>
           <select id="ignoreItuzSelect"></select>
-          <button onclick="addNewIgnore()" class="flexButton" style="background-color: #000000;font-weight:bold;font-size:larger;color:var(--gt-status-ok);">+</button>
+          <button onclick="addNewIgnore()" class="flexButton rosterRoundButton rosterSaveButton">+</button>
           <label id="ingnoreAddResultLabel"></label>
+          </div>
+        </div>
         </div>
         <div id="ignoresEditView"></div>
       </div>

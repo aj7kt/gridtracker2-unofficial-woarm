@@ -2292,5 +2292,16 @@
 	"mmd.store.enterLicense.label": "ライセンスを入力",
 	"mmd.store.noLicense": "ライセンスなし",
 	"mmd.store.otherCall": "別のコールサインのライセンス",
-	"mmd.store.loadsOnRestart": "GridTracker2 の再起動時に読み込み"
+	"mmd.store.loadsOnRestart": "GridTracker2 の再起動時に読み込み",
+	"settings.sstvDecoder.originalSize.label": "元のサイズ",
+	"settings.sstvDecoder.originalSize.hover": "画像を元のサイズ（画像の1ピクセルを画面の1ピクセル）で表示し、ウィンドウに合わせて拡大縮小しません",
+	"settings.sstvDecoder.noVis.label": "VISなしで開始",
+	"settings.sstvDecoder.noVis.hover": "開始部分（VISコード）を受信できなかった画像を同期パルスから拾い、届いた順に上から描きます",
+	"roster.settings.group.roster.label": "ロスター",
+	"roster.settings.group.window.label": "ウィンドウ",
+	"roster.settings.saturate.label": "彩度",
+	"roster.settings.sepia.label": "セピア",
+	"roster.ignores.add.label": "無視を追加",
+	"roster.ignores.entity.label": "種類",
+	"roster.watcher.edit.label": "ウォッチャーの追加 / 編集"
 }

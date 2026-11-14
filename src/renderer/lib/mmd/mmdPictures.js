@@ -320,7 +320,22 @@ function mmdPicView(id)
   mmdPicHead();
 }
 
-// The large picture drawn to fit its place (its shape kept), at the next frame
+// Whether a picture is shown at its own size (an SSTV picture with Original Size on: MMD.sstvOriginalSize), not fitted to its place
+function mmdPicOriginalSize(pic)
+{
+  return !!pic && pic.kind == "sstv" && GT.settings.MMD.sstvOriginalSize === true;
+}
+
+// Original Size on or off (its box in Settings, Decoders, and the picture's right-click: each shows the other's)
+function mmdPicSetOriginalSize(on)
+{
+  GT.settings.MMD.sstvOriginalSize = on === true;
+  if (mmdSettings.style.display == "flex") mmdSettingsRender();
+  mmdPicDraw();
+}
+
+// The large picture drawn to fit its place (its shape kept; at its own size with Original Size, centered, its top shown when it is
+// taller than its place), at the next frame
 function mmdPicDraw()
 {
   if (PICS.drawQueued) return;
@@ -348,13 +363,15 @@ function mmdPicDraw()
     // (A growing one: the lines it has so far; until it has a few, as if it were as long as half its width)
     const grows = PICS.kinds[pic.kind].grows;
     const height = grows ? Math.max(pic.rows, 1) : pic.height;
-    ctx.imageSmoothingEnabled = true;
+    // (At its own size: a pixel of it to a screen pixel, kept sharp where that is a whole number of device pixels)
+    const actual = mmdPicOriginalSize(pic);
+    ctx.imageSmoothingEnabled = !(actual && Number.isInteger(ratio));
     const rotate = pic.rotate || 0;
     if (!rotate)
     {
       const shape = grows ? Math.max(height, pic.width / 2) : height;
-      const scale = Math.min(w / pic.width, room / shape);
-      const dw = pic.width * scale, dh = height * scale, dx = (w - dw) / 2, dy = top + (room - shape * scale) / 2;
+      const scale = actual ? ratio : Math.min(w / pic.width, room / shape);
+      const dw = pic.width * scale, dh = height * scale, dx = (w - dw) / 2, dy = top + Math.max(0, (room - shape * scale) / 2);
       ctx.drawImage(pic.canvas, 0, 0, pic.width, height, dx, dy, dw, dh);
     }
     else
@@ -362,8 +379,8 @@ function mmdPicDraw()
       // Turned (mmdPicRotate): fitted as it is shown, drawn about its middle
       const turned = rotate % 180 != 0;
       const sw = turned ? height : pic.width, sh = turned ? pic.width : height;
-      const scale = Math.min(w / sw, room / sh);
-      const bw = sw * scale, bh = sh * scale, bx = (w - bw) / 2, by = top + (room - bh) / 2;
+      const scale = actual ? ratio : Math.min(w / sw, room / sh);
+      const bw = sw * scale, bh = sh * scale, bx = (w - bw) / 2, by = top + Math.max(0, (room - bh) / 2);
       ctx.save();
       ctx.translate(bx + bw / 2, by + bh / 2);
       ctx.rotate((rotate * Math.PI) / 180);
@@ -491,7 +508,7 @@ function mmdPicHead()
   sstvHeadText.textContent = text;
 }
 
-// The right-click on a picture: Save Picture..., Copy To Clipboard, Rotate, Filter (not while it comes in), Delete (From Session; File,
+// The right-click on a picture: Save Picture..., Copy To Clipboard, Original Size (SSTV's), Rotate, Filter (not while it comes in), Delete (From Session; File,
 // its saved files deleted; Both: those two only while a file it was saved to is still there). A chart kind's (chartTools) also: Print...,
 // Show In Folder (while a file it was saved to is there), and Auto-Align and Auto-Crop done to this one now (not while it comes in; each
 // an Undo step of Filter's: its settings' Auto-Align and Auto-Crop do every chart as it ends)
@@ -512,6 +529,8 @@ function mmdPicMenu(event, pic)
   const menu = remote.Menu.buildFromTemplate(mmdLogQsoPictureMenu(pic).concat([
     { label: I18N("cwViewer.sstv.save.label"), click: () => mmdPicSaveAs(pic) },
     { label: I18N("cwViewer.picture.copy.label"), click: () => mmdPicCopy(pic) },
+    // An SSTV picture's: Original Size (every SSTV picture's, as its box in Settings, Decoders)
+    ...(pic.kind == "sstv" ? [{ label: I18N("settings.sstvDecoder.originalSize.label"), type: "checkbox", checked: mmdPicOriginalSize(pic), click: (item) => mmdPicSetOriginalSize(item.checked) }] : []),
     ...(chart
       ? [
           { label: I18N("cwViewer.picture.print.label"), click: () => mmdPicPrint(pic) },

@@ -162,18 +162,6 @@ body.roster {
   color: var(--gt-subtab-active-bg);
 }
 
-/* Settings pane title: which roster these settings belong to */
-#rosterSettingsTitle {
-  margin: 2px 30px 4px 30px;
-  font-weight: bold;
-  font-size: larger;
-  color: var(--gt-subtab-active-bg);
-}
-
-body.feedRosterShown #rosterSettingsTitle {
-  color: var(--gt-feed-accent);
-}
-
 /* Feed Roster tab: the window's yellow / cyan swap, so the two rosters are easy to tell apart
    (callsign and grid colors swap too, in processRosterHunting) */
 body.feedRosterShown .rosterTab.active,
@@ -639,24 +627,269 @@ table.rosterTable tr.virtualSpacer td {
   border-style: outset;
 }
 
-/* Settings -> General: the boxes above Window Filters, three per row like the filters, all the same size,
-   partial rows centered (Call Roster 3 + 3, Feed Roster 3 + 2) */
+/* Settings -> General, Display, Exceptions and Ignores: titled boxes as the main window's Settings -> Map (.mapGroups / .mapGroup in
+   style.css), side by side while they fit */
+.rosterGroups {
+  max-width: none;
+  padding: 6px;
+}
+
+/* General: two columns, one rectangle. Window over Roster on the left (as wide as each other), Window Filters on the right as tall as the
+   two of them; the pane only as wide as the columns (a grid, as Settings -> Map's) */
 #generalSettingsBoxes {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto 1fr;
+  justify-content: center;
+  align-items: stretch;
+}
+
+#generalSettingsBoxes > .mapGroup {
+  grid-column: 1;
+}
+
+.rosterGroupRow {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+}
+
+.rosterGroupRow > .mapGroup {
+  flex: 1;
+}
+
+/* A button on a row of its own, centered under the rows above it */
+.mapGroup td.rosterButtonRow {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.mapGroup td.rosterButtonRow .button {
+  display: inline-block;
+  padding: 2px 10px;
+}
+
+/* A tick with the slider and value it shows (Decode Delay On Focus), on one line */
+.rosterRowControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rosterRowControls .mapValue {
+  margin-left: 0;
+}
+
+/* Ignores: the box to add one, its controls on one line */
+.rosterIgnoreAddRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 3px 2px 1px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Round buttons (Ignores' +, Watcher's Save and Clear): in their color (--round), lit under the mouse */
+.rosterRoundButton {
+  --round: var(--gt-status-ok);
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--round) 60%, black);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--round) 14%, black);
+  color: var(--round);
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.rosterRoundButton:hover {
+  background: color-mix(in srgb, var(--round) 30%, black);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--round) 45%, transparent);
+}
+
+.rosterRoundButton.rosterSaveButton {
+  font-size: 17px;
+}
+
+.rosterRoundButton.rosterClearButton {
+  --round: var(--gt-error);
+}
+
+/* Watcher: the box to add or edit one, its fields' names over them, everything centered in its column */
+.mapGroup table.rosterWatcherForm th {
+  padding: 1px 4px;
+  font-size: 11px;
+  line-height: 1.15;
+  vertical-align: bottom;
+  text-align: center;
+}
+
+.mapGroup table.rosterWatcherForm td {
+  padding: 2px 4px;
+  text-align: center;
+}
+
+/* Watcher: its list a card as Ignores' are: column names in the box title's color (sort by a click: its arrow lit), held at the top
+   while the tab scrolls; each watcher a line lit under the mouse, its Edit and Delete faint until then (Watch, which shows its state,
+   always clear) */
+#watcherEditView {
+  padding: 2px 8px 8px;
+}
+
+#watcherEditView #watcherTable {
+  display: table;
+  margin: 4px auto 0;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 30%, #444);
+  border-radius: 8px;
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--gt-hover-accent) 14%, transparent) 0%, color-mix(in srgb, var(--gt-hover-accent) 4%, transparent) 100%);
+  box-shadow: inset 0 1px 0 #ffffff14;
+}
+
+#watcherEditView table.darkTable {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#watcherEditView table.darkTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 5px 7px 4px;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-hover-accent) 30%, #333);
+  background: color-mix(in srgb, var(--gt-hover-accent) 16%, black);
+  color: var(--gt-title);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#watcherEditView table.darkTable th:first-child {
+  border-top-left-radius: 8px;
+}
+
+#watcherEditView table.darkTable th:last-child {
+  border-top-right-radius: 8px;
+}
+
+#watcherEditView table.darkTable th[onclick]:hover {
+  color: var(--gt-hover-accent);
+}
+
+#watcherEditView table.darkTable td {
+  padding: 2px 7px;
+  border: none;
+  border-bottom: 1px solid #ffffff0d;
+  font-size: 12.5px;
+  font-weight: bold;
+}
+
+#watcherEditView table.darkTable tr:hover td {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--gt-hover-accent) 15%, transparent);
+}
+
+#watcherEditView table.darkTable td[onclick*="editWatcher"],
+#watcherEditView table.darkTable td[onclick*="deleteWatcher"] {
+  opacity: 0.45;
+  transition: opacity 0.12s;
+}
+
+#watcherEditView table.darkTable tr:hover td[onclick*="editWatcher"],
+#watcherEditView table.darkTable tr:hover td[onclick*="deleteWatcher"] {
+  opacity: 1;
+}
+
+/* Ignores: each kind's list a card (renderIgnoresTab's tables): its title in the box title's color with Clear All as a small pill at
+   the right, held at the top while a long list scrolls in the card; each entry a line lit under the mouse, its trash can faint until
+   then. The cards side by side, wrapping */
+#ignoresEditView {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: stretch;
-  max-width: 510px;
-  margin: 0 auto;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px 8px;
 }
 
-#generalSettingsBoxes > .mapItem {
-  width: 164px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+#ignoresEditView .ignoresTables {
+  margin: 0;
+  max-height: 260px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--gt-hover-accent) 30%, #444);
+  border-radius: 8px;
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--gt-hover-accent) 14%, transparent) 0%, color-mix(in srgb, var(--gt-hover-accent) 4%, transparent) 100%);
+  box-shadow: inset 0 1px 0 #ffffff14;
+}
+
+#ignoresEditView table.darkTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 150px;
+}
+
+#ignoresEditView table.darkTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 5px 8px 4px;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--gt-hover-accent) 30%, #333);
+  background: color-mix(in srgb, var(--gt-hover-accent) 16%, black);
+  color: var(--gt-title);
+  font-size: 12.5px;
+  text-align: left;
+}
+
+/* Clear All */
+#ignoresEditView table.darkTable th:last-child {
+  text-align: right;
+}
+
+#ignoresEditView table.darkTable th[onclick] {
+  color: color-mix(in srgb, var(--gt-warning) 85%, white);
+  font-size: 10.5px;
+  font-weight: bold;
+}
+
+#ignoresEditView table.darkTable th[onclick]:hover {
+  color: var(--gt-warning);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--gt-warning) 60%, transparent);
+}
+
+#ignoresEditView table.darkTable td {
+  padding: 2px 8px;
+  border: none;
+  border-bottom: 1px solid #ffffff0d;
+  font-size: 12.5px;
+  font-weight: bold;
+}
+
+#ignoresEditView table.darkTable tr:hover td {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--gt-hover-accent) 15%, transparent);
+}
+
+#ignoresEditView table.darkTable td:last-child {
+  width: 22px;
+  text-align: center;
+}
+
+#ignoresEditView table.darkTable td img {
+  opacity: 0.45;
+  transition: opacity 0.12s;
+}
+
+#ignoresEditView table.darkTable tr:hover td img {
+  opacity: 1;
 }
 
 /* Settings -> Colors: the main window's band color cells, wider for column names, 6 to a row */
@@ -833,41 +1066,11 @@ body.feedRosterShown .msgCol .msgCut {
   min-width: 480px;
 }
 
-.exceptionTab {
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(150px, 1fr));
-  justify-content:center;
-  align-items:center;
-}
-
-/* Feed Roster: only Uses LoTW, centered instead of in the grid's first column */
-.exceptionTab.feedExceptions {
-  display: flex;
-  justify-content: center;
-}
-
-.exceptionTab > div {
-  margin: 6px;
-  padding: 5px;
-  height: 35px;
-  width: 140px;
-  border-width: 1px;
-  border-color: var(--gt-box-line);
-  border-style: inset;
-  vertical-align:baseline;
-  border-radius: 4px;
-  transition: border-color;
-}
-
 p {
   margin-top: 4px;
   margin-bottom: 1px;
   margin-left: 1px;
   margin-right: 1px;
-}
-
-.exceptionTab > div:hover {
-  border-color: var(--gt-hover-border);
 }
 
 .break {
@@ -931,37 +1134,6 @@ p {
     background-position: 0% 50%;
   }
 }
-
-.rowBuilder {
-  border-width: 1px;
-  border-color: var(--gt-box-line);
-  border-style: outset;
-  vertical-align: top;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: row;
-  transition: border-color;
-  text-align: center; 
-  vertical-align:middle;
-  justify-content:center;
-  align-items:center;
-  width: fit-content;
-  left:0;
-  right:0;
-  margin: auto;
-  padding: 4px;
-}
-
-.rowBuilder:hover {
-  border-color: var(--gt-hover-border);
-}
-
-.rowBuilder > * {
-  margin-right: 4px;
-  padding: 2px;
-}
-
-
 
 .ignoresTables  {
   margin:10px;

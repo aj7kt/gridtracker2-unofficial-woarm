@@ -2294,5 +2294,16 @@
   "mmd.store.enterLicense.label": "輸入授權",
   "mmd.store.noLicense": "無授權",
   "mmd.store.otherCall": "授權屬於另一個呼號",
-  "mmd.store.loadsOnRestart": "將在 GridTracker2 重新啟動時載入"
+  "mmd.store.loadsOnRestart": "將在 GridTracker2 重新啟動時載入",
+  "settings.sstvDecoder.originalSize.label": "原始尺寸",
+  "settings.sstvDecoder.originalSize.hover": "以圖片原始尺寸顯示（圖片一個像素對應螢幕一個像素），不縮放以適應視窗",
+  "settings.sstvDecoder.noVis.label": "無VIS啟動",
+  "settings.sstvDecoder.noVis.hover": "錯過開頭（VIS碼）的圖片會根據同步脈衝接收，並在到達時從頂部開始繪製",
+  "roster.settings.group.roster.label": "名單",
+  "roster.settings.group.window.label": "視窗",
+  "roster.settings.saturate.label": "飽和度",
+  "roster.settings.sepia.label": "棕褐色",
+  "roster.ignores.add.label": "新增忽略",
+  "roster.ignores.entity.label": "類型",
+  "roster.watcher.edit.label": "新增 / 編輯監視"
 }
