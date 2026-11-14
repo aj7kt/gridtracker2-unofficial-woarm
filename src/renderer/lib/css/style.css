@@ -6195,6 +6195,38 @@ button:focus {
   pointer-events: none;
 }
 
+/* The Cast button radiating while a cast gets going, from the click until the device plays (mapCastBusy): rings in the App Theme's
+   hover accent go out from it, and its icon glows with them */
+#castButton.castBusy {
+  animation: castRadiate 1.3s ease-out infinite;
+}
+
+#castButton.castBusy #castImg {
+  animation: castGlow 1.3s ease-in-out infinite;
+}
+
+@keyframes castRadiate {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--gt-hover-accent) 75%, transparent);
+  }
+  80% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes castGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 5px var(--gt-hover-accent));
+  }
+}
+
 /* BirdWatch settings, Map: a row's colors and ticks (Ring, Fill; Line, Dash, Outline) side by side, evenly spaced and centered on one line */
 .birdWatchMapItems {
   display: inline-flex;

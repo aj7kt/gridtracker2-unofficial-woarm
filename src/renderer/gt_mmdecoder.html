@@ -870,6 +870,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         color: var(--gt-callsign);
         font-weight: bold;
       }
+      /* The station's own callsign (mmdTextHtml): black on the App Theme's other-callsign color (cyan in GridTracker2's), as the map's
+         popup shows it, so it stands out from the other calls' yellow */
+      span.cwMine {
+        padding: 0 2px;
+        border-radius: 2px;
+        background-color: var(--gt-callsign-other);
+        color: #000;
+        font-weight: bold;
+      }
       #cwEmpty {
         color: #888;
         padding: 6px;

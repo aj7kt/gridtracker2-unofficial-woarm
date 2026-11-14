@@ -172,6 +172,16 @@ function mapCastPreparing()
   return mapCastSessions().some((S) => S.waiting);
 }
 
+// The Cast button radiates (mapCastRender) from a click until the device plays: while the video's buffer fills before it is contacted
+// (S.waiting), then until it says PLAYING (S.played), at most CAST_BUSY_MAX_MS after it was contacted (a player that never says so)
+const CAST_BUSY_MAX_MS = 45000;
+
+function mapCastBusy()
+{
+  const now = Date.now();
+  return mapCastSessions().some((S) => S.waiting || (!S.played && now < (S.busyUntil || 0)));
+}
+
 function mapCastConnected()
 {
   return mapCastSessions().some(mapCastOn);
@@ -438,6 +448,11 @@ function mapCastConnect(S)
 {
   S.loaded = false;
   S.playerState = "";
+  // The button radiates until it plays, or CAST_BUSY_MAX_MS (drawn again then: mapCastBusy)
+  S.played = false;
+  S.busyUntil = Date.now() + CAST_BUSY_MAX_MS;
+  nodeTimers.clearTimeout(S.busyTimer);
+  S.busyTimer = nodeTimers.setTimeout(mapCastRender, CAST_BUSY_MAX_MS + 50);
   if (S.kind == "dlna")
   {
     mapCastDlnaConnect(S);
@@ -697,7 +712,12 @@ async function mapCastDlnaPoll(S)
     const state = mapCastXmlTag(info.text, "CurrentTransportState");
     if (state != S.playerState) mapCastLog(S.host + ": player " + state);
     S.playerState = state;
-    if (state == "PLAYING") S.played = true;
+    if (state == "PLAYING" && !S.played)
+    {
+      S.played = true;
+      // (the button stops radiating)
+      mapCastRender();
+    }
     const uri = media ? mapCastXmlTag(media.text, "CurrentURI") : "";
     const other = !!uri && !uri.includes(":" + CAST.port + "/");
     const stopped = (state == "STOPPED" || state == "NO_MEDIA_PRESENT") && (S.played || Date.now() - S.loadedAt > CAST_LOAD_WAIT_MS);
@@ -731,6 +751,7 @@ function mapCastStopOne(S, byDevice = false)
   if (CAST.sessions.get(S.key) !== S) return;
   CAST.sessions.delete(S.key);
   S.waiting = false;
+  nodeTimers.clearTimeout(S.busyTimer);
   nodeTimers.clearTimeout(S.prepareTimer);
   nodeTimers.clearInterval(S.pingTimer);
   nodeTimers.clearTimeout(S.loadTimer);
@@ -1161,6 +1182,12 @@ function mapCastMessage(S, message)
       const state = (data.status || []).map((s) => s.playerState + (s.idleReason ? " " + s.idleReason : "")).join(", ");
       if (state && state != S.playerState) mapCastLog(S.host + ": player " + state);
       if (state) S.playerState = state;
+      // Its first PLAYING (it goes PLAYING / BUFFERING after): the button stops radiating
+      if (/^PLAYING/.test(state) && !S.played)
+      {
+        S.played = true;
+        mapCastRender();
+      }
     }
     else mapCastLog(S.host + ": media " + data.type + (data.reason ? " " + data.reason : ""));
   }
@@ -1627,6 +1654,8 @@ function mapCastRender()
   castButton.style.display = GT.settings.map.castEnable && CAST.supported ? "" : "none";
   castButton.style.opacity = usable ? "" : "0.4";
   castButton.style.cursor = CAST.finding || mapCastPreparing() ? "progress" : usable ? "" : "default";
+  // Radiating from a click until the device plays (mapCastBusy)
+  castButton.classList.toggle("castBusy", mapCastBusy());
   castImg.style.filter = active ? "" : "grayscale(1)";
   // The devices played on, else the ones still waiting for the video
   const on = mapCastSessions().filter(mapCastOn);

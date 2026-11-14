@@ -1676,12 +1676,29 @@ function mmdEscape(text)
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// A CQ picked out, and every word GT takes for a callsign (CW's lines; FT8's are plain)
+// The station's own callsign and its base (N0TTL of VE3/N0TTL/P: the main window's mmdBaseCall), worked out again only when it changes
+const MMD_MINE = { call: null, base: "" };
+
+function mmdMine()
+{
+  const call = String(GT.settings.app.myCall || "").trim().toUpperCase();
+  if (call !== MMD_MINE.call)
+  {
+    MMD_MINE.call = call;
+    MMD_MINE.base = call ? window.opener.mmdBaseCall(call) : "";
+  }
+  return MMD_MINE;
+}
+
+// A CQ picked out, every word GT takes for a callsign, and the station's own callsign in any form (itself, or a word its base is a part
+// of: N0TTL/P, VE3/N0TTL) as its own (CW's lines and the text modes' that list theirs the same way; FT8's are plain)
 function mmdTextHtml(text)
 {
+  const mine = mmdMine();
   return text.split(" ").map((word) =>
   {
     if (word == "CQ") return "<span class='cwCq'>CQ</span>";
+    if (mine.base && (word == mine.call || word.split("/").includes(mine.base))) return "<span class='cwMine'>" + mmdEscape(word) + "</span>";
     if (CALLSIGN_REGEXP.test(word)) return "<span class='cwCall'>" + mmdEscape(word) + "</span>";
     return mmdEscape(word);
   }).join(" ");
