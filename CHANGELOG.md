@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
-## [v2.261113.1]
+## [v2.261113.2]
 
 ### MD Markup Format
 #### Map / UI
@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - The modes are written from their published specifications
   - The User Guide's Multi-Mode Decoder chapters describe every mode and setting
 - WEFAX Auto-Tune now chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave before the first F2 hop before a sporadic-E or two-hop path, falling back to the soonest chart when no modeled path reaches you
+  - It takes the soonest chart unless that one would still be on when a chart with a better path is due, so charts that fit one after the other are all received
+  - Changing My Grid while it waits makes it choose again
 - WEFAX charts show the UTC date as well as the time in their caption
 
 #### BirdWatch
@@ -146,7 +148,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       <li>The User Guide's Multi-Mode Decoder chapters describe every mode and setting</li>
     </ul>
   </li>
-  <li>WEFAX Auto-Tune now chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave before the first F2 hop before a sporadic-E or two-hop path, falling back to the soonest chart when no modeled path reaches you</li>
+  <li>WEFAX Auto-Tune now chooses each chart by how its station reaches the locator in Settings, General, My Grid: ground wave before the first F2 hop before a sporadic-E or two-hop path, falling back to the soonest chart when no modeled path reaches you
+    <ul>
+      <li>It takes the soonest chart unless that one would still be on when a chart with a better path is due, so charts that fit one after the other are all received</li>
+      <li>Changing My Grid while it waits makes it choose again</li>
+    </ul>
+  </li>
   <li>WEFAX charts show the UTC date as well as the time in their caption</li>
 </ul>
 <h4>BirdWatch</h4>

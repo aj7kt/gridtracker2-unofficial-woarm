@@ -6,10 +6,11 @@
 // schedules (wefax-schedule.json, beside this file) say which chart starts next and where; the rig is tuned there (through Rig Control, as the Frequency
 // menu tunes it) a little before, the chart's start tone starts the picture as always, and once it is over the next chart anywhere is
 // tuned for. Nothing is ever sent but the frequency and USB; tuning the rig by hand (its dial, the Frequency menu) turns it off.
-// A chart is chosen by where its transmitter is from your locator: ground wave first, then the first F2 hop, avoiding the skip zone
-// (between the ground wave and the first hop), and only as a last resort a sporadic-E or two-hop path. When no modeled path reaches you
-// (a locator far from every station, or every frequency dead or in the skip zone), the soonest chart is taken as before. Frequencies
-// whose chart never started (no start tone heard) are passed over for a while.
+// A chart's path is modeled from where its transmitter is from your locator: ground wave best, then the first F2 hop, avoiding the skip
+// zone (between the ground wave and the first hop), then a marginal path (sporadic E, two hops). The soonest chart is taken unless it
+// would still be on when the rig has to be tuned for a chart with a better path (then that one). When no modeled path reaches you (a
+// locator far from every station, or every frequency dead or in the skip zone), the soonest chart is taken as before. Frequencies whose
+// chart never started (no start tone heard) are passed over for a while.
 
 // Tuned this long before a chart starts (ms), and a chart started this long ago is still waited for (its start tone and phasing take
 // about 35 s)
@@ -28,10 +29,9 @@ const WEFAX_AUTO_DAY_KHZ = 13000;
 const WEFAX_AUTO_TICK_MS = 5000;
 // A search that found nothing (no chart at all) is tried again this long after
 const WEFAX_AUTO_RETRY_MS = 60000;
-// A reliable (ground wave or one-hop) chart starting within this wait is preferred; after it a marginal path may be taken, but only if
-// it starts this much sooner than the next reliable one (a minute or two are worth waiting for the better path)
-const WEFAX_AUTO_LOOKAHEAD_MS = 60 * 60000;
-const WEFAX_AUTO_MARGINAL_EARLY_MS = 15 * 60000;
+// A chart is taken to last until its station's next chart, but no longer than this (the schedules give no lengths; most run 10 to 20
+// minutes)
+const WEFAX_AUTO_CHART_MAX_MS = 20 * 60000;
 // Path margins: a one-hop path must be this far below the MUF, a two-hop path further still
 const WEFAX_AUTO_MUF_MARGIN = 0.9;
 const WEFAX_AUTO_TWO_HOP_MARGIN = 0.75;
@@ -64,12 +64,12 @@ const WEFAX_AUTO = {
   next: null,      // the chart tuned for: { at (ms), station, chart, khz, path, dial (Hz) }
   tunedAt: 0,      // when the rig was tuned for it (ms)
   dial: null,      // where it was tuned (Hz)
-  tuneNow: false,  // the chart following is tuned at once (the one before it was tuned, so not received meanwhile)
   started: false,  // its chart began (a start tone heard after it was tuned)
   good: {},        // the frequency that copied last, by station id (kHz)
   skip: {},        // frequencies passed over until (ms), by "station|kHz"
   tickAt: 0,
-  recheckAt: 0     // when the next chart comes within the lookahead (ms), the next search needed; Infinity: none
+  recheckAt: 0,    // when the next search is due (ms): 0 at once, Infinity none (until a chart ends or is missed, or My Grid changes)
+  grid: ""         // My Grid as the last search had it
 };
 
 function mmdWefaxAutoData()
@@ -302,10 +302,12 @@ function mmdWefaxAutoPath(station, khz, at, place)
   const skip = mmdWefaxAutoSkipKm(mhz, fof2, WEFAX_AUTO_MUF_MARGIN);
   if (skip != Infinity && km >= skip && km <= WEFAX_AUTO_HOP_MAX_KM)
     return Object.assign({ kind: "onehop", mhz, ground, fof2, skip, margin: mmdWefaxAutoMuf(km, fof2) - mhz, reliable: luf == "ok" }, far);
+  // Two hops: each half the distance
+  const hop = km / 2;
   const twoHopTarget = mhz / (fof2 * WEFAX_AUTO_TWO_HOP_MARGIN);
   const twoHopSkip = mmdWefaxAutoSkipKm(mhz, fof2, WEFAX_AUTO_TWO_HOP_MARGIN);
-  if (twoHopTarget <= mmdWefaxAutoMufFactor(3000) && twoHopSkip != Infinity && km >= Math.max(WEFAX_AUTO_HOP_MAX_KM, 2 * twoHopSkip) && km <= WEFAX_AUTO_TWO_HOP_MAX_KM)
-    return Object.assign({ kind: "twohop", mhz, ground, fof2, skip: twoHopSkip, margin: mmdWefaxAutoMuf(3000, fof2) - mhz, reliable: false }, far);
+  if (twoHopTarget <= mmdWefaxAutoMufFactor(hop) && twoHopSkip != Infinity && km >= Math.max(WEFAX_AUTO_HOP_MAX_KM, 2 * twoHopSkip) && km <= WEFAX_AUTO_TWO_HOP_MAX_KM)
+    return Object.assign({ kind: "twohop", mhz, ground, fof2, skip: twoHopSkip, margin: mmdWefaxAutoMuf(hop, fof2) - mhz, reliable: false }, far);
   if (mmdWefaxAutoEsPossible(mhz, km, mid.lat, mid.lon, at))
     return Object.assign({ kind: "es", mhz, ground, fof2, skip, margin: 0, reliable: false }, far);
   return Object.assign({ kind: "dead", mhz, ground, fof2, skip, reliable: false }, far);
@@ -316,6 +318,14 @@ function mmdWefaxAutoPathRank(path)
 {
   if (!path) return 9;
   return path.kind == "ground" ? 0 : path.kind == "onehop" ? 1 : path.kind == "es" ? 2 : path.kind == "twohop" ? 3 : 9;
+}
+
+// A chart's path class for choosing between charts (lower is better): ground wave, one hop, then the marginal paths after every
+// reliable one (one hop in daytime absorption, sporadic E, two hops)
+function mmdWefaxAutoPathClass(path)
+{
+  const rank = mmdWefaxAutoPathRank(path);
+  return path && path.reliable ? rank : 2 + rank;
 }
 
 // The frequency to receive a station's chart at ms on, else null: on the air then (and one the chart is sent on, where the schedule
@@ -353,19 +363,34 @@ function mmdWefaxAutoFreq(station, ms, chart = {}, place)
   return best || legacy();
 }
 
-// The next chart anywhere: a reliable one within WEFAX_AUTO_LOOKAHEAD_MS (ground wave before one F2 hop, then the sooner), else a
-// marginal one only if it starts well before the next reliable one, else the next reliable one, else the soonest chart (one no modeled
-// path reaches: the old choice)
+// The next chart anywhere: the soonest one a modeled path reaches, unless it would still be on when the rig has to be tuned (its time
+// less WEFAX_AUTO_LEAD_MS) for a later one with a better path (mmdWefaxAutoPathClass); then the next that isn't. Charts at the same time:
+// the better path, then the nearer, then the more margin. With no modeled path to any chart: the soonest chart (the old choice)
 function mmdWefaxAutoFind(from = Date.now())
 {
   const day = 86400000;
   const midnight = Math.floor(from / day) * day;
   const me = mmdWefaxAutoMyPlace();
-  const reliable = [], marginal = [], legacy = [];
+  const modeled = [], legacy = [];
   for (const station of mmdWefaxAutoData().stations)
   {
     // Its distance from you once, for all its charts and frequencies (host calls: the settings' locator and unit)
     const place = mmdWefaxAutoPlace(station, me);
+    // Every time it sends a chart, from today to the day after tomorrow: a chart lasts until its next one (WEFAX_AUTO_CHART_MAX_MS at most)
+    const times = [];
+    for (const chart of station.charts || [])
+    {
+      const minutes = chart.note ? null : mmdWefaxAutoMinutes(chart.time);
+      if (minutes == null) continue;
+      for (const base of [midnight, midnight + day, midnight + 2 * day])
+        if (mmdWefaxAutoOnDay(station, chart, base + minutes * 60000)) times.push(base + minutes * 60000);
+    }
+    times.sort((a, b) => a - b);
+    const endOf = (at) =>
+    {
+      const after = times.find((t) => t > at);
+      return Math.min(at + WEFAX_AUTO_CHART_MAX_MS, after == null ? Infinity : after);
+    };
     for (const chart of station.charts || [])
     {
       // (One sent only now and then, its note says when: a tropical cyclone, the season, the ice; not waited for)
@@ -377,38 +402,34 @@ function mmdWefaxAutoFind(from = Date.now())
         if (at < from - WEFAX_AUTO_LATE_MS || !mmdWefaxAutoOnDay(station, chart, at)) continue;
         const pick = mmdWefaxAutoFreq(station, at, chart, place);
         if (!pick) continue;
-        const candidate = { at, station, chart, khz: pick.khz, path: pick.path, dial: Math.round(pick.khz * 1000 - 1900) };
+        const candidate = { at, end: endOf(at), station, chart, khz: pick.khz, path: pick.path, dial: Math.round(pick.khz * 1000 - 1900) };
         // (mmdWefaxAutoFreq never picks a "dead" path: with a path it is reliable or marginal)
-        if (!pick.path) legacy.push(candidate);
-        else (pick.path.reliable ? reliable : marginal).push(candidate);
+        (pick.path ? modeled : legacy).push(candidate);
         break;
       }
     }
   }
-  const byTime = (a, b) => a.at - b.at || String(a.station.id).localeCompare(String(b.station.id));
-  // Ground wave before one F2 hop, then the sooner (and closer, then the more margin); reliable charts only, which always have a path
-  const byRank = (a, b) => mmdWefaxAutoPathRank(a.path) - mmdWefaxAutoPathRank(b.path) || a.at - b.at || a.path.km - b.path.km ||
-    b.path.margin - a.path.margin || String(a.station.id).localeCompare(String(b.station.id));
-  reliable.sort(byTime);
-  marginal.sort(byTime);
-  legacy.sort(byTime);
-  // When a chart now beyond the lookahead comes within it: the only time the choice can change while one waits (the locator and the
-  // chart times don't); the tick searches then, not every few seconds
-  let recheck = Infinity;
-  for (const c of reliable) if (c.at > from + WEFAX_AUTO_LOOKAHEAD_MS)
+  const byId = (a, b) => String(a.station.id).localeCompare(String(b.station.id));
+  const pathClass = (c) => mmdWefaxAutoPathClass(c.path);
+  modeled.sort((a, b) => a.at - b.at || pathClass(a) - pathClass(b) || a.path.km - b.path.km || b.path.margin - a.path.margin || byId(a, b));
+  // The soonest whose time on the air leaves the rig free for every better chart after it (the last one always does)
+  for (let i = 0; i < modeled.length; i++)
   {
-    recheck = c.at - WEFAX_AUTO_LOOKAHEAD_MS;
-    break;
+    const c = modeled[i], cls = pathClass(c);
+    let clash = false;
+    for (let j = i + 1; j < modeled.length && modeled[j].at - WEFAX_AUTO_LEAD_MS < c.end; j++)
+    {
+      if (pathClass(modeled[j]) < cls)
+      {
+        clash = true;
+        break;
+      }
+    }
+    if (!clash) return c;
   }
-  WEFAX_AUTO.recheckAt = recheck;
-  // Within the lookahead the best path wins (a ground wave may be a few minutes later than a one-hop chart and still preferred)
-  const within = reliable.filter((c) => c.at <= from + WEFAX_AUTO_LOOKAHEAD_MS);
-  if (within.length) return within.sort(byRank)[0];
-  // Beyond it a marginal chart is taken only when it starts well before the next reliable one
-  const good = reliable[0];
-  if (marginal.length && (!good || marginal[0].at < good.at - WEFAX_AUTO_MARGINAL_EARLY_MS)) return marginal[0];
   // No modeled path reaches any chart: the old choice (the soonest chart anywhere)
-  return good || marginal[0] || legacy[0] || null;
+  legacy.sort((a, b) => a.at - b.at || byId(a, b));
+  return legacy[0] || null;
 }
 
 // The checkbox
@@ -417,7 +438,6 @@ function mmdWefaxAutoToggle()
   WEFAX_AUTO.on = cwWefaxAuto.checked;
   WEFAX_AUTO.next = null;
   WEFAX_AUTO.dial = null;
-  WEFAX_AUTO.tuneNow = false;
   WEFAX_AUTO.tickAt = 0;
   WEFAX_AUTO.recheckAt = 0;
   const H = WEFAX.host;
@@ -440,7 +460,6 @@ function mmdWefaxAutoStop(why)
   WEFAX_AUTO.on = false;
   WEFAX_AUTO.next = null;
   WEFAX_AUTO.dial = null;
-  WEFAX_AUTO.tuneNow = false;
   WEFAX_AUTO.recheckAt = 0;
   cwWefaxAuto.checked = false;
   if (why) WEFAX.host.status(why);
@@ -451,9 +470,10 @@ function mmdWefaxAutoStop(why)
 function mmdWefaxAutoStarted()
 {
   const n = WEFAX_AUTO.next;
-  // Only the chart the rig is actually on: a start tone on the frequency before (the last chart's) isn't this chart's, and must not
-  // make it the one that copied
-  if (!WEFAX_AUTO.on || !n || WEFAX_AUTO.dial == null || WEFAX_AUTO.dial != n.dial || Date.now() < WEFAX_AUTO.tunedAt) return;
+  // Only the chart the rig is on, from when it is tuned for it (WEFAX_AUTO_LEAD_MS before it, a tick late at most): a start tone on the
+  // frequency before (the last chart's), or an earlier chart on the same one, isn't this chart's and must not make it the one that copied
+  const now = Date.now();
+  if (!WEFAX_AUTO.on || !n || WEFAX_AUTO.dial == null || WEFAX_AUTO.dial != n.dial || now < WEFAX_AUTO.tunedAt || now < n.at - WEFAX_AUTO_LEAD_MS - WEFAX_AUTO_TICK_MS) return;
   WEFAX_AUTO.started = true;
   WEFAX_AUTO.good[n.station.id] = n.khz;
 }
@@ -507,40 +527,34 @@ function mmdWefaxAutoTick()
       WEFAX_AUTO.recheckAt = 0;
     }
   }
-  // Not tuned yet, or a marginal chart not yet begun: the best chart is followed as the lookahead moves (a reliable chart may come
-  // within it). The same chart's path is kept up too (the hour, the sun). The search runs when a chart crosses into the lookahead
-  // (recheckAt), not every tick
-  const marginal = WEFAX_AUTO.next && WEFAX_AUTO.next.path && !WEFAX_AUTO.next.path.reliable;
-  const need = !WEFAX_AUTO.next || WEFAX_AUTO.dial != WEFAX_AUTO.next.dial || (marginal && !WEFAX_AUTO.started);
-  if (need && now >= WEFAX_AUTO.recheckAt)
+  // My Grid changed since the last search (portable, or put right): searched again, the paths and distances with it
+  const grid = String(H.myGrid() || "");
+  if (grid != WEFAX_AUTO.grid) WEFAX_AUTO.recheckAt = 0;
+  // The search: the choice only changes when a chart ends or is missed (above), or My Grid changes, so it runs then, not every tick
+  if (now >= WEFAX_AUTO.recheckAt)
   {
+    WEFAX_AUTO.grid = grid;
     const found = mmdWefaxAutoFind(now), cur = WEFAX_AUTO.next;
     const same = !!cur && !!found && found.station.id == cur.station.id && found.khz == cur.khz && found.at == cur.at;
     if (same) cur.path = found.path;
     else
     {
-      // (the chart before was tuned: the new one now, so the old one isn't received meanwhile, and not taken as tuned by hand)
-      if (cur && WEFAX_AUTO.dial != null)
-      {
-        WEFAX_AUTO.dial = null;
-        WEFAX_AUTO.tuneNow = true;
-      }
+      // (the rig left where it is until the new chart's time)
       WEFAX_AUTO.next = found;
       WEFAX_AUTO.started = false;
     }
     // Nothing found (no chart either way): tried again in a while, not every tick
-    if (!found) WEFAX_AUTO.recheckAt = now + WEFAX_AUTO_RETRY_MS;
+    WEFAX_AUTO.recheckAt = found ? Infinity : now + WEFAX_AUTO_RETRY_MS;
   }
   const next = WEFAX_AUTO.next;
   // Its time near: the rig tuned there (once)
-  if (next && WEFAX_AUTO.dial != next.dial && (WEFAX_AUTO.tuneNow || now >= next.at - WEFAX_AUTO_LEAD_MS))
+  if (next && WEFAX_AUTO.dial != next.dial && now >= next.at - WEFAX_AUTO_LEAD_MS)
   {
     const vfo = H.vfo();
     if (H.tuneDial(next.dial, "USB", !!vfo && vfo.ssbData === true))
     {
       WEFAX_AUTO.dial = next.dial;
       WEFAX_AUTO.tunedAt = now;
-      WEFAX_AUTO.tuneNow = false;
     }
   }
   mmdWefaxAutoShow();
